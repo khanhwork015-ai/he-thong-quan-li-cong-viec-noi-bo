@@ -1,6 +1,6 @@
 /**
- * THANH VŨ MEDIC CS3 - MEMBER CREATE & EDIT MODAL COMPONENT
- * Cho phép Trưởng phòng và Admin thêm / cập nhật nhân sự trong phòng ban
+ * THANH VŨ MEDIC CS3 - MEMBER MANAGEMENT MODAL COMPONENT (MOBILE FIRST)
+ * Thêm mới và chỉnh sửa thông tin nhân viên (Admin & Manager)
  * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
  */
 
@@ -10,11 +10,13 @@ import { DEPARTMENTS } from '../models.js';
 import { esc, toast, rung } from '../helpers.js';
 
 const PRESET_AVATARS = [
+  'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
   'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=160&q=80',
   'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=160&q=80',
   'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=160&q=80',
-  'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
   'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80',
+  'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=160&q=80',
   'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=160&q=80'
 ];
 
@@ -28,37 +30,39 @@ export class MemberModal {
   show(userId = null) {
     if (!this.container) return;
 
+    rung(10);
+
     this.editingUser = userId ? store.getUserById(userId) : null;
     const currentDept = auth.getActiveDepartment();
     const canSelectDept = auth.isAdmin();
 
     this.container.innerHTML = `
-      <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 active" id="memberOverlay">
-        <div class="modal-card bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e2e8f0] max-h-[90vh] overflow-y-auto">
+      <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="memberOverlay">
+        <div class="modal-card bg-white rounded-2xl p-4 sm:p-6 max-w-lg w-full shadow-2xl border border-[#e2e8f0] max-h-[92vh] overflow-y-auto">
           <!-- HEADER -->
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] mb-4">
             <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7]">
+              <div class="w-9 h-9 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shrink-0">
                 <span class="material-symbols-outlined text-[22px]">person_add</span>
               </div>
-              <div>
-                <h3 class="font-bold text-[16.5px] text-[#0d1c2f]">${this.editingUser ? 'Cập Nhật Nhân Sự' : 'Thêm Nhân Viên Mới'}</h3>
-                <span class="text-[11.5px] text-[#795900] font-semibold">${currentDept.name}</span>
+              <div class="min-w-0">
+                <h3 class="font-bold text-[16px] sm:text-[16.5px] text-[#0d1c2f] truncate">${this.editingUser ? 'Cập Nhật Nhân Sự' : 'Thêm Nhân Viên Mới'}</h3>
+                <span class="text-[11.5px] text-[#795900] font-semibold truncate block">${currentDept.name}</span>
               </div>
             </div>
-            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold" id="btnCloseMemberModal">&times;</button>
+            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[40px] min-h-[40px] flex items-center justify-center" id="btnCloseMemberModal" aria-label="Đóng">&times;</button>
           </div>
 
           <!-- FORM -->
-          <form id="formMember" class="flex flex-col gap-4">
+          <form id="formMember" class="flex flex-col gap-3.5 sm:gap-4">
             <!-- AVATAR PICKER -->
             <div class="flex items-center gap-3 p-3 bg-[#f8f9ff] rounded-2xl border border-[#e2e8f0]">
               <img id="memberAvatarPreview" src="${this.editingUser ? this.editingUser.avatar : PRESET_AVATARS[0]}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white shrink-0" />
               <div class="flex-1 min-w-0">
-                <input type="url" id="memberAvatarUrl" value="${this.editingUser ? esc(this.editingUser.avatar) : PRESET_AVATARS[0]}" placeholder="URL ảnh đại diện" class="w-full h-8 px-2.5 rounded-lg border border-[#e2e8f0] text-[12px] outline-none focus:border-[#d6a52a] bg-white" />
-                <div class="flex items-center gap-1.5 mt-2 overflow-x-auto">
+                <input type="url" id="memberAvatarUrl" value="${this.editingUser ? esc(this.editingUser.avatar) : PRESET_AVATARS[0]}" placeholder="URL ảnh đại diện" class="w-full h-9 px-2.5 rounded-lg border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white" />
+                <div class="flex items-center gap-1.5 mt-2 overflow-x-auto no-scrollbar">
                   ${PRESET_AVATARS.map(url => `
-                    <img src="${url}" class="w-6 h-6 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform ring-1 ring-gray-300 select-avatar-item" data-avatar="${url}" />
+                    <img src="${url}" class="w-7 h-7 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform ring-1 ring-gray-300 select-avatar-item shrink-0" data-avatar="${url}" />
                   `).join('')}
                 </div>
               </div>
@@ -68,12 +72,12 @@ export class MemberModal {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Họ và tên *</label>
-                <input type="text" id="memberName" required value="${this.editingUser ? esc(this.editingUser.name) : ''}" placeholder="Ví dụ: BS. Nguyễn Văn A" class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
+                <input type="text" id="memberName" required value="${this.editingUser ? esc(this.editingUser.name) : ''}" placeholder="Ví dụ: BS. Nguyễn Văn A" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
 
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Chức danh / Vị trí *</label>
-                <input type="text" id="memberTitle" required value="${this.editingUser ? esc(this.editingUser.title) : 'Chuyên viên'}" placeholder="Chuyên viên CSKH, Bác sĩ..." class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
+                <input type="text" id="memberTitle" required value="${this.editingUser ? esc(this.editingUser.title) : 'Chuyên viên'}" placeholder="Chuyên viên CSKH, Bác sĩ..." class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
             </div>
 
@@ -81,41 +85,43 @@ export class MemberModal {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Vai trò phân quyền *</label>
-                <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white">
+                <select id="memberRole" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white">
                   <option value="MEMBER" ${this.editingUser && this.editingUser.role === 'MEMBER' ? 'selected' : ''}>Chuyên viên / Nhân viên</option>
                   <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>Trưởng phòng / Quản lý</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Thuộc phòng ban *</label>
-                <select id="memberDept" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" ${!canSelectDept ? 'disabled' : ''}>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Phòng ban trực thuộc *</label>
+                <select id="memberDept" ${!canSelectDept ? 'disabled' : ''} class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white disabled:bg-gray-100">
                   ${DEPARTMENTS.map(d => `
-                    <option value="${d.id}" ${(this.editingUser ? this.editingUser.departmentId === d.id : currentDept.id === d.id) ? 'selected' : ''}>${d.name}</option>
+                    <option value="${d.id}" ${(this.editingUser ? this.editingUser.departmentId === d.id : currentDept.id === d.id) ? 'selected' : ''}>
+                      ${d.name} (${d.code})
+                    </option>
                   `).join('')}
                 </select>
               </div>
             </div>
 
-            <!-- CONTACT -->
+            <!-- EMAIL & PHONE -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Số điện thoại</label>
-                <input type="tel" id="memberPhone" value="${this.editingUser ? esc(this.editingUser.phone || '') : ''}" placeholder="09xx xxx xxx" class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Email liên hệ</label>
+                <input type="email" id="memberEmail" value="${this.editingUser ? esc(this.editingUser.email || '') : ''}" placeholder="bacsi@thanhvumedic.vn" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Email nội bộ</label>
-                <input type="email" id="memberEmail" value="${this.editingUser ? esc(this.editingUser.email || '') : ''}" placeholder="name@thanhvumedic.vn" class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Số điện thoại</label>
+                <input type="text" id="memberPhone" value="${this.editingUser ? esc(this.editingUser.phone || '') : ''}" placeholder="0918xxxxxx" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
             </div>
 
-            <!-- BUTTONS -->
-            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-2">
-              <button type="button" class="px-4 py-2 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50" id="btnCancelMember">
+            <!-- ACTIONS (MOBILE FRIENDLY) -->
+            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-2">
+              <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50 min-h-[44px]" id="btnCancelMember">
                 Hủy bỏ
               </button>
-              <button type="submit" class="px-5 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all">
+              <button type="submit" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all min-h-[44px]">
                 ${this.editingUser ? 'Lưu Thông Tin' : 'Tạo Nhân Viên'}
               </button>
             </div>
@@ -156,10 +162,10 @@ export class MemberModal {
 
     this.container.querySelectorAll('.select-avatar-item').forEach(img => {
       img.addEventListener('click', () => {
+        rung(10);
         const url = img.dataset.avatar;
         if (inputAvatar) inputAvatar.value = url;
         if (avatarPreview) avatarPreview.src = url;
-        rung(10);
       });
     });
 
@@ -168,29 +174,43 @@ export class MemberModal {
         e.preventDefault();
         rung(15);
 
-        const currentDept = auth.getActiveDepartment();
+        const name = this.container.querySelector('#memberName').value.trim();
+        const title = this.container.querySelector('#memberTitle').value.trim();
         const role = this.container.querySelector('#memberRole').value;
-        const deptId = this.container.querySelector('#memberDept').value || currentDept.id;
+        const departmentId = this.container.querySelector('#memberDept').value;
+        const email = this.container.querySelector('#memberEmail').value.trim();
+        const phone = this.container.querySelector('#memberPhone').value.trim();
+        const avatar = inputAvatar.value.trim() || PRESET_AVATARS[0];
 
-        const userData = {
-          name: this.container.querySelector('#memberName').value.trim(),
-          title: this.container.querySelector('#memberTitle').value.trim(),
-          role: role,
-          departmentId: deptId,
-          phone: this.container.querySelector('#memberPhone').value.trim(),
-          email: this.container.querySelector('#memberEmail').value.trim(),
-          avatar: inputAvatar.value.trim(),
-          unit: currentDept.unit,
-          badge: role === 'ADMIN' ? 'Admin' : (role === 'MANAGER' ? 'Trưởng phòng' : 'Chuyên viên')
-        };
+        if (!name) {
+          toast('Vui lòng nhập tên nhân viên!', 'warning');
+          return;
+        }
 
         if (this.editingUser) {
-          store.updateUser(this.editingUser.id, userData);
-          toast(`Đã cập nhật nhân sự: ${userData.name}`, 'success');
+          store.updateUser(this.editingUser.id, {
+            name,
+            title,
+            role,
+            departmentId,
+            email,
+            phone,
+            avatar,
+            badge: role === 'MANAGER' ? 'Trưởng phòng' : 'Chuyên viên'
+          });
+          toast(`Đã cập nhật thông tin nhân viên: ${name}`, 'success');
         } else {
-          userData.id = 'usr_' + Date.now().toString(36);
-          store.addUser(userData);
-          toast(`Đã thêm nhân sự mới: ${userData.name}`, 'success');
+          const newUser = store.createUser({
+            name,
+            title,
+            role,
+            departmentId,
+            email,
+            phone,
+            avatar,
+            badge: role === 'MANAGER' ? 'Trưởng phòng' : 'Chuyên viên'
+          });
+          toast(`Đã thêm nhân viên mới: ${newUser.name}`, 'success');
         }
 
         closeModal();

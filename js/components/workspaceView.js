@@ -1,13 +1,8 @@
 /**
- * THANH VŨ MEDIC CS3 - WORKSPACE TASK MANAGEMENT COMPONENT
+ * THANH VŨ MEDIC CS3 - WORKSPACE TASK MANAGEMENT COMPONENT (MOBILE FIRST)
  * Khôi phục tông Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
- * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực:
- * 1. Chưa bắt đầu: #F1F5F9 / #475569
- * 2. Đang thực hiện: #DBEAFE / #1D4ED8
- * 3. Chờ phê duyệt: #FEF3C7 / #92400E
- * 4. Hoàn thành: #CCFBF1 / #0F766E
- * 5. Tạm dừng: #F3E8FF / #7E22CE
- * 6. Quá hạn: #FEE2E2 / #B91C1C
+ * Giao diện Thẻ Task chạm thông minh trên Mobile (md:hidden) & Bảng chi tiết trên Desktop (md:block)
+ * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
 import { auth } from '../auth.js';
@@ -58,97 +53,97 @@ export class WorkspaceView {
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-4 animate-fade-in max-w-7xl">
         <!-- TOP CONTROLS & LINEAR/NOTION TABS BAR -->
-        <div class="bg-white p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
-          <!-- TITLE ROW -->
-          <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
+          <!-- TITLE ROW RESPONSIVE -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7]">
+              <div class="w-10 h-10 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shrink-0">
                 <span class="material-symbols-outlined text-[22px]">checklist</span>
               </div>
-              <div>
+              <div class="min-w-0">
                 <div class="flex items-center gap-2">
-                  <h1 class="font-bold text-[20px] text-[#0d1c2f]">Quản lý công việc</h1>
-                  <span class="px-2 py-0.5 rounded-full bg-[#fffbeb] text-[#795900] font-mono-data text-[11px] font-bold border border-[#fef3c7]">${currentDept.code}</span>
+                  <h1 class="font-bold text-[18px] sm:text-[20px] text-[#0d1c2f] truncate">Quản lý công việc</h1>
+                  <span class="px-2 py-0.5 rounded-full bg-[#fffbeb] text-[#795900] font-mono-data text-[11px] font-bold border border-[#fef3c7] shrink-0">${currentDept.code}</span>
                 </div>
-                <p class="text-[12.5px] text-[#64748b]">${currentDept.name} • ${currentDept.unit}</p>
+                <p class="text-[12px] sm:text-[12.5px] text-[#64748b] truncate">${currentDept.name} • ${currentDept.unit}</p>
               </div>
             </div>
 
             <!-- VIEW MODE TOGGLE & CREATE TASK BUTTON -->
-            <div class="flex items-center gap-2.5">
-              <div class="flex items-center p-1 bg-[#f8f9ff] border border-[#e2e8f0] rounded-xl">
-                <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${this.viewMode === 'table' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnSwitchTable">
+            <div class="flex items-center justify-between sm:justify-end gap-2.5">
+              <div class="flex items-center p-1 bg-[#f8f9ff] border border-[#e2e8f0] rounded-xl shrink-0">
+                <button type="button" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all min-h-[36px] ${this.viewMode === 'table' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnSwitchTable">
                   <span class="material-symbols-outlined text-[16px]">format_list_bulleted</span>
-                  <span class="text-[12.5px]">Bảng danh sách</span>
+                  <span class="text-[12px] sm:text-[12.5px]">Danh sách</span>
                 </button>
-                <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${this.viewMode === 'kanban' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnSwitchKanban">
+                <button type="button" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all min-h-[36px] ${this.viewMode === 'kanban' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnSwitchKanban">
                   <span class="material-symbols-outlined text-[16px]">view_kanban</span>
-                  <span class="text-[12.5px]">Kanban</span>
+                  <span class="text-[12px] sm:text-[12.5px]">Kanban</span>
                 </button>
               </div>
 
               ${canCreate ? `
-                <button type="button" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all" id="btnWorkspaceCreateTask">
+                <button type="button" class="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] text-[12px] sm:text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all min-h-[40px] shrink-0" id="btnWorkspaceCreateTask">
                   <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                  <span>Giao việc mới</span>
+                  <span>Giao việc</span>
                 </button>
               ` : ''}
             </div>
           </div>
 
-          <!-- NOTION STYLE TABS -->
-          <div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-[#f1f5f9]">
-            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'assigned_to_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="assigned_to_me">
-              <span>Việc được giao cho tôi</span>
+          <!-- NOTION STYLE TABS (SWIPEABLE NO-SCROLLBAR ON MOBILE) -->
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-[#f1f5f9] -mx-1 px-1">
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'assigned_to_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="assigned_to_me">
+              <span>Được giao cho tôi</span>
               <span class="px-2 py-0.2 rounded-full bg-[#d6a52a] text-[#533d00] font-mono-data text-[10.5px] font-bold">${countAssigned}</span>
             </button>
 
-            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'created_by_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="created_by_me">
-              <span>Việc do tôi tạo</span>
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'created_by_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="created_by_me">
+              <span>Do tôi tạo</span>
               <span class="px-2 py-0.2 rounded-full bg-gray-100 text-[#0d1c2f] font-mono-data text-[10.5px] font-bold">${countCreated}</span>
             </button>
 
-            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'pending_approval' ? 'bg-[#fef3c7] text-[#92400e] font-bold border border-amber-300' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="pending_approval">
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'pending_approval' ? 'bg-[#fef3c7] text-[#92400e] font-bold border border-amber-300' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="pending_approval">
               <span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
-              <span>Chờ phê duyệt</span>
+              <span>Chờ duyệt</span>
               <span class="px-2 py-0.2 rounded-full bg-[#f59e0b] text-white font-mono-data text-[10.5px] font-bold">${countPending}</span>
             </button>
 
-            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'completed' ? 'bg-[#ccfbf1] text-[#0f766e] font-bold border border-teal-200' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="completed">
-              <span>Đã hoàn thành</span>
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'completed' ? 'bg-[#ccfbf1] text-[#0f766e] font-bold border border-teal-200' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="completed">
+              <span>Hoàn thành</span>
               <span class="px-2 py-0.2 rounded-full bg-[#0d9488] text-white font-mono-data text-[10.5px] font-bold">${countDone}</span>
             </button>
 
-            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'all' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="all">
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'all' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="all">
               <span>Tất cả (${allDeptTasks.length})</span>
             </button>
           </div>
 
-          <!-- SEARCH & PRIORITY FILTER TOOLBAR -->
-          <div class="flex flex-wrap items-center gap-3 pt-1">
-            <div class="relative flex-1 min-w-[240px]">
+          <!-- SEARCH & PRIORITY FILTER TOOLBAR (RESPONSIVE) -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
+            <div class="relative flex-1">
               <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#817663]">search</span>
               <input 
                 type="text" 
                 id="workspaceSearchInput" 
                 value="${esc(this.searchQuery)}"
-                class="w-full h-9 pl-9 pr-3 rounded-xl bg-[#f8f9ff] text-[#0d1c2f] text-[13px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] outline-none" 
-                placeholder="Lọc theo mã việc, tên công việc, người phụ trách..." 
+                class="w-full h-10 pl-9 pr-3 rounded-xl bg-[#f8f9ff] text-[#0d1c2f] text-[13.5px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] outline-none" 
+                placeholder="Lọc mã việc, tiêu đề, người làm..." 
               />
             </div>
 
             <!-- Priority filter pills -->
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
               ${['ALL', 'P1', 'P2', 'P3'].map(p => `
-                <button type="button" class="px-3 py-1.5 rounded-lg text-[11.5px] font-bold transition-all ${this.priorityFilter === p ? 'bg-[#d6a52a] text-[#533d00] shadow-xs' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-priority="${p}">
-                  ${p === 'ALL' ? 'Tất cả mức ưu tiên' : p}
+                <button type="button" class="px-3 py-2 rounded-lg text-[11.5px] font-bold shrink-0 transition-all min-h-[36px] ${this.priorityFilter === p ? 'bg-[#d6a52a] text-[#533d00] shadow-xs' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-priority="${p}">
+                  ${p === 'ALL' ? 'Tất cả mức' : p}
                 </button>
               `).join('')}
             </div>
           </div>
         </div>
 
-        <!-- MAIN DATA: TABLE OR KANBAN -->
+        <!-- MAIN DATA: TABLE (DESKTOP) & TOUCH CARDS (MOBILE) OR KANBAN -->
         ${this.viewMode === 'table' ? this.renderTableView(tasks) : this.renderKanbanView(tasks)}
       </div>
     `;
@@ -156,11 +151,11 @@ export class WorkspaceView {
     this.bindEvents();
   }
 
-  // DẠNG BẢNG (TABLE VIEW)
+  // DẠNG DANH SÁCH (HỖ TRỢ THẺ TRÊN MOBILE & BẢNG TRÊN DESKTOP)
   renderTableView(tasks) {
     if (tasks.length === 0) {
       return `
-        <div class="bg-white p-12 rounded-2xl border border-[#e2e8f0] text-center shadow-sm">
+        <div class="bg-white p-8 sm:p-12 rounded-2xl border border-[#e2e8f0] text-center shadow-sm">
           <div class="w-12 h-12 rounded-full bg-[#fffbeb] flex items-center justify-center text-[#795900] mx-auto mb-3">
             <span class="material-symbols-outlined text-[24px]">inbox</span>
           </div>
@@ -171,7 +166,51 @@ export class WorkspaceView {
     }
 
     return `
-      <div class="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+      <!-- 1. MOBILE CARDS VIEW (MÀN HÌNH NHỎ DƯỚI MD) -->
+      <div class="md:hidden flex flex-col gap-3">
+        ${tasks.map(t => {
+          const assignee = store.getUserById(t.assigneeId);
+          const statusMeta = this.getStatusMeta(t.status);
+
+          return `
+            <div class="p-4 bg-white rounded-2xl border border-[#e2e8f0] shadow-xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer row-task-item" data-task-id="${t.id}">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-mono-data text-[11px] font-bold text-[#795900] px-2 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7]">${t.id}</span>
+                  <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">
+                    ${t.priority}
+                  </span>
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background-color: ${statusMeta.bg}; color: ${statusMeta.text};">
+                  ${statusMeta.label}
+                </span>
+              </div>
+
+              <h4 class="font-bold text-[14.5px] text-[#0d1c2f] mb-1 leading-snug">
+                ${esc(t.title)}
+              </h4>
+
+              <p class="text-[12px] text-[#64748b] line-clamp-2 mb-3">
+                ${esc(t.description || 'Chưa có mô tả chi tiết')}
+              </p>
+
+              <div class="flex items-center justify-between pt-2.5 border-t border-[#f1f5f9] text-[12px]">
+                <div class="flex items-center gap-2 min-w-0">
+                  <img src="${assignee ? assignee.avatar : ''}" class="w-6 h-6 rounded-full object-cover shrink-0" />
+                  <span class="text-[#0d1c2f] font-semibold truncate">${assignee ? assignee.name : 'Chưa giao'}</span>
+                </div>
+                <span class="font-mono-data text-[11.5px] text-[#817663] shrink-0 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">event</span>
+                  ${ngayVN(t.dueDate)}
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- 2. DESKTOP TABLE VIEW (MÀN HÌNH TỪ MD TRỞ LÊN) -->
+      <div class="hidden md:block bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -217,7 +256,7 @@ export class WorkspaceView {
                       </span>
                     </td>
                     <td class="py-3 px-4 text-center">
-                      <button type="button" class="p-1 rounded-lg text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100" title="Xem chi tiết">
+                      <button type="button" class="p-1 rounded-lg text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100 min-w-[36px] min-h-[36px] inline-flex items-center justify-center" title="Xem chi tiết">
                         <span class="material-symbols-outlined text-[18px]">open_in_new</span>
                       </button>
                     </td>
@@ -231,7 +270,7 @@ export class WorkspaceView {
     `;
   }
 
-  // DẠNG THẺ KANBAN (KANBAN BOARD)
+  // DẠNG THẺ KANBAN (KANBAN BOARD RESPONSIVE)
   renderKanbanView(tasks) {
     const columns = [
       { id: 'todo', title: 'Chưa Bắt Đầu', color: '#475569', bg: '#f1f5f9', text: '#475569' },
@@ -245,10 +284,10 @@ export class WorkspaceView {
         ${columns.map(col => {
           const colTasks = tasks.filter(t => t.status === col.id);
           return `
-            <div class="rounded-2xl border border-[#e2e8f0] bg-white p-4 shadow-sm flex flex-col gap-3 min-h-[480px]">
+            <div class="rounded-2xl border border-[#e2e8f0] bg-white p-4 shadow-sm flex flex-col gap-3 min-h-[200px] md:min-h-[480px]">
               <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9]">
                 <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full" style="background: ${col.color};"></span>
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background: ${col.color};"></span>
                   <span class="font-bold text-[13.5px] text-[#0d1c2f]">${col.title}</span>
                 </div>
                 <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded-full" style="background-color: ${col.bg}; color: ${col.text};">${colTasks.length}</span>
@@ -262,7 +301,7 @@ export class WorkspaceView {
                 ` : colTasks.map(t => {
                   const assignee = store.getUserById(t.assigneeId);
                   return `
-                    <div class="p-3.5 bg-white rounded-xl border border-[#e2e8f0] hover:border-[#d6a52a] shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card" data-task-id="${t.id}">
+                    <div class="p-3.5 bg-white rounded-xl border border-[#e2e8f0] hover:border-[#d6a52a] active:bg-[#fffbeb]/20 shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card" data-task-id="${t.id}">
                       <div class="flex items-center justify-between mb-1.5">
                         <span class="font-mono-data text-[10.5px] font-bold text-[#795900] px-1.5 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7]">${t.id}</span>
                         <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">${t.priority}</span>
@@ -273,11 +312,11 @@ export class WorkspaceView {
                       </div>
 
                       <div class="flex items-center justify-between pt-2 border-t border-[#f1f5f9] text-[11px]">
-                        <div class="flex items-center gap-1.5">
-                          <img src="${assignee ? assignee.avatar : ''}" class="w-5 h-5 rounded-full object-cover" />
+                        <div class="flex items-center gap-1.5 min-w-0">
+                          <img src="${assignee ? assignee.avatar : ''}" class="w-5 h-5 rounded-full object-cover shrink-0" />
                           <span class="text-[#64748b] font-medium truncate max-w-[90px]">${assignee ? assignee.name.split(' ').pop() : ''}</span>
                         </div>
-                        <span class="font-mono-data text-[#817663]">${t.dueDate ? t.dueDate.slice(5) : ''}</span>
+                        <span class="font-mono-data text-[#817663] shrink-0">${t.dueDate ? t.dueDate.slice(5) : ''}</span>
                       </div>
                     </div>
                   `;
@@ -303,23 +342,10 @@ export class WorkspaceView {
   }
 
   bindEvents() {
-    this.container.querySelectorAll('[data-tab]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        rung(10);
-        this.setTab(btn.dataset.tab);
-      });
-    });
-
     const btnTable = this.container.querySelector('#btnSwitchTable');
     const btnKanban = this.container.querySelector('#btnSwitchKanban');
-    if (btnTable) btnTable.addEventListener('click', () => {
-      rung(10);
-      this.setViewMode('table');
-    });
-    if (btnKanban) btnKanban.addEventListener('click', () => {
-      rung(10);
-      this.setViewMode('kanban');
-    });
+    if (btnTable) btnTable.addEventListener('click', () => { rung(10); this.setViewMode('table'); });
+    if (btnKanban) btnKanban.addEventListener('click', () => { rung(10); this.setViewMode('kanban'); });
 
     const btnCreate = this.container.querySelector('#btnWorkspaceCreateTask');
     if (btnCreate) {
@@ -336,6 +362,13 @@ export class WorkspaceView {
         this.render();
       });
     }
+
+    this.container.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(10);
+        this.setTab(btn.dataset.tab);
+      });
+    });
 
     this.container.querySelectorAll('[data-priority]').forEach(btn => {
       btn.addEventListener('click', () => {

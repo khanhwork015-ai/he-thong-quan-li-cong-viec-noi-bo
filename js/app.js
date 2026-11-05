@@ -1,6 +1,6 @@
 /**
- * THANH VŨ MEDIC CS3 - MAIN APPLICATION CONTROLLER
- * Tích hợp Quản lý nhân viên (Thêm/Sửa/Xóa), Profile Modal, Settings Grid & Google Apps Script
+ * THANH VŨ MEDIC CS3 - MAIN APPLICATION CONTROLLER (MOBILE FIRST & RESPONSIVE)
+ * Tích hợp Quản lý nhân viên (Thêm/Sửa/Xóa), Profile Modal, Settings Grid, Bottom Nav & Google Apps Script
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
@@ -8,6 +8,7 @@ import { auth } from './auth.js';
 import { store } from './store.js';
 import { Sidebar } from './components/sidebar.js';
 import { TopHeader } from './components/topHeader.js';
+import { BottomNav } from './components/bottomNav.js';
 import { DashboardView } from './components/dashboardView.js';
 import { WorkspaceView } from './components/workspaceView.js';
 import { TaskDrawer } from './components/taskDrawer.js';
@@ -23,6 +24,7 @@ class App {
     this.currentNav = 'tong-quan'; // 'tong-quan' | 'cong-viec' | 'nhan-vien' | 'cai-dat'
     this.sidebar = null;
     this.header = null;
+    this.bottomNav = null;
     this.dashboardView = null;
     this.workspaceView = null;
     this.taskDrawer = null;
@@ -33,7 +35,7 @@ class App {
   }
 
   init() {
-    console.log('🚀 [THANH VŨ MEDIC CS3] Khởi chạy hệ thống Google Stitch Gold UI...');
+    console.log('🚀 [THANH VŨ MEDIC CS3] Khởi chạy hệ thống Mobile-First Google Stitch Gold UI...');
 
     this.profileModal = new ProfileModal('modal-container', () => this.refreshCurrentView());
     this.memberModal = new MemberModal('modal-container', () => this.refreshCurrentView());
@@ -44,11 +46,16 @@ class App {
       (mode) => this.onModeChange(mode)
     );
 
+    this.bottomNav = new BottomNav('mobile-nav-container',
+      (navId) => this.switchNav(navId)
+    );
+
     this.header = new TopHeader('header-container',
       (query) => this.onSearch(query),
       () => this.openCreateModal(),
       () => this.profileModal.show(),
-      () => this.settingsModal.show()
+      () => this.settingsModal.show(),
+      () => this.sidebar.toggle()
     );
 
     this.taskDrawer = new TaskDrawer('drawer-container', () => this.refreshCurrentView());
@@ -78,6 +85,7 @@ class App {
 
   render() {
     this.sidebar.render();
+    this.bottomNav.render();
     this.header.render();
     this.renderCurrentView();
   }
@@ -97,6 +105,8 @@ class App {
   switchNav(navId) {
     rung(15);
     this.currentNav = navId;
+    if (this.sidebar) this.sidebar.setNav(navId);
+    if (this.bottomNav) this.bottomNav.setNav(navId);
 
     if (navId === 'cai-dat') {
       toast('Đang mở Cài đặt hệ thống & Tích hợp Cloud...', 'info');
@@ -135,62 +145,60 @@ class App {
 
   refreshCurrentView() {
     this.header.render();
+    this.bottomNav.render();
     this.renderCurrentView();
   }
 
   bindGlobalEvents() {
-    window.addEventListener('tvm:auth_changed', () => {
-      this.sidebar.render();
-      this.header.render();
-      this.renderCurrentView();
-    });
-
-    window.addEventListener('tvm:department_changed', () => {
-      this.sidebar.render();
-      this.header.render();
-      this.renderCurrentView();
-    });
-
-    window.addEventListener('tvm:data_changed', () => {
-      this.header.render();
-      this.renderCurrentView();
-    });
-
-    window.addEventListener('tvm:users_changed', () => {
-      this.header.render();
-      this.renderCurrentView();
-    });
-
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         const searchInput = document.getElementById('topSearchInput');
         if (searchInput) searchInput.focus();
       }
+      if (e.key === 'Escape') {
+        if (this.taskDrawer) this.taskDrawer.close();
+      }
+    });
+
+    window.addEventListener('auth-changed', () => {
+      this.refreshCurrentView();
+      this.sidebar.render();
+      this.bottomNav.render();
+    });
+
+    window.addEventListener('department-changed', () => {
+      this.refreshCurrentView();
+      this.sidebar.render();
+      this.bottomNav.render();
     });
   }
 
-  // --- MÀN HÌNH QUẢN LÝ NHÂN VIÊN (THÊM / SỬA / XÓA) ---
+  // --- MÀN HÌNH QUẢN LÝ NHÂN SỰ PHÒNG BAN (MOBILE RESPONSIVE) ---
   renderEmployeesView() {
     const canvas = document.getElementById('main-content-canvas');
     const currentDept = auth.getActiveDepartment();
     const members = store.getDepartmentUsers(currentDept.id);
-    const canManage = auth.canManageMembers();
+    const canManage = auth.isAdmin() || auth.isManager();
 
     canvas.innerHTML = `
-      <div class="flex flex-col gap-4 animate-fade-in max-w-7xl">
-        <div class="bg-white p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-sm">
           <div>
-            <h1 class="text-[20px] font-bold text-[#0d1c2f]">Quản Lý Nhân Sự • ${currentDept.name}</h1>
-            <p class="text-[12.5px] text-[#64748b] mt-0.5">${currentDept.unit} • Phân bổ nhiệm vụ &amp; hiệu suất chuyên viên</p>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-mono-data text-[11px] text-[#795900] font-bold bg-[#fffbeb] px-2 py-0.5 rounded border border-[#fef3c7]">${currentDept.code}</span>
+              <span class="text-[12px] text-[#64748b]">Danh bạ phòng ban</span>
+            </div>
+            <h1 class="font-bold text-[18px] sm:text-[20px] text-[#0d1c2f]">Quản lý nhân sự</h1>
+            <p class="text-[12px] sm:text-[12.5px] text-[#64748b]">${currentDept.name} • Danh bạ &amp; Phân quyền</p>
           </div>
 
-          <div class="flex items-center gap-2.5">
-            <span class="px-3 py-1 rounded-full bg-[#ffdea9] text-[#5f4100] text-[12px] font-bold">
+          <div class="flex items-center justify-between sm:justify-end gap-2.5">
+            <span class="px-3 py-1.5 rounded-full bg-[#fffbeb] text-[#795900] font-mono-data text-[11.5px] font-bold border border-[#fef3c7]">
               ${members.length} nhân sự
             </span>
             ${canManage ? `
-              <button type="button" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[13px] hover:bg-[#795900] hover:text-white shadow-xs transition-all" id="btnOpenAddMember">
+              <button type="button" class="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[12.5px] sm:text-[13px] hover:bg-[#795900] hover:text-white shadow-xs transition-all min-h-[40px]" id="btnOpenAddMember">
                 <span class="material-symbols-outlined text-[18px]">person_add</span>
                 <span>+ Thêm nhân viên</span>
               </button>
@@ -206,15 +214,15 @@ class App {
             const isSelf = auth.getCurrentUser().id === u.id;
 
             return `
-              <div class="bg-white p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] transition-all relative group">
+              <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] transition-all relative group">
                 ${canManage ? `
-                  <div class="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button type="button" class="p-1.5 rounded-lg hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#0d1c2f] btn-edit-member" data-member-id="${u.id}" title="Sửa thông tin nhân viên">
-                      <span class="material-symbols-outlined text-[16px]">edit</span>
+                  <div class="absolute top-3 right-3 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button type="button" class="p-2 rounded-lg hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#0d1c2f] btn-edit-member min-w-[36px] min-h-[36px] flex items-center justify-center" data-member-id="${u.id}" title="Sửa thông tin nhân viên">
+                      <span class="material-symbols-outlined text-[18px]">edit</span>
                     </button>
                     ${u.role !== 'ADMIN' && !isSelf ? `
-                      <button type="button" class="p-1.5 rounded-lg hover:bg-red-50 text-[#64748b] hover:text-red-600 btn-delete-member" data-member-id="${u.id}" data-member-name="${u.name}" title="Xóa nhân viên">
-                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                      <button type="button" class="p-2 rounded-lg hover:bg-red-50 text-[#64748b] hover:text-red-600 btn-delete-member min-w-[36px] min-h-[36px] flex items-center justify-center" data-member-id="${u.id}" data-member-name="${u.name}" title="Xóa nhân viên">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     ` : ''}
                   </div>
@@ -279,7 +287,7 @@ class App {
     });
   }
 
-  // --- MÀN HÌNH CÀI ĐẶT 2 CỘT CÂN XỨNG (GRID LAYOUT KHÔNG DỒN TRÁI) ---
+  // --- MÀN HÌNH CÀI ĐẶT 2 CỘT CÂN XỨNG (GRID LAYOUT RESPONSIVE) ---
   renderSettingsView() {
     const canvas = document.getElementById('main-content-canvas');
     const endpoint = appScriptBridge.getEndpoint();
@@ -287,48 +295,48 @@ class App {
     const currentDept = auth.getActiveDepartment();
 
     canvas.innerHTML = `
-      <div class="flex flex-col gap-6 animate-fade-in w-full max-w-7xl">
+      <div class="flex flex-col gap-5 sm:gap-6 animate-fade-in w-full max-w-7xl">
         <!-- 1. HEADER BANNER CÀI ĐẶT -->
-        <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div class="flex items-center gap-3.5">
-            <div class="w-12 h-12 rounded-2xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shadow-xs">
-              <span class="material-symbols-outlined text-[26px]">tune</span>
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shadow-xs shrink-0">
+              <span class="material-symbols-outlined text-[24px] sm:text-[26px]">tune</span>
             </div>
             <div>
               <div class="flex items-center gap-2 mb-0.5">
                 <span class="font-mono-data text-[11px] text-[#795900] font-bold bg-[#fffbeb] px-2 py-0.5 rounded border border-[#fef3c7]">${currentDept.code}</span>
-                <span class="text-[12px] text-[#64748b]">• Trung tâm điều phối hệ thống</span>
+                <span class="text-[11.5px] sm:text-[12px] text-[#64748b]">• Trung tâm điều phối hệ thống</span>
               </div>
-              <h1 class="text-[22px] font-extrabold text-[#0d1c2f] tracking-tight">Cài Đặt Hệ Thống &amp; Tích Hợp Nền Tảng</h1>
-              <p class="text-[13px] text-[#64748b]">Quản lý kết nối dữ liệu Google Sheets / SHIN AIOS, bảo mật phân quyền và sao lưu cơ sở dữ liệu</p>
+              <h1 class="text-[18px] sm:text-[22px] font-extrabold text-[#0d1c2f] tracking-tight">Cài Đặt Hệ Thống &amp; Tích Hợp Nền Tảng</h1>
+              <p class="text-[12px] sm:text-[13px] text-[#64748b]">Quản lý kết nối Google Sheets / SHIN AIOS, bảo mật phân quyền và sao lưu cơ sở dữ liệu</p>
             </div>
           </div>
 
-          <button type="button" class="px-4 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white flex items-center justify-center gap-2 shadow-xs transition-all shrink-0" id="btnTriggerModalSettings">
+          <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white flex items-center justify-center gap-2 shadow-xs transition-all shrink-0 min-h-[44px]" id="btnTriggerModalSettings">
             <span class="material-symbols-outlined text-[18px]">open_in_new</span>
             <span>Mở Cửa Sổ Popup</span>
           </button>
         </div>
 
         <!-- 2. BỐ CỤC 2 CỘT CÂN ĐỐI (GRID 12 CỘT: 7 CỘT TRÁI & 5 CỘT PHẢI) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
           
           <!-- CỘT TRÁI (COL-SPAN-7): TÍCH HỢP CLOUD GOOGLE APPS SCRIPT -->
-          <div class="lg:col-span-7 flex flex-col gap-6">
+          <div class="lg:col-span-7 flex flex-col gap-5 sm:gap-6">
             
             <!-- THẺ KẾT NỐI CLOUD -->
-            <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
-              <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#f1f5f9] gap-2">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7]">
+                  <div class="w-10 h-10 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shrink-0">
                     <span class="material-symbols-outlined text-[22px]">cloud_sync</span>
                   </div>
                   <div>
-                    <h3 class="text-[15.5px] font-bold text-[#0d1c2f]">Cổng Kết Nối Google Sheets (Apps Script Webhook)</h3>
+                    <h3 class="text-[15px] sm:text-[15.5px] font-bold text-[#0d1c2f]">Cổng Kết Nối Google Sheets (Apps Script Webhook)</h3>
                     <p class="text-[12px] text-[#64748b]">Đồng bộ 2 chiều dữ liệu thực tế với Google Sheets tương tự SHIN AIOS</p>
                   </div>
                 </div>
-                <span class="px-3 py-1 rounded-full text-[11.5px] font-bold shrink-0 ${isConnected ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#fffbeb] text-[#795900] border border-[#fef3c7]'}">
+                <span class="px-3 py-1 rounded-full text-[11px] sm:text-[11.5px] font-bold shrink-0 self-start sm:self-auto ${isConnected ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#fffbeb] text-[#795900] border border-[#fef3c7]'}">
                   ${isConnected ? '● Đã kết nối Cloud' : '○ Chế độ LocalStorage'}
                 </span>
               </div>
@@ -336,8 +344,8 @@ class App {
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1.5">URL Google Apps Script Web App Endpoint</label>
                 <div class="flex flex-col sm:flex-row gap-2">
-                  <input type="url" id="inputGasUrl" value="${esc(endpoint)}" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
-                  <button type="button" class="px-5 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[13px] hover:bg-[#795900] hover:text-white transition-all shrink-0 shadow-xs" id="btnSaveGasUrl">
+                  <input type="url" id="inputGasUrl" value="${esc(endpoint)}" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
+                  <button type="button" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[13px] hover:bg-[#795900] hover:text-white transition-all shrink-0 shadow-xs min-h-[44px]" id="btnSaveGasUrl">
                     Lưu URL
                   </button>
                 </div>
@@ -349,99 +357,133 @@ class App {
               </div>
 
               <!-- HÀNG THAO TÁC ĐỒNG BỘ 2 CHIỀU -->
-              <div class="p-4 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div class="text-[12.5px] text-[#0d1c2f]">
+              <div class="p-3.5 sm:p-4 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div class="text-[12px] sm:text-[12.5px] text-[#0d1c2f]">
                   Lần đồng bộ gần nhất: <br />
                   <strong class="text-[#795900] font-mono-data">${appScriptBridge.lastSyncTime ? new Date(appScriptBridge.lastSyncTime).toLocaleString('vi-VN') : 'Chưa có lượt đồng bộ nào'}</strong>
                 </div>
 
-                <div class="flex items-center gap-2">
-                  <button type="button" class="px-4 py-2.5 rounded-xl bg-white border border-[#d6a52a] text-[12px] font-bold text-[#795900] hover:bg-[#fffbeb] flex items-center justify-center gap-1.5 shadow-xs transition-all" id="btnPushToSheet">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white border border-[#d6a52a] text-[12px] font-bold text-[#795900] hover:bg-[#fffbeb] flex items-center justify-center gap-1.5 shadow-xs transition-all min-h-[44px]" id="btnPushToSheet">
                     <span class="material-symbols-outlined text-[17px]">upload</span>
-                    <span>Đẩy lên Sheet</span>
+                    <span>📤 Đẩy lên Sheet</span>
                   </button>
-
-                  <button type="button" class="px-4 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[12px] font-bold hover:bg-[#795900] hover:text-white flex items-center justify-center gap-1.5 shadow-xs transition-all" id="btnManualSync">
-                    <span class="material-symbols-outlined text-[17px]">sync</span>
-                    <span>Tải về ngay</span>
+                  <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#795900] text-white text-[12px] font-bold hover:bg-[#533d00] flex items-center justify-center gap-1.5 shadow-xs transition-all min-h-[44px]" id="btnPullFromSheet">
+                    <span class="material-symbols-outlined text-[17px]">download</span>
+                    <span>📥 Tải về ngay</span>
                   </button>
                 </div>
               </div>
             </div>
 
             <!-- THẺ HƯỚNG DẪN TRIỂN KHAI 3 BƯỚC -->
-            <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
               <h3 class="text-[15px] font-bold text-[#0d1c2f] flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#795900] text-[20px]">menu_book</span>
-                Hướng Dẫn Triển Khai Nhanh 3 Bước Với Google Sheets
+                <span class="material-symbols-outlined text-[#795900] text-[20px]">terminal</span>
+                <span>Hướng Dẫn 3 Bước Kết Nối Google Sheets Thực Tế</span>
               </h3>
-              <ol class="list-decimal list-inside space-y-2 text-[12.5px] text-[#4f4635] leading-relaxed">
-                <li>Mở Google Spreadsheet mới -> Vào menu <strong>Tiện ích mở rộng -> Apps Script</strong>.</li>
-                <li>Dán toàn bộ mã nguồn tại file <code>google-apps-script/Code.gs</code> vào và bấm Lưu.</li>
-                <li>Bấm <strong>Deploy -> New deployment -> Web app</strong> (chọn Execute as: <em>Me</em>, Who has access: <em>Anyone</em>) rồi copy link Web App dán vào ô bên trên.</li>
-              </ol>
+
+              <div class="space-y-3 text-[12.5px] text-[#4f4635]">
+                <div class="p-3 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0]">
+                  <strong class="text-[#0d1c2f]">Bước 1: Mở Google Sheet</strong>
+                  <p class="mt-1">Tạo một Google Sheet mới trên Drive của bạn, chọn menu <em>Tiện ích mở rộng (Extensions) &gt; Apps Script</em>.</p>
+                </div>
+
+                <div class="p-3 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0]">
+                  <strong class="text-[#0d1c2f]">Bước 2: Dán Code Google Apps Script</strong>
+                  <p class="mt-1">Dán file code mã nguồn Apps Script hỗ trợ hàm <code>doGet</code> và <code>doPost</code> được cung cấp sẵn trong dự án.</p>
+                </div>
+
+                <div class="p-3 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0]">
+                  <strong class="text-[#0d1c2f]">Bước 3: Triển khai (Deploy) Web App</strong>
+                  <p class="mt-1">Bấm <strong>Deploy &gt; New deployment &gt; Loại: Web app</strong>. Mục <strong>Who has access</strong> chọn <strong>"Anyone"</strong>, bấm Deploy rồi sao chép URL dán vào ô bên trên.</p>
+                </div>
+              </div>
             </div>
+
           </div>
 
-          <!-- CỘT PHẢI (COL-SPAN-5): THÔNG TIN NỀN TẢNG, PHÂN QUYỀN & SAO LƯU -->
-          <div class="lg:col-span-5 flex flex-col gap-6">
-
-            <!-- THẺ THÔNG TIN NỀN TẢNG & THƯƠNG HIỆU -->
-            <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
-              <h3 class="text-[15px] font-bold text-[#0d1c2f] flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#795900] text-[20px]">verified</span>
-                Nhận Diện Thương Hiệu &amp; Giao Diện
-              </h3>
-
-              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
-                <span>Tông màu chủ đạo:</span>
-                <strong class="text-[#795900] flex items-center gap-1.5">
-                  <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] inline-block shadow-xs"></span>
-                  Google Stitch Gold (#D6A52A)
-                </strong>
+          <!-- CỘT PHẢI (COL-SPAN-5): THƯƠNG HIỆU, PHÂN QUYỀN & SAO LƯU -->
+          <div class="lg:col-span-5 flex flex-col gap-5 sm:gap-6">
+            
+            <!-- THẺ NHẬN DIỆN THƯƠNG HIỆU -->
+            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
+              <div class="flex items-center gap-2.5 pb-3 border-b border-[#f1f5f9]">
+                <span class="material-symbols-outlined text-[#d6a52a] text-[22px]">palette</span>
+                <h3 class="font-bold text-[15px] text-[#0d1c2f]">Giao Diện &amp; Nhận Diện Thương Hiệu</h3>
               </div>
 
-              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
-                <span>Kiểu chữ tiêu chuẩn:</span>
-                <strong class="text-[#0d1c2f]">Plus Jakarta Sans &amp; Mono</strong>
-              </div>
+              <div class="space-y-2.5 text-[12.5px]">
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f9ff]">
+                  <span class="text-[#64748b]">Tông màu chủ đạo:</span>
+                  <span class="font-bold text-[#795900] flex items-center gap-1.5">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] border border-[#795900]/30 inline-block"></span>
+                    Vàng Hoàng Kim (#D6A52A)
+                  </span>
+                </div>
 
-              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
-                <span>Đơn vị vận hành:</span>
-                <strong class="text-[#0d1c2f]">Thanh Vũ Medic - CS3</strong>
-              </div>
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f9ff]">
+                  <span class="text-[#64748b]">Font chữ chuẩn:</span>
+                  <span class="font-bold text-[#0d1c2f]">Plus Jakarta Sans &amp; Mono</span>
+                </div>
 
-              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
-                <span>Phân quyền bảo mật:</span>
-                <strong class="text-[#16a34a]">RBAC 3 Cấp (Admin / TP / NV)</strong>
-              </div>
-
-              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5">
-                <span>Cầu nối hệ sinh thái:</span>
-                <strong class="font-mono-data text-[#0d1c2f]">SHIN AIOS v2.0 Bridge</strong>
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f9ff]">
+                  <span class="text-[#64748b]">Phòng ban hiện tại:</span>
+                  <span class="font-mono-data text-[#795900] font-bold">${currentDept.name} (${currentDept.code})</span>
+                </div>
               </div>
             </div>
 
-            <!-- THẺ TRUNG TÂM SAO LƯU & DỮ LIỆU HỆ THỐNG -->
-            <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
-              <h3 class="text-[15px] font-bold text-[#0d1c2f] flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#64748b] text-[20px]">save</span>
-                Trung Tâm Quản Trị &amp; Sao Lưu Dữ Liệu
-              </h3>
-              
-              <p class="text-[12px] text-[#64748b] leading-relaxed">
-                Tải tệp JSON chứa toàn bộ danh bạ nhân sự và nhật ký công việc về máy tính để bảo đảm an toàn dữ liệu định kỳ.
-              </p>
+            <!-- THẺ PHÂN QUYỀN RBAC 3 CẤP -->
+            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
+              <div class="flex items-center gap-2.5 pb-3 border-b border-[#f1f5f9]">
+                <span class="material-symbols-outlined text-[#795900] text-[22px]">verified_user</span>
+                <h3 class="font-bold text-[15px] text-[#0d1c2f]">Bảo Mật &amp; Phân Quyền RBAC 3 Cấp</h3>
+              </div>
 
-              <div class="flex flex-col gap-2 pt-1">
-                <button type="button" class="w-full py-2.5 rounded-xl bg-white border border-[#e2e8f0] text-[#0d1c2f] text-[12.5px] font-bold hover:bg-[#f8f9ff] flex items-center justify-center gap-2 shadow-xs transition-colors" id="btnExportBackupJson">
-                  <span class="material-symbols-outlined text-[18px] text-[#795900]">download</span>
-                  <span>Xuất Tệp Sao Lưu (Backup JSON)</span>
+              <div class="space-y-2 text-[12px]">
+                <div class="p-2.5 rounded-xl bg-[#fffbeb] border border-[#fef3c7] flex items-center justify-between">
+                  <div>
+                    <strong class="text-[#795900]">👑 Quản Trị Viên (Admin)</strong>
+                    <div class="text-[#64748b] text-[11px] mt-0.5">Toàn quyền hệ thống, chuyển đổi đa phòng ban</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-md bg-[#ffdea9] text-[#5f4100] font-bold text-[10px]">ALL ACCESS</span>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between">
+                  <div>
+                    <strong class="text-[#0d1c2f]">👔 Trưởng Phòng (Manager)</strong>
+                    <div class="text-[#64748b] text-[11px] mt-0.5">Giao việc, duyệt nghiệm thu, quản lý nhân viên phòng</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-md bg-[#dcfce7] text-[#16a34a] font-bold text-[10px]">DEPT LEAD</span>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between">
+                  <div>
+                    <strong class="text-[#0d1c2f]">👤 Nhân Viên (Staff)</strong>
+                    <div class="text-[#64748b] text-[11px] mt-0.5">Cập nhật tiến độ việc cá nhân, gửi chờ duyệt</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-md bg-[#f1f5f9] text-[#475569] font-bold text-[10px]">OPERATIONAL</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- THẺ QUẢN TRỊ DỮ LIỆU & SAO LƯU BACKUP -->
+            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
+              <div class="flex items-center gap-2.5 pb-3 border-b border-[#f1f5f9]">
+                <span class="material-symbols-outlined text-[#795900] text-[22px]">database</span>
+                <h3 class="font-bold text-[15px] text-[#0d1c2f]">Quản Trị Cơ Sở Dữ Liệu</h3>
+              </div>
+
+              <div class="flex flex-col gap-2.5">
+                <button type="button" class="w-full py-2.5 px-4 rounded-xl bg-[#f8f9ff] hover:bg-[#fffbeb] text-[#795900] border border-[#e2e8f0] hover:border-[#d6a52a] text-[12.5px] font-bold flex items-center justify-center gap-2 transition-all min-h-[44px]" id="btnExportBackup">
+                  <span class="material-symbols-outlined text-[18px]">download_for_offline</span>
+                  <span>📥 Xuất tệp sao lưu (Backup JSON)</span>
                 </button>
 
-                <button type="button" class="w-full py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-[12.5px] font-bold hover:bg-red-100 flex items-center justify-center gap-2 transition-colors" id="btnResetAllData">
+                <button type="button" class="w-full py-2.5 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[12.5px] font-bold flex items-center justify-center gap-2 transition-all min-h-[44px]" id="btnResetData">
                   <span class="material-symbols-outlined text-[18px]">restart_alt</span>
-                  <span>Khôi phục dữ liệu gốc mẫu</span>
+                  <span>🔄 Khôi phục dữ liệu gốc mẫu</span>
                 </button>
               </div>
             </div>
@@ -451,108 +493,111 @@ class App {
       </div>
     `;
 
-    // Bind events
+    // Bind event handlers
     const btnTrigger = canvas.querySelector('#btnTriggerModalSettings');
     if (btnTrigger) {
       btnTrigger.addEventListener('click', () => {
+        rung(10);
         this.settingsModal.show();
       });
     }
 
-    const btnSave = canvas.querySelector('#btnSaveGasUrl');
-    const inputUrl = canvas.querySelector('#inputGasUrl');
-    if (btnSave && inputUrl) {
-      btnSave.addEventListener('click', () => {
+    const btnSaveGas = canvas.querySelector('#btnSaveGasUrl');
+    const inputGas = canvas.querySelector('#inputGasUrl');
+    if (btnSaveGas && inputGas) {
+      btnSaveGas.addEventListener('click', () => {
         rung(10);
-        const url = inputUrl.value.trim();
+        const url = inputGas.value.trim();
         appScriptBridge.setEndpoint(url);
-        toast('Đã lưu cấu hình Google Apps Script Endpoint!', 'success');
+        toast('Đã lưu URL Google Apps Script thành công!', 'success');
         this.renderSettingsView();
       });
     }
 
-    // Tải về từ Google Sheet
-    const btnSync = canvas.querySelector('#btnManualSync');
-    if (btnSync) {
-      btnSync.addEventListener('click', async () => {
-        rung(10);
-        if (!appScriptBridge.isConnected()) {
-          toast('Vui lòng nhập URL Web App Endpoint trước khi đồng bộ!', 'warning');
-          return;
-        }
-        btnSync.disabled = true;
-        btnSync.innerHTML = '<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang tải...</span>';
-        toast('Đang kết nối Google Sheets để tải dữ liệu...', 'info');
-
-        const res = await store.syncFromCloudIfAvailable();
-        btnSync.disabled = false;
-        btnSync.innerHTML = '<span class="material-symbols-outlined text-[17px]">sync</span><span>Tải về ngay</span>';
-
-        toast(res.message, res.success ? 'success' : 'warning');
-        this.renderSettingsView();
-      });
-    }
-
-    // Đẩy lên Google Sheet
     const btnPush = canvas.querySelector('#btnPushToSheet');
     if (btnPush) {
       btnPush.addEventListener('click', async () => {
         rung(15);
-        if (!appScriptBridge.isConnected()) {
-          toast('Vui lòng nhập URL Web App Endpoint trước!', 'warning');
-          return;
-        }
         btnPush.disabled = true;
-        btnPush.innerHTML = '<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang đẩy...</span>';
-        toast('Đang đẩy dữ liệu lên Google Sheets...', 'info');
-
-        const res = await store.pushAllToCloud();
-        btnPush.disabled = false;
-        btnPush.innerHTML = '<span class="material-symbols-outlined text-[17px]">upload</span><span>Đẩy lên Sheet</span>';
-
-        toast(res.message, res.success ? 'success' : 'warning');
-        this.renderSettingsView();
+        btnPush.innerHTML = `<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang đồng bộ...</span>`;
+        try {
+          const res = await appScriptBridge.pushAllToCloud();
+          if (res.success) {
+            toast('Đã đẩy toàn bộ dữ liệu lên Google Sheets thành công!', 'success');
+          } else {
+            toast('Lỗi khi đẩy lên Google Sheets: ' + (res.error || 'CORS hoặc URL không hợp lệ'), 'warning');
+          }
+        } catch (err) {
+          toast('Lỗi kết nối: ' + err.message, 'warning');
+        } finally {
+          btnPush.disabled = false;
+          this.renderSettingsView();
+        }
       });
     }
 
-    // Xuất Backup JSON
-    const btnExport = canvas.querySelector('#btnExportBackupJson');
+    const btnPull = canvas.querySelector('#btnPullFromSheet');
+    if (btnPull) {
+      btnPull.addEventListener('click', async () => {
+        rung(15);
+        btnPull.disabled = true;
+        btnPull.innerHTML = `<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang tải về...</span>`;
+        try {
+          const res = await appScriptBridge.fetchCloudData();
+          if (res.success) {
+            toast('Đã kéo dữ liệu từ Google Sheets về thành công!', 'success');
+            this.renderCurrentView();
+          } else {
+            toast('Lỗi tải dữ liệu: ' + (res.error || 'Kiểm tra quyền Anyone của Web App'), 'warning');
+          }
+        } catch (err) {
+          toast('Lỗi: ' + err.message, 'warning');
+        } finally {
+          btnPull.disabled = false;
+          this.renderSettingsView();
+        }
+      });
+    }
+
+    const btnExport = canvas.querySelector('#btnExportBackup');
     if (btnExport) {
       btnExport.addEventListener('click', () => {
         rung(10);
         const backupData = {
-          version: '3.7',
+          tasks: store.tasks,
+          users: store.users,
+          departments: store.departments,
           exportedAt: new Date().toISOString(),
-          department: currentDept,
-          tasks: store.getAllTasksRaw(),
-          users: store.getAllUsers()
+          version: '3.8'
         };
         const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `TVM_CS3_Backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `backup_thanhvu_cs3_${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        toast('Đã xuất tệp sao lưu dữ liệu thành công!', 'success');
+        toast('Đã tải tệp sao lưu dữ liệu JSON về máy thành công!', 'success');
       });
     }
 
-    // Reset dữ liệu
-    const btnReset = canvas.querySelector('#btnResetAllData');
+    const btnReset = canvas.querySelector('#btnResetData');
     if (btnReset) {
       btnReset.addEventListener('click', () => {
         rung(20);
-        if (confirm('Khôi phục toàn bộ dữ liệu ban đầu? Mọi tác vụ tạo mới sẽ được đặt lại theo mẫu.')) {
-          localStorage.clear();
-          location.reload();
+        if (confirm('Khôi phục dữ liệu gốc mẫu sẽ thiết lập lại toàn bộ công việc và nhân sự về mặc định. Tiếp tục?')) {
+          store.resetDefaults();
+          toast('Đã khôi phục dữ liệu gốc mẫu thành công!', 'info');
+          this.renderSettingsView();
         }
       });
     }
   }
 }
 
+// Khởi chạy khi DOM sẵn sàng
 document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
   app.init();
+  window.TVM_APP = app;
 });

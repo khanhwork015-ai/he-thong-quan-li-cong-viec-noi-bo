@@ -1,7 +1,7 @@
 /**
- * THANH VŨ MEDIC CS3 - SIDEBAR NAVIGATION COMPONENT
+ * THANH VŨ MEDIC CS3 - SIDEBAR NAVIGATION COMPONENT (MOBILE RESPONSIVE DRAWER)
  * Khôi phục tông Vàng Hoàng Kim (#D6A52A / #795900) chuẩn Google Stitch
- * Sidebar sáng sủa, thanh lịch, item active màu Vàng Gold sang trọng
+ * Hỗ trợ giao diện ngăn kéo trượt mượt mà cho Mobile/Tablet và cố định trên Desktop (lg)
  */
 
 import { auth } from '../auth.js';
@@ -15,6 +15,7 @@ export class Sidebar {
     this.onModeChange = onModeChange;
     this.activeNav = 'tong-quan'; // 'tong-quan' | 'cong-viec' | 'nhan-vien' | 'cai-dat'
     this.viewMode = 'quan-ly'; // 'quan-ly' | 'ca-nhan'
+    this.isOpenMobile = false;
   }
 
   setNav(navId) {
@@ -28,6 +29,41 @@ export class Sidebar {
     if (this.onModeChange) this.onModeChange(mode);
   }
 
+  open() {
+    this.isOpenMobile = true;
+    const aside = this.container.querySelector('#appSidebar');
+    const backdrop = this.container.querySelector('#sidebarBackdrop');
+    if (aside) {
+      aside.classList.remove('-translate-x-full');
+      aside.classList.add('translate-x-0');
+    }
+    if (backdrop) {
+      backdrop.classList.remove('hidden');
+      setTimeout(() => backdrop.classList.add('opacity-100'), 10);
+    }
+    document.body.classList.add('overflow-hidden', 'lg:overflow-auto');
+  }
+
+  close() {
+    this.isOpenMobile = false;
+    const aside = this.container.querySelector('#appSidebar');
+    const backdrop = this.container.querySelector('#sidebarBackdrop');
+    if (aside) {
+      aside.classList.remove('translate-x-0');
+      aside.classList.add('-translate-x-full');
+    }
+    if (backdrop) {
+      backdrop.classList.remove('opacity-100');
+      setTimeout(() => backdrop.classList.add('hidden'), 250);
+    }
+    document.body.classList.remove('overflow-hidden', 'lg:overflow-auto');
+  }
+
+  toggle() {
+    if (this.isOpenMobile) this.close();
+    else this.open();
+  }
+
   render() {
     if (!this.container) return;
 
@@ -36,21 +72,32 @@ export class Sidebar {
     const user = auth.getCurrentUser();
 
     this.container.innerHTML = `
-      <aside class="fixed left-0 top-0 h-full w-64 bg-white shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between border-r border-[#e2e8f0] select-none">
+      <!-- BACKDROP CHO MOBILE / TABLET -->
+      <div id="sidebarBackdrop" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300 hidden lg:hidden"></div>
+
+      <!-- SIDEBAR DRAWER CHÍNH -->
+      <aside id="appSidebar" class="fixed left-0 top-0 h-full w-72 sm:w-64 bg-white shadow-2xl lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between border-r border-[#e2e8f0] select-none transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
         <div class="flex flex-col">
-          <!-- LOGO & BRAND (THANH VŨ MEDIC CS3) -->
-          <div class="h-16 px-5 flex items-center gap-3 border-b border-[#f1f5f9]">
-            <div class="w-9 h-9 rounded-xl bg-[#d6a52a] flex items-center justify-center text-white font-extrabold text-[15px] shadow-sm shadow-amber-500/30">
-              TV
+          <!-- LOGO & BRAND (THANH VŨ MEDIC CS3) + NÚT ĐÓNG MOBILE -->
+          <div class="h-16 px-4 sm:px-5 flex items-center justify-between border-b border-[#f1f5f9]">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-[#d6a52a] flex items-center justify-center text-white font-extrabold text-[15px] shadow-sm shadow-amber-500/30 shrink-0">
+                TV
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-bold text-[15px] text-[#0d1c2f] tracking-wide truncate">Thanh Vũ Medic</span>
+                <span class="text-[11px] text-[#795900] uppercase font-bold tracking-wider truncate">Cơ Sở 3 (Cà Mau)</span>
+              </div>
             </div>
-            <div class="flex flex-col min-w-0">
-              <span class="font-bold text-[15px] text-[#0d1c2f] tracking-wide truncate">Thanh Vũ Medic</span>
-              <span class="text-[11px] text-[#795900] uppercase font-bold tracking-wider truncate">Cơ Sở 3 (Cà Mau)</span>
-            </div>
+
+            <!-- NÚT ĐÓNG SIDEBAR TRÊN MOBILE -->
+            <button type="button" class="lg:hidden p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 min-w-[40px] min-h-[40px] flex items-center justify-center" id="btnCloseSidebarMobile" aria-label="Đóng menu">
+              <span class="material-symbols-outlined text-[22px]">close</span>
+            </button>
           </div>
 
           <!-- PHÒNG BAN SELECTOR (HỖ TRỢ ĐA PHÒNG BAN CHO ADMIN) -->
-          <div class="px-4 py-3">
+          <div class="px-3 sm:px-4 py-3">
             <div class="px-3 py-2 bg-[#f8f9ff] hover:bg-[#fffbeb] border border-[#e2e8f0] hover:border-[#d6a52a] rounded-xl flex items-center justify-between cursor-pointer transition-all" id="btnSelectDepartment" title="${canSwitchDept ? 'Bấm để đổi phòng ban (Quyền Admin)' : currentDept.name}">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-[#d6a52a]"></span>
@@ -65,43 +112,43 @@ export class Sidebar {
 
           <!-- NAVIGATION LINKS -->
           <nav class="flex flex-col gap-1 px-3 mt-1">
-            <button type="button" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all ${this.activeNav === 'tong-quan' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="tong-quan">
+            <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'tong-quan' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="tong-quan">
               <span class="material-symbols-outlined text-[20px]">grid_view</span>
-              <span class="text-[13.5px]">Tổng quan</span>
+              <span class="text-[14px]">Tổng quan</span>
             </button>
 
-            <button type="button" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all ${this.activeNav === 'cong-viec' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="cong-viec">
+            <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'cong-viec' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="cong-viec">
               <span class="material-symbols-outlined text-[20px]">task_alt</span>
-              <span class="text-[13.5px]">Công việc</span>
+              <span class="text-[14px]">Công việc</span>
             </button>
 
-            <button type="button" class="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left transition-all ${this.activeNav === 'nhan-vien' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="nhan-vien">
+            <button type="button" class="flex items-center justify-between px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'nhan-vien' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="nhan-vien">
               <div class="flex items-center gap-3">
                 <span class="material-symbols-outlined text-[20px]">group</span>
-                <span class="text-[13.5px]">Nhân sự</span>
+                <span class="text-[14px]">Nhân sự</span>
               </div>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#ffdea9] text-[#5f4100] font-bold">${user.badge}</span>
             </button>
 
-            <button type="button" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all ${this.activeNav === 'cai-dat' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="cai-dat" id="btnNavSettings">
+            <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'cai-dat' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="cai-dat" id="btnNavSettings">
               <span class="material-symbols-outlined text-[20px]">settings</span>
-              <span class="text-[13.5px]">Cài đặt</span>
+              <span class="text-[14px]">Cài đặt</span>
             </button>
           </nav>
         </div>
 
-        <!-- FOOTER: CHẾ ĐỘ HIỂN THỊ [QUẢN LÝ | CÁ NHÂN] & TRẠNG THÁI PWA -->
-        <div class="p-4 flex flex-col gap-3 bg-white border-t border-[#f1f5f9]">
+        <!-- FOOTER: CHẾ ĐỘ HIỂN THỊ [QUẢN LÝ | CÁ NHÂN] & TRẠNG THÁI -->
+        <div class="p-4 flex flex-col gap-3 bg-white border-t border-[#f1f5f9] mb-14 lg:mb-0">
           <div class="p-2 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col gap-1.5">
             <div class="flex items-center justify-between px-1">
               <span class="text-[10.5px] text-[#4f4635] uppercase font-bold tracking-wider">Chế độ xem</span>
               <span class="material-symbols-outlined text-[14px] text-[#817663]">tune</span>
             </div>
             <div class="grid grid-cols-2 p-0.5 bg-[#e6eeff] rounded-lg gap-0.5">
-              <button type="button" class="py-1 text-center text-[11.5px] rounded-md transition-all ${this.viewMode === 'quan-ly' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#4f4635] hover:text-[#0d1c2f]'}" id="btnModeManager">
+              <button type="button" class="py-1.5 text-center text-[12px] rounded-md transition-all min-h-[36px] ${this.viewMode === 'quan-ly' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#4f4635] hover:text-[#0d1c2f]'}" id="btnModeManager">
                 Quản lý
               </button>
-              <button type="button" class="py-1 text-center text-[11.5px] rounded-md transition-all ${this.viewMode === 'ca-nhan' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#4f4635] hover:text-[#0d1c2f]'}" id="btnModePersonal">
+              <button type="button" class="py-1.5 text-center text-[12px] rounded-md transition-all min-h-[36px] ${this.viewMode === 'ca-nhan' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#4f4635] hover:text-[#0d1c2f]'}" id="btnModePersonal">
                 Cá nhân
               </button>
             </div>
@@ -115,7 +162,7 @@ export class Sidebar {
               </span>
               <span class="text-[11px] text-[#64748b] font-medium">SHIN AIOS Ready</span>
             </div>
-            <span class="font-mono-data text-[10.5px] text-[#795900] font-bold">Gold v3.5</span>
+            <span class="font-mono-data text-[10.5px] text-[#795900] font-bold">Gold v3.8</span>
           </div>
         </div>
       </aside>
@@ -130,19 +177,32 @@ export class Sidebar {
         const nav = btn.dataset.nav;
         rung(10);
         this.activeNav = nav;
+        this.close(); // Tự động đóng sidebar trên mobile khi bấm chọn tab
         this.render();
         if (this.onNavChange) this.onNavChange(nav);
       });
     });
 
+    const btnCloseMobile = this.container.querySelector('#btnCloseSidebarMobile');
+    if (btnCloseMobile) {
+      btnCloseMobile.addEventListener('click', () => this.close());
+    }
+
+    const backdrop = this.container.querySelector('#sidebarBackdrop');
+    if (backdrop) {
+      backdrop.addEventListener('click', () => this.close());
+    }
+
     const btnManager = this.container.querySelector('#btnModeManager');
     const btnPersonal = this.container.querySelector('#btnModePersonal');
     if (btnManager) btnManager.addEventListener('click', () => {
       rung(10);
+      this.close();
       this.setMode('quan-ly');
     });
     if (btnPersonal) btnPersonal.addEventListener('click', () => {
       rung(10);
+      this.close();
       this.setMode('ca-nhan');
     });
 
@@ -150,6 +210,7 @@ export class Sidebar {
     if (btnDept) {
       btnDept.addEventListener('click', () => {
         if (auth.canSwitchDepartment()) {
+          this.close();
           this.showDepartmentPickerModal();
         } else {
           toast(`Bạn đang ở: ${auth.getActiveDepartment().name}. Chỉ Admin mới được đổi phòng ban!`, 'info');
@@ -176,7 +237,7 @@ export class Sidebar {
             </div>
             <h3 class="font-bold text-[16px] text-[#0d1c2f]">Chuyển Đổi Phòng Ban (Admin)</h3>
           </div>
-          <button type="button" class="text-gray-400 hover:text-gray-600 text-xl font-bold" id="btnCloseDeptPicker">&times;</button>
+          <button type="button" class="text-gray-400 hover:text-gray-600 text-xl font-bold min-w-[36px] min-h-[36px] flex items-center justify-center" id="btnCloseDeptPicker">&times;</button>
         </div>
 
         <p class="text-[12.5px] text-[#64748b] mb-4">
@@ -185,15 +246,15 @@ export class Sidebar {
 
         <div class="flex flex-col gap-2.5">
           ${DEPARTMENTS.map(d => `
-            <div class="p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${d.id === activeDept.id ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="${d.id}">
+            <div class="p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${d.id === activeDept.id ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="${d.id}">
               <div class="flex items-center gap-3">
-                <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a]"></span>
+                <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] shrink-0"></span>
                 <div>
                   <div class="text-[13.5px] font-bold text-[#0d1c2f]">${d.name} ${d.id === activeDept.id ? '✓' : ''}</div>
                   <div class="text-[11.5px] text-[#64748b]">${d.unit} • ${d.description}</div>
                 </div>
               </div>
-              <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900]">${d.code}</span>
+              <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">${d.code}</span>
             </div>
           `).join('')}
         </div>

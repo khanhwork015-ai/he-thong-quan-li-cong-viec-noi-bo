@@ -6,6 +6,7 @@
  * - Warm Accents: #FFFBEB, #FEF3C7, #FFCD75, #FFDEA9
  * - Background & Surfaces: Nền #F8F9FF, Card #FFFFFF, Đường viền #E2E8F0
  * - Typography: Deep Slate #0D1C2F, Phụ đề #4F4635 & #64748B
+ * - Mobile First: Vùng bấm >= 44x44px, font-size >= 16px chống tự động zoom iOS
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
@@ -65,7 +66,9 @@ html, body {
   color: var(--text-primary);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 ::-webkit-scrollbar {
@@ -151,4 +154,32 @@ html, body {
 
 .modal-overlay.active .modal-card {
   transform: scale(1) translateY(0);
+}
+
+/* ẨN SCROLLBAR NHƯNG VẪN CUỘN ĐƯỢC CHO HORIZONTAL TABS TRÊN MOBILE */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* SAFE AREA CHO IPHONE X / 11 / 12 / 13 / 14 / 15 / 16 (HOME INDICATOR & NOTCH) */
+.safe-area-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+}
+
+/* CHỐNG TỰ ĐỘNG PHÓNG TO (AUTO-ZOOM) TRÊN IOS SAFARI TRÊN MỌI THIẾT BỊ DI ĐỘNG */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  input[type="url"],
+  input[type="file"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
