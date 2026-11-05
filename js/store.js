@@ -25,19 +25,79 @@ export class Store {
     }
   }
 
+  // Tải dữ liệu từ Google Sheet về
   async syncFromCloudIfAvailable() {
-    if (appScriptBridge.isConnected()) {
-      const cloudData = await appScriptBridge.fetchCloudData();
-      if (cloudData) {
-        if (cloudData.tasks && cloudData.tasks.length > 0) {
-          localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(cloudData.tasks));
-        }
-        if (cloudData.users && cloudData.users.length > 0) {
-          localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cloudData.users));
-        }
-        window.dispatchEvent(new CustomEvent('tvm:data_changed'));
-      }
+    if (!appScriptBridge.isConnected()) {
+      return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
     }
+
+    const cloudData = await appScriptBridge.fetchCloudData();
+    if (cloudData && cloudData.success) {
+      let taskCount = 0;
+      let userCount = 0;
+
+      if (cloudData.tasks && cloudData.tasks.length > 0) {
+        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(cloudData.tasks));
+        taskCount = cloudData.tasks.length;
+      }
+      if (cloudData.users && cloudData.users.length > 0) {
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cloudData.users));
+        userCount = cloudData.users.length;
+      }
+
+      window.dispatchEvent(new CustomEvent('tvm:data_changed'));
+      window.dispatchEvent(new CustomEvent('tvm:users_changed'));
+
+      return {
+        success: true,
+        taskCount,
+        userCount,
+        message: `Đồng bộ thành công! Đã nạp ${taskCount} công việc và ${userCount} nhân sự từ Google Sheet.`
+      };
+    } else {
+      return {
+        success: false,
+        message: cloudData ? (cloudData.message || cloudData.error) : 'Lỗi kết nối tới Apps Script'
+      };
+    }
+  }
+
+  // Đẩy toàn bộ dữ liệu mẫu / hiện tại từ Web App lên Google Sheet
+  async pushAllToCloud() {
+    if (!appScriptBridge.isConnected()) {
+      return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
+    }
+
+    const tasks = this.getAllTasksRaw();
+    const users = this.getAllUsers();
+    const success = await appScriptBridge.pushAllToCloud(tasks, users);
+    return {
+      success,
+      taskCount: tasks.length,
+      userCount: users.length,
+      message: success 
+        ? `Đã đẩy ${tasks.length} công việc và ${users.length} nhân sự lên Google Sheet thành công!` 
+        : 'Gửi dữ liệu lên Google Sheet thất bại'
+    };
+  }
+
+  // Khởi tạo bảng dữ liệu mẫu trên Google Sheet
+  async seedCloudData() {
+    if (!appScriptBridge.isConnected()) {
+      return { success: false, message: 'Chưa cấu hình URL Google Apps Script' };
+    }
+    const res = await appScriptBridge.seedCloudData();
+    if (res && res.success) {
+      if (res.tasks && res.tasks.length > 0) {
+        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(res.tasks));
+      }
+      if (res.users && res.users.length > 0) {
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(res.users));
+      }
+      window.dispatchEvent(new CustomEvent('tvm:data_changed'));
+      return { success: true, message: 'Đã khởi tạo bảng dữ liệu mẫu trên Google Sheet!' };
+    }
+    return { success: false, message: 'Không thể khởi tạo trên Google Sheet' };
   }
 
   // --- QUẢN LÝ NHÂN SỰ (CRUD USERS) ---

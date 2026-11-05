@@ -25,7 +25,7 @@ export class SettingsModal {
 
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 active" id="settingsOverlay">
-        <div class="modal-card bg-white rounded-2xl p-6 max-w-xl w-full shadow-2xl border border-[#e2e8f0] max-h-[90vh] overflow-y-auto">
+        <div class="modal-card bg-white rounded-2xl p-6 max-w-xl w-full shadow-2xl border border-[#e2e8f0] max-h-[92vh] overflow-y-auto">
           <!-- HEADER -->
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] mb-4">
             <div class="flex items-center gap-2.5">
@@ -62,19 +62,28 @@ export class SettingsModal {
                     Lưu URL
                   </button>
                 </div>
-                <p class="text-[11px] text-[#64748b] mt-1.5 leading-relaxed">
-                  Dán URL Web App triển khai từ Google Sheets để đồng bộ 2 chiều dữ liệu công việc và danh bạ nhân sự thực tế.
-                </p>
+                <div class="mt-2 p-2.5 rounded-lg bg-[#fffbeb] border border-[#fef3c7] text-[11.5px] text-[#795900] leading-relaxed">
+                  💡 <strong>Lưu ý quan trọng khi Deploy Apps Script:</strong> Mục <em>"Who has access (Ai có quyền truy cập)"</em> phải chọn là <strong>"Anyone (Bất kỳ ai)"</strong> để trình duyệt không bị Google chặn bảo mật CORS.
+                </div>
               </div>
 
-              <div class="flex items-center justify-between pt-2 border-t border-[#e2e8f0]">
+              <!-- HÀNG NÚT ĐỒNG BỘ 2 CHIỀU -->
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 border-t border-[#e2e8f0]">
                 <span class="text-[11.5px] text-[#64748b]">
-                  Lần đồng bộ gần nhất: <strong>${appScriptBridge.lastSyncTime ? new Date(appScriptBridge.lastSyncTime).toLocaleTimeString('vi-VN') : 'Chưa có'}</strong>
+                  Lần đồng bộ gần nhất: <strong id="lblLastSync">${appScriptBridge.lastSyncTime ? new Date(appScriptBridge.lastSyncTime).toLocaleTimeString('vi-VN') + ' ' + new Date(appScriptBridge.lastSyncTime).toLocaleDateString('vi-VN') : 'Chưa có'}</strong>
                 </span>
-                <button type="button" class="px-3 py-1.5 rounded-xl bg-white border border-[#e2e8f0] text-[11.5px] font-bold text-[#0d1c2f] hover:bg-gray-50 flex items-center gap-1 shadow-xs" id="btnModalSyncNow">
-                  <span class="material-symbols-outlined text-[15px] text-[#795900]">sync</span>
-                  <span>Đồng bộ ngay</span>
-                </button>
+                
+                <div class="flex items-center gap-2">
+                  <button type="button" class="px-3 py-1.5 rounded-xl bg-white border border-[#d6a52a] text-[11.5px] font-bold text-[#795900] hover:bg-[#fffbeb] flex items-center justify-center gap-1 shadow-xs transition-all" id="btnModalPushAll" title="Đẩy toàn bộ công việc và nhân viên hiện có lên Google Sheet">
+                    <span class="material-symbols-outlined text-[15px]">upload</span>
+                    <span>Đẩy lên Sheet</span>
+                  </button>
+
+                  <button type="button" class="px-3 py-1.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[11.5px] font-bold hover:bg-[#795900] hover:text-white flex items-center justify-center gap-1 shadow-xs transition-all" id="btnModalSyncNow" title="Tải công việc mới nhất từ Google Sheet về">
+                    <span class="material-symbols-outlined text-[15px]">sync</span>
+                    <span>Tải về ngay</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -152,7 +161,7 @@ export class SettingsModal {
     const btnSave = this.container.querySelector('#btnModalSaveGas');
     const inputUrl = this.container.querySelector('#modalInputGasUrl');
     if (btnSave && inputUrl) {
-      btnSave.addEventListener('click', () => {
+      btnSave.addEventListener('click', async () => {
         rung(10);
         const url = inputUrl.value.trim();
         appScriptBridge.setEndpoint(url);
@@ -162,6 +171,7 @@ export class SettingsModal {
       });
     }
 
+    // Nút tải dữ liệu từ Google Sheet về
     const btnSync = this.container.querySelector('#btnModalSyncNow');
     if (btnSync) {
       btnSync.addEventListener('click', async () => {
@@ -170,11 +180,45 @@ export class SettingsModal {
           toast('Vui lòng nhập URL Web App Endpoint trước khi đồng bộ!', 'warning');
           return;
         }
-        toast('Đang đồng bộ dữ liệu từ Google Sheets...', 'info');
-        await store.syncFromCloudIfAvailable();
-        toast('Đồng bộ dữ liệu thành công!', 'success');
+
+        btnSync.disabled = true;
+        btnSync.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">sync</span><span>Đang tải...</span>';
+        toast('Đang kết nối Google Sheet để tải dữ liệu...', 'info');
+
+        const result = await store.syncFromCloudIfAvailable();
+        btnSync.disabled = false;
+        btnSync.innerHTML = '<span class="material-symbols-outlined text-[15px]">sync</span><span>Tải về ngay</span>';
+
+        if (result.success) {
+          toast(result.message, 'success');
+          this.show();
+          if (this.onSettingsUpdated) this.onSettingsUpdated();
+        } else {
+          toast(result.message || 'Không thể lấy dữ liệu từ Google Sheet.', 'warning');
+        }
+      });
+    }
+
+    // Nút đẩy dữ liệu từ Web App lên Google Sheet
+    const btnPush = this.container.querySelector('#btnModalPushAll');
+    if (btnPush) {
+      btnPush.addEventListener('click', async () => {
+        rung(15);
+        if (!appScriptBridge.isConnected()) {
+          toast('Vui lòng nhập URL Web App Endpoint trước!', 'warning');
+          return;
+        }
+
+        btnPush.disabled = true;
+        btnPush.innerHTML = '<span class="material-symbols-outlined text-[15px] animate-spin">sync</span><span>Đang đẩy...</span>';
+        toast('Đang đẩy dữ liệu lên Google Sheet...', 'info');
+
+        const result = await store.pushAllToCloud();
+        btnPush.disabled = false;
+        btnPush.innerHTML = '<span class="material-symbols-outlined text-[15px]">upload</span><span>Đẩy lên Sheet</span>';
+
+        toast(result.message, result.success ? 'success' : 'warning');
         this.show();
-        if (this.onSettingsUpdated) this.onSettingsUpdated();
       });
     }
 
