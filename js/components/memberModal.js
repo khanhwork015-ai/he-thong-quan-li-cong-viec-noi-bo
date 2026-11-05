@@ -1,7 +1,7 @@
 /**
  * THANH VŨ MEDIC CS3 - MEMBER CREATE & EDIT MODAL COMPONENT
  * Cho phép Trưởng phòng và Admin thêm / cập nhật nhân sự trong phòng ban
- * Chuẩn Slate Blue + Indigo
+ * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
  */
 
 import { auth } from '../auth.js';
@@ -33,17 +33,17 @@ export class MemberModal {
     const canSelectDept = auth.isAdmin();
 
     this.container.innerHTML = `
-      <div class="modal-overlay fixed inset-0 z-[100] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 active" id="memberOverlay">
-        <div class="modal-card bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#E2E8F0] max-h-[90vh] overflow-y-auto">
+      <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 active" id="memberOverlay">
+        <div class="modal-card bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#e2e8f0] max-h-[90vh] overflow-y-auto">
           <!-- HEADER -->
-          <div class="flex items-center justify-between pb-3.5 border-b border-[#F1F5F9] mb-4">
+          <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] mb-4">
             <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center font-bold">
+              <div class="w-9 h-9 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7]">
                 <span class="material-symbols-outlined text-[22px]">person_add</span>
               </div>
               <div>
-                <h3 class="font-bold text-[16.5px] text-[#0F172A]">${this.editingUser ? 'Cập Nhật Nhân Sự' : 'Thêm Nhân Viên Mới'}</h3>
-                <span class="text-[11.5px] text-[#2563EB] font-semibold">${currentDept.name}</span>
+                <h3 class="font-bold text-[16.5px] text-[#0d1c2f]">${this.editingUser ? 'Cập Nhật Nhân Sự' : 'Thêm Nhân Viên Mới'}</h3>
+                <span class="text-[11.5px] text-[#795900] font-semibold">${currentDept.name}</span>
               </div>
             </div>
             <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold" id="btnCloseMemberModal">&times;</button>
@@ -52,10 +52,10 @@ export class MemberModal {
           <!-- FORM -->
           <form id="formMember" class="flex flex-col gap-4">
             <!-- AVATAR PICKER -->
-            <div class="flex items-center gap-3 p-3 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0]">
+            <div class="flex items-center gap-3 p-3 bg-[#f8f9ff] rounded-2xl border border-[#e2e8f0]">
               <img id="memberAvatarPreview" src="${this.editingUser ? this.editingUser.avatar : PRESET_AVATARS[0]}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white shrink-0" />
               <div class="flex-1 min-w-0">
-                <input type="url" id="memberAvatarUrl" value="${this.editingUser ? esc(this.editingUser.avatar) : PRESET_AVATARS[0]}" placeholder="URL ảnh đại diện" class="w-full h-8 px-2.5 rounded-lg border border-[#E2E8F0] text-[12px] outline-none focus:border-[#2563EB] bg-white" />
+                <input type="url" id="memberAvatarUrl" value="${this.editingUser ? esc(this.editingUser.avatar) : PRESET_AVATARS[0]}" placeholder="URL ảnh đại diện" class="w-full h-8 px-2.5 rounded-lg border border-[#e2e8f0] text-[12px] outline-none focus:border-[#d6a52a] bg-white" />
                 <div class="flex items-center gap-1.5 mt-2 overflow-x-auto">
                   ${PRESET_AVATARS.map(url => `
                     <img src="${url}" class="w-6 h-6 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform ring-1 ring-gray-300 select-avatar-item" data-avatar="${url}" />
@@ -67,29 +67,29 @@ export class MemberModal {
             <!-- NAME & TITLE -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0F172A] mb-1">Họ và tên *</label>
-                <input type="text" id="memberName" required value="${this.editingUser ? esc(this.editingUser.name) : ''}" placeholder="Ví dụ: BS. Nguyễn Văn A" class="w-full h-10 px-3.5 rounded-xl border border-[#E2E8F0] text-[13.5px] outline-none focus:border-[#2563EB] bg-[#F8FAFC] focus:bg-white" />
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Họ và tên *</label>
+                <input type="text" id="memberName" required value="${this.editingUser ? esc(this.editingUser.name) : ''}" placeholder="Ví dụ: BS. Nguyễn Văn A" class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0F172A] mb-1">Chức danh / Vị trí *</label>
-                <input type="text" id="memberTitle" required value="${this.editingUser ? esc(this.editingUser.title) : 'Chuyên viên'}" placeholder="Chuyên viên CSKH, Bác sĩ..." class="w-full h-10 px-3.5 rounded-xl border border-[#E2E8F0] text-[13.5px] outline-none focus:border-[#2563EB] bg-[#F8FAFC] focus:bg-white" />
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Chức danh / Vị trí *</label>
+                <input type="text" id="memberTitle" required value="${this.editingUser ? esc(this.editingUser.title) : 'Chuyên viên'}" placeholder="Chuyên viên CSKH, Bác sĩ..." class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
             </div>
 
             <!-- ROLE & DEPARTMENT -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0F172A] mb-1">Vai trò phân quyền *</label>
-                <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#E2E8F0] text-[13px] outline-none focus:border-[#2563EB] bg-[#F8FAFC] focus:bg-white">
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Vai trò phân quyền *</label>
+                <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white">
                   <option value="MEMBER" ${this.editingUser && this.editingUser.role === 'MEMBER' ? 'selected' : ''}>Chuyên viên / Nhân viên</option>
                   <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>Trưởng phòng / Quản lý</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0F172A] mb-1">Thuộc phòng ban *</label>
-                <select id="memberDept" class="w-full h-10 px-3 rounded-xl border border-[#E2E8F0] text-[13px] outline-none focus:border-[#2563EB] bg-[#F8FAFC] focus:bg-white" ${!canSelectDept ? 'disabled' : ''}>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Thuộc phòng ban *</label>
+                <select id="memberDept" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" ${!canSelectDept ? 'disabled' : ''}>
                   ${DEPARTMENTS.map(d => `
                     <option value="${d.id}" ${(this.editingUser ? this.editingUser.departmentId === d.id : currentDept.id === d.id) ? 'selected' : ''}>${d.name}</option>
                   `).join('')}
@@ -100,22 +100,22 @@ export class MemberModal {
             <!-- CONTACT -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0F172A] mb-1">Số điện thoại</label>
-                <input type="tel" id="memberPhone" value="${this.editingUser ? esc(this.editingUser.phone || '') : ''}" placeholder="09xx xxx xxx" class="w-full h-10 px-3.5 rounded-xl border border-[#E2E8F0] text-[13.5px] outline-none focus:border-[#2563EB] bg-[#F8FAFC] focus:bg-white" />
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Số điện thoại</label>
+                <input type="tel" id="memberPhone" value="${this.editingUser ? esc(this.editingUser.phone || '') : ''}" placeholder="09xx xxx xxx" class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0F172A] mb-1">Email nội bộ</label>
-                <input type="email" id="memberEmail" value="${this.editingUser ? esc(this.editingUser.email || '') : ''}" placeholder="name@thanhvumedic.vn" class="w-full h-10 px-3.5 rounded-xl border border-[#E2E8F0] text-[13.5px] outline-none focus:border-[#2563EB] bg-[#F8FAFC] focus:bg-white" />
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Email nội bộ</label>
+                <input type="email" id="memberEmail" value="${this.editingUser ? esc(this.editingUser.email || '') : ''}" placeholder="name@thanhvumedic.vn" class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
             </div>
 
             <!-- BUTTONS -->
-            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#F1F5F9] mt-2">
-              <button type="button" class="px-4 py-2 rounded-xl border border-[#E2E8F0] text-[#64748B] text-[13px] font-semibold hover:bg-gray-50" id="btnCancelMember">
+            <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-2">
+              <button type="button" class="px-4 py-2 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50" id="btnCancelMember">
                 Hủy bỏ
               </button>
-              <button type="submit" class="px-5 py-2 rounded-xl bg-[#2563EB] text-white text-[13px] font-bold hover:bg-[#1D4ED8] shadow-sm shadow-blue-500/20">
+              <button type="submit" class="px-5 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all">
                 ${this.editingUser ? 'Lưu Thông Tin' : 'Tạo Nhân Viên'}
               </button>
             </div>
