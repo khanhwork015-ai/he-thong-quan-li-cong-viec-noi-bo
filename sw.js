@@ -3,7 +3,7 @@
  * Đảm bảo luôn cập nhật mã nguồn mới nhất, dọn sạch cache cũ
  */
 
-const CACHE_NAME = 'tvm-gold-stitch-v3.6';
+const CACHE_NAME = 'tvm-gold-stitch-v3.7';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

@@ -1,6 +1,6 @@
 /**
  * THANH VŨ MEDIC CS3 - MAIN APPLICATION CONTROLLER
- * Tích hợp Quản lý nhân viên (Thêm/Sửa/Xóa), Profile Modal, Settings Modal & Google Apps Script
+ * Tích hợp Quản lý nhân viên (Thêm/Sửa/Xóa), Profile Modal, Settings Grid & Google Apps Script
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
@@ -98,10 +98,8 @@ class App {
     rung(15);
     this.currentNav = navId;
 
-    // Khi bấm Cài Đặt: Vừa bật popup SettingsModal vừa cập nhật view
     if (navId === 'cai-dat') {
       toast('Đang mở Cài đặt hệ thống & Tích hợp Cloud...', 'info');
-      this.settingsModal.show();
     }
 
     this.renderCurrentView();
@@ -281,91 +279,179 @@ class App {
     });
   }
 
-  // --- MÀN HÌNH CÀI ĐẶT TRÊN CANVAS (KẾT NỐI GOOGLE APPS SCRIPT / SHIN AIOS) ---
+  // --- MÀN HÌNH CÀI ĐẶT 2 CỘT CÂN XỨNG (GRID LAYOUT KHÔNG DỒN TRÁI) ---
   renderSettingsView() {
     const canvas = document.getElementById('main-content-canvas');
     const endpoint = appScriptBridge.getEndpoint();
     const isConnected = appScriptBridge.isConnected();
+    const currentDept = auth.getActiveDepartment();
 
     canvas.innerHTML = `
-      <div class="flex flex-col gap-5 animate-fade-in max-w-4xl">
-        <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex items-center justify-between">
-          <div>
-            <h1 class="text-[22px] font-bold text-[#0d1c2f]">Cài Đặt Hệ Thống &amp; Cấu Hình</h1>
-            <p class="text-[13px] text-[#64748b] mt-0.5">Kết nối dữ liệu thực với Google Sheets và cấu hình hệ thống</p>
+      <div class="flex flex-col gap-6 animate-fade-in w-full max-w-7xl">
+        <!-- 1. HEADER BANNER CÀI ĐẶT -->
+        <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shadow-xs">
+              <span class="material-symbols-outlined text-[26px]">tune</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="font-mono-data text-[11px] text-[#795900] font-bold bg-[#fffbeb] px-2 py-0.5 rounded border border-[#fef3c7]">${currentDept.code}</span>
+                <span class="text-[12px] text-[#64748b]">• Trung tâm điều phối hệ thống</span>
+              </div>
+              <h1 class="text-[22px] font-extrabold text-[#0d1c2f] tracking-tight">Cài Đặt Hệ Thống &amp; Tích Hợp Nền Tảng</h1>
+              <p class="text-[13px] text-[#64748b]">Quản lý kết nối dữ liệu Google Sheets / SHIN AIOS, bảo mật phân quyền và sao lưu cơ sở dữ liệu</p>
+            </div>
           </div>
-          <button type="button" class="px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white flex items-center gap-1.5 shadow-xs" id="btnTriggerModalSettings">
-            <span class="material-symbols-outlined text-[18px]">open_in_full</span>
-            <span>Mở Cửa Sổ Cài Đặt</span>
+
+          <button type="button" class="px-4 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white flex items-center justify-center gap-2 shadow-xs transition-all shrink-0" id="btnTriggerModalSettings">
+            <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+            <span>Mở Cửa Sổ Popup</span>
           </button>
         </div>
 
-        <!-- GOOGLE APPS SCRIPT CARD -->
-        <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
-          <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7]">
-                <span class="material-symbols-outlined text-[22px]">cloud_sync</span>
+        <!-- 2. BỐ CỤC 2 CỘT CÂN ĐỐI (GRID 12 CỘT: 7 CỘT TRÁI & 5 CỘT PHẢI) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          <!-- CỘT TRÁI (COL-SPAN-7): TÍCH HỢP CLOUD GOOGLE APPS SCRIPT -->
+          <div class="lg:col-span-7 flex flex-col gap-6">
+            
+            <!-- THẺ KẾT NỐI CLOUD -->
+            <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
+              <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7]">
+                    <span class="material-symbols-outlined text-[22px]">cloud_sync</span>
+                  </div>
+                  <div>
+                    <h3 class="text-[15.5px] font-bold text-[#0d1c2f]">Cổng Kết Nối Google Sheets (Apps Script Webhook)</h3>
+                    <p class="text-[12px] text-[#64748b]">Đồng bộ 2 chiều dữ liệu thực tế với Google Sheets tương tự SHIN AIOS</p>
+                  </div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-[11.5px] font-bold shrink-0 ${isConnected ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#fffbeb] text-[#795900] border border-[#fef3c7]'}">
+                  ${isConnected ? '● Đã kết nối Cloud' : '○ Chế độ LocalStorage'}
+                </span>
               </div>
+
               <div>
-                <h3 class="text-[15px] font-bold text-[#0d1c2f]">Cổng Kết Nối Google Sheets (Apps Script Webhook)</h3>
-                <p class="text-[12px] text-[#64748b]">Đồng bộ bảng công việc và danh bạ nhân sự thực tế</p>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1.5">URL Google Apps Script Web App Endpoint</label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input type="url" id="inputGasUrl" value="${esc(endpoint)}" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
+                  <button type="button" class="px-5 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[13px] hover:bg-[#795900] hover:text-white transition-all shrink-0 shadow-xs" id="btnSaveGasUrl">
+                    Lưu URL
+                  </button>
+                </div>
+                
+                <div class="mt-3 p-3 rounded-xl bg-[#fffbeb] border border-[#fef3c7] text-[12px] text-[#795900] leading-relaxed flex items-start gap-2">
+                  <span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">info</span>
+                  <span><strong>Lưu ý quan trọng khi triển khai:</strong> Trong cài đặt Deploy của Apps Script, mục <em>"Who has access (Ai có quyền truy cập)"</em> BẮT BUỘC chọn là <strong>"Anyone (Bất kỳ ai)"</strong> để trình duyệt không bị lỗi chặn bảo mật CORS.</span>
+                </div>
+              </div>
+
+              <!-- HÀNG THAO TÁC ĐỒNG BỘ 2 CHIỀU -->
+              <div class="p-4 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div class="text-[12.5px] text-[#0d1c2f]">
+                  Lần đồng bộ gần nhất: <br />
+                  <strong class="text-[#795900] font-mono-data">${appScriptBridge.lastSyncTime ? new Date(appScriptBridge.lastSyncTime).toLocaleString('vi-VN') : 'Chưa có lượt đồng bộ nào'}</strong>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button type="button" class="px-4 py-2.5 rounded-xl bg-white border border-[#d6a52a] text-[12px] font-bold text-[#795900] hover:bg-[#fffbeb] flex items-center justify-center gap-1.5 shadow-xs transition-all" id="btnPushToSheet">
+                    <span class="material-symbols-outlined text-[17px]">upload</span>
+                    <span>Đẩy lên Sheet</span>
+                  </button>
+
+                  <button type="button" class="px-4 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[12px] font-bold hover:bg-[#795900] hover:text-white flex items-center justify-center gap-1.5 shadow-xs transition-all" id="btnManualSync">
+                    <span class="material-symbols-outlined text-[17px]">sync</span>
+                    <span>Tải về ngay</span>
+                  </button>
+                </div>
               </div>
             </div>
-            <span class="px-3 py-1 rounded-full text-[11.5px] font-bold ${isConnected ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-[#fffbeb] text-[#795900] border border-[#fef3c7]'}">
-              ${isConnected ? '● Đã kết nối Cloud' : '○ Chế độ LocalStorage'}
-            </span>
-          </div>
 
-          <div>
-            <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1.5">URL Google Apps Script Web App Endpoint</label>
-            <div class="flex gap-2">
-              <input type="url" id="inputGasUrl" value="${esc(endpoint)}" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff]" />
-              <button type="button" class="px-5 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[13px] hover:bg-[#795900] hover:text-white transition-colors shrink-0 shadow-xs" id="btnSaveGasUrl">
-                Lưu &amp; Đồng Bộ
-              </button>
+            <!-- THẺ HƯỚNG DẪN TRIỂN KHAI 3 BƯỚC -->
+            <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3">
+              <h3 class="text-[15px] font-bold text-[#0d1c2f] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#795900] text-[20px]">menu_book</span>
+                Hướng Dẫn Triển Khai Nhanh 3 Bước Với Google Sheets
+              </h3>
+              <ol class="list-decimal list-inside space-y-2 text-[12.5px] text-[#4f4635] leading-relaxed">
+                <li>Mở Google Spreadsheet mới -> Vào menu <strong>Tiện ích mở rộng -> Apps Script</strong>.</li>
+                <li>Dán toàn bộ mã nguồn tại file <code>google-apps-script/Code.gs</code> vào và bấm Lưu.</li>
+                <li>Bấm <strong>Deploy -> New deployment -> Web app</strong> (chọn Execute as: <em>Me</em>, Who has access: <em>Anyone</em>) rồi copy link Web App dán vào ô bên trên.</li>
+              </ol>
             </div>
-            <p class="text-[11.5px] text-[#64748b] mt-2 leading-relaxed">
-              Mã nguồn Apps Script mẫu sẵn sàng tại <code>google-apps-script/Code.gs</code>. Chỉ cần dán vào Apps Script của Google Sheets và Deploy dưới dạng Web App.
-            </p>
           </div>
 
-          <div class="p-4 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between">
-            <div class="text-[12.5px] text-[#0d1c2f]">
-              Lần đồng bộ gần nhất: <strong>${appScriptBridge.lastSyncTime ? new Date(appScriptBridge.lastSyncTime).toLocaleString('vi-VN') : 'Chưa đồng bộ'}</strong>
+          <!-- CỘT PHẢI (COL-SPAN-5): THÔNG TIN NỀN TẢNG, PHÂN QUYỀN & SAO LƯU -->
+          <div class="lg:col-span-5 flex flex-col gap-6">
+
+            <!-- THẺ THÔNG TIN NỀN TẢNG & THƯƠNG HIỆU -->
+            <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
+              <h3 class="text-[15px] font-bold text-[#0d1c2f] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#795900] text-[20px]">verified</span>
+                Nhận Diện Thương Hiệu &amp; Giao Diện
+              </h3>
+
+              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
+                <span>Tông màu chủ đạo:</span>
+                <strong class="text-[#795900] flex items-center gap-1.5">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] inline-block shadow-xs"></span>
+                  Google Stitch Gold (#D6A52A)
+                </strong>
+              </div>
+
+              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
+                <span>Kiểu chữ tiêu chuẩn:</span>
+                <strong class="text-[#0d1c2f]">Plus Jakarta Sans &amp; Mono</strong>
+              </div>
+
+              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
+                <span>Đơn vị vận hành:</span>
+                <strong class="text-[#0d1c2f]">Thanh Vũ Medic - CS3</strong>
+              </div>
+
+              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
+                <span>Phân quyền bảo mật:</span>
+                <strong class="text-[#16a34a]">RBAC 3 Cấp (Admin / TP / NV)</strong>
+              </div>
+
+              <div class="text-[13px] text-[#64748b] flex justify-between py-1.5">
+                <span>Cầu nối hệ sinh thái:</span>
+                <strong class="font-mono-data text-[#0d1c2f]">SHIN AIOS v2.0 Bridge</strong>
+              </div>
             </div>
-            <button type="button" class="px-4 py-2 rounded-xl bg-white border border-[#e2e8f0] text-[12.5px] font-bold text-[#0d1c2f] hover:bg-gray-50 flex items-center gap-1.5 shadow-xs" id="btnManualSync">
-              <span class="material-symbols-outlined text-[17px] text-[#795900]">sync</span>
-              <span>Đồng bộ ngay</span>
-            </button>
-          </div>
-        </div>
 
-        <!-- SYSTEM INFORMATION -->
-        <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3">
-          <h3 class="text-[14.5px] font-bold text-[#0d1c2f]">Thông Tin Nền Tảng</h3>
-          <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
-            <span>Giao diện &amp; Màu sắc:</span>
-            <strong class="text-[#795900]">Google Stitch Clinical Gold (#D6A52A / #795900)</strong>
-          </div>
-          <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
-            <span>Đơn vị vận hành:</span>
-            <strong class="text-[#0d1c2f]">Bệnh viện Đa khoa Thanh Vũ Medic Cơ Sở 3 (Cà Mau)</strong>
-          </div>
-          <div class="text-[13px] text-[#64748b] flex justify-between py-1.5 border-b border-[#f1f5f9]">
-            <span>Phân quyền bảo mật:</span>
-            <strong class="text-[#16a34a]">3 Cấp: Admin (Toàn quyền) • Trưởng phòng • Nhân viên</strong>
-          </div>
+            <!-- THẺ TRUNG TÂM SAO LƯU & DỮ LIỆU HỆ THỐNG -->
+            <div class="bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
+              <h3 class="text-[15px] font-bold text-[#0d1c2f] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#64748b] text-[20px]">save</span>
+                Trung Tâm Quản Trị &amp; Sao Lưu Dữ Liệu
+              </h3>
+              
+              <p class="text-[12px] text-[#64748b] leading-relaxed">
+                Tải tệp JSON chứa toàn bộ danh bạ nhân sự và nhật ký công việc về máy tính để bảo đảm an toàn dữ liệu định kỳ.
+              </p>
 
-          <div class="pt-3">
-            <button type="button" class="px-4 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-[12.5px] font-bold hover:bg-red-100 transition-colors" id="btnResetAllData">
-              🔄 Khôi phục dữ liệu gốc mẫu
-            </button>
+              <div class="flex flex-col gap-2 pt-1">
+                <button type="button" class="w-full py-2.5 rounded-xl bg-white border border-[#e2e8f0] text-[#0d1c2f] text-[12.5px] font-bold hover:bg-[#f8f9ff] flex items-center justify-center gap-2 shadow-xs transition-colors" id="btnExportBackupJson">
+                  <span class="material-symbols-outlined text-[18px] text-[#795900]">download</span>
+                  <span>Xuất Tệp Sao Lưu (Backup JSON)</span>
+                </button>
+
+                <button type="button" class="w-full py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-[12.5px] font-bold hover:bg-red-100 flex items-center justify-center gap-2 transition-colors" id="btnResetAllData">
+                  <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                  <span>Khôi phục dữ liệu gốc mẫu</span>
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
     `;
 
+    // Bind events
     const btnTrigger = canvas.querySelector('#btnTriggerModalSettings');
     if (btnTrigger) {
       btnTrigger.addEventListener('click', () => {
@@ -381,11 +467,11 @@ class App {
         const url = inputUrl.value.trim();
         appScriptBridge.setEndpoint(url);
         toast('Đã lưu cấu hình Google Apps Script Endpoint!', 'success');
-        store.syncFromCloudIfAvailable();
         this.renderSettingsView();
       });
     }
 
+    // Tải về từ Google Sheet
     const btnSync = canvas.querySelector('#btnManualSync');
     if (btnSync) {
       btnSync.addEventListener('click', async () => {
@@ -394,18 +480,70 @@ class App {
           toast('Vui lòng nhập URL Web App Endpoint trước khi đồng bộ!', 'warning');
           return;
         }
-        toast('Đang đồng bộ dữ liệu từ Google Sheets...', 'info');
-        await store.syncFromCloudIfAvailable();
-        toast('Đồng bộ dữ liệu thành công!', 'success');
+        btnSync.disabled = true;
+        btnSync.innerHTML = '<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang tải...</span>';
+        toast('Đang kết nối Google Sheets để tải dữ liệu...', 'info');
+
+        const res = await store.syncFromCloudIfAvailable();
+        btnSync.disabled = false;
+        btnSync.innerHTML = '<span class="material-symbols-outlined text-[17px]">sync</span><span>Tải về ngay</span>';
+
+        toast(res.message, res.success ? 'success' : 'warning');
         this.renderSettingsView();
       });
     }
 
+    // Đẩy lên Google Sheet
+    const btnPush = canvas.querySelector('#btnPushToSheet');
+    if (btnPush) {
+      btnPush.addEventListener('click', async () => {
+        rung(15);
+        if (!appScriptBridge.isConnected()) {
+          toast('Vui lòng nhập URL Web App Endpoint trước!', 'warning');
+          return;
+        }
+        btnPush.disabled = true;
+        btnPush.innerHTML = '<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang đẩy...</span>';
+        toast('Đang đẩy dữ liệu lên Google Sheets...', 'info');
+
+        const res = await store.pushAllToCloud();
+        btnPush.disabled = false;
+        btnPush.innerHTML = '<span class="material-symbols-outlined text-[17px]">upload</span><span>Đẩy lên Sheet</span>';
+
+        toast(res.message, res.success ? 'success' : 'warning');
+        this.renderSettingsView();
+      });
+    }
+
+    // Xuất Backup JSON
+    const btnExport = canvas.querySelector('#btnExportBackupJson');
+    if (btnExport) {
+      btnExport.addEventListener('click', () => {
+        rung(10);
+        const backupData = {
+          version: '3.7',
+          exportedAt: new Date().toISOString(),
+          department: currentDept,
+          tasks: store.getAllTasksRaw(),
+          users: store.getAllUsers()
+        };
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `TVM_CS3_Backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('Đã xuất tệp sao lưu dữ liệu thành công!', 'success');
+      });
+    }
+
+    // Reset dữ liệu
     const btnReset = canvas.querySelector('#btnResetAllData');
     if (btnReset) {
       btnReset.addEventListener('click', () => {
         rung(20);
-        if (confirm('Khôi phục toàn bộ dữ liệu ban đầu? Các dữ liệu tạm sẽ được đặt lại.')) {
+        if (confirm('Khôi phục toàn bộ dữ liệu ban đầu? Mọi tác vụ tạo mới sẽ được đặt lại theo mẫu.')) {
           localStorage.clear();
           location.reload();
         }

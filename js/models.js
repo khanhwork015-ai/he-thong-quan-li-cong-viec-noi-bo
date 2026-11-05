@@ -47,6 +47,10 @@ export const USERS = [
     unit: 'Tập đoàn Y tế Thanh Vũ Medic',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
     badge: 'Admin Hệ Thống',
+    phone: '0913 888 999',
+    email: 'septam@thanhvumedic.vn',
+    dob: '1978-05-18',
+    hometown: 'Cà Mau',
     pin: '1234'
   },
   // 2. TRƯỞNG PHÒNG PTKH (Theo đúng thiết kế Google Stitch)
@@ -58,7 +62,11 @@ export const USERS = [
     title: 'Trưởng phòng PTKH',
     unit: 'Phòng Phát Triển Khách Hàng • CS3',
     avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
-    badge: 'Trưởng phòng'
+    badge: 'Trưởng phòng',
+    phone: '0945 112 233',
+    email: 'tuan.tm@thanhvumedic.vn',
+    dob: '1985-09-22',
+    hometown: 'Cà Mau'
   },
   // 3. NHÂN VIÊN PHÒNG PTKH 1
   {
@@ -69,7 +77,11 @@ export const USERS = [
     title: 'Chuyên viên Khám Đoàn & CSKH',
     unit: 'Phòng PTKH • CS3',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=160&q=80',
-    badge: 'Chuyên viên'
+    badge: 'Chuyên viên',
+    phone: '0918 445 566',
+    email: 'mai.ntt@thanhvumedic.vn',
+    dob: '1992-04-15',
+    hometown: 'Bạc Liêu'
   },
   // 4. NHÂN VIÊN PHÒNG PTKH 2
   {
@@ -80,7 +92,11 @@ export const USERS = [
     title: 'Chuyên viên Bảo Hiểm & Hợp Tác',
     unit: 'Phòng PTKH • CS3',
     avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=160&q=80',
-    badge: 'Chuyên viên'
+    badge: 'Chuyên viên',
+    phone: '0909 778 899',
+    email: 'nam.lh@thanhvumedic.vn',
+    dob: '1990-11-30',
+    hometown: 'Cần Thơ'
   },
   // 5. TRƯỞNG PHÒNG DƯỢC (Minh chứng mở rộng phòng ban)
   {
@@ -91,7 +107,11 @@ export const USERS = [
     title: 'Trưởng Kho Dược CS3',
     unit: 'Kho Dược & VTYT • CS3',
     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=160&q=80',
-    badge: 'Trưởng phòng'
+    badge: 'Trưởng phòng',
+    phone: '0933 667 788',
+    email: 'minh.duoc@thanhvumedic.vn',
+    dob: '1982-08-12',
+    hometown: 'Cà Mau'
   },
   // 6. CHỈ HUY TRƯỞNG QLDA (Minh chứng mở rộng công trường)
   {
@@ -102,7 +122,11 @@ export const USERS = [
     title: 'Chỉ Huy Trưởng Ban QLDA',
     unit: 'Ban QLDA Cải Tạo SVH-STN',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80',
-    badge: 'Chỉ huy trưởng'
+    badge: 'Chỉ huy trưởng',
+    phone: '0977 123 456',
+    email: 'nghia.kpd@thanhvumedic.vn',
+    dob: '1988-03-25',
+    hometown: 'TP. Hồ Chí Minh'
   }
 ];
 
