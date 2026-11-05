@@ -1,0 +1,113 @@
+/**
+ * THANH VŨ MEDIC CS3 - GOOGLE STITCH CLINICAL THEME
+ * Kế thừa 100% hệ thống màu sắc, typography và layout từ Stitch DESIGN.md
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+  /* Brand Gold (Theo Google Stitch) */
+  --primary: #795900;
+  --primary-container: #d6a52a;
+  --on-primary-container: #533d00;
+  --on-primary: #ffffff;
+  --secondary: #7c5806;
+  --secondary-container: #ffcd75;
+  --secondary-fixed: #ffdea9;
+  --on-secondary-fixed-variant: #5f4100;
+  
+  /* Background & Surface */
+  --background: #f8f9ff;
+  --surface: #f8f9ff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #eff4ff;
+  --surface-container: #e6eeff;
+  --surface-container-high: #dde9ff;
+  --surface-container-highest: #d5e3fd;
+  
+  /* Text & Outlines */
+  --on-surface: #0d1c2f;
+  --on-surface-variant: #4f4635;
+  --outline: #817663;
+  --outline-variant: #d2c5af;
+  --border-subtle: #e2e8f0;
+
+  /* Semantics */
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error: #ffffff;
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--background);
+  color: var(--on-surface);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Material Symbols alignment */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+.font-mono-data {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Drawer Animation */
+.drawer-backdrop {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer-panel {
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer-backdrop.active .drawer-panel {
+  transform: translateX(0);
+}
+
+/* Modal Animation */
+.modal-overlay {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  transform: translateY(16px) scale(0.98);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active .modal-card {
+  transform: translateY(0) scale(1);
+}
