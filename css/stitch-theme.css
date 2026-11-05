@@ -1,45 +1,52 @@
 /**
- * THANH VŨ MEDIC CS3 - GOOGLE STITCH CLINICAL THEME
- * Kế thừa 100% hệ thống màu sắc, typography và layout từ Stitch DESIGN.md
+ * THANH VŨ MEDIC CS3 - PALETTE: SLATE BLUE + INDIGO (DEEP NAVY)
+ * Tuân thủ 100% hướng dẫn màu sắc & phong cách giao diện:
+ * - 70% Neutral: Trắng (#FFFFFF), Xám nhạt (#F8FAFC, #F1F5F9) để giao diện thoáng
+ * - 20% Brand: Deep Navy (#172554) cho Sidebar/Nav và Blue (#2563EB) cho Actions
+ * - 10% Accent: Teal (#0D9488), Amber (#F59E0B), Red (#EF4444) cho Trạng thái
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
 :root {
-  /* Brand Gold (Theo Google Stitch) */
-  --primary: #795900;
-  --primary-container: #d6a52a;
-  --on-primary-container: #533d00;
-  --on-primary: #ffffff;
-  --secondary: #7c5806;
-  --secondary-container: #ffcd75;
-  --secondary-fixed: #ffdea9;
-  --on-secondary-fixed-variant: #5f4100;
-  
-  /* Background & Surface */
-  --background: #f8f9ff;
-  --surface: #f8f9ff;
-  --surface-container-lowest: #ffffff;
-  --surface-container-low: #eff4ff;
-  --surface-container: #e6eeff;
-  --surface-container-high: #dde9ff;
-  --surface-container-highest: #d5e3fd;
-  
-  /* Text & Outlines */
-  --on-surface: #0d1c2f;
-  --on-surface-variant: #4f4635;
-  --outline: #817663;
-  --outline-variant: #d2c5af;
-  --border-subtle: #e2e8f0;
+  /* Brand */
+  --primary: #2563EB;
+  --primary-dark: #172554;
+  --secondary: #6366F1;
 
-  /* Semantics */
-  --error: #ba1a1a;
-  --error-container: #ffdad6;
-  --on-error: #ffffff;
-  --success: #16a34a;
-  --success-bg: #dcfce7;
-  --warning: #f59e0b;
-  --warning-bg: #fef3c7;
+  /* Status */
+  --success: #0D9488;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #0EA5E9;
+
+  /* Background & Surfaces */
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+
+  /* Typography */
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+
+  /* Status Task Badges chuẩn xác 100% */
+  --status-chua-bat-dau-bg: #F1F5F9;
+  --status-chua-bat-dau-text: #475569;
+
+  --status-dang-thuc-hien-bg: #DBEAFE;
+  --status-dang-thuc-hien-text: #1D4ED8;
+
+  --status-cho-phe-duyet-bg: #FEF3C7;
+  --status-cho-phe-duyet-text: #92400E;
+
+  --status-hoan-thanh-bg: #CCFBF1;
+  --status-hoan-thanh-text: #0F766E;
+
+  --status-tam-dung-bg: #F3E8FF;
+  --status-tam-dung-text: #7E22CE;
+
+  --status-qua-han-bg: #FEE2E2;
+  --status-qua-han-text: #B91C1C;
 }
 
 *, *::before, *::after {
@@ -50,17 +57,31 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: var(--background);
-  color: var(--on-surface);
+  color: var(--text-primary);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
 }
 
 ::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+  height: 6px;
 }
 
-/* Material Symbols alignment */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Material Symbols font align */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
@@ -68,6 +89,22 @@ html, body {
 
 .font-mono-data {
   font-family: 'JetBrains Mono', monospace;
+}
+
+/* Tab Transition Animations */
+.view-transition {
+  animation: viewFadeSlide 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes viewFadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Drawer Animation */
@@ -104,10 +141,20 @@ html, body {
 }
 
 .modal-card {
-  transform: translateY(16px) scale(0.98);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.96) translateY(8px);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-overlay.active .modal-card {
-  transform: translateY(0) scale(1);
+  transform: scale(1) translateY(0);
+}
+
+/* Pulse Glow & Badges */
+.pulse-badge {
+  animation: pulseLight 2s infinite;
+}
+
+@keyframes pulseLight {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
 }

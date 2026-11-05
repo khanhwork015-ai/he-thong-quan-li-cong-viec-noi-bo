@@ -1,11 +1,17 @@
 /**
  * THANH VŨ MEDIC CS3 - WORKSPACE TASK MANAGEMENT COMPONENT
- * Kế thừa 100% bố cục từ qu_n_l_c_ng_vi_c/code.html của Google Stitch
+ * Chuẩn màu Slate Blue + Indigo & 6 Màu trạng thái công việc:
+ * 1. Chưa bắt đầu: #F1F5F9 / #475569
+ * 2. Đang thực hiện: #DBEAFE / #1D4ED8
+ * 3. Chờ phê duyệt: #FEF3C7 / #92400E
+ * 4. Hoàn thành: #CCFBF1 / #0F766E
+ * 5. Tạm dừng: #F3E8FF / #7E22CE
+ * 6. Quá hạn: #FEE2E2 / #B91C1C
  */
 
 import { auth } from '../auth.js';
 import { store } from '../store.js';
-import { esc, soVN, ngayVN } from '../helpers.js';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask) {
@@ -49,70 +55,70 @@ export class WorkspaceView {
     const countDone = allDeptTasks.filter(t => t.status === 'done').length;
 
     this.container.innerHTML = `
-      <div class="flex flex-col w-full animate-fade-in">
+      <div class="flex flex-col w-full gap-4 animate-fade-in max-w-7xl">
         <!-- TOP CONTROLS & LINEAR/NOTION TABS BAR -->
-        <div class="bg-white p-5 rounded-xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4 mb-4">
+        <div class="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-sm flex flex-col gap-4">
           <!-- TITLE ROW -->
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-lg bg-[#fffbeb] border border-[#fef3c7] flex items-center justify-center text-[#795900]">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 text-[#2563EB] flex items-center justify-center font-bold">
                 <span class="material-symbols-outlined text-[22px]">checklist</span>
               </div>
               <div>
                 <div class="flex items-center gap-2">
-                  <h1 class="font-bold text-[20px] text-[#0d1c2f]">Quản lý công việc</h1>
-                  <span class="px-2 py-0.5 rounded-full bg-[#eff4ff] text-[#0d1c2f] font-mono-data text-[11px] font-bold border border-[#dde9ff]">${currentDept.code}</span>
+                  <h1 class="font-bold text-[20px] text-[#0F172A]">Quản lý công việc</h1>
+                  <span class="px-2 py-0.5 rounded-full bg-blue-50 text-[#2563EB] font-mono-data text-[11px] font-bold border border-blue-100">${currentDept.code}</span>
                 </div>
-                <p class="text-[12.5px] text-[#64748b]">${currentDept.name} • ${currentDept.unit}</p>
+                <p class="text-[12.5px] text-[#64748B]">${currentDept.name} • ${currentDept.unit}</p>
               </div>
             </div>
 
             <!-- VIEW MODE TOGGLE & CREATE TASK BUTTON -->
             <div class="flex items-center gap-2.5">
-              <div class="flex items-center p-1 bg-[#f8f9ff] border border-[#e2e8f0] rounded-lg">
-                <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all ${this.viewMode === 'table' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnSwitchTable">
+              <div class="flex items-center p-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl">
+                <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${this.viewMode === 'table' ? 'bg-white text-[#0F172A] font-bold shadow-xs' : 'text-[#64748B] hover:text-[#0F172A]'}" id="btnSwitchTable">
                   <span class="material-symbols-outlined text-[16px]">format_list_bulleted</span>
-                  <span class="text-[12.5px]">Bảng</span>
+                  <span class="text-[12.5px]">Bảng danh sách</span>
                 </button>
-                <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded transition-all ${this.viewMode === 'kanban' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnSwitchKanban">
+                <button type="button" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${this.viewMode === 'kanban' ? 'bg-white text-[#0F172A] font-bold shadow-xs' : 'text-[#64748B] hover:text-[#0F172A]'}" id="btnSwitchKanban">
                   <span class="material-symbols-outlined text-[16px]">view_kanban</span>
-                  <span class="text-[12.5px]">Thẻ</span>
+                  <span class="text-[12.5px]">Kanban</span>
                 </button>
               </div>
 
               ${canCreate ? `
-                <button type="button" class="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all" id="btnWorkspaceCreateTask">
+                <button type="button" class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2563EB] text-white text-[13px] font-bold hover:bg-[#1D4ED8] shadow-sm shadow-blue-500/20 transition-all" id="btnWorkspaceCreateTask">
                   <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                  <span>+ Tạo công việc</span>
+                  <span>Giao việc mới</span>
                 </button>
               ` : ''}
             </div>
           </div>
 
-          <!-- LINEAR / NOTION STYLE TABS -->
-          <div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-[#f1f5f9]">
-            <button type="button" class="px-3.5 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-colors ${this.activeTab === 'assigned_to_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="assigned_to_me">
+          <!-- NOTION STYLE TABS -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 border-b border-[#F1F5F9]">
+            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'assigned_to_me' ? 'bg-blue-50 text-[#1D4ED8] font-bold border border-blue-200' : 'text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]'}" data-tab="assigned_to_me">
               <span>Việc được giao cho tôi</span>
-              <span class="px-1.5 py-0.2 rounded-full bg-[#d6a52a] text-[#533d00] font-mono-data text-[11px] font-bold">${countAssigned}</span>
+              <span class="px-2 py-0.2 rounded-full bg-[#2563EB] text-white font-mono-data text-[10.5px] font-bold">${countAssigned}</span>
             </button>
 
-            <button type="button" class="px-3.5 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-colors ${this.activeTab === 'created_by_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="created_by_me">
+            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'created_by_me' ? 'bg-blue-50 text-[#1D4ED8] font-bold border border-blue-200' : 'text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]'}" data-tab="created_by_me">
               <span>Việc do tôi tạo</span>
-              <span class="px-1.5 py-0.2 rounded-full bg-[#e6eeff] text-[#4f4635] font-mono-data text-[11px] font-bold">${countCreated}</span>
+              <span class="px-2 py-0.2 rounded-full bg-gray-100 text-[#0F172A] font-mono-data text-[10.5px] font-bold">${countCreated}</span>
             </button>
 
-            <button type="button" class="px-3.5 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-colors ${this.activeTab === 'pending_approval' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="pending_approval">
-              <span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
+            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'pending_approval' ? 'bg-[#FEF3C7] text-[#92400E] font-bold border border-amber-300' : 'text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]'}" data-tab="pending_approval">
+              <span class="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
               <span>Chờ phê duyệt</span>
-              <span class="px-1.5 py-0.2 rounded-full bg-[#fef3c7] text-[#b45309] font-mono-data text-[11px] font-bold">${countPending}</span>
+              <span class="px-2 py-0.2 rounded-full bg-[#F59E0B] text-white font-mono-data text-[10.5px] font-bold">${countPending}</span>
             </button>
 
-            <button type="button" class="px-3.5 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-colors ${this.activeTab === 'completed' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="completed">
+            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'completed' ? 'bg-[#CCFBF1] text-[#0F766E] font-bold border border-teal-200' : 'text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]'}" data-tab="completed">
               <span>Đã hoàn thành</span>
-              <span class="px-1.5 py-0.2 rounded-full bg-[#dcfce7] text-[#16a34a] font-mono-data text-[11px] font-bold">${countDone}</span>
+              <span class="px-2 py-0.2 rounded-full bg-[#0D9488] text-white font-mono-data text-[10.5px] font-bold">${countDone}</span>
             </button>
 
-            <button type="button" class="px-3.5 py-2 rounded-lg text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-colors ${this.activeTab === 'all' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="all">
+            <button type="button" class="px-3.5 py-2 rounded-xl text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all ${this.activeTab === 'all' ? 'bg-blue-50 text-[#1D4ED8] font-bold border border-blue-200' : 'text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A]'}" data-tab="all">
               <span>Tất cả (${allDeptTasks.length})</span>
             </button>
           </div>
@@ -120,21 +126,21 @@ export class WorkspaceView {
           <!-- SEARCH & PRIORITY FILTER TOOLBAR -->
           <div class="flex flex-wrap items-center gap-3 pt-1">
             <div class="relative flex-1 min-w-[240px]">
-              <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#817663]">search</span>
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#64748B]">search</span>
               <input 
                 type="text" 
                 id="workspaceSearchInput" 
                 value="${esc(this.searchQuery)}"
-                class="w-full h-9 pl-9 pr-3 rounded-lg bg-[#f8f9ff] text-[#0d1c2f] text-[13px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] outline-none" 
-                placeholder="Lọc theo mã việc, tên công việc, chuyên môn..." 
+                class="w-full h-9 pl-9 pr-3 rounded-xl bg-[#F8FAFC] text-[#0F172A] text-[13px] placeholder:text-[#94A3B8] border border-[#E2E8F0] focus:bg-white focus:border-[#2563EB] outline-none" 
+                placeholder="Lọc theo mã việc, tên công việc, người phụ trách..." 
               />
             </div>
 
             <!-- Priority filter pills -->
             <div class="flex items-center gap-1.5">
               ${['ALL', 'P1', 'P2', 'P3'].map(p => `
-                <button type="button" class="px-2.5 py-1.5 rounded-md text-[11.5px] font-bold transition-all ${this.priorityFilter === p ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-priority="${p}">
-                  ${p === 'ALL' ? 'Tất cả ưu tiên' : p}
+                <button type="button" class="px-3 py-1.5 rounded-lg text-[11.5px] font-bold transition-all ${this.priorityFilter === p ? 'bg-[#2563EB] text-white shadow-xs' : 'bg-[#F8FAFC] text-[#64748B] hover:bg-[#F1F5F9]'}" data-priority="${p}">
+                  ${p === 'ALL' ? 'Tất cả mức ưu tiên' : p}
                 </button>
               `).join('')}
             </div>
@@ -149,28 +155,28 @@ export class WorkspaceView {
     this.bindEvents();
   }
 
-  // DẠNG BẢNG (TABLE VIEW) CHUẨN STITCH
+  // DẠNG BẢNG (TABLE VIEW)
   renderTableView(tasks) {
     if (tasks.length === 0) {
       return `
-        <div class="bg-white p-12 rounded-xl border border-[#e2e8f0] text-center shadow-sm">
-          <div class="w-12 h-12 rounded-full bg-[#f8f9ff] flex items-center justify-center text-[#817663] mx-auto mb-3">
+        <div class="bg-white p-12 rounded-2xl border border-[#E2E8F0] text-center shadow-sm">
+          <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-[#2563EB] mx-auto mb-3">
             <span class="material-symbols-outlined text-[24px]">inbox</span>
           </div>
-          <div class="text-[15px] font-bold text-[#0d1c2f]">Không tìm thấy công việc nào</div>
-          <p class="text-[12.5px] text-[#64748b] mt-1">Hãy thử thay đổi bộ lọc hoặc bấm "+ Tạo công việc" mới.</p>
+          <div class="text-[15px] font-bold text-[#0F172A]">Không tìm thấy công việc nào</div>
+          <p class="text-[12.5px] text-[#64748B] mt-1">Hãy thử đổi tab, bộ lọc hoặc bấm "Giao việc mới".</p>
         </div>
       `;
     }
 
     return `
-      <div class="bg-white rounded-xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+      <div class="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-[#f8f9ff] border-b border-[#e2e8f0] text-[11.5px] font-bold text-[#64748b] uppercase tracking-wider">
+              <tr class="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[11.5px] font-bold text-[#64748B] uppercase tracking-wider">
                 <th class="py-3 px-4 w-28">Mã việc</th>
-                <th class="py-3 px-4 min-w-[260px]">Tên công việc</th>
+                <th class="py-3 px-4 min-w-[280px]">Tên công việc</th>
                 <th class="py-3 px-4 w-24">Ưu tiên</th>
                 <th class="py-3 px-4 w-44">Phụ trách</th>
                 <th class="py-3 px-4 w-32">Danh mục</th>
@@ -179,41 +185,38 @@ export class WorkspaceView {
                 <th class="py-3 px-4 w-20 text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[#f1f5f9] text-[13px]">
+            <tbody class="divide-y divide-[#F1F5F9] text-[13px]">
               ${tasks.map(t => {
                 const assignee = store.getUserById(t.assigneeId);
-                let statusBadge = '<span class="px-2.5 py-0.5 rounded-full bg-[#f1f5f9] text-[#475569] text-[11px] font-bold">Chưa bắt đầu</span>';
-                if (t.status === 'in_progress') {
-                  statusBadge = '<span class="px-2.5 py-0.5 rounded-full bg-[#dbeafe] text-[#1d4ed8] text-[11px] font-bold">Đang thực hiện</span>';
-                } else if (t.status === 'review') {
-                  statusBadge = '<span class="px-2.5 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e] text-[11px] font-bold">Chờ phê duyệt</span>';
-                } else if (t.status === 'done') {
-                  statusBadge = '<span class="px-2.5 py-0.5 rounded-full bg-[#dcfce7] text-[#16a34a] text-[11px] font-bold">Đã hoàn thành</span>';
-                }
+                const statusMeta = this.getStatusMeta(t.status);
 
                 return `
-                  <tr class="hover:bg-[#fffbeb]/40 transition-colors cursor-pointer row-task-item" data-task-id="${t.id}">
-                    <td class="py-3 px-4 font-mono-data font-bold text-[#795900]">${t.id}</td>
+                  <tr class="hover:bg-blue-50/40 transition-colors cursor-pointer row-task-item" data-task-id="${t.id}">
+                    <td class="py-3 px-4 font-mono-data font-bold text-[#2563EB]">${t.id}</td>
                     <td class="py-3 px-4">
-                      <div class="font-bold text-[#0d1c2f] line-clamp-1">${esc(t.title)}</div>
-                      <div class="text-[11.5px] text-[#64748b] line-clamp-1">${esc(t.description)}</div>
+                      <div class="font-bold text-[#0F172A] line-clamp-1 hover:text-[#2563EB] transition-colors">${esc(t.title)}</div>
+                      <div class="text-[11.5px] text-[#64748B] line-clamp-1">${esc(t.description)}</div>
                     </td>
                     <td class="py-3 px-4">
-                      <span class="px-2 py-0.5 rounded font-bold text-[10.5px] ${t.priority === 'P1' ? 'bg-red-50 text-red-600 border border-red-200' : t.priority === 'P2' ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-blue-50 text-blue-600'}">
+                      <span class="px-2 py-0.5 rounded-full font-bold text-[10.5px] ${t.priority === 'P1' ? 'bg-[#FEE2E2] text-[#B91C1C]' : t.priority === 'P2' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-blue-50 text-[#1D4ED8]'}">
                         ${t.priority}
                       </span>
                     </td>
                     <td class="py-3 px-4">
                       <div class="flex items-center gap-2">
                         <img src="${assignee ? assignee.avatar : ''}" class="w-6 h-6 rounded-full object-cover shrink-0" />
-                        <span class="truncate text-[#0d1c2f] font-medium">${assignee ? assignee.name : 'Chưa giao'}</span>
+                        <span class="truncate text-[#0F172A] font-semibold">${assignee ? assignee.name : 'Chưa giao'}</span>
                       </div>
                     </td>
-                    <td class="py-3 px-4 text-[#64748b] font-medium">${esc(t.category)}</td>
-                    <td class="py-3 px-4 text-[#817663] font-mono-data text-[12px]">${ngayVN(t.dueDate)}</td>
-                    <td class="py-3 px-4">${statusBadge}</td>
+                    <td class="py-3 px-4 text-[#64748B] font-medium">${esc(t.category)}</td>
+                    <td class="py-3 px-4 text-[#0F172A] font-mono-data text-[12px]">${ngayVN(t.dueDate)}</td>
+                    <td class="py-3 px-4">
+                      <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block" style="background-color: ${statusMeta.bg}; color: ${statusMeta.text};">
+                        ${statusMeta.label}
+                      </span>
+                    </td>
                     <td class="py-3 px-4 text-center">
-                      <button type="button" class="p-1 rounded text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100" title="Xem chi tiết">
+                      <button type="button" class="p-1 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-gray-100" title="Xem chi tiết">
                         <span class="material-symbols-outlined text-[18px]">open_in_new</span>
                       </button>
                     </td>
@@ -227,13 +230,13 @@ export class WorkspaceView {
     `;
   }
 
-  // DẠNG THẺ KANBAN (KANBAN BOARD) CHUẨN STITCH
+  // DẠNG THẺ KANBAN (KANBAN BOARD)
   renderKanbanView(tasks) {
     const columns = [
-      { id: 'todo', title: 'Chưa Bắt Đầu', color: '#64748b', bg: '#f8f9ff' },
-      { id: 'in_progress', title: 'Đang Thực Hiện', color: '#2563eb', bg: '#eff4ff' },
-      { id: 'review', title: 'Chờ Phê Duyệt', color: '#d97706', bg: '#fffbeb' },
-      { id: 'done', title: 'Đã Hoàn Thành', color: '#16a34a', bg: '#f0fdf4' }
+      { id: 'todo', title: 'Chưa Bắt Đầu', color: '#475569', bg: '#F1F5F9', text: '#475569' },
+      { id: 'in_progress', title: 'Đang Thực Hiện', color: '#1D4ED8', bg: '#DBEAFE', text: '#1D4ED8' },
+      { id: 'review', title: 'Chờ Phê Duyệt', color: '#92400E', bg: '#FEF3C7', text: '#92400E' },
+      { id: 'done', title: 'Hoàn Thành', color: '#0F766E', bg: '#CCFBF1', text: '#0F766E' }
     ];
 
     return `
@@ -241,31 +244,39 @@ export class WorkspaceView {
         ${columns.map(col => {
           const colTasks = tasks.filter(t => t.status === col.id);
           return `
-            <div class="rounded-xl border border-[#e2e8f0] bg-white p-3.5 shadow-sm flex flex-col gap-3 min-h-[460px]">
-              <div class="flex items-center justify-between pb-2.5 border-b border-[#f1f5f9]">
+            <div class="rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm flex flex-col gap-3 min-h-[480px]">
+              <div class="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full" style="background: ${col.color};"></span>
-                  <span class="font-bold text-[13px] text-[#0d1c2f]">${col.title}</span>
+                  <span class="font-bold text-[13.5px] text-[#0F172A]">${col.title}</span>
                 </div>
-                <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#f1f5f9] text-[#64748b]">${colTasks.length}</span>
+                <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded-full" style="background-color: ${col.bg}; color: ${col.text};">${colTasks.length}</span>
               </div>
 
-              <div class="flex flex-col gap-2.5 flex-1">
-                ${colTasks.map(t => {
+              <div class="flex flex-col gap-2.5">
+                ${colTasks.length === 0 ? `
+                  <div class="p-6 text-center text-[#94A3B8] text-[12px] border-2 border-dashed border-[#F1F5F9] rounded-xl">
+                    Chưa có việc
+                  </div>
+                ` : colTasks.map(t => {
                   const assignee = store.getUserById(t.assigneeId);
                   return `
-                    <div class="p-3 rounded-lg border border-[#e2e8f0] bg-[#f8f9ff] hover:border-[#d6a52a] hover:bg-white shadow-2xs transition-all cursor-pointer kanban-card-item" data-task-id="${t.id}">
+                    <div class="p-3.5 bg-white rounded-xl border border-[#E2E8F0] hover:border-[#2563EB] shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card" data-task-id="${t.id}">
                       <div class="flex items-center justify-between mb-1.5">
-                        <span class="font-mono-data text-[10.5px] font-bold text-[#795900]">${t.id}</span>
-                        <span class="text-[10px] font-bold px-1.5 py-0.2 rounded ${t.priority === 'P1' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}">${t.priority}</span>
+                        <span class="font-mono-data text-[10.5px] font-bold text-[#2563EB] px-1.5 py-0.5 rounded bg-blue-50">${t.id}</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ${t.priority === 'P1' ? 'bg-[#FEE2E2] text-[#B91C1C]' : 'bg-[#FEF3C7] text-[#92400E]'}">${t.priority}</span>
                       </div>
-                      <div class="font-bold text-[13px] text-[#0d1c2f] line-clamp-2">${esc(t.title)}</div>
-                      <div class="flex items-center justify-between mt-3 pt-2 border-t border-[#e2e8f0]">
+
+                      <div class="font-bold text-[13px] text-[#0F172A] line-clamp-2 leading-snug mb-1">
+                        ${esc(t.title)}
+                      </div>
+
+                      <div class="flex items-center justify-between pt-2 border-t border-[#F1F5F9] text-[11px]">
                         <div class="flex items-center gap-1.5">
                           <img src="${assignee ? assignee.avatar : ''}" class="w-5 h-5 rounded-full object-cover" />
-                          <span class="text-[11px] text-[#4f4635] truncate max-w-[90px]">${assignee ? assignee.name.split(' ').pop() : ''}</span>
+                          <span class="text-[#64748B] font-medium truncate max-w-[90px]">${assignee ? assignee.name.split(' ').pop() : ''}</span>
                         </div>
-                        <span class="font-mono-data text-[10.5px] text-[#817663]">${ngayVN(t.dueDate)}</span>
+                        <span class="font-mono-data text-[#94A3B8]">${t.dueDate ? t.dueDate.slice(5) : ''}</span>
                       </div>
                     </div>
                   `;
@@ -278,27 +289,45 @@ export class WorkspaceView {
     `;
   }
 
+  getStatusMeta(status) {
+    const map = {
+      'todo': { label: 'Chưa bắt đầu', bg: '#F1F5F9', text: '#475569' },
+      'in_progress': { label: 'Đang thực hiện', bg: '#DBEAFE', text: '#1D4ED8' },
+      'review': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
+      'done': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
+      'paused': { label: 'Tạm dừng', bg: '#F3E8FF', text: '#7E22CE' },
+      'overdue': { label: 'Quá hạn', bg: '#FEE2E2', text: '#B91C1C' }
+    };
+    return map[status] || { label: status, bg: '#F1F5F9', text: '#475569' };
+  }
+
   bindEvents() {
-    // Switch View
-    const btnTable = this.container.querySelector('#btnSwitchTable');
-    const btnKanban = this.container.querySelector('#btnSwitchKanban');
-    if (btnTable) btnTable.addEventListener('click', () => this.setViewMode('table'));
-    if (btnKanban) btnKanban.addEventListener('click', () => this.setViewMode('kanban'));
-
-    // Switch Tabs
     this.container.querySelectorAll('[data-tab]').forEach(btn => {
-      btn.addEventListener('click', () => this.setTab(btn.dataset.tab));
-    });
-
-    // Priority filter
-    this.container.querySelectorAll('[data-priority]').forEach(btn => {
       btn.addEventListener('click', () => {
-        this.priorityFilter = btn.dataset.priority;
-        this.render();
+        rung(10);
+        this.setTab(btn.dataset.tab);
       });
     });
 
-    // Search input
+    const btnTable = this.container.querySelector('#btnSwitchTable');
+    const btnKanban = this.container.querySelector('#btnSwitchKanban');
+    if (btnTable) btnTable.addEventListener('click', () => {
+      rung(10);
+      this.setViewMode('table');
+    });
+    if (btnKanban) btnKanban.addEventListener('click', () => {
+      rung(10);
+      this.setViewMode('kanban');
+    });
+
+    const btnCreate = this.container.querySelector('#btnWorkspaceCreateTask');
+    if (btnCreate) {
+      btnCreate.addEventListener('click', () => {
+        rung(10);
+        if (this.onOpenCreateModal) this.onOpenCreateModal();
+      });
+    }
+
     const searchInput = this.container.querySelector('#workspaceSearchInput');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -307,19 +336,19 @@ export class WorkspaceView {
       });
     }
 
-    // Create Task Button
-    const btnCreate = this.container.querySelector('#btnWorkspaceCreateTask');
-    if (btnCreate) {
-      btnCreate.addEventListener('click', () => {
-        if (this.onOpenCreateModal) this.onOpenCreateModal();
+    this.container.querySelectorAll('[data-priority]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(10);
+        this.priorityFilter = btn.dataset.priority;
+        this.render();
       });
-    }
+    });
 
-    // Row / Card click to open Task Detail Drawer
-    this.container.querySelectorAll('.row-task-item, .kanban-card-item').forEach(el => {
-      el.addEventListener('click', () => {
-        const tid = el.dataset.taskId;
-        if (this.onSelectTask) this.onSelectTask(tid);
+    this.container.querySelectorAll('.row-task-item, .kanban-card').forEach(item => {
+      item.addEventListener('click', () => {
+        rung(10);
+        const taskId = item.dataset.taskId;
+        if (this.onSelectTask) this.onSelectTask(taskId);
       });
     });
   }

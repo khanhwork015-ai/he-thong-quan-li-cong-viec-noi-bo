@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Thanh Vũ Medic CS3 | Quản Lý Công Việc & Điều Hành</title>
-  <meta name="description" content="Hệ thống Quản lý Công việc Phòng Phát Triển Khách Hàng - Bệnh viện Thanh Vũ Medic Cơ Sở 3 (Cà Mau)" />
-  <meta name="theme-color" content="#d6a52a" />
+  <meta name="description" content="Hệ thống Quản lý Công việc & Điều Hành - Bệnh viện Đa Khoa Thanh Vũ Medic Cơ Sở 3 (Cà Mau)" />
+  <meta name="theme-color" content="#172554" />
   
   <!-- FONTS & ICONS (PLUS JAKARTA SANS, JETBRAINS MONO & MATERIAL SYMBOLS OUTLINED) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,27 +13,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 
-  <!-- TAILWIND CSS CDN -->
+  <!-- TAILWIND CSS CDN CONFIGURED WITH SLATE BLUE + INDIGO PALETTE -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'primary': '#795900',
-            'primary-container': '#d6a52a',
-            'on-primary-container': '#533d00',
-            'surface': '#f8f9ff',
-            'on-surface': '#0d1c2f',
-            'on-surface-variant': '#4f4635',
-            'surface-container-low': '#eff4ff',
-            'surface-container': '#e6eeff',
-            'surface-container-high': '#dde9ff',
-            'surface-container-lowest': '#ffffff',
-            'outline': '#817663'
+            'primary': '#2563EB',
+            'primary-dark': '#172554',
+            'secondary': '#6366F1',
+            'success': '#0D9488',
+            'warning': '#F59E0B',
+            'danger': '#EF4444',
+            'info': '#0EA5E9',
+            'background': '#F8FAFC',
+            'surface': '#FFFFFF',
+            'border-subtle': '#E2E8F0',
+            'text-primary': '#0F172A',
+            'text-secondary': '#64748B'
           },
           fontFamily: {
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace']
           }
         }
@@ -41,35 +42,35 @@
     };
   </script>
 
-  <!-- GOOGLE STITCH CLINICAL STYLESHEET -->
-  <link rel="stylesheet" href="css/stitch-theme.css" />
+  <!-- LUXURY EXECUTIVE THEME STYLESHEET (SLATE BLUE + INDIGO) -->
+  <link rel="stylesheet" href="css/stitch-theme.css?v=3.0" />
 </head>
-<body class="bg-[#f8f9ff] text-[#0d1c2f] antialiased overflow-x-hidden min-h-screen">
+<body class="bg-[#F8FAFC] text-[#0F172A] antialiased overflow-x-hidden min-h-screen">
 
-  <!-- 1. SIDEBAR CONTAINER (w-64 CỐ ĐỊNH BÊN TRÁI) -->
+  <!-- 1. SIDEBAR CONTAINER (w-64 CỐ ĐỊNH BÊN TRÁI - DEEP NAVY #172554) -->
   <div id="sidebar-container"></div>
 
-  <!-- 2. MAIN APP SHELL (pl-64 ĐỂ CHỪA KHÔNG GIAN CHO SIDEBAR) -->
-  <div class="pl-64 min-h-screen flex flex-col">
+  <!-- 2. MAIN APP SHELL (pl-64 CHỪA KHÔNG GIAN CHO SIDEBAR) -->
+  <div class="pl-64 min-h-screen flex flex-col bg-[#F8FAFC]">
     <!-- TOP HEADER CONTAINER (h-16 CỐ ĐỊNH PHÍA TRÊN) -->
     <div id="header-container"></div>
 
     <!-- MAIN SCROLLABLE CANVAS -->
     <main class="pt-16 p-6 flex-1 w-full max-w-[1600px] mx-auto">
-      <div id="main-content-canvas"></div>
+      <div id="main-content-canvas" class="view-transition"></div>
     </main>
   </div>
 
   <!-- 3. SLIDE-OVER TASK DETAIL DRAWER -->
   <div id="drawer-container"></div>
 
-  <!-- 4. MODALS (CREATE TASK / SWITCH ROLE) -->
+  <!-- 4. MODALS (CREATE TASK / PROFILE / MEMBER / SETTINGS) -->
   <div id="modal-container"></div>
 
   <!-- 5. TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 
   <!-- CORE APPLICATION LOGIC (ES MODULE) -->
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=3.0"></script>
 </body>
 </html>

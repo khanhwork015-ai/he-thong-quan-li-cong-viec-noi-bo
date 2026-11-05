@@ -1,6 +1,9 @@
 /**
  * THANH VŨ MEDIC CS3 - STRICT RBAC & DATA ISOLATION ENGINE
- * Phân quyền 3 cấp độ (Admin - Trưởng phòng - Nhân viên) bảo vệ cô lập dữ liệu
+ * Phân quyền 3 cấp độ:
+ * 1. ADMIN (Quản trị viên tối cao): Toàn quyền trên mọi phòng ban, quản lý mọi tài khoản, cấu hình cloud.
+ * 2. MANAGER (Trưởng phòng): Quản lý toàn bộ công việc, giao việc, duyệt việc, quản lý nhân viên TRONG PHÒNG MÌNH.
+ * 3. MEMBER (Nhân viên): Chỉ xem và thực thi công việc của mình, cập nhật tiến độ checklist, sửa hồ sơ cá nhân.
  */
 
 import { USERS, DEPARTMENTS } from './models.js';
@@ -17,9 +20,19 @@ export class AuthManager {
 
   loadUser() {
     const savedId = localStorage.getItem(AUTH_KEY);
-    const found = USERS.find(u => u.id === savedId);
-    // Mặc định ban đầu: BS.CKI Trần Minh Tuấn (Trưởng phòng PTKH theo thiết kế Google Stitch)
-    return found || USERS[1];
+    let base = USERS.find(u => u.id === savedId) || USERS[1]; // Mặc định BS.CKI Trần Minh Tuấn (Trưởng phòng PTKH)
+    
+    // Đọc thông tin cá nhân đã cập nhật nếu có
+    try {
+      const custom = localStorage.getItem('tvm_user_profile_' + base.id);
+      if (custom) {
+        base = { ...base, ...JSON.parse(custom) };
+      }
+    } catch (e) {
+      console.warn('Lỗi đọc custom profile:', e);
+    }
+
+    return base;
   }
 
   loadActiveDepartment() {
@@ -59,25 +72,49 @@ export class AuthManager {
     return this.isAdmin();
   }
 
-  // Quyền tạo & giao việc
+  // Quyền tạo & giao việc (Admin hoặc Trưởng phòng)
   canCreateTask() {
     return this.isAdmin() || this.isManager();
   }
 
-  // Quyền phê duyệt nhiệm vụ
+  // Quyền phê duyệt nhiệm vụ (Admin hoặc Trưởng phòng)
   canApproveTask() {
     return this.isAdmin() || this.isManager();
   }
 
-  // Quyền quản lý nhân sự & phân bổ
+  // Quyền quản lý nhân sự & phân bổ (Admin hoặc Trưởng phòng)
   canManageMembers() {
     return this.isAdmin() || this.isManager();
   }
 
-  // Chuyển đổi tài khoản (Dùng để kiểm thử ngay lập tức)
+  // Cập nhật thông tin hồ sơ cá nhân
+  updateProfile(data) {
+    this.currentUser = { ...this.currentUser, ...data };
+    try {
+      localStorage.setItem('tvm_user_profile_' + this.currentUser.id, JSON.stringify(this.currentUser));
+    } catch (e) {
+      console.warn('Không thể lưu profile:', e);
+    }
+
+    window.dispatchEvent(new CustomEvent('tvm:auth_changed', { detail: { user: this.currentUser } }));
+    return this.currentUser;
+  }
+
+  // Đăng nhập / Chuyển đổi tài khoản (Dùng để kiểm thử RBAC)
+  loginAs(userId) {
+    return this.switchUser(userId);
+  }
+
   switchUser(userId) {
-    const user = USERS.find(u => u.id === userId);
+    let user = USERS.find(u => u.id === userId);
     if (!user) return false;
+
+    try {
+      const custom = localStorage.getItem('tvm_user_profile_' + user.id);
+      if (custom) {
+        user = { ...user, ...JSON.parse(custom) };
+      }
+    } catch (e) {}
 
     this.currentUser = user;
     localStorage.setItem(AUTH_KEY, user.id);
@@ -87,8 +124,7 @@ export class AuthManager {
       localStorage.setItem(ACTIVE_DEPT_KEY, this.activeDepartmentId);
     }
 
-    rung(35);
-    toast(`Đã đăng nhập: ${user.name} (${user.title})`, 'success');
+    rung(25);
     window.dispatchEvent(new CustomEvent('tvm:auth_changed', { detail: { user } }));
     return true;
   }
@@ -104,7 +140,7 @@ export class AuthManager {
 
     this.activeDepartmentId = deptId;
     localStorage.setItem(ACTIVE_DEPT_KEY, deptId);
-    toast(`Đã chuyển sang: ${dept.name}`, 'info');
+    rung(15);
     window.dispatchEvent(new CustomEvent('tvm:department_changed', { detail: { dept } }));
     return true;
   }

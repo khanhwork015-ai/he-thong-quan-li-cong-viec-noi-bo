@@ -1,32 +1,34 @@
-const CACHE_NAME = 'tvm-stitch-tasks-v1';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './css/stitch-theme.css',
-  './js/app.js',
-  './js/auth.js',
-  './js/models.js',
-  './js/store.js',
-  './js/helpers.js',
-  './js/components/sidebar.js',
-  './js/components/topHeader.js',
-  './js/components/dashboardView.js',
-  './js/components/workspaceView.js',
-  './js/components/taskDrawer.js',
-  './js/components/createTaskModal.js'
-];
+/**
+ * THANH VŨ MEDIC CS3 - SERVICE WORKER (NETWORK FIRST STRATEGY)
+ * Đảm bảo luôn cập nhật mã nguồn mới nhất, dọn sạch cache cũ
+ */
+
+const CACHE_NAME = 'tvm-slate-blue-v3.0';
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS).catch(() => {})));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)))));
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.map(k => caches.delete(k))
+    ))
+  );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
-  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('./index.html'))));
+  // Network First Strategy
+  e.respondWith(
+    fetch(e.request)
+      .then(response => {
+        if (response && response.status === 200 && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(e.request))
+  );
 });
