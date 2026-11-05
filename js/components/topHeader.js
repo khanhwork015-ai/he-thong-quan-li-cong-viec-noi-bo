@@ -1,6 +1,6 @@
 /**
  * THANH VŨ MEDIC CS3 - TOP HEADER COMPONENT
- * Chiều cao 64px, cố định trên cùng, chuẩn Stitch
+ * Tích hợp mở Hồ Sơ Cá Nhân (Profile Modal) và Đổi Vai Trò
  */
 
 import { auth } from '../auth.js';
@@ -8,10 +8,11 @@ import { store } from '../store.js';
 import { USERS } from '../models.js';
 
 export class TopHeader {
-  constructor(containerId, onSearch, onOpenCreateModal) {
+  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal) {
     this.container = document.getElementById(containerId);
     this.onSearch = onSearch;
     this.onOpenCreateModal = onOpenCreateModal;
+    this.onOpenProfileModal = onOpenProfileModal;
   }
 
   render() {
@@ -63,17 +64,35 @@ export class TopHeader {
             </button>
           ` : ''}
 
-          <!-- USER SELECTOR (QUICK ROLE SWITCHER) -->
-          <div class="flex items-center gap-2.5 pl-2 cursor-pointer p-1 rounded-xl hover:bg-[#f8f9ff] transition-colors" id="btnUserSwitcher" title="Bấm để đổi vai trò kiểm thử phân quyền">
-            <div class="relative shrink-0">
-              <img src="${user.avatar}" alt="${user.name}" class="w-8 h-8 rounded-full object-cover ring-2 ring-[#e2e8f0]" />
-              <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#16a34a] ring-2 ring-white"></span>
+          <!-- USER MENU DROPDOWN TRIGGER -->
+          <div class="relative">
+            <div class="flex items-center gap-2.5 pl-2 cursor-pointer p-1 rounded-xl hover:bg-[#f8f9ff] transition-colors border border-transparent hover:border-[#e2e8f0]" id="btnUserMenuTrigger">
+              <div class="relative shrink-0">
+                <img src="${user.avatar}" alt="${user.name}" class="w-8 h-8 rounded-full object-cover ring-2 ring-[#e2e8f0]" />
+                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#16a34a] ring-2 ring-white"></span>
+              </div>
+              <div class="hidden xl:flex flex-col text-left">
+                <span class="text-[13px] text-[#0d1c2f] font-bold leading-tight truncate max-w-[150px]">${user.name}</span>
+                <span class="text-[11px] text-[#795900] font-semibold truncate max-w-[150px]">${user.title}</span>
+              </div>
+              <span class="material-symbols-outlined text-[16px] text-[#817663]">expand_more</span>
             </div>
-            <div class="hidden xl:flex flex-col text-left">
-              <span class="text-[13px] text-[#0d1c2f] font-bold leading-tight truncate">${user.name}</span>
-              <span class="text-[11px] text-[#795900] font-semibold truncate">${user.title}</span>
+
+            <!-- POPUP USER MENU -->
+            <div id="userMenuDropdown" class="hidden absolute right-0 top-12 w-56 bg-white rounded-xl shadow-xl border border-[#e2e8f0] py-2 z-50 animate-fade-in">
+              <div class="px-3.5 py-2 border-b border-[#f1f5f9] mb-1">
+                <div class="text-[13px] font-bold text-[#0d1c2f] truncate">${user.name}</div>
+                <div class="text-[11px] text-[#64748b] truncate">${user.email || user.title}</div>
+              </div>
+              <button type="button" class="w-full px-3.5 py-2 text-left text-[12.5px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2" id="btnOpenProfile">
+                <span class="material-symbols-outlined text-[18px] text-[#795900]">badge</span>
+                <span>Hồ sơ cá nhân</span>
+              </button>
+              <button type="button" class="w-full px-3.5 py-2 text-left text-[12.5px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2" id="btnOpenRoleSwitcher">
+                <span class="material-symbols-outlined text-[18px] text-[#2563eb]">switch_account</span>
+                <span>Đổi vai trò kiểm thử</span>
+              </button>
             </div>
-            <span class="material-symbols-outlined text-[16px] text-[#817663]">expand_more</span>
           </div>
         </div>
       </header>
@@ -97,9 +116,36 @@ export class TopHeader {
       });
     }
 
-    const btnUser = this.container.querySelector('#btnUserSwitcher');
-    if (btnUser) {
-      btnUser.addEventListener('click', () => this.showRoleSwitcherModal());
+    // Toggle User Menu Dropdown
+    const trigger = this.container.querySelector('#btnUserMenuTrigger');
+    const dropdown = this.container.querySelector('#userMenuDropdown');
+    if (trigger && dropdown) {
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('hidden');
+      });
+
+      document.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+      });
+    }
+
+    // Mở Profile Modal
+    const btnProfile = this.container.querySelector('#btnOpenProfile');
+    if (btnProfile) {
+      btnProfile.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+        if (this.onOpenProfileModal) this.onOpenProfileModal();
+      });
+    }
+
+    // Mở Role Switcher
+    const btnRole = this.container.querySelector('#btnOpenRoleSwitcher');
+    if (btnRole) {
+      btnRole.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+        this.showRoleSwitcherModal();
+      });
     }
   }
 
@@ -108,6 +154,7 @@ export class TopHeader {
     if (modal) modal.remove();
 
     const currentUser = auth.getCurrentUser();
+    const allUsers = store.getAllUsers();
 
     modal = document.createElement('div');
     modal.id = 'roleSwitcherModal';
@@ -126,18 +173,18 @@ export class TopHeader {
           Chọn nhân sự bên dưới để kiểm tra khả năng <strong>cô lập dữ liệu & phân quyền</strong>:
         </p>
 
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto">
           <!-- ADMIN -->
           <div class="text-[11px] font-bold text-[#795900] uppercase tracking-wider">👑 Cấp 1: Ban Giám Đốc (Admin)</div>
-          ${USERS.filter(u => u.role === 'ADMIN').map(u => this.renderUserItem(u, currentUser)).join('')}
+          ${allUsers.filter(u => u.role === 'ADMIN').map(u => this.renderUserItem(u, currentUser)).join('')}
 
           <!-- TRƯỞNG PHÒNG -->
           <div class="text-[11px] font-bold text-[#16a34a] uppercase tracking-wider mt-2">👔 Cấp 2: Trưởng Phòng / Quản Lý</div>
-          ${USERS.filter(u => u.role === 'MANAGER').map(u => this.renderUserItem(u, currentUser)).join('')}
+          ${allUsers.filter(u => u.role === 'MANAGER').map(u => this.renderUserItem(u, currentUser)).join('')}
 
           <!-- NHÂN VIÊN -->
           <div class="text-[11px] font-bold text-[#2563EB] uppercase tracking-wider mt-2">👤 Cấp 3: Nhân Viên Chuyên Môn</div>
-          ${USERS.filter(u => u.role === 'MEMBER').map(u => this.renderUserItem(u, currentUser)).join('')}
+          ${allUsers.filter(u => u.role === 'MEMBER').map(u => this.renderUserItem(u, currentUser)).join('')}
         </div>
       </div>
     `;
