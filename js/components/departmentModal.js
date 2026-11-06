@@ -44,7 +44,7 @@ export class DepartmentModal {
 
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="deptModalOverlay">
-        <div class="modal-card bg-white rounded-3xl p-4 sm:p-6 max-w-4xl w-full shadow-2xl border border-[#e2e8f0] h-[85vh] max-h-[720px] flex flex-col overflow-hidden gap-4 sm:gap-5" style="background-color: var(--card); border-color: var(--border);">
+        <div class="modal-card bg-white rounded-3xl p-4 sm:p-6 max-w-4xl w-full shadow-2xl border border-[#e2e8f0] h-[85vh] min-h-[580px] max-h-[720px] flex flex-col overflow-hidden gap-4 sm:gap-5" style="background-color: var(--card); border-color: var(--border);">
           
           <!-- HEADER: shrink-0 -->
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] shrink-0" style="border-color: var(--border);">
@@ -65,10 +65,10 @@ export class DepartmentModal {
           </div>
 
           <!-- MAIN GRID: LEFT (LIST PHÒNG BAN) & RIGHT (CHI TIẾT & BỘ PHẬN CON) -->
-          <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-5 overflow-y-auto lg:overflow-hidden">
+          <div class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-5 overflow-y-auto md:overflow-hidden">
             
             <!-- CỘT TRÁI (5 COLS): DANH SÁCH PHÒNG BAN & NÚT THÊM -->
-            <div class="lg:col-span-5 flex flex-col gap-3 lg:h-full lg:min-h-0">
+            <div class="md:col-span-5 flex flex-col gap-3 md:h-full md:min-h-0">
               <div class="flex items-center justify-between shrink-0">
                 <span class="text-[12.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">
                   Danh sách phòng ban (${depts.length})
@@ -97,8 +97,8 @@ export class DepartmentModal {
                 </div>
               </div>
 
-              <!-- LIST CARDS PHÒNG BAN: lg:flex-1 lg:min-h-0 max-h-[240px] lg:max-h-none overflow-y-auto -->
-              <div class="flex flex-col gap-2 lg:flex-1 lg:min-h-0 max-h-[240px] lg:max-h-none overflow-y-auto pr-1">
+              <!-- LIST CARDS PHÒNG BAN: md:flex-1 md:min-h-0 max-h-[240px] md:max-h-none overflow-y-auto -->
+              <div class="flex flex-col gap-2 md:flex-1 md:min-h-0 max-h-[240px] md:max-h-none overflow-y-auto pr-1">
                 ${depts.map(d => {
                   const isAct = selectedDept && selectedDept.id === d.id;
                   const mgr = allUsers.find(u => u.id === d.managerId);
@@ -122,7 +122,7 @@ export class DepartmentModal {
             </div>
 
             <!-- CỘT PHẢI (7 COLS): CHI TIẾT PHÒNG BAN & BỘ PHẬN CON (TEAMS) -->
-            <div class="lg:col-span-7 flex flex-col gap-4 p-4 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff]/50 lg:h-full lg:min-h-0 overflow-y-auto lg:overflow-hidden" style="background-color: var(--background); border-color: var(--border);">
+            <div class="md:col-span-7 flex flex-col gap-4 p-4 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff]/50 md:h-full md:min-h-0 overflow-y-auto md:overflow-hidden" style="background-color: var(--background); border-color: var(--border);">
               ${selectedDept ? `
                 <!-- THÔNG TIN PHÒNG BAN ĐANG CHỌN (HEADER): shrink-0 -->
                 <div class="flex items-center justify-between pb-3 border-b border-[#e2e8f0] shrink-0" style="border-color: var(--border);">
@@ -177,8 +177,8 @@ export class DepartmentModal {
                   </div>
                 </div>
 
-                <!-- DANH SÁCH BỘ PHẬN CON (TEAMS) CONTAINER: lg:flex-1 lg:min-h-0 lg:overflow-hidden -->
-                <div class="flex flex-col gap-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+                <!-- DANH SÁCH BỘ PHẬN CON (TEAMS) CONTAINER: md:flex-1 md:min-h-0 md:overflow-hidden -->
+                <div class="flex flex-col gap-3 md:flex-1 md:min-h-0 md:overflow-hidden">
                   <div class="shrink-0 flex items-center justify-between">
                     <div>
                       <span class="text-[13px] font-bold text-[#0d1c2f]" style="color: var(--text);">
@@ -200,8 +200,8 @@ export class DepartmentModal {
                     </button>
                   </div>
 
-                  <!-- DANH SÁCH CÁC BỘ PHẬN CON HIỆN CÓ: lg:flex-1 lg:min-h-0 max-h-[280px] lg:max-h-none overflow-y-auto -->
-                  <div class="flex flex-col gap-2 lg:flex-1 lg:min-h-0 max-h-[280px] lg:max-h-none overflow-y-auto pr-1">
+                  <!-- DANH SÁCH CÁC BỘ PHẬN CON HIỆN CÓ: md:flex-1 md:min-h-0 max-h-[280px] md:max-h-none overflow-y-auto -->
+                  <div class="flex flex-col gap-2 md:flex-1 md:min-h-0 max-h-[280px] md:max-h-none overflow-y-auto pr-1">
                     ${(!selectedDept.teams || selectedDept.teams.length === 0) ? `
                       <div class="p-4 rounded-xl text-center text-[12px] text-[#817663] bg-white border border-[#e2e8f0]" style="background-color: var(--card); border-color: var(--border);">
                         Chưa có bộ phận con nào trong phòng ban này. Hãy thêm bộ phận ở trên.
