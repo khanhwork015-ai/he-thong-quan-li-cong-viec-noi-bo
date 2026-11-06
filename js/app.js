@@ -74,7 +74,8 @@ class App {
       () => this.settingsModal.show(),
       () => this.sidebar.toggle(),
       () => this.switchNav('phong-ban'),
-      () => this.onLogout()
+      () => this.onLogout(),
+      (taskId) => this.taskDrawer.open(taskId)
     );
 
     this.taskDrawer = new TaskDrawer('drawer-container', () => this.refreshCurrentView());
@@ -230,6 +231,10 @@ class App {
 
     window.addEventListener('tvm:auth_changed', () => {
       this.render();
+    });
+
+    window.addEventListener('tvm:notifications_changed', () => {
+      if (this.header) this.header.render();
     });
 
     window.addEventListener('auth-changed', () => {

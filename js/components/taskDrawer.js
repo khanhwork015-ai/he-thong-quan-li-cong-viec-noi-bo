@@ -75,24 +75,49 @@ export class TaskDrawer {
               </p>
             </div>
 
+            <!-- KHU VỰC PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE SELECTOR) -->
+            <div class="p-4 rounded-2xl border border-[#e2e8f0] bg-[#fffbeb]/50 flex flex-col gap-2.5 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--border);">
+              <div class="flex items-center justify-between">
+                <span class="text-[12px] font-bold text-[#795900] flex items-center gap-1.5" style="color: var(--primary);">
+                  <span class="material-symbols-outlined text-[18px]">person_check</span>
+                  <span>Người thực hiện (Assignee)</span>
+                </span>
+                <span class="text-[10.5px] font-semibold text-[#817663]">Đổi người phụ trách tại đây</span>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <img src="${assignee ? assignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" id="drawerAssigneeAvatar" class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow-xs" />
+                
+                <div class="flex-1 min-w-0">
+                  <select id="selectTaskAssignee" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] font-bold text-[#0d1c2f] bg-white outline-none focus:border-[#d6a52a] cursor-pointer shadow-2xs">
+                    ${store.getAllDepartments().map(d => {
+                      const dUsers = store.getAllUsers().filter(u => u.departmentId === d.id || u.departmentId === 'all');
+                      if (dUsers.length === 0) return '';
+                      return `
+                        <optgroup label="${d.name} (${d.code})">
+                          ${dUsers.map(u => {
+                            const team = (d.teams || []).find(t => t.id === u.teamId);
+                            const teamLabel = team ? `[${team.code}] ` : '';
+                            return `<option value="${u.id}" ${u.id === task.assigneeId ? 'selected' : ''}>${teamLabel}${esc(u.name)} (${esc(u.title)})</option>`;
+                          }).join('')}
+                        </optgroup>
+                      `;
+                    }).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <div class="text-[11px] text-[#64748b] flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <span>Người giao việc: <strong>${creator ? esc(creator.name) : 'Ban Giám Đốc'}</strong></span>
+                <span class="text-amber-700 font-semibold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">notifications_active</span>
+                  <span>Tự động gửi chuông thông báo khi đổi người</span>
+                </span>
+              </div>
+            </div>
+
             <!-- METADATA GRID -->
             <div class="grid grid-cols-2 gap-3.5 p-4 rounded-xl bg-white border border-[#e2e8f0]">
-              <div>
-                <span class="text-[11px] text-[#64748b] font-medium uppercase tracking-wider">Người thực hiện</span>
-                <div class="flex items-center gap-2 mt-1">
-                  <img src="${assignee ? assignee.avatar : ''}" class="w-6 h-6 rounded-full object-cover" />
-                  <span class="text-[13px] font-bold text-[#0d1c2f]">${assignee ? assignee.name : 'Chưa giao'}</span>
-                </div>
-              </div>
-
-              <div>
-                <span class="text-[11px] text-[#64748b] font-medium uppercase tracking-wider">Người giao việc</span>
-                <div class="flex items-center gap-2 mt-1">
-                  <img src="${creator ? creator.avatar : ''}" class="w-6 h-6 rounded-full object-cover" />
-                  <span class="text-[13px] font-bold text-[#0d1c2f]">${creator ? creator.name : 'Ban Giám Đốc'}</span>
-                </div>
-              </div>
-
               <div>
                 <span class="text-[11px] text-[#64748b] font-medium uppercase tracking-wider">Hạn hoàn thành</span>
                 <div class="text-[13px] font-bold text-[#0d1c2f] font-mono-data mt-1 flex items-center gap-1">
@@ -230,6 +255,19 @@ export class TaskDrawer {
     if (backdrop) {
       backdrop.addEventListener('click', (e) => {
         if (e.target === backdrop) this.close();
+      });
+    }
+
+    const selectAssignee = this.container.querySelector('#selectTaskAssignee');
+    if (selectAssignee) {
+      selectAssignee.addEventListener('change', (e) => {
+        rung(10);
+        const newAssigneeId = e.target.value;
+        store.updateTaskAssignee(task.id, newAssigneeId);
+        const newAssignee = store.getUserById(newAssigneeId);
+        toast(`Đã giao công việc cho: ${newAssignee ? newAssignee.name : 'nhân sự mới'}!`, 'success');
+        if (this.onTaskUpdated) this.onTaskUpdated();
+        this.render();
       });
     }
 

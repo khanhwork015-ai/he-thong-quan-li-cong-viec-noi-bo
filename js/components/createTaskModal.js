@@ -53,24 +53,41 @@ export class CreateTaskModal {
               <textarea id="newTaskDesc" rows="3" placeholder="Ghi chú các yêu cầu, mốc chất lượng cần bàn giao..." class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white"></textarea>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Người phụ trách *</label>
-                <select id="newTaskAssignee" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white">
-                  ${depts.map(d => {
-                    const dUsers = allUsers.filter(u => u.departmentId === d.id || u.departmentId === 'all');
-                    if (dUsers.length === 0) return '';
-                    return `
-                      <optgroup label="${d.name} (${d.code})">
-                        ${dUsers.map(u => `
-                          <option value="${u.id}" ${u.id === currentUser.id ? 'selected' : ''}>${u.name} - ${u.title}</option>
-                        `).join('')}
-                      </optgroup>
-                    `;
-                  }).join('')}
-                </select>
+            <div class="p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#fffbeb]/50 flex flex-col gap-2.5" style="background-color: var(--primary-soft); border-color: var(--border);">
+              <div class="flex items-center justify-between">
+                <label class="block text-[12.5px] font-bold text-[#795900] flex items-center gap-1.5" style="color: var(--primary);">
+                  <span class="material-symbols-outlined text-[18px]">person_add</span>
+                  <span>Phân công người thực hiện (Assignee) *</span>
+                </label>
+                <span class="text-[10.5px] font-semibold text-amber-700">Tự động báo chuông</span>
               </div>
 
+              <div class="flex items-center gap-3">
+                <img id="newTaskAssigneeAvatar" src="${currentUser.avatar}" class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow-xs" />
+                <div class="flex-1 min-w-0">
+                  <select id="newTaskAssignee" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] font-bold text-[#0d1c2f] outline-none focus:border-[#d6a52a] bg-white cursor-pointer shadow-2xs">
+                    ${depts.map(d => {
+                      const dUsers = allUsers.filter(u => u.departmentId === d.id || u.departmentId === 'all');
+                      if (dUsers.length === 0) return '';
+                      return `
+                        <optgroup label="${d.name} (${d.code})">
+                          ${dUsers.map(u => {
+                            const team = (d.teams || []).find(t => t.id === u.teamId);
+                            const teamLabel = team ? `[${team.code}] ` : '';
+                            return `<option value="${u.id}" ${u.id === currentUser.id ? 'selected' : ''}>${teamLabel}${u.name} (${u.title})</option>`;
+                          }).join('')}
+                        </optgroup>
+                      `;
+                    }).join('')}
+                  </select>
+                </div>
+              </div>
+              <span class="text-[11px] text-[#817663]">
+                * Bất kỳ ai cũng có thể tạo và giao việc cho bất kỳ nhân sự nào trên toàn viện.
+              </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Mức độ ưu tiên *</label>
                 <select id="newTaskPriority" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white">
@@ -79,13 +96,12 @@ export class CreateTaskModal {
                   <option value="P3">P3 - Tiêu chuẩn</option>
                 </select>
               </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Hạn hoàn thành *</label>
                 <input type="date" id="newTaskDueDate" required value="${new Date().toISOString().split('T')[0]}" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
+            </div>
 
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Chuyên môn / Danh mục</label>
@@ -120,6 +136,15 @@ export class CreateTaskModal {
     const btnClose = this.container.querySelector('#btnCloseCreateModal');
     const btnCancel = this.container.querySelector('#btnCancelCreateTask');
     const form = this.container.querySelector('#formCreateTask');
+    const selectAssignee = this.container.querySelector('#newTaskAssignee');
+    const avatarImg = this.container.querySelector('#newTaskAssigneeAvatar');
+
+    if (selectAssignee && avatarImg) {
+      selectAssignee.addEventListener('change', () => {
+        const u = store.getUserById(selectAssignee.value);
+        if (u) avatarImg.src = u.avatar;
+      });
+    }
 
     const closeModal = () => {
       rung(10);

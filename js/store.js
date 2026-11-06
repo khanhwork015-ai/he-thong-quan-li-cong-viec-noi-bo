@@ -10,6 +10,7 @@ import { appScriptBridge } from './services/appScriptBridge.js';
 const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
 const USERS_STORAGE_KEY = 'tvm_users_v4';
 const DEPTS_STORAGE_KEY = 'tvm_departments_v4';
+const NOTIF_STORAGE_KEY = 'tvm_notifications_v2';
 
 export class Store {
   constructor() {
@@ -26,6 +27,44 @@ export class Store {
     }
     if (!localStorage.getItem(DEPTS_STORAGE_KEY)) {
       localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(DEPARTMENTS));
+    }
+    if (!localStorage.getItem(NOTIF_STORAGE_KEY)) {
+      const initialNotifs = [
+        {
+          id: 'notif_init_1',
+          recipientId: 'user_tam_ptkh',
+          senderId: 'user_lanhdao',
+          type: 'task_assigned',
+          title: '📋 Phân công công việc mới',
+          content: 'ThS.BS Nguyễn Thanh Vũ đã giao việc "Tổ chức khám sức khỏe định kỳ VIP Doanh nghiệp Cà Mau" cho bạn.',
+          taskId: 'PTKH-01',
+          isRead: false,
+          createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
+        },
+        {
+          id: 'notif_init_2',
+          recipientId: 'user_mai_ptkh',
+          senderId: 'user_tam_ptkh',
+          type: 'task_assigned',
+          title: '📋 Phân công công việc mới',
+          content: 'Huỳnh Trường Thanh Tâm đã phân công việc "Gọi điện chăm sóc & khảo sát ý kiến 50 bệnh nhân nội trú" cho bạn.',
+          taskId: 'PTKH-02',
+          isRead: false,
+          createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
+        },
+        {
+          id: 'notif_init_3',
+          recipientId: 'user_admin',
+          senderId: 'user_tam_ptkh',
+          type: 'status_change',
+          title: '🔄 Cập nhật tiến độ nhiệm vụ',
+          content: 'Phòng PTKH vừa cập nhật tiến độ công việc "Đề xuất chiến dịch Marketing truyền thông quý 4".',
+          taskId: 'PTKH-03',
+          isRead: false,
+          createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
+        }
+      ];
+      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(initialNotifs));
     }
   }
 
@@ -457,7 +496,73 @@ export class Store {
     tasks.unshift(newTask);
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(newTask);
+
+    // Gửi thông báo cho Assignee
+    if (newTask.assigneeId) {
+      this.addNotification({
+        recipientId: newTask.assigneeId,
+        senderId: currentUser.id,
+        type: 'task_assigned',
+        title: '📋 Bạn được giao công việc mới',
+        content: `${currentUser.name} đã giao nhiệm vụ "${newTask.title}" (${newTask.id}) cho bạn. Hạn hoàn thành: ${newTask.dueDate}.`,
+        taskId: newTask.id
+      });
+    }
+
     return newTask;
+  }
+
+  updateTaskAssignee(taskId, newAssigneeId) {
+    const tasks = this.getAllTasksRaw();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return null;
+
+    const oldAssigneeId = task.assigneeId;
+    if (oldAssigneeId === newAssigneeId) return task;
+
+    const currentUser = auth.getCurrentUser();
+    const newAssignee = this.getUserById(newAssigneeId);
+    const oldAssignee = this.getUserById(oldAssigneeId);
+
+    task.assigneeId = newAssigneeId;
+    task.updatedAt = new Date().toISOString();
+
+    if (!task.comments) task.comments = [];
+    task.comments.push({
+      id: `cm-${Date.now()}`,
+      userId: currentUser.id,
+      content: `[Điều chuyển] Đã phân công lại người thực hiện cho ${newAssignee ? newAssignee.name : 'nhân sự mới'}.`,
+      createdAt: new Date().toISOString()
+    });
+
+    this.saveAllTasks(tasks);
+    appScriptBridge.pushTask(task);
+
+    // Gửi thông báo cho người được assign mới
+    if (newAssigneeId && newAssigneeId !== currentUser.id) {
+      this.addNotification({
+        recipientId: newAssigneeId,
+        senderId: currentUser.id,
+        type: 'task_assigned',
+        title: '👤 Bạn được phân công làm người phụ trách',
+        content: `${currentUser.name} đã phân công công việc "${task.title}" (${task.id}) cho bạn.`,
+        taskId: task.id
+      });
+    }
+
+    // Nếu người cũ khác người thao tác, thông báo chuyển giao
+    if (oldAssigneeId && oldAssigneeId !== currentUser.id && oldAssigneeId !== newAssigneeId) {
+      this.addNotification({
+        recipientId: oldAssigneeId,
+        senderId: currentUser.id,
+        type: 'update',
+        title: 'ℹ️ Công việc đã được chuyển giao',
+        content: `Công việc "${task.title}" (${task.id}) đã được ${currentUser.name} chuyển giao cho ${newAssignee ? newAssignee.name : 'người khác'}.`,
+        taskId: task.id
+      });
+    }
+
+    return task;
   }
 
   updateTaskStatus(taskId, newStatus) {
@@ -474,6 +579,42 @@ export class Store {
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
+
+    const statusLabels = {
+      'todo': 'Chưa bắt đầu',
+      'in_progress': 'Đang thực hiện',
+      'review': 'Chờ phê duyệt',
+      'done': 'Đã hoàn thành',
+      'paused': 'Tạm dừng',
+      'overdue': 'Quá hạn'
+    };
+    const sLabel = statusLabels[newStatus] || newStatus;
+    const currentUser = auth.getCurrentUser();
+
+    // Thông báo cho Assignee
+    if (task.assigneeId && task.assigneeId !== currentUser.id) {
+      this.addNotification({
+        recipientId: task.assigneeId,
+        senderId: currentUser.id,
+        type: 'status_change',
+        title: '🔄 Cập nhật trạng thái công việc',
+        content: `Công việc "${task.title}" (${task.id}) đã được ${currentUser.name} chuyển sang "${sLabel}".`,
+        taskId: task.id
+      });
+    }
+
+    // Thông báo cho Creator
+    if (task.creatorId && task.creatorId !== currentUser.id && task.creatorId !== task.assigneeId) {
+      this.addNotification({
+        recipientId: task.creatorId,
+        senderId: currentUser.id,
+        type: 'status_change',
+        title: '🔄 Tiến độ nhiệm vụ cập nhật',
+        content: `${currentUser.name} đã cập nhật trạng thái việc "${task.title}" (${task.id}) thành "${sLabel}".`,
+        taskId: task.id
+      });
+    }
+
     return task;
   }
 
@@ -482,14 +623,28 @@ export class Store {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return false;
 
+    const currentUser = auth.getCurrentUser();
     task.status = 'done';
     task.progress = 100;
-    task.approvedBy = auth.getCurrentUser().name;
+    task.approvedBy = currentUser.name;
     task.approvedAt = new Date().toISOString();
     task.updatedAt = new Date().toISOString();
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
+
+    // Thông báo cho Assignee
+    if (task.assigneeId && task.assigneeId !== currentUser.id) {
+      this.addNotification({
+        recipientId: task.assigneeId,
+        senderId: currentUser.id,
+        type: 'approval',
+        title: '✅ Công việc đã được phê duyệt nghiệm thu',
+        content: `${currentUser.name} đã ký duyệt hoàn thành 100% nhiệm vụ "${task.title}" (${task.id}).`,
+        taskId: task.id
+      });
+    }
+
     return true;
   }
 
@@ -516,6 +671,19 @@ export class Store {
       }
       this.saveAllTasks(tasks);
       appScriptBridge.pushTask(task);
+
+      // Thông báo cập nhật tiến độ
+      const currentUser = auth.getCurrentUser();
+      if (task.assigneeId && task.assigneeId !== currentUser.id) {
+        this.addNotification({
+          recipientId: task.assigneeId,
+          senderId: currentUser.id,
+          type: 'update',
+          title: '☑️ Cập nhật tiến độ việc con',
+          content: `${currentUser.name} đã cập nhật checklist công việc "${task.title}" (Tiến độ: ${task.progress}%).`,
+          taskId: task.id
+        });
+      }
     }
   }
 
@@ -524,16 +692,114 @@ export class Store {
     const task = tasks.find(t => t.id === taskId);
     if (!task || !content.trim()) return;
 
+    const currentUser = auth.getCurrentUser();
     if (!task.comments) task.comments = [];
     task.comments.push({
       id: `cm-${Date.now()}`,
-      userId: auth.getCurrentUser().id,
+      userId: currentUser.id,
       content: content.trim(),
       createdAt: new Date().toISOString()
     });
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
+
+    // Thông báo cho Assignee
+    if (task.assigneeId && task.assigneeId !== currentUser.id) {
+      this.addNotification({
+        recipientId: task.assigneeId,
+        senderId: currentUser.id,
+        type: 'comment',
+        title: '💬 Ý kiến chỉ đạo / Trao đổi mới',
+        content: `${currentUser.name} đã nhắn trong việc "${task.title}": "${content.slice(0, 60)}..."`,
+        taskId: task.id
+      });
+    }
+    // Thông báo cho Creator
+    if (task.creatorId && task.creatorId !== currentUser.id && task.creatorId !== task.assigneeId) {
+      this.addNotification({
+        recipientId: task.creatorId,
+        senderId: currentUser.id,
+        type: 'comment',
+        title: '💬 Trao đổi trong công việc bạn giao',
+        content: `${currentUser.name} đã nhắn trong việc "${task.title}": "${content.slice(0, 60)}..."`,
+        taskId: task.id
+      });
+    }
+  }
+
+  // --- HỆ THỐNG THÔNG BÁO (NOTIFICATIONS SYSTEM) ---
+  getAllNotifications() {
+    try {
+      const saved = localStorage.getItem(NOTIF_STORAGE_KEY);
+      if (saved) return JSON.parse(saved) || [];
+    } catch (_) {}
+    return [];
+  }
+
+  saveAllNotifications(notifs) {
+    localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(notifs));
+    window.dispatchEvent(new CustomEvent('tvm:notifications_changed', { detail: { count: notifs.length } }));
+    window.dispatchEvent(new CustomEvent('tvm:data_changed'));
+  }
+
+  getUserNotifications(userId) {
+    if (!userId) return [];
+    return this.getAllNotifications().filter(n => n.recipientId === userId || n.recipientId === 'all')
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  getUnreadNotificationCount(userId) {
+    if (!userId) return 0;
+    return this.getUserNotifications(userId).filter(n => !n.isRead).length;
+  }
+
+  addNotification(notifData) {
+    if (!notifData.recipientId) return;
+    const notifs = this.getAllNotifications();
+    const newNotif = {
+      id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      recipientId: notifData.recipientId,
+      senderId: notifData.senderId || (auth.getCurrentUser()?.id || 'system'),
+      type: notifData.type || 'info', // 'task_assigned' | 'status_change' | 'comment' | 'approval' | 'update'
+      title: notifData.title || 'Thông báo mới',
+      content: notifData.content || '',
+      taskId: notifData.taskId || null,
+      isRead: false,
+      createdAt: new Date().toISOString()
+    };
+    notifs.unshift(newNotif);
+    // Giữ tối đa 100 thông báo gần nhất
+    if (notifs.length > 100) notifs.length = 100;
+    this.saveAllNotifications(notifs);
+    return newNotif;
+  }
+
+  markNotificationAsRead(notifId) {
+    const notifs = this.getAllNotifications();
+    const notif = notifs.find(n => n.id === notifId);
+    if (notif) {
+      notif.isRead = true;
+      this.saveAllNotifications(notifs);
+    }
+  }
+
+  markAllNotificationsAsRead(userId) {
+    const notifs = this.getAllNotifications();
+    let updated = false;
+    notifs.forEach(n => {
+      if ((n.recipientId === userId || n.recipientId === 'all') && !n.isRead) {
+        n.isRead = true;
+        updated = true;
+      }
+    });
+    if (updated) this.saveAllNotifications(notifs);
+  }
+
+  clearUserNotifications(userId) {
+    const notifs = this.getAllNotifications();
+    const remaining = notifs.filter(n => n.recipientId !== userId && n.recipientId !== 'all');
+    this.saveAllNotifications(remaining);
   }
 
   getDepartmentMetrics() {

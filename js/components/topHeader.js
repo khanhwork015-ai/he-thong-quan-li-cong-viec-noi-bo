@@ -7,11 +7,11 @@
 import { auth } from '../auth.js';
 import { store } from '../store.js';
 import { USERS } from '../models.js';
-import { toast, rung } from '../helpers.js';
+import { toast, rung, esc, timeAgo } from '../helpers.js';
 import { shinTheme } from '../theme.js';
 
 export class TopHeader {
-  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout) {
+  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask) {
     this.container = document.getElementById(containerId);
     this.onSearch = onSearch;
     this.onOpenCreateModal = onOpenCreateModal;
@@ -20,6 +20,7 @@ export class TopHeader {
     this.onToggleMobileSidebar = onToggleMobileSidebar;
     this.onOpenDepartmentModal = onOpenDepartmentModal;
     this.onLogout = onLogout;
+    this.onOpenTask = onOpenTask;
   }
 
   render() {
@@ -30,6 +31,8 @@ export class TopHeader {
     const metrics = store.getDepartmentMetrics();
     const canCreate = auth.canCreateTask();
     const isDark = shinTheme.resolveIsDark();
+    const unreadCount = store.getUnreadNotificationCount(user.id);
+    const userNotifs = store.getUserNotifications(user.id);
 
     let roleBadgeText = '👤 Nhân Viên';
     if (user.role === 'ADMIN') roleBadgeText = '👑 Quản Trị Viên (Admin)';
@@ -82,15 +85,104 @@ export class TopHeader {
             <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">palette</span>
           </button>
 
-          <!-- NOTIFICATIONS -->
-          <button type="button" class="relative p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="${metrics.pendingApproval} việc đang chờ phê duyệt" id="btnNotifications">
-            <span class="material-symbols-outlined text-[22px]">notifications</span>
-            ${metrics.pendingApproval > 0 ? `
-              <span class="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#dc2626] px-1 text-[10px] font-bold text-white shadow-xs">
-                ${metrics.pendingApproval}
-              </span>
-            ` : ''}
-          </button>
+          <!-- NOTIFICATIONS BELL & DROPDOWN -->
+          <div class="relative">
+            <button type="button" class="relative p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer" title="Thông báo (${unreadCount} chưa đọc)" id="btnNotifications">
+              <span class="material-symbols-outlined text-[22px]" style="${unreadCount > 0 ? 'color: var(--primary);' : ''}">notifications</span>
+              ${unreadCount > 0 ? `
+                <span class="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#dc2626] px-1 text-[10px] font-bold text-white shadow-xs animate-pulse">
+                  ${unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              ` : ''}
+            </button>
+
+            <!-- DROPDOWN THÔNG BÁO -->
+            <div id="notificationsDropdown" class="hidden absolute right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 top-12 w-[340px] sm:w-[380px] bg-white rounded-2xl shadow-2xl border border-[#e2e8f0] overflow-hidden z-50 flex flex-col" style="background-color: var(--card); border-color: var(--border);">
+              
+              <!-- HEADER DROPDOWN -->
+              <div class="p-3.5 px-4 border-b border-[#f1f5f9] flex items-center justify-between bg-[#f8f9ff]/60 shrink-0" style="border-color: var(--border); background-color: var(--primary-soft);">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">notifications_active</span>
+                  <span class="text-[13.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">Thông Báo</span>
+                  ${unreadCount > 0 ? `
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-mono-data">
+                      ${unreadCount} mới
+                    </span>
+                  ` : ''}
+                </div>
+
+                ${unreadCount > 0 ? `
+                  <button type="button" id="btnMarkAllNotifsRead" class="text-[11.5px] font-semibold text-amber-700 hover:text-amber-900 hover:underline cursor-pointer">
+                    Đã đọc tất cả
+                  </button>
+                ` : ''}
+              </div>
+
+              <!-- LIST THÔNG BÁO -->
+              <div class="max-h-[360px] overflow-y-auto flex flex-col divide-y divide-[#f1f5f9]" style="border-color: var(--border);">
+                ${userNotifs.length === 0 ? `
+                  <div class="p-8 text-center flex flex-col items-center justify-center gap-2 text-gray-400">
+                    <span class="material-symbols-outlined text-[36px] text-gray-300">notifications_off</span>
+                    <span class="text-[12.5px]">Bạn không có thông báo nào.</span>
+                  </div>
+                ` : userNotifs.slice(0, 30).map(n => {
+                  let icon = 'notifications';
+                  let iconBg = 'bg-blue-50 text-blue-600';
+                  if (n.type === 'task_assigned') {
+                    icon = 'assignment_ind';
+                    iconBg = 'bg-amber-50 text-amber-700';
+                  } else if (n.type === 'status_change') {
+                    icon = 'sync_alt';
+                    iconBg = 'bg-sky-50 text-sky-600';
+                  } else if (n.type === 'approval') {
+                    icon = 'verified';
+                    iconBg = 'bg-emerald-50 text-emerald-600';
+                  } else if (n.type === 'comment') {
+                    icon = 'chat';
+                    iconBg = 'bg-purple-50 text-purple-600';
+                  }
+
+                  return `
+                    <div class="p-3.5 hover:bg-[#f8f9ff] cursor-pointer transition-colors flex items-start gap-3 notif-item ${!n.isRead ? 'bg-[#fffbeb]/40' : ''}" data-notif-id="${n.id}" data-task-id="${n.taskId || ''}">
+                      <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBg} shadow-2xs mt-0.5">
+                        <span class="material-symbols-outlined text-[18px]">${icon}</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-1">
+                          <span class="text-[12.5px] font-bold text-[#0d1c2f] truncate ${!n.isRead ? 'text-[#795900]' : ''}" style="color: ${!n.isRead ? 'var(--primary)' : 'var(--text)'};">
+                            ${esc(n.title)}
+                          </span>
+                          <span class="text-[10px] text-gray-400 shrink-0 font-mono-data">${timeAgo(n.createdAt)}</span>
+                        </div>
+                        <p class="text-[12px] text-[#4f4635] mt-0.5 line-clamp-2 leading-relaxed" style="color: var(--text-muted);">
+                          ${esc(n.content)}
+                        </p>
+                        ${n.taskId ? `
+                          <span class="inline-block mt-1 font-mono-data text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                            #${n.taskId}
+                          </span>
+                        ` : ''}
+                      </div>
+                      ${!n.isRead ? `
+                        <span class="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-2 shadow-xs"></span>
+                      ` : ''}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- FOOTER DROPDOWN -->
+              ${userNotifs.length > 0 ? `
+                <div class="p-2.5 px-3 border-t border-[#f1f5f9] flex items-center justify-between bg-gray-50/50 shrink-0 text-[11px]" style="border-color: var(--border);">
+                  <span class="text-gray-400">${userNotifs.length} thông báo</span>
+                  <button type="button" id="btnClearAllNotifs" class="text-gray-500 hover:text-rose-600 transition-colors font-medium cursor-pointer">
+                    Xóa tất cả
+                  </button>
+                </div>
+              ` : ''}
+
+            </div>
+          </div>
 
           <!-- QUICK SETTINGS BUTTON (DESKTOP) -->
           <button type="button" class="hidden sm:flex p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] items-center justify-center transition-colors" title="Cài đặt hệ thống & Tích hợp Cloud" id="btnQuickSettings">
@@ -265,13 +357,66 @@ export class TopHeader {
       });
     }
 
+    const user = auth.getCurrentUser();
     const btnNotif = this.container.querySelector('#btnNotifications');
-    if (btnNotif) {
-      btnNotif.addEventListener('click', () => {
-        const metrics = store.getDepartmentMetrics();
-        toast(`Có ${metrics.pendingApproval} công việc đang chờ phê duyệt nghiệm thu!`, 'info');
+    const notifDropdown = this.container.querySelector('#notificationsDropdown');
+    const btnMarkAll = this.container.querySelector('#btnMarkAllNotifsRead');
+    const btnClearAll = this.container.querySelector('#btnClearAllNotifs');
+
+    if (btnNotif && notifDropdown) {
+      btnNotif.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        if (dropdown) dropdown.classList.add('hidden');
+        notifDropdown.classList.toggle('hidden');
+      });
+
+      document.addEventListener('click', () => {
+        notifDropdown.classList.add('hidden');
+      });
+
+      notifDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
       });
     }
+
+    if (btnMarkAll && user) {
+      btnMarkAll.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        store.markAllNotificationsAsRead(user.id);
+        toast('Đã đánh dấu tất cả thông báo là đã đọc!', 'success');
+        this.render();
+      });
+    }
+
+    if (btnClearAll && user) {
+      btnClearAll.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(15);
+        store.clearUserNotifications(user.id);
+        toast('Đã xóa danh sách thông báo!', 'info');
+        this.render();
+      });
+    }
+
+    this.container.querySelectorAll('.notif-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        const notifId = item.dataset.notifId;
+        const taskId = item.dataset.taskId;
+
+        if (notifId) store.markNotificationAsRead(notifId);
+        if (notifDropdown) notifDropdown.classList.add('hidden');
+
+        if (taskId && this.onOpenTask) {
+          this.onOpenTask(taskId);
+        } else {
+          this.render();
+        }
+      });
+    });
   }
 
   showRoleSwitcherModal() {
