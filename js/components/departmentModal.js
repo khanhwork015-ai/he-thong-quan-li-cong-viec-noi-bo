@@ -20,6 +20,14 @@ export class DepartmentModal {
   }
 
   show(deptIdToSelect = null) {
+    if (window.TVM_APP && typeof window.TVM_APP.switchNav === 'function') {
+      window.TVM_APP.switchNav('phong-ban');
+      if (deptIdToSelect && window.TVM_APP.departmentView) {
+        window.TVM_APP.departmentView.render(deptIdToSelect);
+      }
+      return;
+    }
+
     if (!this.container) return;
     if (!auth.canCRUDDepartments()) {
       toast('Chỉ Quản Trị Viên (Admin) mới có quyền quản lý phòng ban và bộ phận con!', 'warning');

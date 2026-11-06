@@ -5,7 +5,7 @@
  */
 
 import { auth } from '../auth.js';
-import { DEPARTMENTS } from '../models.js';
+import { store } from '../store.js';
 import { toast, rung } from '../helpers.js';
 
 export class Sidebar {
@@ -272,7 +272,7 @@ export class Sidebar {
         </p>
 
         <div class="flex flex-col gap-2.5">
-          ${DEPARTMENTS.map(d => `
+          ${store.getAllDepartments().map(d => `
             <div class="p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${d.id === activeDept.id ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="${d.id}">
               <div class="flex items-center gap-3">
                 <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] shrink-0"></span>

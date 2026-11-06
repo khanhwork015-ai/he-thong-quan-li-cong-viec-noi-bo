@@ -18,6 +18,7 @@ import { MemberModal } from './components/memberModal.js';
 import { SettingsModal } from './components/settingsModal.js';
 import { LoginView } from './components/loginView.js';
 import { DepartmentModal } from './components/departmentModal.js';
+import { DepartmentView } from './components/departmentView.js';
 import { appScriptBridge } from './services/appScriptBridge.js';
 import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js';
 import { shinTheme } from './theme.js';
@@ -37,6 +38,7 @@ class App {
     this.settingsModal = null;
     this.loginView = null;
     this.departmentModal = null;
+    this.departmentView = null;
   }
 
   init() {
@@ -53,6 +55,7 @@ class App {
     this.memberModal = new MemberModal('modal-container', () => this.refreshCurrentView());
     this.settingsModal = new SettingsModal('modal-container', () => this.refreshCurrentView());
     this.departmentModal = new DepartmentModal('modal-container', () => this.refreshCurrentView());
+    this.departmentView = new DepartmentView('main-content-canvas', () => this.refreshCurrentView(), () => this.memberModal.show());
 
     this.sidebar = new Sidebar('sidebar-container', 
       (navId) => this.switchNav(navId),
@@ -70,7 +73,7 @@ class App {
       () => this.profileModal.show(),
       () => this.settingsModal.show(),
       () => this.sidebar.toggle(),
-      () => this.departmentModal.show(),
+      () => this.switchNav('phong-ban'),
       () => this.onLogout()
     );
 
@@ -156,7 +159,7 @@ class App {
       this.renderEmployeesView();
     } else if (this.currentNav === 'phong-ban') {
       if (auth.isAdmin()) {
-        this.departmentModal.show();
+        this.departmentView.render();
       } else {
         toast('Chỉ Quản Trị Viên (Admin) mới có quyền truy cập Phòng ban & Bộ phận!', 'warning');
         this.switchNav('tong-quan');

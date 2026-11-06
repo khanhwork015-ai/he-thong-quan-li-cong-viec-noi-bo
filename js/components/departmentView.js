@@ -1,0 +1,749 @@
+/**
+ * THANH VŨ MEDIC CS3 - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT VIEW
+ * Màn hình quản lý Cơ cấu Phòng Ban & Bộ Phận Con toàn diện (Dành cho Quản Trị Viên)
+ * Chuẩn SHIN AIOS v2.6.4: Full Screen View, Responsive 2 cột, Thiết kế công thái học >= 44px
+ */
+
+import { auth } from '../auth.js';
+import { store } from '../store.js';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js';
+
+export class DepartmentView {
+  constructor(containerId, onUpdated, onOpenMemberModal) {
+    this.container = document.getElementById(containerId);
+    this.onUpdated = onUpdated;
+    this.onOpenMemberModal = onOpenMemberModal;
+    this.selectedDeptId = null;
+    this.editingTeamId = null;
+    this.isEditingDept = false;
+    this.isAddingDept = false;
+    this.searchQuery = '';
+  }
+
+  render(deptIdToSelect = null) {
+    if (!this.container) return;
+
+    if (!auth.canCRUDDepartments()) {
+      this.container.innerHTML = `
+        <div class="p-8 text-center bg-white rounded-3xl border border-[#e2e8f0] shadow-sm max-w-lg mx-auto mt-10">
+          <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-[32px]">lock</span>
+          </div>
+          <h3 class="text-lg font-bold text-[#0d1c2f] mb-2">Quyền Hạn Bị Giới Hạn</h3>
+          <p class="text-[13px] text-[#64748b]">Chỉ Quản Trị Viên (Admin Hệ Thống) mới có thẩm quyền quản lý danh mục phòng ban và cơ cấu bộ phận con.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const depts = store.getAllDepartments();
+    const allUsers = store.getAllUsers();
+    const managers = allUsers.filter(u => u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER' || u.role === 'ADMIN');
+
+    if (deptIdToSelect && deptIdToSelect !== this.selectedDeptId) {
+      this.editingTeamId = null;
+      this.isEditingDept = false;
+    }
+
+    this.selectedDeptId = deptIdToSelect || this.selectedDeptId || (depts[0] ? depts[0].id : null);
+    let selectedDept = store.getDepartmentById(this.selectedDeptId) || depts[0];
+    if (selectedDept) {
+      this.selectedDeptId = selectedDept.id;
+    }
+
+    // Tính toán số liệu tổng quan
+    const totalDepts = depts.length;
+    let totalTeams = 0;
+    depts.forEach(d => { totalTeams += (d.teams || []).length; });
+    const assignedManagersCount = depts.filter(d => !!d.managerId).length;
+
+    // Filter depts nếu có tìm kiếm
+    const filteredDepts = depts.filter(d => {
+      if (!this.searchQuery) return true;
+      const q = this.searchQuery.toLowerCase();
+      return d.name.toLowerCase().includes(q) || (d.code && d.code.toLowerCase().includes(q));
+    });
+
+    const selectedDeptUsers = selectedDept ? store.getDepartmentUsers(selectedDept.id) : [];
+
+    this.container.innerHTML = `
+      <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl pb-12">
+        
+        <!-- 1. HERO BANNER MỞ MÀN CHUẨN SHIN AIOS -->
+        <div class="p-5 sm:p-6 rounded-3xl border border-[#e2e8f0] shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4" style="background: linear-gradient(135deg, var(--card) 0%, var(--primary-soft) 100%); border-color: var(--border);">
+          <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center font-bold shadow-sm shrink-0" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+              <span class="material-symbols-outlined text-[28px] sm:text-[32px]">domain</span>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-[19px] sm:text-[22px] font-extrabold text-[#0d1c2f] tracking-tight truncate" style="color: var(--text);">
+                  Cơ Cấu Phòng Ban &amp; Bộ Phận Con
+                </h2>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-2xs font-mono-data" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--border);">
+                  Dành riêng Admin
+                </span>
+              </div>
+              <p class="text-[12.5px] sm:text-[13px] text-[#817663] font-medium mt-0.5" style="color: var(--text-muted);">
+                Quản lý tổ chức đa tầng Bệnh Viện Đa Khoa Thanh Vũ Medic • Thiết lập phòng ban, mã nhận diện, trưởng phòng và tổ chuyên môn
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5 shrink-0">
+            <button type="button" id="btnHeroAddDept" class="px-4 py-2.5 rounded-xl text-[12.5px] sm:text-[13px] font-bold shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 min-h-[44px]" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+              <span class="material-symbols-outlined text-[20px]">add</span>
+              <span>Thêm Phòng Ban</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. QUICK STATS CARDS -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="p-4 rounded-2xl border bg-white shadow-2xs flex items-center gap-3" style="background-color: var(--card); border-color: var(--border);">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
+              <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-[#817663] uppercase tracking-wider" style="color: var(--text-muted);">Phòng Ban</div>
+              <div class="text-[18px] sm:text-[20px] font-extrabold text-[#0d1c2f] font-mono-data" style="color: var(--text);">${totalDepts}</div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl border bg-white shadow-2xs flex items-center gap-3" style="background-color: var(--card); border-color: var(--border);">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
+              <span class="material-symbols-outlined text-[22px]">account_tree</span>
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-[#817663] uppercase tracking-wider" style="color: var(--text-muted);">Bộ Phận Con (Teams)</div>
+              <div class="text-[18px] sm:text-[20px] font-extrabold text-[#0d1c2f] font-mono-data" style="color: var(--text);">${totalTeams}</div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl border bg-white shadow-2xs flex items-center gap-3" style="background-color: var(--card); border-color: var(--border);">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
+              <span class="material-symbols-outlined text-[22px]">badge</span>
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-[#817663] uppercase tracking-wider" style="color: var(--text-muted);">Trưởng Phòng Đã Gán</div>
+              <div class="text-[18px] sm:text-[20px] font-extrabold text-[#0d1c2f] font-mono-data" style="color: var(--text);">${assignedManagersCount} / ${totalDepts}</div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl border bg-white shadow-2xs flex items-center gap-3" style="background-color: var(--card); border-color: var(--border);">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
+              <span class="material-symbols-outlined text-[22px]">group</span>
+            </div>
+            <div class="min-w-0">
+              <div class="text-[11px] font-bold text-[#817663] uppercase tracking-wider" style="color: var(--text-muted);">Tổng Nhân Sự Phân Bổ</div>
+              <div class="text-[18px] sm:text-[20px] font-extrabold text-[#0d1c2f] font-mono-data" style="color: var(--text);">${allUsers.length}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. MAIN WORKSPACE: 2-COLUMN RESPONSIVE LAYOUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+          
+          <!-- CỘT TRÁI (5 COLS TRÊN LG): DANH SÁCH PHÒNG BAN -->
+          <div class="lg:col-span-5 flex flex-col gap-3.5">
+            <div class="bg-white rounded-3xl p-4 sm:p-5 border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5" style="background-color: var(--card); border-color: var(--border);">
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="font-bold text-[15px] text-[#0d1c2f]" style="color: var(--text);">
+                    Danh Sách Phòng Ban (${depts.length})
+                  </h3>
+                  <span class="text-[11.5px] text-[#817663]" style="color: var(--text-muted);">
+                    Chọn phòng ban để quản lý cấu trúc &amp; bộ phận
+                  </span>
+                </div>
+
+                <button type="button" id="btnToggleAddDeptSide" class="px-2.5 py-1.5 rounded-xl text-[11.5px] font-bold flex items-center gap-1 transition-all shadow-xs" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                  <span class="material-symbols-outlined text-[16px]">add</span>
+                  <span>Thêm PB</span>
+                </button>
+              </div>
+
+              <!-- FORM TẠO PHÒNG BAN MỚI (ẨN / HIỆN) -->
+              <div id="boxAddDeptFormView" class="${this.isAddingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/50 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
+                <div class="flex items-center justify-between">
+                  <span class="text-[12.5px] font-bold text-[#795900]" style="color: var(--primary);">Tạo phòng ban mới</span>
+                  <button type="button" id="btnCancelAddDeptTop" class="text-gray-400 hover:text-gray-700 text-lg font-bold min-w-[32px] min-h-[32px] flex items-center justify-center">&times;</button>
+                </div>
+                <input type="text" id="newDeptNameView" placeholder="Tên phòng ban *" class="h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                <div class="grid grid-cols-2 gap-2.5">
+                  <input type="text" id="newDeptCodeView" placeholder="Mã PB (VD: PTKH)" class="h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] uppercase focus:border-[#d6a52a]" />
+                  <div class="flex items-center gap-2">
+                    <input type="color" id="newDeptColorView" value="#D6A52A" class="h-10 w-12 rounded-xl border border-[#e2e8f0] cursor-pointer" title="Chọn màu nhận diện" />
+                    <span id="newDeptColorTextView" class="text-[11.5px] font-mono text-gray-500">#D6A52A</span>
+                  </div>
+                </div>
+                <select id="newDeptManagerView" class="h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
+                  <option value="">-- Chọn Trưởng phòng phụ trách --</option>
+                  ${managers.map(m => `<option value="${m.id}">${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}
+                </select>
+                <div class="flex items-center justify-end gap-2 pt-1">
+                  <button type="button" id="btnCancelAddDeptView" class="px-3.5 py-1.5 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-colors">Hủy</button>
+                  <button type="button" id="btnSubmitAddDeptView" class="px-4 py-1.5 rounded-xl text-[12px] font-bold bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white transition-all shadow-2xs">Tạo Phòng Ban</button>
+                </div>
+              </div>
+
+              <!-- TÌM KIẾM NHANH PHÒNG BAN -->
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#817663]">search</span>
+                <input type="text" id="inputSearchDept" value="${esc(this.searchQuery)}" placeholder="Tìm theo tên hoặc mã phòng ban..." class="w-full h-9 pl-9 pr-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none bg-[#f8f9ff] text-[#0d1c2f] focus:bg-white focus:border-[#d6a52a]" />
+              </div>
+
+              <!-- DANH SÁCH CARDS PHÒNG BAN -->
+              <div class="flex flex-col gap-2.5">
+                ${filteredDepts.map(d => {
+                  const isAct = selectedDept && selectedDept.id === d.id;
+                  const mgr = allUsers.find(u => u.id === d.managerId);
+                  const teamCount = (d.teams || []).length;
+                  const userCount = store.getDepartmentUsers(d.id).length;
+
+                  return `
+                    <div class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[58px] dept-item-card ${isAct ? 'shadow-md border-[#d6a52a] bg-[#fffbeb]/50 ring-1 ring-[#d6a52a]' : 'hover:bg-gray-50 border-[#e2e8f0]'}" data-dept-id="${d.id}" style="${isAct ? 'background-color: var(--primary-soft); border-color: var(--primary);' : 'background-color: var(--card); border-color: var(--border);'}">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <span class="w-4 h-4 rounded-full shrink-0 shadow-2xs ring-2 ring-white" style="background-color: ${d.color || '#D6A52A'};"></span>
+                        <div class="min-w-0">
+                          <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(d.name)}</div>
+                          <div class="text-[11.5px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
+                            <span class="font-mono-data font-bold">${esc(d.code)}</span> • ${mgr ? esc(mgr.name) : 'Chưa gán trưởng phòng'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-1.5 shrink-0">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full font-mono-data" style="background-color: var(--primary-soft); color: var(--primary);">
+                          ${teamCount} bộ phận
+                        </span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-mono-data">
+                          ${userCount} nhân sự
+                        </span>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+            </div>
+          </div>
+
+          <!-- CỘT PHẢI (7 COLS TRÊN LG): CHI TIẾT PHÒNG BAN & BỘ PHẬN CON (TEAMS) -->
+          <div class="lg:col-span-7 flex flex-col gap-4">
+            ${selectedDept ? `
+              
+              <!-- THẺ CHI TIẾT & CHỈNH SỬA PHÒNG BAN -->
+              <div class="bg-white rounded-3xl p-5 sm:p-6 border border-[#e2e8f0] shadow-sm flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
+                
+                <!-- HEADER CHI TIẾT PHÒNG BAN -->
+                <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]" style="border-color: var(--border);">
+                  <div class="min-w-0 pr-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="px-2.5 py-0.5 rounded-lg text-[11px] font-bold font-mono-data uppercase text-white shrink-0 shadow-2xs" style="background-color: ${selectedDept.color || '#D6A52A'};">
+                        ${esc(selectedDept.code)}
+                      </span>
+                      <h3 class="font-bold text-[17px] sm:text-[18px] text-[#0d1c2f] truncate" style="color: var(--text);">
+                        ${esc(selectedDept.name)}
+                      </h3>
+                    </div>
+                    <div class="text-[12px] text-[#64748b] mt-1 flex items-center gap-2 flex-wrap" style="color: var(--text-muted);">
+                      <span>${esc(selectedDept.unit || 'Cơ Sở 3 (Cà Mau)')}</span>
+                      <span>•</span>
+                      <span>Trưởng phòng: <strong class="text-[#0d1c2f]" style="color: var(--text);">${esc(allUsers.find(u => u.id === selectedDept.managerId)?.name || 'Chưa gán')}</strong></span>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" id="btnToggleEditDeptView" class="px-3 py-1.5 rounded-xl border border-amber-200 text-amber-700 hover:bg-amber-50 font-bold text-[12px] flex items-center gap-1 min-h-[38px] transition-colors" title="Chỉnh sửa phòng ban này">
+                      <span class="material-symbols-outlined text-[18px]">edit</span>
+                      <span class="hidden sm:inline">Chỉnh sửa</span>
+                    </button>
+                    <button type="button" id="btnDeleteDeptView" class="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 font-bold text-[12px] flex items-center gap-1 min-h-[38px] transition-colors" title="Xóa phòng ban này">
+                      <span class="material-symbols-outlined text-[18px]">delete</span>
+                      <span class="hidden sm:inline">Xóa PB</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- FORM CHỈNH SỬA PHÒNG BAN (ẨN / HIỆN) -->
+                <div id="boxEditDeptFormView" class="${this.isEditingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/50 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[12.5px] font-bold text-[#795900]" style="color: var(--primary);">Cập nhật thông tin phòng ban</span>
+                    <button type="button" id="btnCancelEditDeptTopView" class="text-gray-400 hover:text-gray-700 text-lg font-bold min-w-[32px] min-h-[32px] flex items-center justify-center">&times;</button>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Tên phòng ban *</label>
+                      <input type="text" id="editDeptNameView" value="${esc(selectedDept.name)}" placeholder="Tên phòng ban *" class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                    </div>
+
+                    <div>
+                      <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mã nhận diện (Code) *</label>
+                      <input type="text" id="editDeptCodeView" value="${esc(selectedDept.code)}" placeholder="Mã PB (VD: PTKH)" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] uppercase focus:border-[#d6a52a]" />
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Cơ sở / Chi nhánh</label>
+                      <input type="text" id="editDeptUnitView" value="${esc(selectedDept.unit || 'Cơ Sở 3 (Cà Mau)')}" placeholder="Cơ sở..." class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                    </div>
+
+                    <div>
+                      <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Màu sắc nhận diện</label>
+                      <div class="flex items-center gap-2">
+                        <input type="color" id="editDeptColorView" value="${selectedDept.color || '#D6A52A'}" class="h-10 w-12 rounded-xl border border-[#e2e8f0] cursor-pointer" title="Chọn màu nhận diện" />
+                        <span id="editDeptColorTextView" class="text-[12px] font-mono text-gray-500">${selectedDept.color || '#D6A52A'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Trưởng phòng phụ trách</label>
+                    <select id="editDeptManagerView" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
+                      <option value="">-- Chưa gán Trưởng phòng --</option>
+                      ${managers.map(m => `<option value="${m.id}" ${m.id === selectedDept.managerId ? 'selected' : ''}>${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}
+                    </select>
+                  </div>
+
+                  <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#f1f5f9]">
+                    <button type="button" id="btnCancelEditDeptView" class="px-4 py-2 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-colors">Hủy</button>
+                    <button type="button" id="btnSubmitEditDeptView" class="px-4 py-2 rounded-xl text-[12px] font-bold bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white transition-all shadow-2xs">Lưu Thay Đổi</button>
+                  </div>
+                </div>
+
+                <!-- BỘ PHẬN CON (TEAMS) TRỰC THUỘC -->
+                <div class="flex flex-col gap-3 mt-1">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-bold text-[15px] text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
+                        <span>Các Bộ Phận Con Trực Thuộc</span>
+                        <span class="text-[11px] font-mono-data px-2 py-0.5 rounded-full font-bold" style="background-color: var(--primary-soft); color: var(--primary);">
+                          ${(selectedDept.teams || []).length} bộ phận
+                        </span>
+                      </h4>
+                      <p class="text-[11.5px] text-[#64748b] mt-0.5" style="color: var(--text-muted);">
+                        Ví dụ: Phòng PTKH gồm Marketing, CSKH, Hỗ trợ... Trưởng phòng quản lý toàn bộ các bộ phận này.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- THÊM BỘ PHẬN CON NHANH -->
+                  <div class="p-3.5 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shadow-2xs" style="background-color: var(--background); border-color: var(--border);">
+                    <input type="text" id="inputNewTeamNameView" placeholder="Tên bộ phận (VD: CSKH, Marketing, Hỗ trợ...)" class="flex-1 h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                    <input type="text" id="inputNewTeamCodeView" placeholder="Mã (VD: CSKH)" class="w-full sm:w-32 h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none uppercase bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                    <button type="button" id="btnAddTeamSubmitView" class="px-4 py-2 rounded-xl text-[12.5px] font-bold shadow-xs transition-all shrink-0 min-h-[40px] flex items-center justify-center gap-1.5" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                      <span class="material-symbols-outlined text-[18px]">add</span>
+                      <span>Thêm bộ phận</span>
+                    </button>
+                  </div>
+
+                  <!-- DANH SÁCH BỘ PHẬN CON HIỆN CÓ -->
+                  <div class="flex flex-col gap-2 mt-1">
+                    ${(!selectedDept.teams || selectedDept.teams.length === 0) ? `
+                      <div class="p-6 rounded-2xl text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] border border-dashed border-[#e2e8f0]" style="background-color: var(--background); border-color: var(--border);">
+                        Chưa có bộ phận con nào trong phòng ban này. Nhập tên và mã ở trên để tạo bộ phận đầu tiên.
+                      </div>
+                    ` : selectedDept.teams.map(t => {
+                      const isEditingThisTeam = this.editingTeamId === t.id;
+                      const membersInTeam = selectedDeptUsers.filter(u => u.teamId === t.id);
+
+                      if (isEditingThisTeam) {
+                        return `
+                          <div class="p-3 rounded-2xl bg-[#fffbeb] border border-[#d6a52a] flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shadow-sm" style="background-color: var(--primary-soft); border-color: var(--primary);">
+                            <input type="text" id="inputEditTeamNameView_${t.id}" value="${esc(t.name)}" class="flex-1 h-9 px-3 rounded-xl border border-[#e2e8f0] text-[13px] bg-white text-[#0d1c2f] outline-none focus:border-[#d6a52a]" placeholder="Tên bộ phận *" />
+                            <input type="text" id="inputEditTeamCodeView_${t.id}" value="${esc(t.code || '')}" class="w-full sm:w-28 h-9 px-3 rounded-xl border border-[#e2e8f0] text-[13px] uppercase bg-white text-[#0d1c2f] outline-none focus:border-[#d6a52a]" placeholder="Mã (VD: CSKH)" />
+                            <div class="flex items-center gap-2 justify-end shrink-0">
+                              <button type="button" class="btn-save-edit-team-view px-3.5 py-1.5 rounded-xl text-[12px] font-bold bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white transition-all shadow-2xs" data-team-id="${t.id}">Lưu</button>
+                              <button type="button" class="btn-cancel-edit-team-view px-3 py-1.5 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-all" data-team-id="${t.id}">Hủy</button>
+                            </div>
+                          </div>
+                        `;
+                      }
+
+                      return `
+                        <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0] flex items-center justify-between shadow-2xs hover:border-[#d6a52a] transition-all" style="background-color: var(--card); border-color: var(--border);">
+                          <div class="flex items-center gap-3 min-w-0">
+                            <span class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[11px] font-mono-data shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
+                              ${esc(t.code || 'TEAM')}
+                            </span>
+                            <div class="min-w-0">
+                              <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(t.name)}</div>
+                              <div class="text-[11.5px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">${membersInTeam.length} nhân viên trực thuộc</div>
+                            </div>
+                          </div>
+                          
+                          <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" class="btn-edit-team-view p-2 rounded-xl text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center" data-team-id="${t.id}" title="Chỉnh sửa bộ phận này">
+                              <span class="material-symbols-outlined text-[19px]">edit</span>
+                            </button>
+                            <button type="button" class="btn-delete-team-view p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center" data-team-id="${t.id}" title="Xóa bộ phận này">
+                              <span class="material-symbols-outlined text-[19px]">delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+                <!-- DANH SÁCH NHÂN SỰ ĐANG LÀM VIỆC TẠI PHÒNG NÀY -->
+                <div class="flex flex-col gap-3 pt-3 border-t border-[#f1f5f9]" style="border-color: var(--border);">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-bold text-[14px] text-[#0d1c2f]" style="color: var(--text);">
+                        Nhân Sự Thuộc Phòng (${selectedDeptUsers.length})
+                      </h4>
+                      <span class="text-[11px] text-[#64748b]" style="color: var(--text-muted);">
+                        Được phân bổ theo từng bộ phận chuyên môn
+                      </span>
+                    </div>
+
+                    <button type="button" id="btnAddMemberToDept" class="px-3 py-1.5 rounded-xl border border-[#e2e8f0] text-[12px] font-semibold text-[#0d1c2f] hover:bg-gray-50 flex items-center gap-1 min-h-[36px] transition-colors" style="color: var(--text); border-color: var(--border);">
+                      <span class="material-symbols-outlined text-[17px]">person_add</span>
+                      <span>Cấp tài khoản mới</span>
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    ${selectedDeptUsers.length === 0 ? `
+                      <div class="col-span-2 p-4 rounded-xl text-center text-[12px] text-[#817663] bg-[#f8f9ff]">
+                        Chưa có nhân sự nào được gán vào phòng ban này.
+                      </div>
+                    ` : selectedDeptUsers.map(u => {
+                      const team = (selectedDept.teams || []).find(t => t.id === u.teamId);
+                      return `
+                        <div class="p-3 rounded-2xl border border-[#e2e8f0] bg-white flex items-center gap-3 shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
+                          <img src="${u.avatar}" alt="${u.name}" class="w-9 h-9 rounded-full object-cover shrink-0 ring-1 ring-gray-200" />
+                          <div class="min-w-0 flex-1">
+                            <div class="text-[13px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</div>
+                            <div class="text-[11px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
+                              ${esc(u.title)} • <strong class="text-amber-700">${team ? esc(team.name) : 'Toàn phòng'}</strong>
+                            </div>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+              </div>
+            ` : `
+              <div class="bg-white rounded-3xl p-10 border border-[#e2e8f0] text-center text-gray-400">
+                Chọn một phòng ban ở danh sách bên trái để xem và thiết lập cấu trúc.
+              </div>
+            `}
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+    this.bindEvents(selectedDept);
+  }
+
+  bindEvents(currentDept) {
+    // 1. Chuyển đổi chọn phòng ban
+    this.container.querySelectorAll('.dept-item-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const dId = card.dataset.deptId;
+        rung(10);
+        this.editingTeamId = null;
+        this.isEditingDept = false;
+        this.render(dId);
+      });
+    });
+
+    // 2. Tìm kiếm phòng ban
+    const inputSearch = this.container.querySelector('#inputSearchDept');
+    if (inputSearch) {
+      inputSearch.addEventListener('input', (e) => {
+        this.searchQuery = e.target.value.trim();
+        this.render(this.selectedDeptId);
+      });
+    }
+
+    // 3. Toggle Form Thêm Phòng Ban
+    const btnHeroAdd = this.container.querySelector('#btnHeroAddDept');
+    const btnSideAdd = this.container.querySelector('#btnToggleAddDeptSide');
+    const btnCancelAddTop = this.container.querySelector('#btnCancelAddDeptTop');
+    const btnCancelAddView = this.container.querySelector('#btnCancelAddDeptView');
+    const boxAdd = this.container.querySelector('#boxAddDeptFormView');
+    const newDeptColor = this.container.querySelector('#newDeptColorView');
+    const newDeptColorText = this.container.querySelector('#newDeptColorTextView');
+
+    if (newDeptColor && newDeptColorText) {
+      newDeptColor.addEventListener('input', () => {
+        newDeptColorText.textContent = newDeptColor.value;
+      });
+    }
+
+    const openAddForm = () => {
+      rung(10);
+      this.isAddingDept = true;
+      if (boxAdd) boxAdd.classList.remove('hidden');
+      const input = this.container.querySelector('#newDeptNameView');
+      setTimeout(() => input?.focus(), 50);
+    };
+
+    const closeAddForm = () => {
+      this.isAddingDept = false;
+      if (boxAdd) boxAdd.classList.add('hidden');
+    };
+
+    if (btnHeroAdd) btnHeroAdd.addEventListener('click', openAddForm);
+    if (btnSideAdd) btnSideAdd.addEventListener('click', openAddForm);
+    if (btnCancelAddTop) btnCancelAddTop.addEventListener('click', closeAddForm);
+    if (btnCancelAddView) btnCancelAddView.addEventListener('click', closeAddForm);
+
+    // 4. Submit Thêm Phòng Ban
+    const btnSubmitAdd = this.container.querySelector('#btnSubmitAddDeptView');
+    if (btnSubmitAdd) {
+      btnSubmitAdd.addEventListener('click', () => {
+        rung(15);
+        const name = this.container.querySelector('#newDeptNameView')?.value.trim();
+        const code = this.container.querySelector('#newDeptCodeView')?.value.trim();
+        const color = this.container.querySelector('#newDeptColorView')?.value;
+        const managerId = this.container.querySelector('#newDeptManagerView')?.value;
+
+        if (!name) {
+          toast('Vui lòng nhập tên phòng ban!', 'warning');
+          return;
+        }
+
+        const res = store.createDepartment({
+          name,
+          code: code || name.slice(0, 4).toUpperCase(),
+          color: color || '#D6A52A',
+          managerId: managerId || '',
+          teams: []
+        });
+
+        if (res.success) {
+          toast(`Đã tạo phòng ban mới: ${name}`, 'success');
+          this.isAddingDept = false;
+          this.render(res.department.id);
+          if (this.onUpdated) this.onUpdated();
+        } else {
+          toast(res.message, 'warning');
+        }
+      });
+    }
+
+    // 5. Toggle & Cancel Form Chỉnh sửa Phòng Ban
+    const btnToggleEditDept = this.container.querySelector('#btnToggleEditDeptView');
+    const boxEditDept = this.container.querySelector('#boxEditDeptFormView');
+    const btnCancelEditTop = this.container.querySelector('#btnCancelEditDeptTopView');
+    const btnCancelEditView = this.container.querySelector('#btnCancelEditDeptView');
+    const editColor = this.container.querySelector('#editDeptColorView');
+    const editColorText = this.container.querySelector('#editDeptColorTextView');
+
+    if (editColor && editColorText) {
+      editColor.addEventListener('input', () => {
+        editColorText.textContent = editColor.value;
+      });
+    }
+
+    if (btnToggleEditDept && boxEditDept) {
+      btnToggleEditDept.addEventListener('click', () => {
+        this.isEditingDept = !this.isEditingDept;
+        boxEditDept.classList.toggle('hidden', !this.isEditingDept);
+      });
+    }
+
+    const closeEditDept = () => {
+      this.isEditingDept = false;
+      if (boxEditDept) boxEditDept.classList.add('hidden');
+    };
+
+    if (btnCancelEditTop) btnCancelEditTop.addEventListener('click', closeEditDept);
+    if (btnCancelEditView) btnCancelEditView.addEventListener('click', closeEditDept);
+
+    // 6. Submit Chỉnh sửa Phòng Ban
+    const btnSubmitEdit = this.container.querySelector('#btnSubmitEditDeptView');
+    if (btnSubmitEdit && currentDept) {
+      btnSubmitEdit.addEventListener('click', () => {
+        rung(15);
+        const name = this.container.querySelector('#editDeptNameView')?.value.trim();
+        const code = this.container.querySelector('#editDeptCodeView')?.value.trim();
+        const color = this.container.querySelector('#editDeptColorView')?.value;
+        const unit = this.container.querySelector('#editDeptUnitView')?.value.trim();
+        const managerId = this.container.querySelector('#editDeptManagerView')?.value;
+
+        if (!name) {
+          toast('Vui lòng nhập tên phòng ban!', 'warning');
+          return;
+        }
+
+        const res = store.updateDepartment(currentDept.id, {
+          name,
+          code: code || currentDept.code,
+          badge: code || currentDept.badge || currentDept.code,
+          unit: unit || currentDept.unit,
+          managerId: managerId !== undefined ? managerId : currentDept.managerId,
+          color: color || currentDept.color
+        });
+
+        if (res.success) {
+          toast(`Đã cập nhật phòng ban: ${name}`, 'success');
+          this.isEditingDept = false;
+          this.render(currentDept.id);
+          if (this.onUpdated) this.onUpdated();
+        } else {
+          toast(res.message, 'warning');
+        }
+      });
+    }
+
+    // 7. Xóa Phòng Ban
+    const btnDeleteDept = this.container.querySelector('#btnDeleteDeptView');
+    if (btnDeleteDept && currentDept) {
+      btnDeleteDept.addEventListener('click', () => {
+        xacNhan2Lan('del_dept_view_' + currentDept.id, `Xóa phòng ban ${currentDept.name}`, () => {
+          store.deleteDepartment(currentDept.id);
+          toast(`Đã xóa phòng ban ${currentDept.name}!`, 'success');
+          this.selectedDeptId = null;
+          this.editingTeamId = null;
+          this.isEditingDept = false;
+          this.render();
+          if (this.onUpdated) this.onUpdated();
+        });
+      });
+    }
+
+    // 8. Submit Thêm Bộ Phận Con (Team)
+    const btnAddTeam = this.container.querySelector('#btnAddTeamSubmitView');
+    if (btnAddTeam && currentDept) {
+      btnAddTeam.addEventListener('click', () => {
+        rung(15);
+        const teamName = this.container.querySelector('#inputNewTeamNameView')?.value.trim();
+        const teamCode = this.container.querySelector('#inputNewTeamCodeView')?.value.trim();
+
+        if (!teamName) {
+          toast('Vui lòng nhập tên bộ phận con (VD: CSKH, Marketing...)!', 'warning');
+          return;
+        }
+
+        const res = store.addTeamToDepartment(currentDept.id, {
+          name: teamName,
+          code: teamCode || teamName.slice(0, 4).toUpperCase()
+        });
+
+        if (res.success) {
+          toast(`Đã thêm bộ phận "${teamName}" vào ${currentDept.name}!`, 'success');
+          this.render(currentDept.id);
+          if (this.onUpdated) this.onUpdated();
+        } else {
+          toast(res.message, 'warning');
+        }
+      });
+    }
+
+    // 9. Bật Chỉnh sửa Inline cho Team
+    this.container.querySelectorAll('.btn-edit-team-view').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const teamId = btn.dataset.teamId;
+        this.editingTeamId = teamId;
+        this.render(currentDept.id);
+      });
+    });
+
+    // 10. Lưu Chỉnh sửa Inline cho Team
+    this.container.querySelectorAll('.btn-save-edit-team-view').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(15);
+        const teamId = btn.dataset.teamId;
+        if (!currentDept || !teamId) return;
+
+        const nameInput = this.container.querySelector(`#inputEditTeamNameView_${teamId}`);
+        const codeInput = this.container.querySelector(`#inputEditTeamCodeView_${teamId}`);
+        const name = nameInput?.value.trim();
+        const code = codeInput?.value.trim();
+
+        if (!name) {
+          toast('Vui lòng nhập tên bộ phận con!', 'warning');
+          return;
+        }
+
+        const res = store.updateTeamInDepartment(currentDept.id, teamId, {
+          name,
+          code: code || name.slice(0, 4).toUpperCase()
+        });
+
+        if (res.success) {
+          toast(`Đã cập nhật bộ phận: ${name}`, 'success');
+          this.editingTeamId = null;
+          this.render(currentDept.id);
+          if (this.onUpdated) this.onUpdated();
+        } else {
+          toast(res.message, 'warning');
+        }
+      });
+    });
+
+    // 11. Hủy Chỉnh sửa Inline cho Team
+    this.container.querySelectorAll('.btn-cancel-edit-team-view').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.editingTeamId = null;
+        this.render(currentDept.id);
+      });
+    });
+
+    // 12. Phím tắt Enter / Escape khi đang sửa inline team
+    if (this.editingTeamId && currentDept) {
+      const activeNameInput = this.container.querySelector(`#inputEditTeamNameView_${this.editingTeamId}`);
+      const activeCodeInput = this.container.querySelector(`#inputEditTeamCodeView_${this.editingTeamId}`);
+      const handleKey = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const saveBtn = this.container.querySelector(`.btn-save-edit-team-view[data-team-id="${this.editingTeamId}"]`);
+          if (saveBtn) saveBtn.click();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          this.editingTeamId = null;
+          this.render(currentDept.id);
+        }
+      };
+      if (activeNameInput) {
+        activeNameInput.addEventListener('keydown', handleKey);
+        setTimeout(() => activeNameInput?.focus?.(), 50);
+      }
+      if (activeCodeInput) {
+        activeCodeInput.addEventListener('keydown', handleKey);
+      }
+    }
+
+    // 13. Xóa Team
+    this.container.querySelectorAll('.btn-delete-team-view').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const teamId = btn.dataset.teamId;
+        if (!currentDept || !teamId) return;
+
+        xacNhan2Lan('del_team_view_' + teamId, 'Xóa bộ phận này khỏi phòng ban', () => {
+          store.removeTeamFromDepartment(currentDept.id, teamId);
+          toast('Đã xóa bộ phận con thành công!', 'success');
+          if (this.editingTeamId === teamId) this.editingTeamId = null;
+          this.render(currentDept.id);
+          if (this.onUpdated) this.onUpdated();
+        });
+      });
+    });
+
+    // 14. Nút Cấp tài khoản mới cho phòng này
+    const btnAddMember = this.container.querySelector('#btnAddMemberToDept');
+    if (btnAddMember) {
+      btnAddMember.addEventListener('click', () => {
+        rung(10);
+        if (this.onOpenMemberModal) this.onOpenMemberModal();
+      });
+    }
+  }
+}

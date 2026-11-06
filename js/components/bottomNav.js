@@ -26,11 +26,13 @@ export class BottomNav {
 
     const metrics = store.getDepartmentMetrics();
     const pendingApproval = metrics.pendingApproval || 0;
+    const isAdmin = auth.isAdmin();
 
     const navItems = [
       { id: 'tong-quan', label: 'Tổng quan', icon: 'grid_view' },
       { id: 'cong-viec', label: 'Công việc', icon: 'task_alt', badge: pendingApproval > 0 ? pendingApproval : null },
       { id: 'nhan-vien', label: 'Nhân sự', icon: 'group' },
+      ...(isAdmin ? [{ id: 'phong-ban', label: 'Phòng ban', icon: 'domain' }] : []),
       { id: 'cai-dat', label: 'Cài đặt', icon: 'settings' }
     ];
 
