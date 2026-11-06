@@ -5,6 +5,7 @@
  */
 
 import { auth } from '../auth.js';
+import { store } from '../store.js';
 import { toast, rung } from '../helpers.js';
 
 export class LoginView {
@@ -16,6 +17,11 @@ export class LoginView {
 
   render() {
     if (!this.container) return;
+
+    // Tự động đồng bộ ngầm dữ liệu từ Google Sheets để cập nhật danh sách tài khoản mới nhất
+    try {
+      store.syncFromCloudIfAvailable().catch(() => {});
+    } catch (_) {}
 
     this.container.innerHTML = `
       <div class="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-[#f8f9ff] via-[#f1f5f9] to-[#fffbeb]" style="background-color: var(--background);">
@@ -126,20 +132,32 @@ export class LoginView {
     }
 
     if (form) {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         rung(15);
 
         const username = inputUser.value.trim();
         const password = inputPass.value.trim();
 
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Đang xác thực...</span>';
+        if (!username || !password) {
+          toast('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!', 'warning');
+          return;
+        }
 
-        setTimeout(() => {
-          const res = auth.login(username, password);
-          btnSubmit.disabled = false;
-          btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px]">login</span><span>Đăng Nhập Vào Hệ Thống</span>';
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Đang kiểm tra tài khoản...</span>';
+
+        try {
+          let res = await auth.login(username, password);
+
+          // Nếu chưa tìm thấy cục bộ, kích hoạt sync từ Google Sheets và thử lại
+          if (!res.success && res.code === 'USER_NOT_FOUND') {
+            btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">cloud_sync</span><span>Đang đồng bộ từ Google Sheets...</span>';
+            try {
+              await store.syncFromCloudIfAvailable();
+              res = await auth.login(username, password);
+            } catch (_) {}
+          }
 
           if (res.success) {
             toast(`Đăng nhập thành công! Chào mừng ${res.user.name}`, 'success');
@@ -148,7 +166,13 @@ export class LoginView {
             toast(res.message, 'warning');
             inputPass.focus();
           }
-        }, 200);
+        } catch (err) {
+          console.error('[LOGIN ERROR]', err);
+          toast('Đã xảy ra lỗi khi xác thực tài khoản. Vui lòng thử lại!', 'error');
+        } finally {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px]">login</span><span>Đăng Nhập Vào Hệ Thống</span>';
+        }
       });
     }
   }

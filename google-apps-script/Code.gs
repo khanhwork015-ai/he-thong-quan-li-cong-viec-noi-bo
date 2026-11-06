@@ -124,7 +124,7 @@ function clearDataRows(sheet) {
 function ensureSheets(ss) {
   const sheets = [
     { name: SHEET_TASKS, headers: ['id', 'departmentId', 'title', 'description', 'priority', 'status', 'assigneeId', 'creatorId', 'dueDate', 'category', 'progress', 'cost', 'createdAt', 'updatedAt'] },
-    { name: SHEET_USERS, headers: ['id', 'name', 'role', 'departmentId', 'title', 'unit', 'avatar', 'badge', 'phone', 'email', 'dob', 'hometown', 'createdAt', 'updatedAt'] },
+    { name: SHEET_USERS, headers: ['id', 'name', 'role', 'departmentId', 'title', 'unit', 'avatar', 'badge', 'phone', 'email', 'dob', 'hometown', 'createdAt', 'updatedAt', 'username', 'password', 'teamId'] },
     { name: SHEET_DEPTS, headers: ['id', 'name', 'code', 'unit', 'managerId', 'description', 'badge', 'color'] }
   ];
 

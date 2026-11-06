@@ -84,8 +84,33 @@ export class Store {
         taskCount = cloudData.tasks.length;
       }
       if (cloudData.users && cloudData.users.length > 0) {
-        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cloudData.users));
-        userCount = cloudData.users.length;
+        // Chuẩn hóa và hợp nhất người dùng an toàn (Zero Data Loss & Type Safety)
+        const currentUsers = this.getAllUsers();
+        const userMap = new Map();
+        currentUsers.forEach(u => { if (u && u.id) userMap.set(u.id, u); });
+
+        cloudData.users.forEach(su => {
+          if (!su || !su.id) return;
+          const existing = userMap.get(su.id) || {};
+          const merged = {
+            ...existing,
+            ...su,
+            username: String(su.username || existing.username || su.id.replace('user_', '')).trim().toLowerCase(),
+            password: String(su.password !== undefined && su.password !== null && String(su.password).trim() !== '' ? su.password : (existing.password || '123')).trim(),
+            role: (su.role || existing.role || 'MEMBER').toUpperCase(),
+            departmentId: su.departmentId || existing.departmentId || 'dept_ptkh',
+            teamId: su.teamId || existing.teamId || null
+          };
+          userMap.set(su.id, merged);
+        });
+
+        const mergedList = Array.from(userMap.values());
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(mergedList));
+        userCount = mergedList.length;
+      }
+
+      if (cloudData.depts && cloudData.depts.length > 0) {
+        localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(cloudData.depts));
       }
 
       window.dispatchEvent(new CustomEvent('tvm:data_changed'));

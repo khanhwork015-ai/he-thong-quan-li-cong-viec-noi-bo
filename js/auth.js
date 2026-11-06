@@ -25,39 +25,52 @@ export class AuthManager {
   }
 
   getStoredUsers() {
+    let users = [];
     try {
       const saved = localStorage.getItem('tvm_users_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          users = parsed;
+        }
       }
     } catch (e) {}
 
-    // Tự động nâng cấp và hợp nhất danh sách USERS mặc định kèm dữ liệu cũ
-    let merged = [...USERS];
-    try {
-      const oldSaved = localStorage.getItem('tvm_users_v3');
-      if (oldSaved) {
-        const oldParsed = JSON.parse(oldSaved);
-        if (Array.isArray(oldParsed)) {
-          oldParsed.forEach(oldU => {
-            const idx = merged.findIndex(u => u.id === oldU.id || (u.email && u.email === oldU.email));
-            if (idx >= 0) {
-              merged[idx] = { ...oldU, ...merged[idx] };
-            } else {
-              merged.push({
-                ...oldU,
-                username: (oldU.username || oldU.id.replace('user_', '')).toLowerCase(),
-                password: oldU.password || '123'
-              });
-            }
-          });
+    if (users.length === 0) {
+      // Tự động nâng cấp và hợp nhất danh sách USERS mặc định kèm dữ liệu cũ
+      let merged = [...USERS];
+      try {
+        const oldSaved = localStorage.getItem('tvm_users_v3');
+        if (oldSaved) {
+          const oldParsed = JSON.parse(oldSaved);
+          if (Array.isArray(oldParsed)) {
+            oldParsed.forEach(oldU => {
+              const idx = merged.findIndex(u => u.id === oldU.id || (u.email && u.email === oldU.email));
+              if (idx >= 0) {
+                merged[idx] = { ...oldU, ...merged[idx] };
+              } else {
+                merged.push({
+                  ...oldU,
+                  username: String(oldU.username || oldU.id.replace('user_', '')).trim().toLowerCase(),
+                  password: String(oldU.password || '123').trim()
+                });
+              }
+            });
+          }
         }
-      }
-      localStorage.setItem('tvm_users_v4', JSON.stringify(merged));
-    } catch (_) {}
+      } catch (_) {}
+      users = merged;
+      try {
+        localStorage.setItem('tvm_users_v4', JSON.stringify(users));
+      } catch (_) {}
+    }
 
-    return merged;
+    // Chuẩn hóa an toàn cho toàn bộ user: password luôn là chuỗi string, username lowercase trimmed
+    return users.map(u => ({
+      ...u,
+      username: String(u.username || (u.id ? u.id.replace('user_', '') : '')).trim().toLowerCase(),
+      password: String(u.password !== undefined && u.password !== null && String(u.password).trim() !== '' ? u.password : '123').trim()
+    }));
   }
 
   getStoredDepartments() {
@@ -114,42 +127,86 @@ export class AuthManager {
     return Boolean(this.currentUser && this.session && this.session.expiresAt > Date.now());
   }
 
-  login(usernameOrEmail, password) {
+  async login(usernameOrEmail, password) {
     if (!usernameOrEmail || !password) {
       return { success: false, message: 'Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu!' };
     }
 
-    const trimmedUser = usernameOrEmail.trim().toLowerCase();
-    const trimmedPass = password.trim();
-    const users = this.getStoredUsers();
+    const trimmedUser = String(usernameOrEmail).trim().toLowerCase();
+    const trimmedPass = String(password).trim();
+    let users = this.getStoredUsers();
 
-    // Hỗ trợ tìm kiếm theo Username, Email, ID, hoặc Họ Tên
-    const matched = users.find(u => {
-      const uName = (u.username || '').toLowerCase();
-      const uEmail = (u.email || '').toLowerCase();
-      const uId = (u.id || '').toLowerCase();
-      const fullName = (u.name || '').toLowerCase();
-      const roleLower = (u.role || '').toLowerCase();
+    // Hàm so khớp tài khoản thông minh & linh hoạt
+    const findMatch = (list) => {
+      return list.find(u => {
+        const uName = String(u.username || '').trim().toLowerCase();
+        const uEmail = String(u.email || '').trim().toLowerCase();
+        const uId = String(u.id || '').trim().toLowerCase();
+        const fullName = String(u.name || '').trim().toLowerCase();
+        const roleLower = String(u.role || '').trim().toLowerCase();
 
-      return (
-        uName === trimmedUser ||
-        uEmail === trimmedUser ||
-        uId === trimmedUser ||
-        uId === 'user_' + trimmedUser ||
-        fullName === trimmedUser ||
-        (trimmedUser === 'admin' && roleLower === 'admin') ||
-        (trimmedUser.includes('tam') && (uName.includes('tam') || fullName.includes('tâm')))
-      );
-    });
+        return (
+          uName === trimmedUser ||
+          uEmail === trimmedUser ||
+          uId === trimmedUser ||
+          uId === 'user_' + trimmedUser ||
+          uId.replace('user_', '') === trimmedUser ||
+          fullName === trimmedUser ||
+          (trimmedUser === 'admin' && (roleLower === 'admin' || uName === 'admin')) ||
+          (trimmedUser.includes('tam') && (uName.includes('tam') || fullName.includes('tâm')))
+        );
+      });
+    };
 
+    let matched = findMatch(users);
+
+    // NẾU CHƯA TÌM THẤY TRONG BỘ NHỚ LOCAL: Tự động sync tức thời từ Google Sheet
     if (!matched) {
-      return { success: false, message: 'Tên đăng nhập hoặc email không tồn tại trong hệ thống!' };
+      try {
+        const { appScriptBridge } = await import('./services/appScriptBridge.js');
+        if (appScriptBridge && appScriptBridge.isConnected()) {
+          const cloudData = await appScriptBridge.fetchCloudData();
+          if (cloudData && cloudData.success && Array.isArray(cloudData.users) && cloudData.users.length > 0) {
+            // Hợp nhất dữ liệu mới từ Sheet vào bộ nhớ
+            const userMap = new Map();
+            users.forEach(u => userMap.set(u.id, u));
+            cloudData.users.forEach(su => {
+              if (su && su.id) {
+                userMap.set(su.id, {
+                  ...userMap.get(su.id),
+                  ...su,
+                  username: String(su.username || su.id.replace('user_', '')).trim().toLowerCase(),
+                  password: String(su.password !== undefined && su.password !== null && String(su.password).trim() !== '' ? su.password : '123').trim()
+                });
+              }
+            });
+            const mergedList = Array.from(userMap.values());
+            localStorage.setItem('tvm_users_v4', JSON.stringify(mergedList));
+            users = this.getStoredUsers();
+            matched = findMatch(users);
+          }
+        }
+      } catch (syncErr) {
+        console.warn('[AUTH] Lỗi tự động sync người dùng từ Cloud:', syncErr);
+      }
     }
 
-    // Kiểm tra mật khẩu (không gợi ý mật khẩu ra thông báo)
-    const validPassword = matched.password || '123';
+    if (!matched) {
+      return { 
+        success: false, 
+        code: 'USER_NOT_FOUND',
+        message: 'Tên đăng nhập hoặc email không tồn tại trong hệ thống!' 
+      };
+    }
+
+    // Kiểm tra mật khẩu (So sánh String chuẩn, hỗ trợ số 123 hoặc chữ '123' từ Sheet)
+    const validPassword = String(matched.password !== undefined && matched.password !== null && String(matched.password).trim() !== '' ? matched.password : '123').trim();
     if (trimmedPass !== validPassword) {
-      return { success: false, message: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!' };
+      return { 
+        success: false, 
+        code: 'WRONG_PASSWORD',
+        message: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!' 
+      };
     }
 
     // Đọc thêm profile cá nhân lưu riêng nếu có
