@@ -124,7 +124,7 @@ function clearDataRows(sheet) {
 function ensureSheets(ss) {
   const sheets = [
     { name: SHEET_TASKS, headers: ['id', 'departmentId', 'title', 'description', 'priority', 'status', 'assigneeId', 'creatorId', 'dueDate', 'category', 'progress', 'cost', 'createdAt', 'updatedAt'] },
-    { name: SHEET_USERS, headers: ['id', 'name', 'role', 'departmentId', 'title', 'unit', 'avatar', 'badge', 'phone', 'email'] },
+    { name: SHEET_USERS, headers: ['id', 'name', 'role', 'departmentId', 'title', 'unit', 'avatar', 'badge', 'phone', 'email', 'dob', 'hometown', 'createdAt', 'updatedAt'] },
     { name: SHEET_DEPTS, headers: ['id', 'name', 'code', 'unit', 'managerId', 'description', 'badge', 'color'] }
   ];
 
@@ -195,8 +195,19 @@ function getSheetData(sheet) {
 
 function saveOrUpdateRow(sheet, item, keyField) {
   if (!sheet || !item) return;
-  const rows = sheet.getDataRange().getValues();
-  const headers = rows[0];
+  let rows = sheet.getDataRange().getValues();
+  let headers = rows[0] || [];
+
+  // Tự động bổ sung các cột mới nếu item có trường dữ liệu mới (ví dụ dob, hometown, updatedAt)
+  const newCols = Object.keys(item).filter(k => !headers.includes(k) && typeof item[k] !== 'function');
+  if (newCols.length > 0) {
+    newCols.forEach(col => {
+      headers.push(col);
+      sheet.getRange(1, headers.length).setValue(col).setFontWeight('bold').setBackground('#D6A52A').setFontColor('#FFFFFF');
+    });
+    rows = sheet.getDataRange().getValues();
+  }
+
   const keyIdx = headers.indexOf(keyField);
   let foundRowIdx = -1;
 
