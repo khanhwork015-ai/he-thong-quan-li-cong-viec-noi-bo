@@ -1,14 +1,12 @@
 /**
- * THANH VŨ MEDIC CS3 - DASHBOARD OVERVIEW COMPONENT (MOBILE RESPONSIVE)
- * Thiết kế chuẩn Vàng Hoàng Kim (#D6A52A / #795900) theo Google Stitch:
- * - 2 Thẻ lớn: "Tổng công việc" & "Hoàn thành" co giãn linh hoạt
- * - Khối "Tiến độ công việc" với progress bar Vàng Gold #D6A52A và badge "Đang tốt" Teal
- * - Thẻ "Việc cần phê duyệt & Khẩn cấp" với trải nghiệm chạm mượt mà
+ * THANH VŨ MEDIC CS3 - DASHBOARD OVERVIEW COMPONENT (SHIN AIOS v2.6.4)
+ * Thiết kế chuẩn Hero Card mở màn (Chương 1 Luật 5 & Chương 5.1)
+ * Đổi màu đồng bộ theo 8 Palettes, hiển thị chỉ số trực quan
  */
 
 import { auth } from '../auth.js';
 import { store } from '../store.js';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js';
+import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
@@ -22,95 +20,102 @@ export class DashboardView {
     if (!this.container) return;
 
     const currentDept = auth.getActiveDepartment();
+    const currentUser = auth.getCurrentUser();
     const metrics = store.getDepartmentMetrics();
     const urgentTasks = store.getDepartmentTasks().filter(t => t.priority === 'P1' || t.status === 'review' || t.status === 'in_progress').slice(0, 5);
     const departmentUsers = store.getDepartmentUsers(currentDept.id);
     const canCreate = auth.canCreateTask();
 
     // Dữ liệu hiển thị trực quan
-    const totalCount = metrics.total || 128;
-    const doneCount = metrics.done || 86;
-    const completionRate = metrics.total > 0 ? metrics.completionRate : 67.2;
-    const inProgressCount = metrics.inProgress || 34;
-    const pendingCount = metrics.pendingApproval || 6;
-    const overdueCount = metrics.overdue || 2;
+    const totalCount = metrics.total || 0;
+    const doneCount = metrics.done || 0;
+    const completionRate = metrics.total > 0 ? metrics.completionRate : 0;
+    const inProgressCount = metrics.inProgress || 0;
+    const pendingCount = metrics.pendingApproval || 0;
+    const overdueCount = metrics.overdue || 0;
 
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl">
-        <!-- 1. DASHBOARD HEADER & QUICK FILTERS (RESPONSIVE) -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="font-mono-data text-[11px] text-[#795900] font-bold bg-[#fffbeb] px-2 py-0.5 rounded border border-[#fef3c7]">${currentDept.code}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-[#16a34a]"></span>
-              <span class="text-[11.5px] text-[#64748b]">Cập nhật thời gian thực</span>
+        
+        <!-- 1. HERO CARD MỞ MÀN CHUẨN SHIN AIOS (CHƯƠNG 1 NGUYÊN TẮC 5) -->
+        <section class="hn-hero">
+          <div class="hn-hero-top">
+            <div>
+              <div class="hn-chao" id="lblLoiChao">${loiChao(currentUser.name)}</div>
+              <div class="hn-ngay" id="lblNgayThang">${ngayVN(new Date())} • ${currentDept.name} (${currentDept.code})</div>
             </div>
-            <h1 class="text-[22px] sm:text-[26px] font-extrabold text-[#0d1c2f] tracking-tight">Dashboard Điều Hành</h1>
-            <p class="text-[12px] sm:text-[13px] text-[#64748b] mt-0.5 truncate">${currentDept.name} • BVĐK Thanh Vũ Medic Cà Mau</p>
+            <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold" style="background-color: var(--primary-soft); color: var(--primary);">
+              <span class="w-2 h-2 rounded-full bg-[#16a34a] animate-pulse"></span>
+              <span>Trực tiếp v2.6.4</span>
+            </div>
+          </div>
+
+          <!-- LƯỚI TỐI ĐA 3 Ô SỐ LIỆU TỔNG QUAN CHUẨN SHIN (.tq-3so) -->
+          <div class="tq-3so">
+            <div class="tq-o" data-filter-tab="all" title="Bấm để xem tất cả công việc">
+              <div class="tq-so" style="color: var(--primary);">${totalCount}</div>
+              <div class="tq-nhan">Tổng việc</div>
+            </div>
+            <div class="tq-o" data-filter-tab="pending_approval" title="Bấm để xem việc chờ duyệt">
+              <div class="tq-so" style="color: var(--c-yellow);">${pendingCount}</div>
+              <div class="tq-nhan">Chờ duyệt</div>
+            </div>
+            <div class="tq-o" data-filter-tab="completed" title="Bấm để xem việc hoàn thành">
+              <div class="tq-so" style="color: var(--c-green);">${completionRate}%</div>
+              <div class="tq-nhan">Tiến độ đạt</div>
+            </div>
+          </div>
+
+          <!-- NÚT HÀNH ĐỘNG CHÍNH 1-CHẠM TO 100% (PRIMARY CTA CAO >= 48PX) -->
+          ${canCreate ? `
+            <button type="button" class="w-full py-3 px-4 rounded-xl font-bold text-[13.5px] transition-all min-h-[48px] flex items-center justify-center gap-2 shadow-xs" id="btnHeroCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+              <span class="material-symbols-outlined text-[20px]">add_circle</span>
+              <span>＋ Giao Việc Mới / Đề Xuất Nghiệp Vụ 1-Chạm</span>
+            </button>
+          ` : ''}
+        </section>
+
+        <!-- 2. DASHBOARD HEADER & QUICK FILTERS -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pt-1">
+          <div>
+            <h1 class="text-[20px] sm:text-[24px] font-extrabold text-[#0d1c2f] tracking-tight">Chi Tiết Điều Hành Phòng Ban</h1>
+            <p class="text-[12px] sm:text-[13px] text-[#64748b] mt-0.5 truncate">${currentDept.name} • BVĐK Thanh Vũ Medic Cơ Sở 3</p>
           </div>
 
           <div class="flex items-center justify-between sm:justify-end gap-2.5">
             <div class="bg-white p-1 rounded-xl border border-[#e2e8f0] shadow-xs flex items-center shrink-0">
               <button type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11.5px] sm:text-[12px] font-semibold text-[#64748b] hover:text-[#0d1c2f] transition-colors min-h-[36px]">Hôm nay</button>
-              <button type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#d6a52a] text-[#533d00] text-[11.5px] sm:text-[12px] font-bold shadow-xs min-h-[36px]">Tháng này</button>
+              <button type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11.5px] sm:text-[12px] font-bold shadow-xs min-h-[36px]" style="background-color: var(--primary-container); color: var(--on-primary-container);">Tháng này</button>
               <button type="button" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-[11.5px] sm:text-[12px] font-semibold text-[#64748b] hover:text-[#0d1c2f] transition-colors min-h-[36px]">Quý 4</button>
             </div>
 
             ${canCreate ? `
-              <button type="button" class="px-3 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[12px] sm:text-[13px] hover:bg-[#795900] hover:text-white shadow-xs flex items-center gap-1.5 transition-all min-h-[40px] shrink-0" id="btnDashboardCreateTask">
+              <button type="button" class="px-3 sm:px-4 py-2 rounded-xl font-bold text-[12px] sm:text-[13px] shadow-xs flex items-center gap-1.5 transition-all min-h-[44px] shrink-0" id="btnDashboardCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                 <span class="material-symbols-outlined text-[18px]">add</span>
-                <span class="hidden sm:inline">Giao việc mới</span>
-                <span class="sm:hidden">Giao việc</span>
+                <span class="hidden sm:inline">Giao việc</span>
               </button>
             ` : ''}
           </div>
         </div>
 
-        <!-- 2. 2 THẺ CHÍNH (TỔNG CÔNG VIỆC & HOÀN THÀNH) CHUẨN GOOGLE STITCH -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-          <!-- THẺ 1: TỔNG CÔNG VIỆC -->
-          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer card-kpi" data-filter-tab="all">
-            <div class="text-[13.5px] text-[#64748b] font-semibold">Tổng công việc</div>
-            <div class="my-2.5 sm:my-3">
-              <div class="text-[36px] sm:text-[44px] font-extrabold text-[#0d1c2f] leading-none tracking-tight">${totalCount}</div>
-              <div class="text-[12.5px] text-[#795900] font-bold mt-2 flex items-center gap-1">
-                <span>+12 tháng này</span>
-              </div>
-            </div>
-            <div class="text-[11.5px] text-[#817663]">Toàn bộ nhiệm vụ phân bổ theo quy trình phòng ban</div>
-          </div>
-
-          <!-- THẺ 2: HOÀN THÀNH -->
-          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#16a34a] active:bg-[#fffbeb]/20 transition-all cursor-pointer card-kpi" data-filter-tab="completed">
-            <div class="text-[13.5px] text-[#64748b] font-semibold">Hoàn thành</div>
-            <div class="my-2.5 sm:my-3">
-              <div class="text-[36px] sm:text-[44px] font-extrabold text-[#0D9488] leading-none tracking-tight">${doneCount}</div>
-              <div class="text-[12.5px] text-[#0D9488] font-bold mt-2 flex items-center gap-1">
-                <span>${completionRate}% tỷ lệ đạt chuẩn</span>
-              </div>
-            </div>
-            <div class="text-[11.5px] text-[#817663]">Đã nghiệm thu và chuyển tiếp các mốc chuyên môn</div>
-          </div>
-        </div>
-
-        <!-- 3. TIẾN ĐỘ CÔNG VIỆC (VÀNG GOLD PROGRESS BAR) -->
+        <!-- 3. TIẾN ĐỘ CÔNG VIỆC (DYNAMIC PALETTE PROGRESS BAR) -->
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3">
           <div class="flex items-center justify-between">
-            <span class="text-[14.5px] sm:text-[15px] font-bold text-[#0d1c2f]">Tiến độ công việc</span>
-            <span class="px-2.5 py-0.5 rounded-full bg-[#ccfbf1] text-[#0f766e] text-[11.5px] font-bold flex items-center gap-1">
-              <span class="w-2 h-2 rounded-full bg-[#0d9488]"></span>
-              Đang tốt
+            <span class="text-[14.5px] sm:text-[15px] font-bold text-[#0d1c2f]">Chỉ Số Tiến Độ Hoàn Thành</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11.5px] font-bold flex items-center gap-1" style="background-color: var(--primary-soft); color: var(--primary);">
+              <span class="w-2 h-2 rounded-full inline-block" style="background-color: var(--primary);"></span>
+              ${completionRate >= 80 ? 'Xuất sắc' : (completionRate >= 50 ? 'Đang tốt' : 'Cần đẩy nhanh')}
             </span>
           </div>
 
-          <!-- PROGRESS BAR VÀNG GOLD #D6A52A TRÊN NỀN #E2E8F0 -->
-          <div class="w-full bg-[#e2e8f0] h-3 sm:h-3.5 rounded-full overflow-hidden p-0.5">
-            <div class="bg-[#d6a52a] h-full rounded-full transition-all duration-700 ease-out" style="width: ${completionRate}%;"></div>
+          <!-- PROGRESS BAR ĐỘNG THEO PALETTE -->
+          <div class="w-full bg-[#e2e8f0] h-3.5 rounded-full overflow-hidden p-0.5">
+            <div class="h-full rounded-full transition-all duration-700 ease-out" style="width: ${completionRate}%; background-color: var(--primary);"></div>
           </div>
 
           <div class="flex items-center justify-between text-[12px] sm:text-[13px] pt-0.5">
-            <span class="text-[#0d1c2f] font-semibold">${completionRate}% hoàn thành</span>
-            <span class="text-[#0D9488] font-bold">Đang tốt</span>
+            <span class="text-[#0d1c2f] font-semibold">${doneCount}/${totalCount} việc đã xong (${completionRate}%)</span>
+            <span class="font-bold" style="color: var(--primary);">${completionRate}% hoàn tất</span>
           </div>
         </div>
 
@@ -163,10 +168,10 @@ export class DashboardView {
           <div class="lg:col-span-7 flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <h2 class="text-[15px] sm:text-[16px] font-bold text-[#0d1c2f] flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#d6a52a] text-[20px]">task_alt</span>
+                <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">task_alt</span>
                 <span>Nhiệm Vụ Cần Phê Duyệt Ngay</span>
               </h2>
-              <button type="button" class="text-[12px] sm:text-[12.5px] text-[#795900] font-bold hover:underline flex items-center gap-1 min-h-[36px]" id="btnViewAllTasks">
+              <button type="button" class="text-[12px] sm:text-[12.5px] font-bold hover:underline flex items-center gap-1 min-h-[36px]" id="btnViewAllTasks" style="color: var(--primary);">
                 <span>Xem tất cả</span>
                 <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
               </button>
@@ -180,7 +185,7 @@ export class DashboardView {
                   <div class="p-3.5 sm:p-4 bg-white rounded-2xl border border-[#e2e8f0] shadow-2xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer task-urgent-item" data-task-id="${t.id}">
                     <div class="flex items-center justify-between mb-2">
                       <div class="flex items-center gap-2">
-                        <span class="font-mono-data text-[11px] font-bold text-[#795900] px-2 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7]">${t.id}</span>
+                        <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--accent-soft, var(--border));">${t.id}</span>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">
                           ${t.priority === 'P1' ? 'P1 - Khẩn' : 'P2 - Quan trọng'}
                         </span>
@@ -215,7 +220,7 @@ export class DashboardView {
           <div class="lg:col-span-5 flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <h2 class="text-[15px] sm:text-[16px] font-bold text-[#0d1c2f] flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#795900] text-[20px]">group</span>
+                <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">group</span>
                 <span>Nhân Sự Phòng (${departmentUsers.length})</span>
               </h2>
             </div>
@@ -233,11 +238,11 @@ export class DashboardView {
                       <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover ring-2 ring-gray-100 shrink-0" />
                       <div class="min-w-0">
                         <div class="text-[13px] font-bold text-[#0d1c2f] truncate">${u.name}</div>
-                        <div class="text-[11px] text-[#795900] font-semibold truncate">${u.title}</div>
+                        <div class="text-[11px] font-semibold truncate" style="color: var(--primary);">${u.title}</div>
                       </div>
                     </div>
                     <div class="text-right shrink-0 pl-2">
-                      <span class="text-[12.5px] font-bold text-[#795900]">${userDone}/${userTotal}</span>
+                      <span class="text-[12.5px] font-bold" style="color: var(--primary);">${userDone}/${userTotal}</span>
                       <div class="text-[10px] text-[#0d9488] font-bold">${userRate}%</div>
                     </div>
                   </div>
@@ -265,6 +270,14 @@ export class DashboardView {
   }
 
   bindEvents() {
+    const btnHeroCreate = this.container.querySelector('#btnHeroCreateTask');
+    if (btnHeroCreate) {
+      btnHeroCreate.addEventListener('click', () => {
+        rung(10);
+        if (this.onOpenCreateModal) this.onOpenCreateModal();
+      });
+    }
+
     const btnCreate = this.container.querySelector('#btnDashboardCreateTask');
     if (btnCreate) {
       btnCreate.addEventListener('click', () => {
@@ -280,6 +293,15 @@ export class DashboardView {
         if (this.onNavigateToTasks) this.onNavigateToTasks('all');
       });
     }
+
+    // Lọc danh sách theo 3 ô số liệu Hero
+    this.container.querySelectorAll('.tq-o[data-filter-tab]').forEach(o => {
+      o.addEventListener('click', () => {
+        rung(10);
+        const filter = o.dataset.filterTab;
+        if (this.onNavigateToTasks) this.onNavigateToTasks(filter);
+      });
+    });
 
     this.container.querySelectorAll('.card-kpi').forEach(card => {
       card.addEventListener('click', () => {

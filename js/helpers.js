@@ -1,6 +1,6 @@
 /**
- * THANH VŨ MEDIC CS3 - HELPER UTILITIES
- * Hỗ trợ định dạng dữ liệu, toast thông báo và bảo mật XSS
+ * THANH VŨ MEDIC CS3 - HELPER UTILITIES & SHIN TOOLKIT
+ * Hỗ trợ định dạng dữ liệu, toast thông báo, xác nhận 2 lần và bảo mật XSS
  */
 
 export function esc(str) {
@@ -54,7 +54,15 @@ export function timeAgo(dateStr) {
   return `${diffDays} ngày trước`;
 }
 
-let toastTimeout = null;
+/** Lời chào thông minh theo giờ Việt Nam chuẩn SHIN */
+export function loiChao(hoTen) {
+  const g = new Date().getHours();
+  const buoi = g < 11 ? 'buổi sáng' : g < 14 ? 'buổi trưa' : g < 18 ? 'buổi chiều' : 'buổi tối';
+  const tenGoi = String(hoTen || '').trim().split(/\s+/).pop();
+  return `Chào ${buoi}${tenGoi ? ', ' + tenGoi : ''} ☀️`;
+}
+
+/** Toast thông báo chống giật lag */
 export function toast(message, type = 'info') {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -73,7 +81,7 @@ export function toast(message, type = 'info') {
   } else if (type === 'error' || type === 'danger') {
     toastEl.classList.add('bg-[#FEE2E2]', 'border-[#FCA5A5]', 'text-[#DC2626]');
     toastEl.innerHTML = `<span class="material-symbols-outlined text-[20px]">error</span><span>${esc(message)}</span>`;
-  } else if (type === 'warning') {
+  } else if (type === 'warning' || type === 'warn') {
     toastEl.classList.add('bg-[#FEF3C7]', 'border-[#FCD34D]', 'text-[#B45309]');
     toastEl.innerHTML = `<span class="material-symbols-outlined text-[20px]">warning</span><span>${esc(message)}</span>`;
   } else {
@@ -92,8 +100,24 @@ export function toast(message, type = 'info') {
   }, 4000);
 }
 
+/** Phản hồi xúc giác rung haptic */
 export function rung(ms = 35) {
   if (typeof window !== 'undefined' && 'vibrate' in navigator) {
     try { navigator.vibrate(ms); } catch (_) {}
   }
+}
+
+/** Cơ chế xác nhận 2 lần trong 5 giây cho thao tác nguy hiểm (Xóa bỏ window.confirm theo chuẩn SHIN) */
+const choXacNhan = {};
+export function xacNhan2Lan(khoa, msg, viec) {
+  const bayGio = Date.now();
+  if (choXacNhan[khoa] && bayGio - choXacNhan[khoa] < 5000) {
+    delete choXacNhan[khoa];
+    rung(40);
+    viec();
+    return;
+  }
+  choXacNhan[khoa] = bayGio;
+  rung(15);
+  toast(`${msg} – Bấm lại lần 2 trong 5 giây để thực thi!`, 'warning');
 }

@@ -91,7 +91,7 @@ export class Sidebar {
             </div>
 
             <!-- NÚT ĐÓNG SIDEBAR TRÊN MOBILE -->
-            <button type="button" class="lg:hidden p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 min-w-[40px] min-h-[40px] flex items-center justify-center" id="btnCloseSidebarMobile" aria-label="Đóng menu">
+            <button type="button" class="lg:hidden p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center" id="btnCloseSidebarMobile" aria-label="Đóng menu">
               <span class="material-symbols-outlined text-[22px]">close</span>
             </button>
           </div>
@@ -162,7 +162,7 @@ export class Sidebar {
               </span>
               <span class="text-[11px] text-[#64748b] font-medium">SHIN AIOS Ready</span>
             </div>
-            <span class="font-mono-data text-[10.5px] text-[#795900] font-bold">Gold v3.8</span>
+            <span class="font-mono-data text-[10.5px] text-[#795900] font-bold">SHIN v2.6.4</span>
           </div>
         </div>
       </aside>
@@ -237,7 +237,7 @@ export class Sidebar {
             </div>
             <h3 class="font-bold text-[16px] text-[#0d1c2f]">Chuyển Đổi Phòng Ban (Admin)</h3>
           </div>
-          <button type="button" class="text-gray-400 hover:text-gray-600 text-xl font-bold min-w-[36px] min-h-[36px] flex items-center justify-center" id="btnCloseDeptPicker">&times;</button>
+          <button type="button" class="text-gray-400 hover:text-gray-600 text-xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center" id="btnCloseDeptPicker" aria-label="Đóng">&times;</button>
         </div>
 
         <p class="text-[12.5px] text-[#64748b] mb-4">

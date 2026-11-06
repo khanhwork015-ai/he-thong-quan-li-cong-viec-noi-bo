@@ -256,7 +256,7 @@ export class WorkspaceView {
                       </span>
                     </td>
                     <td class="py-3 px-4 text-center">
-                      <button type="button" class="p-1 rounded-lg text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100 min-w-[36px] min-h-[36px] inline-flex items-center justify-center" title="Xem chi tiết">
+                      <button type="button" class="p-1 rounded-lg text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100 min-w-[44px] min-h-[44px] inline-flex items-center justify-center" title="Xem chi tiết">
                         <span class="material-symbols-outlined text-[18px]">open_in_new</span>
                       </button>
                     </td>

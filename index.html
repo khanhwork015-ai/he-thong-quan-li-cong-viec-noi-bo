@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light" data-palette="gold" data-cochu="vua">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -7,32 +7,58 @@
   <meta name="description" content="Hệ thống Quản lý Công việc & Điều Hành - Bệnh viện Đa Khoa Thanh Vũ Medic Cơ Sở 3 (Cà Mau)" />
   <meta name="theme-color" content="#d6a52a" />
   
+  <!-- SCRIPT CHỐNG CHỚP MÀN HÌNH (ANTI-FLICKER) THEO CHUẨN SHIN AIOS (CHẠY TRƯỚC CSS) -->
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('shin_theme') || 'light';
+        var p = localStorage.getItem('shin_palette') || 'gold';
+        var c = localStorage.getItem('shin_cochu') || 'vua';
+        var nav = localStorage.getItem('shin_navbar');
+        var isDark = false;
+        if (t === 'dark') isDark = true;
+        else if (t === 'auto') isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        else if (t === 'time') {
+          var h = new Date().getHours();
+          isDark = (h < 6 || h >= 18);
+        }
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme-mode', t);
+        document.documentElement.setAttribute('data-palette', p);
+        document.documentElement.setAttribute('data-cochu', c);
+        if (nav === '0') {
+          document.documentElement.classList.add('an-navbar');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- FONTS & ICONS (PLUS JAKARTA SANS, JETBRAINS MONO & MATERIAL SYMBOLS OUTLINED) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
 
-  <!-- TAILWIND CSS CDN CONFIGURED WITH GOOGLE STITCH GOLD PALETTE -->
+  <!-- TAILWIND CSS CDN DYNAMICALLY CONFIGURED WITH SHIN AIOS PALETTES -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'primary': '#795900',
-            'primary-container': '#d6a52a',
-            'on-primary-container': '#533d00',
-            'secondary': '#7c5806',
-            'secondary-container': '#ffcd75',
-            'surface': '#f8f9ff',
-            'surface-card': '#ffffff',
-            'on-surface': '#0d1c2f',
-            'on-surface-variant': '#4f4635',
-            'border-subtle': '#e2e8f0',
-            'gold-light': '#fffbeb',
-            'gold-border': '#fef3c7',
-            'gold-accent': '#ffdea9'
+            'primary': 'var(--primary, #795900)',
+            'primary-container': 'var(--primary-container, #d6a52a)',
+            'on-primary-container': 'var(--on-primary-container, #533d00)',
+            'secondary': 'var(--primary, #7c5806)',
+            'secondary-container': 'var(--accent, #ffcd75)',
+            'surface': 'var(--card, #ffffff)',
+            'surface-card': 'var(--card, #ffffff)',
+            'on-surface': 'var(--text, #0d1c2f)',
+            'on-surface-variant': 'var(--text-muted, #4f4635)',
+            'border-subtle': 'var(--border, #e2e8f0)',
+            'gold-light': 'var(--primary-soft, #fffbeb)',
+            'gold-border': 'var(--border, #fef3c7)',
+            'gold-accent': 'var(--accent, #ffdea9)'
           },
           fontFamily: {
             sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
@@ -43,16 +69,16 @@
     };
   </script>
 
-  <!-- GOOGLE STITCH GOLD CLINICAL THEME STYLESHEET -->
-  <link rel="stylesheet" href="css/stitch-theme.css?v=3.8" />
+  <!-- SHIN AIOS MASTER UX/UI STYLESHEET -->
+  <link rel="stylesheet" href="css/stitch-theme.css?v=4.0" />
 </head>
-<body class="bg-[#f8f9ff] text-[#0d1c2f] antialiased overflow-x-hidden min-h-screen">
+<body class="antialiased overflow-x-hidden min-h-screen transition-colors duration-200">
 
   <!-- 1. SIDEBAR CONTAINER (OFF-CANVAS MOBILE DRAWER & CỐ ĐỊNH TRÊN DESKTOP LG) -->
   <div id="sidebar-container"></div>
 
   <!-- 2. MAIN APP SHELL (lg:pl-64 CHO DESKTOP, pl-0 CHO MOBILE) -->
-  <div class="lg:pl-64 pl-0 min-h-screen flex flex-col bg-[#f8f9ff]">
+  <div class="lg:pl-64 pl-0 min-h-screen flex flex-col transition-all">
     <!-- TOP HEADER CONTAINER (h-16 CỐ ĐỊNH PHÍA TRÊN) -->
     <div id="header-container"></div>
 
@@ -75,6 +101,6 @@
   <div id="toast-container"></div>
 
   <!-- CORE APPLICATION LOGIC (ES MODULE) -->
-  <script type="module" src="js/app.js?v=3.8"></script>
+  <script type="module" src="js/app.js?v=4.0"></script>
 </body>
 </html>

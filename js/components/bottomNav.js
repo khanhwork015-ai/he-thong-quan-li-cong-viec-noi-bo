@@ -1,8 +1,8 @@
 /**
- * THANH VŨ MEDIC CS3 - MOBILE BOTTOM NAVIGATION COMPONENT
+ * THANH VŨ MEDIC CS3 - MOBILE BOTTOM NAVIGATION COMPONENT (SHIN AIOS v2.6.4)
  * Thanh điều hướng đáy dành riêng cho thiết bị di động (Mobile First)
  * Chuẩn công thái học: Vùng bấm >= 44x44px, phản hồi xúc giác rung(10)
- * Tông màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
+ * Đổi màu đồng bộ theo 8 Palettes của SHIN AIOS
  */
 
 import { rung } from '../helpers.js';
@@ -41,7 +41,8 @@ export class BottomNav {
           return `
             <button 
               type="button" 
-              class="flex flex-col items-center justify-center flex-1 h-full min-h-[48px] py-1 transition-all relative ${isActive ? 'text-[#795900]' : 'text-[#64748b] hover:text-[#0d1c2f]'}" 
+              class="flex flex-col items-center justify-center flex-1 h-full min-h-[48px] py-1 transition-all relative ${isActive ? 'font-bold' : 'text-[#64748b] hover:text-[#0d1c2f]'}" 
+              style="${isActive ? 'color: var(--primary);' : ''}"
               data-bottom-nav="${item.id}"
               aria-label="${item.label}"
             >
@@ -50,16 +51,16 @@ export class BottomNav {
                   ${item.icon}
                 </span>
                 ${item.badge ? `
-                  <span class="absolute -top-1 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-[#ba1a1a] px-1 text-[9px] font-bold text-white shadow-xs">
+                  <span class="absolute -top-1 -right-2 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-[#dc2626] px-1 text-[9px] font-bold text-white shadow-xs">
                     ${item.badge}
                   </span>
                 ` : ''}
               </div>
-              <span class="text-[10.5px] mt-0.5 tracking-tight ${isActive ? 'font-extrabold text-[#795900]' : 'font-semibold'}">
+              <span class="text-[10.5px] mt-0.5 tracking-tight ${isActive ? 'font-extrabold' : 'font-semibold'}">
                 ${item.label}
               </span>
               ${isActive ? `
-                <span class="absolute top-0 w-8 h-0.5 bg-[#d6a52a] rounded-full"></span>
+                <span class="absolute top-0 w-8 h-0.5 rounded-full" style="background-color: var(--primary);"></span>
               ` : ''}
             </button>
           `;

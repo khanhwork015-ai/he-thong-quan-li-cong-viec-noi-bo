@@ -17,7 +17,8 @@ import { ProfileModal } from './components/profileModal.js';
 import { MemberModal } from './components/memberModal.js';
 import { SettingsModal } from './components/settingsModal.js';
 import { appScriptBridge } from './services/appScriptBridge.js';
-import { toast, rung, esc, soVN, ngayVN } from './helpers.js';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js';
+import { shinTheme } from './theme.js';
 
 class App {
   constructor() {
@@ -35,7 +36,13 @@ class App {
   }
 
   init() {
-    console.log('🚀 [THANH VŨ MEDIC CS3] Khởi chạy hệ thống Mobile-First Google Stitch Gold UI...');
+    console.log('🚀 [THANH VŨ MEDIC CS3] Khởi chạy hệ thống Mobile-First SHIN AIOS Master UI...');
+    shinTheme.init();
+    shinTheme.subscribe(() => {
+      if (this.sidebar) this.sidebar.render();
+      if (this.bottomNav) this.bottomNav.render();
+      if (this.header) this.header.render();
+    });
 
     this.profileModal = new ProfileModal('modal-container', () => this.refreshCurrentView());
     this.memberModal = new MemberModal('modal-container', () => this.refreshCurrentView());
@@ -217,11 +224,11 @@ class App {
               <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] transition-all relative group">
                 ${canManage ? `
                   <div class="absolute top-3 right-3 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    <button type="button" class="p-2 rounded-lg hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#0d1c2f] btn-edit-member min-w-[36px] min-h-[36px] flex items-center justify-center" data-member-id="${u.id}" title="Sửa thông tin nhân viên">
+                    <button type="button" class="p-2 rounded-lg hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#0d1c2f] btn-edit-member min-w-[44px] min-h-[44px] flex items-center justify-center" data-member-id="${u.id}" title="Sửa thông tin nhân viên">
                       <span class="material-symbols-outlined text-[18px]">edit</span>
                     </button>
                     ${u.role !== 'ADMIN' && !isSelf ? `
-                      <button type="button" class="p-2 rounded-lg hover:bg-red-50 text-[#64748b] hover:text-red-600 btn-delete-member min-w-[36px] min-h-[36px] flex items-center justify-center" data-member-id="${u.id}" data-member-name="${u.name}" title="Xóa nhân viên">
+                      <button type="button" class="p-2 rounded-lg hover:bg-red-50 text-[#64748b] hover:text-red-600 btn-delete-member min-w-[44px] min-h-[44px] flex items-center justify-center" data-member-id="${u.id}" data-member-name="${u.name}" title="Xóa nhân viên">
                         <span class="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     ` : ''}
@@ -278,11 +285,11 @@ class App {
         rung(20);
         const mid = btn.dataset.memberId;
         const mname = btn.dataset.memberName;
-        if (confirm(`Bạn có chắc chắn muốn xóa nhân sự "${mname}" khỏi hệ thống không?`)) {
+        xacNhan2Lan('del_member_' + mid, `Xóa nhân sự "${mname}"`, () => {
           store.deleteUser(mid);
           toast(`Đã xóa nhân viên: ${mname}`, 'info');
           this.renderEmployeesView();
-        }
+        });
       });
     });
   }
@@ -406,33 +413,8 @@ class App {
           <!-- CỘT PHẢI (COL-SPAN-5): THƯƠNG HIỆU, PHÂN QUYỀN & SAO LƯU -->
           <div class="lg:col-span-5 flex flex-col gap-5 sm:gap-6">
             
-            <!-- THẺ NHẬN DIỆN THƯƠNG HIỆU -->
-            <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
-              <div class="flex items-center gap-2.5 pb-3 border-b border-[#f1f5f9]">
-                <span class="material-symbols-outlined text-[#d6a52a] text-[22px]">palette</span>
-                <h3 class="font-bold text-[15px] text-[#0d1c2f]">Giao Diện &amp; Nhận Diện Thương Hiệu</h3>
-              </div>
-
-              <div class="space-y-2.5 text-[12.5px]">
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f9ff]">
-                  <span class="text-[#64748b]">Tông màu chủ đạo:</span>
-                  <span class="font-bold text-[#795900] flex items-center gap-1.5">
-                    <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] border border-[#795900]/30 inline-block"></span>
-                    Vàng Hoàng Kim (#D6A52A)
-                  </span>
-                </div>
-
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f9ff]">
-                  <span class="text-[#64748b]">Font chữ chuẩn:</span>
-                  <span class="font-bold text-[#0d1c2f]">Plus Jakarta Sans &amp; Mono</span>
-                </div>
-
-                <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#f8f9ff]">
-                  <span class="text-[#64748b]">Phòng ban hiện tại:</span>
-                  <span class="font-mono-data text-[#795900] font-bold">${currentDept.name} (${currentDept.code})</span>
-                </div>
-              </div>
-            </div>
+            <!-- MỤC ĐỔI MÀU GIAO DIỆN SHIN AIOS (CHỦ ĐẠO YÊU CẦU: 8 PALETTES, DARK/LIGHT, CỠ CHỮ, BOTTOM NAV) -->
+            ${shinTheme.renderSettingsUI()}
 
             <!-- THẺ PHÂN QUYỀN RBAC 3 CẤP -->
             <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
@@ -494,6 +476,10 @@ class App {
     `;
 
     // Bind event handlers
+    shinTheme.bindEvents(canvas, () => {
+      this.renderSettingsView();
+    });
+
     const btnTrigger = canvas.querySelector('#btnTriggerModalSettings');
     if (btnTrigger) {
       btnTrigger.addEventListener('click', () => {
@@ -585,11 +571,11 @@ class App {
     if (btnReset) {
       btnReset.addEventListener('click', () => {
         rung(20);
-        if (confirm('Khôi phục dữ liệu gốc mẫu sẽ thiết lập lại toàn bộ công việc và nhân sự về mặc định. Tiếp tục?')) {
+        xacNhan2Lan('reset_defaults', 'Khôi phục toàn bộ dữ liệu gốc', () => {
           store.resetDefaults();
           toast('Đã khôi phục dữ liệu gốc mẫu thành công!', 'info');
           this.renderSettingsView();
-        }
+        });
       });
     }
   }

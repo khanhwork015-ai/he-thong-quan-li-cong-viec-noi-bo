@@ -59,7 +59,7 @@ export class TaskDrawer {
             </div>
 
             <div class="flex items-center gap-2">
-              <button type="button" class="p-1.5 rounded-lg text-[#64748b] hover:text-[#0d1c2f] hover:bg-gray-100 transition-colors" id="btnCloseDrawer">
+              <button type="button" class="p-2 rounded-lg text-[#64748b] hover:text-[#0d1c2f] hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" id="btnCloseDrawer" aria-label="Đóng">
                 <span class="material-symbols-outlined text-[22px]">close</span>
               </button>
             </div>

@@ -45,7 +45,7 @@ export class ProfileModal {
                 <span class="text-[11.5px] text-[#795900] font-semibold truncate block">${user.name} • ${user.badge}</span>
               </div>
             </div>
-            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[40px] min-h-[40px] flex items-center justify-center" id="btnCloseProfileModal" aria-label="Đóng">&times;</button>
+            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors" id="btnCloseProfileModal" aria-label="Đóng">&times;</button>
           </div>
 
           <!-- FORM -->
