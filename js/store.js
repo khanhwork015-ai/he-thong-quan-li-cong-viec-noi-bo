@@ -177,7 +177,18 @@ export class Store {
     const idx = depts.findIndex(d => d.id === deptId);
     if (idx < 0) return { success: false, message: 'Không tìm thấy phòng ban!' };
 
-    depts[idx] = { ...depts[idx], ...deptData, updatedAt: new Date().toISOString() };
+    const sanitizedData = { ...deptData };
+    if (typeof sanitizedData.name === 'string') sanitizedData.name = sanitizedData.name.trim();
+    if (typeof sanitizedData.code === 'string') {
+      sanitizedData.code = sanitizedData.code.trim().toUpperCase();
+      if (!sanitizedData.badge) {
+        sanitizedData.badge = sanitizedData.code;
+      }
+    }
+    if (typeof sanitizedData.unit === 'string') sanitizedData.unit = sanitizedData.unit.trim();
+
+    delete sanitizedData.id;
+    depts[idx] = { ...depts[idx], ...sanitizedData, id: depts[idx].id, updatedAt: new Date().toISOString() };
     this.saveAllDepartments(depts);
     return { success: true, department: depts[idx] };
   }
@@ -210,6 +221,34 @@ export class Store {
     dept.teams.push(newTeam);
     this.saveAllDepartments(depts);
     return { success: true, team: newTeam };
+  }
+
+  updateTeamInDepartment(deptId, teamId, teamData) {
+    if (!auth.canCRUDDepartments()) {
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền sửa bộ phận con!' };
+    }
+    if (!teamData || typeof teamData !== 'object') {
+      return { success: false, message: 'Dữ liệu bộ phận con không hợp lệ!' };
+    }
+    const depts = this.getAllDepartments();
+    const dept = depts.find(d => d.id === deptId);
+    if (!dept || !dept.teams) return { success: false, message: 'Không tìm thấy phòng ban hoặc bộ phận con!' };
+
+    const teamIdx = dept.teams.findIndex(t => t.id === teamId);
+    if (teamIdx < 0) return { success: false, message: 'Không tìm thấy bộ phận con!' };
+
+    const currentTeam = dept.teams[teamIdx];
+    const updatedTeam = {
+      ...currentTeam,
+      name: teamData.name ? teamData.name.trim() : currentTeam.name,
+      code: teamData.code ? teamData.code.trim().toUpperCase() : currentTeam.code,
+      description: teamData.description !== undefined ? teamData.description : currentTeam.description,
+      updatedAt: new Date().toISOString()
+    };
+
+    dept.teams[teamIdx] = updatedTeam;
+    this.saveAllDepartments(depts);
+    return { success: true, team: updatedTeam };
   }
 
   removeTeamFromDepartment(deptId, teamId) {

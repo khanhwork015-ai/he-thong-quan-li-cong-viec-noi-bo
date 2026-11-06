@@ -78,12 +78,28 @@ export class MemberModal {
             
             <!-- AVATAR PICKER -->
             <div class="flex items-center gap-3 p-3 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff]" style="background-color: var(--background); border-color: var(--border);">
-              <img id="memberAvatarPreview" src="${this.editingUser ? this.editingUser.avatar : PRESET_AVATARS[0]}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white shrink-0 shadow-xs" />
-              <div class="flex-1 min-w-0">
-                <input type="url" id="memberAvatarUrl" value="${this.editingUser ? esc(this.editingUser.avatar) : PRESET_AVATARS[0]}" placeholder="URL ảnh đại diện" class="w-full h-9 px-2.5 rounded-lg border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f]" />
-                <div class="flex items-center gap-1.5 mt-2 overflow-x-auto no-scrollbar">
+              <div class="relative group cursor-pointer shrink-0">
+                <img id="memberAvatarPreview" src="${this.editingUser ? this.editingUser.avatar : PRESET_AVATARS[0]}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white shadow-xs" />
+                <button type="button" class="absolute inset-0 rounded-full bg-black/35 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" id="btnMemberAvatarOverlay" title="Đổi ảnh đại diện">
+                  <span class="material-symbols-outlined text-[18px]">photo_camera</span>
+                </button>
+              </div>
+
+              <!-- INPUT FILE ẨN CHỌN ẢNH TỪ THIẾT BỊ -->
+              <input type="file" id="memberFileInput" accept="image/*" class="hidden" />
+
+              <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+                <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                  <button type="button" class="px-2.5 py-1.5 rounded-lg bg-[#d6a52a] text-[#533d00] font-bold text-[11.5px] hover:bg-[#795900] hover:text-white transition-all flex items-center gap-1 shadow-xs shrink-0 min-h-[32px] cursor-pointer" id="btnMemberUploadAvatar" title="Chọn file ảnh từ thiết bị">
+                    <span class="material-symbols-outlined text-[16px]">upload</span>
+                    <span>Tải ảnh từ máy</span>
+                  </button>
+                  <input type="url" id="memberAvatarUrl" value="${this.editingUser ? esc(this.editingUser.avatar) : PRESET_AVATARS[0]}" placeholder="Hoặc dán URL ảnh đại diện" class="flex-1 min-w-[140px] h-8 px-2.5 rounded-lg border border-[#e2e8f0] text-[12px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                </div>
+                <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                  <span class="text-[10px] font-semibold text-[#817663] shrink-0">Mẫu:</span>
                   ${PRESET_AVATARS.map(url => `
-                    <img src="${url}" class="w-7 h-7 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform ring-1 ring-gray-300 select-avatar-item shrink-0" data-avatar="${url}" title="Bấm để chọn" />
+                    <img src="${url}" class="w-6 h-6 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform ring-1 ring-gray-300 select-avatar-item shrink-0" data-avatar="${url}" title="Bấm để chọn" />
                   `).join('')}
                 </div>
               </div>
@@ -220,6 +236,9 @@ export class MemberModal {
     const form = this.container.querySelector('#formMember');
     const inputAvatar = this.container.querySelector('#memberAvatarUrl');
     const avatarPreview = this.container.querySelector('#memberAvatarPreview');
+    const fileInput = this.container.querySelector('#memberFileInput');
+    const btnUpload = this.container.querySelector('#btnMemberUploadAvatar');
+    const btnOverlay = this.container.querySelector('#btnMemberAvatarOverlay');
     const selectDept = this.container.querySelector('#memberDept');
     const selectTeam = this.container.querySelector('#memberTeam');
 
@@ -247,6 +266,84 @@ export class MemberModal {
             selectTeam.innerHTML += `<option value="${t.id}">${t.name} (${t.code})</option>`;
           });
         }
+      });
+    }
+
+    // Kích hoạt input file ẩn khi bấm nút tải ảnh hoặc overlay trên preview
+    if (btnUpload && fileInput) {
+      btnUpload.addEventListener('click', () => fileInput.click());
+    }
+    if (btnOverlay && fileInput) {
+      btnOverlay.addEventListener('click', () => fileInput.click());
+    }
+
+    // Tự động resize và nén ảnh bằng HTML5 Canvas khi chọn file từ máy
+    if (fileInput && avatarPreview) {
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+          toast('Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP)!', 'warning');
+          fileInput.value = '';
+          return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+          toast('Dung lượng ảnh vượt quá 5MB. Vui lòng chọn ảnh nhỏ hơn!', 'warning');
+          fileInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              const MAX_SIZE = 300;
+              let width = img.width;
+              let height = img.height;
+              if (width > height) {
+                if (width > MAX_SIZE) {
+                  height = Math.round((height * MAX_SIZE) / width);
+                  width = MAX_SIZE;
+                }
+              } else {
+                if (height > MAX_SIZE) {
+                  width = Math.round((width * MAX_SIZE) / height);
+                  height = MAX_SIZE;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+              avatarPreview.src = compressedBase64;
+              if (inputAvatar) inputAvatar.value = compressedBase64;
+              toast('Đã tải và tối ưu ảnh đại diện thành công!', 'success');
+            } catch (err) {
+              console.error('Lỗi khi nén ảnh đại diện:', err);
+              avatarPreview.src = event.target.result;
+              if (inputAvatar) inputAvatar.value = event.target.result;
+              toast('Đã tải ảnh đại diện!', 'success');
+            } finally {
+              fileInput.value = '';
+            }
+          };
+          img.onerror = () => {
+            toast('Tệp ảnh bị lỗi cấu trúc hoặc không thể hiển thị!', 'warning');
+            fileInput.value = '';
+          };
+          img.src = event.target.result;
+        };
+        reader.onerror = () => {
+          toast('Không thể đọc file ảnh. Vui lòng thử lại!', 'warning');
+          fileInput.value = '';
+        };
+        reader.readAsDataURL(file);
       });
     }
 
@@ -279,7 +376,9 @@ export class MemberModal {
         const password = this.container.querySelector('#memberPassword').value.trim();
         const email = this.container.querySelector('#memberEmail').value.trim();
         const phone = this.container.querySelector('#memberPhone').value.trim();
-        const avatar = inputAvatar.value.trim() || PRESET_AVATARS[0];
+        const avatar = (inputAvatar && inputAvatar.value.trim()) 
+          ? inputAvatar.value.trim() 
+          : ((avatarPreview && avatarPreview.src) ? avatarPreview.src : PRESET_AVATARS[0]);
 
         if (!name || !username || !password) {
           toast('Vui lòng nhập đầy đủ Họ tên, Username và Password!', 'warning');
