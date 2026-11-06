@@ -192,7 +192,7 @@ export class ProfileModal {
       btnOverlay.addEventListener('click', () => fileInput.click());
     }
 
-    // Xử lý khi người dùng chọn file ảnh từ thiết bị
+    // Xử lý khi người dùng chọn file ảnh từ thiết bị (Nén ảnh về tối đa 300x300 tránh tràn localStorage)
     if (fileInput && avatarPreview) {
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -210,10 +210,38 @@ export class ProfileModal {
 
         const reader = new FileReader();
         reader.onload = (event) => {
-          const base64Data = event.target.result;
-          avatarPreview.src = base64Data;
-          if (inputAvatar) inputAvatar.value = base64Data;
-          toast('Đã nạp ảnh đại diện từ thiết bị thành công!', 'success');
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_SIZE = 300;
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+              if (width > MAX_SIZE) {
+                height = Math.round((height * MAX_SIZE) / width);
+                width = MAX_SIZE;
+              }
+            } else {
+              if (height > MAX_SIZE) {
+                width = Math.round((width * MAX_SIZE) / height);
+                height = MAX_SIZE;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+            avatarPreview.src = compressedBase64;
+            if (inputAvatar) inputAvatar.value = compressedBase64;
+            toast('Đã tải và tối ưu ảnh đại diện thành công!', 'success');
+          };
+          img.onerror = () => {
+            avatarPreview.src = event.target.result;
+            if (inputAvatar) inputAvatar.value = event.target.result;
+          };
+          img.src = event.target.result;
         };
         reader.readAsDataURL(file);
       });
@@ -258,8 +286,8 @@ export class ProfileModal {
           return;
         }
 
-        // Cập nhật vào store
-        store.updateUser(user.id, {
+        // Cập nhật vào store & auth
+        const updated = store.updateUser(user.id, {
           name,
           title,
           dob,
@@ -270,14 +298,9 @@ export class ProfileModal {
           avatar
         });
 
-        // Đồng bộ vào tài khoản hiện hành
-        const updated = store.getUserById(user.id);
-        auth.currentUser = updated;
-        localStorage.setItem(`tvm_user_profile_${user.id}`, JSON.stringify(updated));
-
         toast('Đã lưu thông tin hồ sơ cá nhân thành công!', 'success');
         closeModal();
-        if (this.onProfileUpdated) this.onProfileUpdated(updated);
+        if (this.onProfileUpdated) this.onProfileUpdated(updated || auth.getCurrentUser());
       });
     }
   }

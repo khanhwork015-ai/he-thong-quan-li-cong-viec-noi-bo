@@ -144,7 +144,10 @@ export class Store {
     return newUser;
   }
 
-  updateUser(userData) {
+  updateUser(idOrData, maybeData) {
+    const userData = (typeof idOrData === 'string') ? { id: idOrData, ...maybeData } : (idOrData || {});
+    if (!userData.id) return null;
+
     const users = this.getAllUsers();
     const idx = users.findIndex(u => u.id === userData.id);
     if (idx < 0) return null;
@@ -158,11 +161,17 @@ export class Store {
     this.saveAllUsers(users);
     appScriptBridge.pushUser(users[idx]);
 
+    // Luôn lưu bản sao profile độc lập để auth.loadUser() có thể nạp ngay
+    try {
+      localStorage.setItem('tvm_user_profile_' + users[idx].id, JSON.stringify(users[idx]));
+    } catch (e) {
+      console.warn('Lỗi lưu tvm_user_profile_:', e);
+    }
+
     // Nếu sửa thông tin của chính người đang đăng nhập -> Cập nhật Auth
-    if (auth.getCurrentUser().id === userData.id) {
-      auth.currentUser = users[idx];
-      localStorage.setItem('tvm_auth_user_v3', users[idx].id);
-      window.dispatchEvent(new CustomEvent('tvm:auth_changed', { detail: { user: users[idx] } }));
+    const current = auth.getCurrentUser();
+    if (current && current.id === users[idx].id) {
+      auth.updateProfile(users[idx]);
     }
 
     return users[idx];

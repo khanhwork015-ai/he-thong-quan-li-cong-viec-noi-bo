@@ -18,9 +18,21 @@ export class AuthManager {
     this.activeDepartmentId = this.loadActiveDepartment();
   }
 
+  getStoredUsers() {
+    try {
+      const saved = localStorage.getItem('tvm_users_v3');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return USERS;
+  }
+
   loadUser() {
     const savedId = localStorage.getItem(AUTH_KEY);
-    let base = USERS.find(u => u.id === savedId) || USERS[1]; // Mặc định BS.CKI Trần Minh Tuấn (Trưởng phòng PTKH)
+    const users = this.getStoredUsers();
+    let base = users.find(u => u.id === savedId) || users[1] || USERS[1]; // Mặc định BS.CKI Trần Minh Tuấn (Trưởng phòng PTKH)
     
     // Đọc thông tin cá nhân đã cập nhật nếu có
     try {
@@ -96,6 +108,21 @@ export class AuthManager {
       console.warn('Không thể lưu profile:', e);
     }
 
+    // Đồng bộ vào danh sách users trong localStorage nếu có
+    try {
+      const saved = localStorage.getItem('tvm_users_v3');
+      if (saved) {
+        const users = JSON.parse(saved);
+        if (Array.isArray(users)) {
+          const idx = users.findIndex(u => u.id === this.currentUser.id);
+          if (idx >= 0) {
+            users[idx] = { ...users[idx], ...this.currentUser, updatedAt: new Date().toISOString() };
+            localStorage.setItem('tvm_users_v3', JSON.stringify(users));
+          }
+        }
+      }
+    } catch (e) {}
+
     window.dispatchEvent(new CustomEvent('tvm:auth_changed', { detail: { user: this.currentUser } }));
     return this.currentUser;
   }
@@ -106,7 +133,8 @@ export class AuthManager {
   }
 
   switchUser(userId) {
-    let user = USERS.find(u => u.id === userId);
+    const users = this.getStoredUsers();
+    let user = users.find(u => u.id === userId) || USERS.find(u => u.id === userId);
     if (!user) return false;
 
     try {

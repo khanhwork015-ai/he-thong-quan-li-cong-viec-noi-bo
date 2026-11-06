@@ -44,7 +44,7 @@ class App {
       if (this.header) this.header.render();
     });
 
-    this.profileModal = new ProfileModal('modal-container', () => this.refreshCurrentView());
+    this.profileModal = new ProfileModal('modal-container', () => this.render());
     this.memberModal = new MemberModal('modal-container', () => this.refreshCurrentView());
     this.settingsModal = new SettingsModal('modal-container', () => this.refreshCurrentView());
 
@@ -168,16 +168,20 @@ class App {
       }
     });
 
+    window.addEventListener('tvm:auth_changed', () => {
+      this.render();
+    });
+
     window.addEventListener('auth-changed', () => {
-      this.refreshCurrentView();
-      this.sidebar.render();
-      this.bottomNav.render();
+      this.render();
+    });
+
+    window.addEventListener('tvm:department_changed', () => {
+      this.render();
     });
 
     window.addEventListener('department-changed', () => {
-      this.refreshCurrentView();
-      this.sidebar.render();
-      this.bottomNav.render();
+      this.render();
     });
   }
 

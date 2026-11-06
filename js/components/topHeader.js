@@ -265,7 +265,7 @@ export class TopHeader {
         </p>
 
         <div class="flex flex-col gap-2.5 max-h-80 overflow-y-auto">
-          ${USERS.map(u => `
+          ${store.getAllUsers().map(u => `
             <div class="p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${u.id === currentUser.id ? 'shadow-xs font-bold' : 'hover:bg-[#f8f9ff]'}" data-user-id="${u.id}" style="${u.id === currentUser.id ? 'background-color: var(--primary-soft); border-color: var(--primary);' : 'background-color: var(--card); border-color: var(--border);'}">
               <div class="flex items-center gap-3">
                 <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover ring-2 ring-gray-100 shrink-0" />
