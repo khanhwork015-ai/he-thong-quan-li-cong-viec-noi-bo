@@ -1,7 +1,16 @@
 /**
  * THANH VŨ MEDIC CS3 - DATA MODELS & MULTI-DEPARTMENT ARCHITECTURE
  * Cấu trúc thực thể hỗ trợ mở rộng không giới hạn phòng ban (Multi-tenant ready)
+ * Hỗ trợ phân cấp 4 nhóm quyền (RBAC) & Cơ cấu Phòng ban - Bộ phận con (Teams)
  */
+
+export const ROLES = {
+  ADMIN: { key: 'ADMIN', name: 'Quản Trị Viên (Admin)', badge: 'Admin Hệ Thống', level: 1 },
+  LEADERSHIP: { key: 'LEADERSHIP', name: 'Ban Lãnh Đạo', badge: 'Ban Lãnh Đạo', level: 2 },
+  MANAGER: { key: 'MANAGER', name: 'Trưởng Phòng', badge: 'Trưởng Phòng', level: 3 },
+  DEPUTY_MANAGER: { key: 'DEPUTY_MANAGER', name: 'Phó Trưởng Phòng', badge: 'Phó Phòng', level: 3 },
+  MEMBER: { key: 'MEMBER', name: 'Nhân Viên / Chuyên Viên', badge: 'Chuyên Viên', level: 4 }
+};
 
 export const DEPARTMENTS = [
   {
@@ -9,10 +18,15 @@ export const DEPARTMENTS = [
     name: 'Phòng Phát Triển Khách Hàng',
     code: 'PTKH-CS3',
     unit: 'Cơ Sở 3 (Cà Mau)',
-    managerId: 'user_tuan_ptkh',
-    description: 'Chăm sóc khách hàng, khám sức khỏe doanh nghiệp, bảo hiểm và phát triển thị trường y tế',
-    badge: 'CS3',
-    color: '#D6A52A' // Primary Gold Stitch
+    managerId: 'user_tam_ptkh', // Huỳnh Trường Thanh Tâm
+    description: 'Chăm sóc khách hàng, khám sức khỏe doanh nghiệp, marketing và phát triển thị trường y tế',
+    badge: 'PTKH',
+    color: '#D6A52A', // Primary Gold Stitch
+    teams: [
+      { id: 'team_mkt', name: 'Marketing & Truyền Thông', code: 'MKT' },
+      { id: 'team_cskh', name: 'Chăm Sóc Khách Hàng (CSKH)', code: 'CSKH' },
+      { id: 'team_hotro', name: 'Hỗ Trợ & Tiếp Đón', code: 'HOTRO' }
+    ]
   },
   {
     id: 'dept_duoc',
@@ -22,7 +36,12 @@ export const DEPARTMENTS = [
     managerId: 'user_minh_duoc',
     description: 'Quản lý kho thuốc GSP, kho lạnh vaccine và cung ứng vật tư tiêu hao',
     badge: 'DƯỢC',
-    color: '#0D9488'
+    color: '#0D9488',
+    teams: [
+      { id: 'team_duoc_gsp', name: 'Kho Thuốc GSP', code: 'GSP' },
+      { id: 'team_duoc_vaccine', name: 'Kho Lạnh Vaccine', code: 'VAC' },
+      { id: 'team_duoc_vtyt', name: 'Vật Tư Y Tế Tiêu Hao', code: 'VTYT' }
+    ]
   },
   {
     id: 'dept_qlda',
@@ -32,78 +51,132 @@ export const DEPARTMENTS = [
     managerId: 'user_nghia_qlda',
     description: 'Giám sát thi công, bàn giao vật tư 4 bên và quản lý tiến độ 4 tháng',
     badge: 'QLDA',
-    color: '#2563EB'
+    color: '#2563EB',
+    teams: [
+      { id: 'team_qlda_thicong', name: 'Tổ Thi Công Xây Dựng', code: 'TC' },
+      { id: 'team_qlda_giamsat', name: 'Tổ Giám Sát Kỹ Thuật', code: 'GS' }
+    ]
   }
 ];
 
 export const USERS = [
   // 1. ADMIN TOÀN HỆ THỐNG
   {
-    id: 'user_tam_admin',
-    name: 'Sếp Tâm',
+    id: 'user_admin',
+    username: 'admin',
+    password: '123',
+    name: 'Quản Trị Viên Hệ Thống',
     role: 'ADMIN',
-    departmentId: 'all', // Toàn quyền chuyển đổi và giám sát mọi phòng ban
-    title: 'Tổng Giám Đốc / Chủ Tịch HĐQT',
-    unit: 'Tập đoàn Y tế Thanh Vũ Medic',
+    departmentId: 'all',
+    teamId: 'all',
+    title: 'Quản Trị Viên Cấp Cao',
+    unit: 'Phòng CNTT & Quản Trị Hệ Thống',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
     badge: 'Admin Hệ Thống',
     phone: '0913 888 999',
-    email: 'septam@thanhvumedic.vn',
-    dob: '1978-05-18',
-    hometown: 'Cà Mau',
-    pin: '1234'
+    email: 'admin@thanhvumedic.vn',
+    dob: '1980-01-01',
+    hometown: 'Cà Mau'
   },
-  // 2. TRƯỞNG PHÒNG PTKH (Theo đúng thiết kế Google Stitch)
+  // 2. BAN LÃNH ĐẠO (Toàn quyền giám sát các phòng ban)
   {
-    id: 'user_tuan_ptkh',
-    name: 'BS.CKI Trần Minh Tuấn',
+    id: 'user_lanhdao',
+    username: 'lanhdao',
+    password: '123',
+    name: 'ThS.BS Nguyễn Thanh Vũ',
+    role: 'LEADERSHIP',
+    departmentId: 'all',
+    teamId: 'all',
+    title: 'Chủ Tịch HĐQT / Ban Lãnh Đạo',
+    unit: 'Ban Lãnh Đạo Toàn Viện',
+    avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=160&q=80',
+    badge: 'Ban Lãnh Đạo',
+    phone: '0913 777 888',
+    email: 'lanhdao@thanhvumedic.vn',
+    dob: '1975-10-15',
+    hometown: 'Cà Mau'
+  },
+  // 3. TRƯỞNG PHÒNG PTKH: Huỳnh Trường Thanh Tâm (Quản lý toàn bộ MKT / CSKH / Hỗ trợ)
+  {
+    id: 'user_tam_ptkh',
+    username: 'thanhtam',
+    password: '123',
+    name: 'Huỳnh Trường Thanh Tâm',
     role: 'MANAGER',
     departmentId: 'dept_ptkh',
-    title: 'Trưởng phòng PTKH',
+    teamId: 'all', // Quản lý toàn bộ các bộ phận con của phòng PTKH
+    title: 'Trưởng phòng Phát Triển Khách Hàng',
     unit: 'Phòng Phát Triển Khách Hàng • CS3',
     avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
     badge: 'Trưởng phòng',
     phone: '0945 112 233',
-    email: 'tuan.tm@thanhvumedic.vn',
-    dob: '1985-09-22',
+    email: 'thanhtam.ptkh@thanhvumedic.vn',
+    dob: '1986-06-20',
     hometown: 'Cà Mau'
   },
-  // 3. NHÂN VIÊN PHÒNG PTKH 1
+  // 4. NHÂN VIÊN PHÒNG PTKH - BỘ PHẬN CSKH
   {
     id: 'user_mai_ptkh',
+    username: 'tuyetmai',
+    password: '123',
     name: 'CN. Nguyễn Thị Tuyết Mai',
     role: 'MEMBER',
     departmentId: 'dept_ptkh',
-    title: 'Chuyên viên Khám Đoàn & CSKH',
-    unit: 'Phòng PTKH • CS3',
+    teamId: 'team_cskh',
+    title: 'Chuyên viên CSKH & Tiếp Nhận',
+    unit: 'Bộ phận CSKH • Phòng PTKH',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=160&q=80',
-    badge: 'Chuyên viên',
+    badge: 'Chuyên viên CSKH',
     phone: '0918 445 566',
     email: 'mai.ntt@thanhvumedic.vn',
     dob: '1992-04-15',
     hometown: 'Bạc Liêu'
   },
-  // 4. NHÂN VIÊN PHÒNG PTKH 2
+  // 5. NHÂN VIÊN PHÒNG PTKH - BỘ PHẬN MARKETING
   {
     id: 'user_nam_ptkh',
+    username: 'hoangnam',
+    password: '123',
     name: 'ThS. Lê Hoàng Nam',
     role: 'MEMBER',
     departmentId: 'dept_ptkh',
-    title: 'Chuyên viên Bảo Hiểm & Hợp Tác',
-    unit: 'Phòng PTKH • CS3',
+    teamId: 'team_mkt',
+    title: 'Chuyên viên Marketing & Truyền Thông',
+    unit: 'Bộ phận Marketing • Phòng PTKH',
     avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=160&q=80',
-    badge: 'Chuyên viên',
+    badge: 'Chuyên viên MKT',
     phone: '0909 778 899',
     email: 'nam.lh@thanhvumedic.vn',
     dob: '1990-11-30',
     hometown: 'Cần Thơ'
   },
-  // 5. TRƯỞNG PHÒNG DƯỢC (Minh chứng mở rộng phòng ban)
+  // 6. NHÂN VIÊN PHÒNG PTKH - BỘ PHẬN HỖ TRỢ
+  {
+    id: 'user_khang_ptkh',
+    username: 'minhkhang',
+    password: '123',
+    name: 'CN. Trần Minh Khang',
+    role: 'MEMBER',
+    departmentId: 'dept_ptkh',
+    teamId: 'team_hotro',
+    title: 'Chuyên viên Hỗ Trợ & Hướng Dẫn Khách',
+    unit: 'Bộ phận Hỗ Trợ • Phòng PTKH',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80',
+    badge: 'Chuyên viên Hỗ Trợ',
+    phone: '0939 123 789',
+    email: 'khang.tm@thanhvumedic.vn',
+    dob: '1994-08-10',
+    hometown: 'Cà Mau'
+  },
+  // 7. TRƯỞNG PHÒNG DƯỢC
   {
     id: 'user_minh_duoc',
+    username: 'minhhn',
+    password: '123',
     name: 'DS.CKI Nguyễn Văn Minh',
     role: 'MANAGER',
     departmentId: 'dept_duoc',
+    teamId: 'all',
     title: 'Trưởng Kho Dược CS3',
     unit: 'Kho Dược & VTYT • CS3',
     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=160&q=80',
@@ -113,15 +186,18 @@ export const USERS = [
     dob: '1982-08-12',
     hometown: 'Cà Mau'
   },
-  // 6. CHỈ HUY TRƯỞNG QLDA (Minh chứng mở rộng công trường)
+  // 8. CHỈ HUY TRƯỞNG QLDA
   {
     id: 'user_nghia_qlda',
+    username: 'nghiath',
+    password: '123',
     name: 'KS. Trương Hữu Nghĩa',
     role: 'MANAGER',
     departmentId: 'dept_qlda',
+    teamId: 'all',
     title: 'Chỉ Huy Trưởng Ban QLDA',
     unit: 'Ban QLDA Cải Tạo SVH-STN',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80',
     badge: 'Chỉ huy trưởng',
     phone: '0977 123 456',
     email: 'nghia.kpd@thanhvumedic.vn',
@@ -135,165 +211,152 @@ export const INITIAL_TASKS = [
   {
     id: 'PTKH-101',
     departmentId: 'dept_ptkh',
+    teamId: 'team_cskh',
     title: 'Chuẩn bị tài liệu & báo cáo tiếp đón Đoàn kiểm tra Sở Y Tế Cà Mau',
     description: 'Tổng hợp số liệu khám chữa bệnh BHYT, quy trình đón tiếp bệnh nhân VIP tại CS3 và hồ sơ đánh giá chất lượng dịch vụ trước 14:00 tại Hội trường B.',
     priority: 'P1', // P1: Khẩn, P2: Quan trọng, P3: Tiêu chuẩn
-    status: 'review', // todo | in_progress | review | done
+    status: 'in_progress', // in_progress | pending_approval | completed
     assigneeId: 'user_mai_ptkh',
-    creatorId: 'user_tuan_ptkh',
-    dueDate: '2026-11-06',
-    category: 'Sở Y Tế',
-    progress: 90,
-    cost: 5000000,
-    subtasks: [
-      { id: 'st-1', title: 'In ấn 15 bộ báo cáo tiến độ tuần 43', completed: true },
-      { id: 'st-2', title: 'Kiểm tra màn hình chiếu tại Hội trường B CS3', completed: true },
-      { id: 'st-3', title: 'Xin chữ ký duyệt của Giám đốc cơ sở', completed: false }
+    creatorId: 'user_tam_ptkh',
+    approverId: 'user_tam_ptkh',
+    dueDate: '2026-11-06T15:00:00.000Z',
+    category: 'Báo cáo & Kiểm tra',
+    checklist: [
+      { id: 'chk_1', text: 'In ấn 15 bộ tài liệu thuyết minh cơ sở vật chất CS3', done: true },
+      { id: 'chk_2', text: 'Kiểm tra máy chiếu, âm thanh và bảng đón tại Hội trường B', done: true },
+      { id: 'chk_3', text: 'Rà soát danh sách nhân sự trực lễ tân và đón tiếp VIP', done: false },
+      { id: 'chk_4', text: 'Trình ký Giám đốc duyệt slide tổng kết trước giờ họp', done: false }
     ],
     comments: [
-      { id: 'cm-1', userId: 'user_tuan_ptkh', content: 'Chị Mai nhớ chuẩn bị thêm bảng tổng kết khảo sát hài lòng nhé.', createdAt: '2026-11-05T08:30:00' }
-    ]
+      { id: 'cmt_1', userId: 'user_tam_ptkh', text: 'Đã bổ sung thêm bảng đối chiếu khám sức khỏe đoàn doanh nghiệp tháng 10.', time: '08:45' }
+    ],
+    progress: 50,
+    cost: 2500000,
+    createdAt: '2026-11-05T07:30:00.000Z',
+    updatedAt: '2026-11-06T08:45:00.000Z'
   },
   {
     id: 'PTKH-102',
     departmentId: 'dept_ptkh',
-    title: 'Triển khai hợp đồng khám sức khỏe định kỳ Tập đoàn Thủy sản Minh Phú',
-    description: 'Điều phối 3 xe cấp cứu, 12 bác sĩ và 18 điều dưỡng tổ chức lấy mẫu máu và chụp X-quang phổi lưu động cho đợt 1 (1.200 công nhân).',
-    priority: 'P1',
-    status: 'in_progress',
+    teamId: 'team_cskh',
+    title: 'Đàm phán hợp đồng khám sức khỏe định kỳ Cty Thủy Sản Minh Phú (1.200 CBCNV)',
+    description: 'Khảo sát nhu cầu khám lưu động tại Nhà máy Chế biến Thủy sản Giá Rai. Đóng gói bảng giá ưu đãi xét nghiệm sinh hóa và chụp X-Quang phổi kỹ thuật số.',
+    priority: 'P2',
+    status: 'pending_approval',
     assigneeId: 'user_mai_ptkh',
-    creatorId: 'user_tuan_ptkh',
-    dueDate: '2026-11-12',
-    category: 'Khám Đoàn',
-    progress: 65,
-    cost: 145000000,
-    subtasks: [
-      { id: 'st-4', title: 'Chốt danh sách nhân sự tham gia khám lưu động', completed: true },
-      { id: 'st-5', title: 'Kiểm chuẩn xe chụp X-quang kỹ thuật số', completed: true },
-      { id: 'st-6', title: 'Gửi kết quả xét nghiệm lên cổng tra cứu điện tử', completed: false }
+    creatorId: 'user_tam_ptkh',
+    approverId: 'user_tam_ptkh',
+    dueDate: '2026-11-08T17:00:00.000Z',
+    category: 'Khám Đoàn Doanh Nghiệp',
+    checklist: [
+      { id: 'chk_201', text: 'Lập báo giá gói khám tiêu chuẩn & nâng cao', done: true },
+      { id: 'chk_202', text: 'Lên lịch điều động xe khám lưu động và kỹ thuật viên', done: true },
+      { id: 'chk_203', text: 'Soạn thảo hợp đồng nguyên tắc bảo lãnh thanh toán', done: true }
     ],
-    comments: []
+    comments: [
+      { id: 'cmt_201', userId: 'user_mai_ptkh', text: 'Em đã chốt được thời gian khám đợt 1 vào ngày 12/11 tới, gửi Trưởng phòng phê duyệt ạ!', time: '10:15' }
+    ],
+    progress: 100,
+    cost: 180000000,
+    createdAt: '2026-11-04T09:00:00.000Z',
+    updatedAt: '2026-11-06T10:15:00.000Z'
   },
   {
     id: 'PTKH-103',
     departmentId: 'dept_ptkh',
-    title: 'Đối soát hồ sơ chi trả Bảo hiểm Y tế tư nhân tháng 10 với Manulife & Prudential',
-    description: 'Đối chiếu 342 ca bảo lãnh viện phí ngoại trú và nội trú tại CS3, hoàn tất chứng từ chuyển khoản bồi thường đúng quy định.',
+    teamId: 'team_mkt',
+    title: 'Ký kết hợp tác bảo lãnh viện phí trực tiếp Bảo hiểm Bảo Việt & PVI CS3',
+    description: 'Thống nhất quy trình cà thẻ bảo lãnh nội trú/ngoại trú không dùng tiền mặt qua cổng kết nối điện tử Bệnh viện Thanh Vũ Medic.',
     priority: 'P2',
-    status: 'todo',
+    status: 'in_progress',
     assigneeId: 'user_nam_ptkh',
-    creatorId: 'user_tuan_ptkh',
-    dueDate: '2026-11-15',
-    category: 'Bảo Hiểm',
-    progress: 20,
-    cost: 0,
-    subtasks: [
-      { id: 'st-7', title: 'Trích xuất dữ liệu từ phần mềm viện phí HIS', completed: true },
-      { id: 'st-8', title: 'Kiểm tra chữ ký số bác sĩ điều trị', completed: false }
+    creatorId: 'user_tam_ptkh',
+    approverId: 'user_tam_ptkh',
+    dueDate: '2026-11-10T11:30:00.000Z',
+    category: 'Bảo Hiểm Y Tế',
+    checklist: [
+      { id: 'chk_301', text: 'Tích hợp kết nối API cổng tra cứu quyền lợi chủ thẻ', done: true },
+      { id: 'chk_302', text: 'Tập huấn quy trình tiếp đón bảo lãnh cho nhân viên thu ngân CS3', done: false }
     ],
-    comments: []
+    comments: [],
+    progress: 50,
+    cost: 0,
+    createdAt: '2026-11-03T08:00:00.000Z',
+    updatedAt: '2026-11-05T14:20:00.000Z'
   },
   {
     id: 'PTKH-104',
     departmentId: 'dept_ptkh',
-    title: 'Hoàn tất báo cáo giao ban tuần 43 gửi Ban Giám Đốc trước 16:30',
-    description: 'Tổng hợp chỉ số doanh thu khám đoàn, số lượt bệnh nhân mới và đánh giá hiệu quả kênh tư vấn Zalo OA phòng khám.',
-    priority: 'P1',
-    status: 'review',
-    assigneeId: 'user_nam_ptkh',
-    creatorId: 'user_tuan_ptkh',
-    dueDate: '2026-11-05',
-    category: 'Giao Ban',
-    progress: 95,
-    cost: 0,
-    subtasks: [
-      { id: 'st-9', title: 'Tổng hợp số liệu từ 3 nhóm chuyên viên', completed: true },
-      { id: 'st-10', title: 'Trưởng phòng ký xác nhận', completed: false }
-    ],
-    comments: []
-  },
-  {
-    id: 'PTKH-105',
-    departmentId: 'dept_ptkh',
-    title: 'Khảo sát mức độ hài lòng người bệnh ngoại trú khu CS3 tháng 10',
-    description: 'Thu thập 450 phiếu khảo sát điện tử qua QR Code tại quầy thanh toán viện phí và khoa xét nghiệm.',
+    teamId: 'team_mkt',
+    title: 'Chiến dịch truyền thông Gói Tầm Soát Đột Quỵ & Tim Mạch Sớm Tháng 11',
+    description: 'Triển khai bảng standee, tờ rơi tại sảnh tầng trệt CS3 và chạy chiến dịch tiếp cận trên Zalo OA bệnh viện.',
     priority: 'P3',
-    status: 'done',
-    assigneeId: 'user_mai_ptkh',
-    creatorId: 'user_tuan_ptkh',
-    dueDate: '2026-11-03',
-    category: 'CSKH',
-    progress: 100,
-    cost: 1500000,
-    subtasks: [],
-    comments: []
-  },
-  {
-    id: 'PTKH-106',
-    departmentId: 'dept_ptkh',
-    title: 'Thiết kế ấn phẩm truyền thông: Gói Tầm Soát Ung Thư Sớm 2026',
-    description: 'Phối hợp phòng Marketing in 2.000 tờ rơi và dựng 4 standee đặt tại sảnh chờ tầng 1 và tầng 2.',
-    priority: 'P2',
-    status: 'done',
+    status: 'completed',
     assigneeId: 'user_nam_ptkh',
-    creatorId: 'user_tuan_ptkh',
-    dueDate: '2026-11-02',
-    category: 'Truyền Thông',
+    creatorId: 'user_tam_ptkh',
+    approverId: 'user_tam_ptkh',
+    dueDate: '2026-11-04T17:00:00.000Z',
+    category: 'Marketing & Dịch Vụ',
+    checklist: [
+      { id: 'chk_401', text: 'Thiết kế ấn phẩm chuẩn nhận diện Thanh Vũ Medic', done: true },
+      { id: 'chk_402', text: 'In ấn 2.000 tờ gấp và 5 standee đặt tại các khoa khám', done: true }
+    ],
+    comments: [
+      { id: 'cmt_401', userId: 'user_tam_ptkh', text: 'Chiến dịch chạy rất tốt, lượng bệnh nhân đăng ký gói tăng 35%.', time: '16:00' }
+    ],
     progress: 100,
-    cost: 8500000,
-    subtasks: [],
-    comments: []
-  },
-  {
-    id: 'PTKH-107',
-    departmentId: 'dept_ptkh',
-    title: 'Tổ chức chương trình khám tầm soát huyết áp & đường huyết miễn phí Phường 5',
-    description: 'Hỗ trợ Hội Người Cao Tuổi TP Cà Mau thực hiện chương trình an sinh xã hội, kết hợp giới thiệu thẻ khám gia đình Thanh Vũ Care.',
-    priority: 'P2',
-    status: 'in_progress',
-    assigneeId: 'user_mai_ptkh',
-    creatorId: 'user_tuan_ptkh',
-    dueDate: '2026-11-18',
-    category: 'Cộng Đồng',
-    progress: 40,
     cost: 12000000,
-    subtasks: [],
-    comments: []
+    createdAt: '2026-10-28T08:00:00.000Z',
+    updatedAt: '2026-11-04T16:00:00.000Z'
   },
 
-  // --- CÔNG VIỆC CỦA KHO DƯỢC (dept_duoc) - Để kiểm chứng cô lập dữ liệu ---
+  // --- CÔNG VIỆC KHOA DƯỢC & VẬT TƯ Y TẾ (dept_duoc) ---
   {
     id: 'DUOC-201',
     departmentId: 'dept_duoc',
-    title: 'Kiểm định nhiệt độ kho lạnh bảo quản vaccine và huyết thanh CS3',
-    description: 'Duy trì chuẩn GSP, kiểm tra hệ thống phát điện tự động và cảm biến nhiệt độ cảnh báo SMS.',
+    teamId: 'team_duoc_vaccine',
+    title: 'Kiểm kê định kỳ & thẩm định nhiệt độ kho lạnh bảo quản Vaccine GSP',
+    description: 'Xuất dữ liệu biểu đồ cảm biến nhiệt độ tự động (2-8 độ C) 30 ngày qua và đối soát tồn kho thực tế tại CS3.',
     priority: 'P1',
     status: 'in_progress',
     assigneeId: 'user_minh_duoc',
-    creatorId: 'user_tam_admin',
-    dueDate: '2026-11-08',
-    category: 'GSP Kho Dược',
-    progress: 80,
-    cost: 25000000,
-    subtasks: [],
-    comments: []
+    creatorId: 'user_minh_duoc',
+    approverId: 'user_admin',
+    dueDate: '2026-11-07T16:00:00.000Z',
+    category: 'GSP & Kho Lạnh',
+    checklist: [
+      { id: 'chk_501', text: 'Kiểm tra pin dự phòng máy ghi nhiệt ẩm tự động Testo', done: true },
+      { id: 'chk_502', text: 'Đối chiếu số lô hạn dùng 45 danh mục vaccine tiêm chủng', done: false }
+    ],
+    comments: [],
+    progress: 50,
+    cost: 0,
+    createdAt: '2026-11-05T08:00:00.000Z',
+    updatedAt: '2026-11-06T09:00:00.000Z'
   },
 
-  // --- CÔNG VIỆC BAN QLDA (dept_qlda) - Để kiểm chứng cô lập dữ liệu ---
+  // --- CÔNG VIỆC BAN QLDA CẢI TẠO (dept_qlda) ---
   {
     id: 'QLDA-301',
     departmentId: 'dept_qlda',
-    title: 'Nghiệm thu dầm sàn tầng 1 - Cải tạo Cơ sở Phan Ngọc Hiển (SVH cũ)',
-    description: 'Đối chiếu bản vẽ thiết kế kết cấu S-03 với nhà thầu Khang Phú Định (KPD). Đạt 100% cốt thép dầm sàn.',
+    teamId: 'team_qlda_giamsat',
+    title: 'Nghiệm thu bàn giao hệ thống ống cấp gió tươi áp lực âm Phòng Mổ CS3',
+    description: 'Đo kiểm tốc độ gió, độ sạch hạt bụi HEPA Filter phòng mổ số 1 & 2 trước khi đưa vào vận hành phẫu thuật.',
     priority: 'P1',
-    status: 'review',
+    status: 'in_progress',
     assigneeId: 'user_nghia_qlda',
-    creatorId: 'user_tam_admin',
-    dueDate: '2026-11-06',
-    category: 'Nghiệm Thu',
-    progress: 90,
-    cost: 450000000,
-    subtasks: [],
-    comments: []
+    creatorId: 'user_nghia_qlda',
+    approverId: 'user_admin',
+    dueDate: '2026-11-09T17:00:00.000Z',
+    category: 'Kỹ Thuật Công Trình',
+    checklist: [
+      { id: 'chk_601', text: 'Chạy thử nghiệm liên tục 72 giờ không tải', done: true },
+      { id: 'chk_602', text: 'Lập biên bản nghiệm thu kỹ thuật 4 bên', done: false }
+    ],
+    comments: [],
+    progress: 60,
+    cost: 45000000,
+    createdAt: '2026-11-02T08:00:00.000Z',
+    updatedAt: '2026-11-06T07:15:00.000Z'
   }
 ];

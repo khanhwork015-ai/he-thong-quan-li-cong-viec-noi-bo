@@ -9,11 +9,12 @@ import { DEPARTMENTS } from '../models.js';
 import { toast, rung } from '../helpers.js';
 
 export class Sidebar {
-  constructor(containerId, onNavChange, onModeChange) {
+  constructor(containerId, onNavChange, onModeChange, onLogout) {
     this.container = document.getElementById(containerId);
     this.onNavChange = onNavChange;
     this.onModeChange = onModeChange;
-    this.activeNav = 'tong-quan'; // 'tong-quan' | 'cong-viec' | 'nhan-vien' | 'cai-dat'
+    this.onLogout = onLogout;
+    this.activeNav = 'tong-quan'; // 'tong-quan' | 'cong-viec' | 'nhan-vien' | 'phong-ban' | 'cai-dat'
     this.viewMode = 'quan-ly'; // 'quan-ly' | 'ca-nhan'
     this.isOpenMobile = false;
   }
@@ -130,6 +131,13 @@ export class Sidebar {
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#ffdea9] text-[#5f4100] font-bold">${user.badge}</span>
             </button>
 
+            ${auth.isAdmin() ? `
+              <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'phong-ban' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="phong-ban" id="btnNavDepartments">
+                <span class="material-symbols-outlined text-[20px]">domain</span>
+                <span class="text-[14px]">Phòng ban &amp; Bộ phận</span>
+              </button>
+            ` : ''}
+
             <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'cai-dat' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="cai-dat" id="btnNavSettings">
               <span class="material-symbols-outlined text-[20px]">settings</span>
               <span class="text-[14px]">Cài đặt</span>
@@ -153,6 +161,14 @@ export class Sidebar {
               </button>
             </div>
           </div>
+
+          <button type="button" class="w-full py-2.5 px-3 rounded-xl text-left text-[12.5px] font-semibold text-rose-600 hover:bg-rose-50 flex items-center justify-between transition-colors min-h-[44px]" id="btnSidebarLogout">
+            <span class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">logout</span>
+              <span>Đăng xuất</span>
+            </span>
+            <span class="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-bold">Thoát</span>
+          </button>
 
           <div class="flex items-center justify-between px-1">
             <div class="flex items-center gap-1.5">
@@ -191,6 +207,17 @@ export class Sidebar {
     const backdrop = this.container.querySelector('#sidebarBackdrop');
     if (backdrop) {
       backdrop.addEventListener('click', () => this.close());
+    }
+
+    const btnLogout = this.container.querySelector('#btnSidebarLogout');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', () => {
+        rung(15);
+        this.close();
+        auth.logout();
+        toast('Đã đăng xuất thành công!', 'info');
+        if (this.onLogout) this.onLogout();
+      });
     }
 
     const btnManager = this.container.querySelector('#btnModeManager');

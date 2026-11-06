@@ -11,22 +11,31 @@ import { toast, rung } from '../helpers.js';
 import { shinTheme } from '../theme.js';
 
 export class TopHeader {
-  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar) {
+  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout) {
     this.container = document.getElementById(containerId);
     this.onSearch = onSearch;
     this.onOpenCreateModal = onOpenCreateModal;
     this.onOpenProfileModal = onOpenProfileModal;
     this.onOpenSettingsModal = onOpenSettingsModal;
     this.onToggleMobileSidebar = onToggleMobileSidebar;
+    this.onOpenDepartmentModal = onOpenDepartmentModal;
+    this.onLogout = onLogout;
   }
 
   render() {
     if (!this.container) return;
 
     const user = auth.getCurrentUser();
+    if (!user) return;
     const metrics = store.getDepartmentMetrics();
     const canCreate = auth.canCreateTask();
     const isDark = shinTheme.resolveIsDark();
+
+    let roleBadgeText = '👤 Nhân Viên';
+    if (user.role === 'ADMIN') roleBadgeText = '👑 Quản Trị Viên (Admin)';
+    else if (user.role === 'LEADERSHIP') roleBadgeText = '🏛️ Ban Lãnh Đạo';
+    else if (user.role === 'MANAGER') roleBadgeText = '👔 Trưởng Phòng';
+    else if (user.role === 'DEPUTY_MANAGER') roleBadgeText = '👔 Phó Trưởng Phòng';
 
     this.container.innerHTML = `
       <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6">
@@ -116,13 +125,19 @@ export class TopHeader {
                 <div class="text-[13px] font-bold text-[#0d1c2f] truncate">${user.name}</div>
                 <div class="text-[11px] text-[#64748b] truncate">${user.email || user.title}</div>
                 <span class="mt-1 inline-block text-[10.5px] font-bold px-2 py-0.5 rounded-full" style="background-color: var(--primary-soft); color: var(--primary);">
-                  ${user.role === 'ADMIN' ? '👑 Quản Trị Viên (Admin)' : (user.role === 'MANAGER' ? '👔 Trưởng Phòng' : '👤 Nhân Viên')}
+                  ${roleBadgeText}
                 </span>
               </div>
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnOpenProfile">
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">badge</span>
                 <span>Hồ sơ cá nhân</span>
               </button>
+              ${auth.isAdmin() ? `
+                <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenDepts">
+                  <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">domain</span>
+                  <span>Phòng ban &amp; Bộ phận</span>
+                </button>
+              ` : ''}
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenPalette">
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">palette</span>
                 <span>Đổi màu giao diện (SHIN)</span>
@@ -134,6 +149,10 @@ export class TopHeader {
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 border-t border-[#f1f5f9] mt-1 pt-2 min-h-[44px]" id="btnOpenRoleSwitcher">
                 <span class="material-symbols-outlined text-[18px] text-blue-600">switch_account</span>
                 <span>Chuyển tài khoản (Test)</span>
+              </button>
+              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 border-t border-[#f1f5f9] mt-1 pt-2 min-h-[44px]" id="btnLogoutTopHeader">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                <span>Đăng Xuất (Logout)</span>
               </button>
             </div>
           </div>
@@ -227,6 +246,25 @@ export class TopHeader {
         rung(10);
         dropdown.classList.add('hidden');
         this.showRoleSwitcherModal();
+      });
+    }
+
+    const btnDepts = this.container.querySelector('#btnHeaderOpenDepts');
+    if (btnDepts) {
+      btnDepts.addEventListener('click', () => {
+        rung(10);
+        dropdown.classList.add('hidden');
+        if (this.onOpenDepartmentModal) this.onOpenDepartmentModal();
+      });
+    }
+
+    const btnLogout = this.container.querySelector('#btnLogoutTopHeader');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', () => {
+        dropdown.classList.add('hidden');
+        auth.logout();
+        toast('Đã đăng xuất thành công!', 'info');
+        if (this.onLogout) this.onLogout();
       });
     }
 

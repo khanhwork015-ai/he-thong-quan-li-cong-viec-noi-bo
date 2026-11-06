@@ -16,6 +16,8 @@ import { CreateTaskModal } from './components/createTaskModal.js';
 import { ProfileModal } from './components/profileModal.js';
 import { MemberModal } from './components/memberModal.js';
 import { SettingsModal } from './components/settingsModal.js';
+import { LoginView } from './components/loginView.js';
+import { DepartmentModal } from './components/departmentModal.js';
 import { appScriptBridge } from './services/appScriptBridge.js';
 import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js';
 import { shinTheme } from './theme.js';
@@ -33,6 +35,8 @@ class App {
     this.profileModal = null;
     this.memberModal = null;
     this.settingsModal = null;
+    this.loginView = null;
+    this.departmentModal = null;
   }
 
   init() {
@@ -44,13 +48,16 @@ class App {
       if (this.header) this.header.render();
     });
 
+    this.loginView = new LoginView('login-container', (user) => this.onLoginSuccess(user));
     this.profileModal = new ProfileModal('modal-container', () => this.render());
     this.memberModal = new MemberModal('modal-container', () => this.refreshCurrentView());
     this.settingsModal = new SettingsModal('modal-container', () => this.refreshCurrentView());
+    this.departmentModal = new DepartmentModal('modal-container', () => this.refreshCurrentView());
 
     this.sidebar = new Sidebar('sidebar-container', 
       (navId) => this.switchNav(navId),
-      (mode) => this.onModeChange(mode)
+      (mode) => this.onModeChange(mode),
+      () => this.onLogout()
     );
 
     this.bottomNav = new BottomNav('mobile-nav-container',
@@ -62,7 +69,9 @@ class App {
       () => this.openCreateModal(),
       () => this.profileModal.show(),
       () => this.settingsModal.show(),
-      () => this.sidebar.toggle()
+      () => this.sidebar.toggle(),
+      () => this.departmentModal.show(),
+      () => this.onLogout()
     );
 
     this.taskDrawer = new TaskDrawer('drawer-container', () => this.refreshCurrentView());
@@ -90,7 +99,38 @@ class App {
     this.render();
   }
 
+  onLoginSuccess(user) {
+    this.render();
+  }
+
+  onLogout() {
+    this.render();
+  }
+
   render() {
+    const loginContainer = document.getElementById('login-container');
+    const mainShell = document.getElementById('main-app-shell');
+    const sidebarContainer = document.getElementById('sidebar-container');
+    const mobileNav = document.getElementById('mobile-nav-container');
+
+    // NẾU CHƯA ĐĂNG NHẬP HOẶC HẾT HẠN PHIÊN -> HIỆN LOGIN VIEW
+    if (!auth.isAuthenticated()) {
+      if (loginContainer) {
+        loginContainer.classList.remove('hidden');
+        this.loginView.render();
+      }
+      if (mainShell) mainShell.classList.add('hidden');
+      if (sidebarContainer) sidebarContainer.classList.add('hidden');
+      if (mobileNav) mobileNav.classList.add('hidden');
+      return;
+    }
+
+    // ĐÃ ĐĂNG NHẬP HỢP LỆ -> HIỆN GIAO DIỆN CHÍNH
+    if (loginContainer) loginContainer.classList.add('hidden');
+    if (mainShell) mainShell.classList.remove('hidden');
+    if (sidebarContainer) sidebarContainer.classList.remove('hidden');
+    if (mobileNav) mobileNav.classList.remove('hidden');
+
     this.sidebar.render();
     this.bottomNav.render();
     this.header.render();
@@ -104,6 +144,13 @@ class App {
       this.workspaceView.render();
     } else if (this.currentNav === 'nhan-vien') {
       this.renderEmployeesView();
+    } else if (this.currentNav === 'phong-ban') {
+      if (auth.isAdmin()) {
+        this.departmentModal.show();
+      } else {
+        toast('Chỉ Quản Trị Viên (Admin) mới có quyền truy cập Phòng ban & Bộ phận!', 'warning');
+        this.switchNav('tong-quan');
+      }
     } else if (this.currentNav === 'cai-dat') {
       this.renderSettingsView();
     }
@@ -190,7 +237,7 @@ class App {
     const canvas = document.getElementById('main-content-canvas');
     const currentDept = auth.getActiveDepartment();
     const members = store.getDepartmentUsers(currentDept.id);
-    const canManage = auth.isAdmin() || auth.isManager();
+    const canManage = auth.canManageMembers();
 
     canvas.innerHTML = `
       <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl">

@@ -18,6 +18,7 @@ export class WorkspaceView {
     this.viewMode = 'table'; // 'table' | 'kanban'
     this.priorityFilter = 'ALL';
     this.searchQuery = '';
+    this.teamFilter = 'ALL';
   }
 
   setTab(tab) {
@@ -41,6 +42,7 @@ export class WorkspaceView {
     const tasks = store.getDepartmentTasks({
       tab: this.activeTab,
       priority: this.priorityFilter,
+      teamId: this.teamFilter,
       searchQuery: this.searchQuery
     });
 
@@ -141,6 +143,24 @@ export class WorkspaceView {
               `).join('')}
             </div>
           </div>
+
+          <!-- BỘ LỌC BỘ PHẬN CON (TEAMS) TRONG PHÒNG BAN -->
+          ${(currentDept.teams && currentDept.teams.length > 0) ? `
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-[#f1f5f9]">
+              <span class="text-[11px] font-bold text-[#817663] shrink-0">Bộ phận:</span>
+              <button type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all ${this.teamFilter === 'ALL' ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-team-filter="ALL">
+                Tất cả (${allDeptTasks.length})
+              </button>
+              ${currentDept.teams.map(t => {
+                const count = allDeptTasks.filter(item => item.teamId === t.id).length;
+                return `
+                  <button type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all ${this.teamFilter === t.id ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-team-filter="${t.id}">
+                    ${t.name} (${count})
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          ` : ''}
         </div>
 
         <!-- MAIN DATA: TABLE (DESKTOP) & TOUCH CARDS (MOBILE) OR KANBAN -->
@@ -374,6 +394,14 @@ export class WorkspaceView {
       btn.addEventListener('click', () => {
         rung(10);
         this.priorityFilter = btn.dataset.priority;
+        this.render();
+      });
+    });
+
+    this.container.querySelectorAll('[data-team-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(10);
+        this.teamFilter = btn.dataset.teamFilter;
         this.render();
       });
     });

@@ -9,6 +9,7 @@ import { appScriptBridge } from './services/appScriptBridge.js';
 
 const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
 const USERS_STORAGE_KEY = 'tvm_users_v3';
+const DEPTS_STORAGE_KEY = 'tvm_departments_v4';
 
 export class Store {
   constructor() {
@@ -22,6 +23,9 @@ export class Store {
     }
     if (!localStorage.getItem(USERS_STORAGE_KEY)) {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(USERS));
+    }
+    if (!localStorage.getItem(DEPTS_STORAGE_KEY)) {
+      localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(DEPARTMENTS));
     }
   }
 
@@ -122,19 +126,130 @@ export class Store {
     return this.getAllUsers().filter(u => u.departmentId === deptId || u.departmentId === 'all');
   }
 
+  // --- QUẢN LÝ PHÒNG BAN & BỘ PHẬN CON (CRUD DEPARTMENTS & TEAMS) ---
+  getAllDepartments() {
+    try {
+      const saved = localStorage.getItem(DEPTS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return DEPARTMENTS;
+  }
+
+  saveAllDepartments(depts) {
+    localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(depts));
+    window.dispatchEvent(new CustomEvent('tvm:departments_changed', { detail: { departments: depts } }));
+    window.dispatchEvent(new CustomEvent('tvm:data_changed'));
+  }
+
+  getDepartmentById(deptId) {
+    return this.getAllDepartments().find(d => d.id === deptId) || null;
+  }
+
+  createDepartment(deptData) {
+    if (!auth.canCRUDDepartments()) {
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền tạo phòng ban!' };
+    }
+    const depts = this.getAllDepartments();
+    const newDept = {
+      id: `dept_${Date.now().toString().slice(-6)}`,
+      name: deptData.name.trim(),
+      code: (deptData.code || 'PB').trim().toUpperCase(),
+      unit: deptData.unit || 'Cơ Sở 3 (Cà Mau)',
+      managerId: deptData.managerId || '',
+      description: deptData.description || '',
+      badge: deptData.badge || deptData.code,
+      color: deptData.color || '#D6A52A',
+      teams: deptData.teams || []
+    };
+    depts.push(newDept);
+    this.saveAllDepartments(depts);
+    return { success: true, department: newDept };
+  }
+
+  updateDepartment(deptId, deptData) {
+    if (!auth.canCRUDDepartments()) {
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền sửa phòng ban!' };
+    }
+    const depts = this.getAllDepartments();
+    const idx = depts.findIndex(d => d.id === deptId);
+    if (idx < 0) return { success: false, message: 'Không tìm thấy phòng ban!' };
+
+    depts[idx] = { ...depts[idx], ...deptData, updatedAt: new Date().toISOString() };
+    this.saveAllDepartments(depts);
+    return { success: true, department: depts[idx] };
+  }
+
+  deleteDepartment(deptId) {
+    if (!auth.canCRUDDepartments()) {
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền xóa phòng ban!' };
+    }
+    const depts = this.getAllDepartments();
+    const filtered = depts.filter(d => d.id !== deptId);
+    this.saveAllDepartments(filtered);
+    return { success: true };
+  }
+
+  addTeamToDepartment(deptId, teamData) {
+    if (!auth.canCRUDDepartments()) {
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền thêm bộ phận con!' };
+    }
+    const depts = this.getAllDepartments();
+    const dept = depts.find(d => d.id === deptId);
+    if (!dept) return { success: false, message: 'Không tìm thấy phòng ban!' };
+
+    const newTeam = {
+      id: `team_${Date.now().toString().slice(-6)}`,
+      name: teamData.name.trim(),
+      code: (teamData.code || 'TEAM').trim().toUpperCase(),
+      description: teamData.description || ''
+    };
+    dept.teams = dept.teams || [];
+    dept.teams.push(newTeam);
+    this.saveAllDepartments(depts);
+    return { success: true, team: newTeam };
+  }
+
+  removeTeamFromDepartment(deptId, teamId) {
+    if (!auth.canCRUDDepartments()) {
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền xóa bộ phận con!' };
+    }
+    const depts = this.getAllDepartments();
+    const dept = depts.find(d => d.id === deptId);
+    if (!dept || !dept.teams) return { success: false, message: 'Không tìm thấy phòng ban hoặc bộ phận con!' };
+
+    dept.teams = dept.teams.filter(t => t.id !== teamId);
+    this.saveAllDepartments(depts);
+    return { success: true };
+  }
+
   createUser(userData) {
+    const targetRole = userData.role || 'MEMBER';
+    const targetDeptId = userData.departmentId || auth.getActiveDepartment().id;
+
+    if (!auth.canProvisionAccount(targetRole, targetDeptId)) {
+      return null;
+    }
+
     const users = this.getAllUsers();
     const newUser = {
       id: `user_${Date.now().toString().slice(-6)}`,
+      username: (userData.username || `user_${Date.now().toString().slice(-4)}`).trim().toLowerCase(),
+      password: (userData.password || '123').trim(),
       name: userData.name.trim(),
-      role: userData.role || 'MEMBER',
-      departmentId: userData.departmentId || auth.getActiveDepartment().id,
+      role: targetRole,
+      departmentId: targetDeptId,
+      teamId: userData.teamId || '',
       title: userData.title.trim() || 'Chuyên viên',
-      unit: userData.unit || auth.getActiveDepartment().name,
-      avatar: userData.avatar.trim() || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=160&q=80',
-      badge: userData.role === 'MANAGER' ? 'Trưởng phòng' : 'Chuyên viên',
+      unit: userData.unit || (this.getDepartmentById(targetDeptId)?.name || 'Thanh Vũ Medic'),
+      avatar: userData.avatar?.trim() || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=160&q=80',
+      badge: userData.badge || (targetRole === 'MANAGER' ? 'Trưởng phòng' : (targetRole === 'ADMIN' ? 'Admin' : (targetRole === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Chuyên viên'))),
       phone: userData.phone || '',
       email: userData.email || '',
+      dob: userData.dob || '',
+      hometown: userData.hometown || '',
       createdAt: new Date().toISOString()
     };
 
@@ -247,6 +362,10 @@ export class Store {
 
     if (options.priority && options.priority !== 'ALL') {
       filtered = filtered.filter(t => t.priority === options.priority);
+    }
+
+    if (options.teamId && options.teamId !== 'ALL') {
+      filtered = filtered.filter(t => t.teamId === options.teamId);
     }
 
     if (options.status && options.status !== 'ALL') {

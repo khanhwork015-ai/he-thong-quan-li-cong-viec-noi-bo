@@ -20,8 +20,9 @@ export class CreateTaskModal {
 
     rung(10);
     const currentDept = auth.getActiveDepartment();
-    const deptUsers = store.getDepartmentUsers(currentDept.id);
+    const allUsers = store.getAllUsers();
     const currentUser = auth.getCurrentUser();
+    const depts = store.getAllDepartments();
 
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="createModalOverlay">
@@ -56,9 +57,17 @@ export class CreateTaskModal {
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Người phụ trách *</label>
                 <select id="newTaskAssignee" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white">
-                  ${deptUsers.map(u => `
-                    <option value="${u.id}" ${u.id === currentUser.id ? 'selected' : ''}>${u.name} (${u.title})</option>
-                  `).join('')}
+                  ${depts.map(d => {
+                    const dUsers = allUsers.filter(u => u.departmentId === d.id || u.departmentId === 'all');
+                    if (dUsers.length === 0) return '';
+                    return `
+                      <optgroup label="${d.name} (${d.code})">
+                        ${dUsers.map(u => `
+                          <option value="${u.id}" ${u.id === currentUser.id ? 'selected' : ''}>${u.name} - ${u.title}</option>
+                        `).join('')}
+                      </optgroup>
+                    `;
+                  }).join('')}
                 </select>
               </div>
 
