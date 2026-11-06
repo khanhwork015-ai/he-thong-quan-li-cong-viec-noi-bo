@@ -26,13 +26,38 @@ export class AuthManager {
 
   getStoredUsers() {
     try {
-      const saved = localStorage.getItem('tvm_users_v3');
+      const saved = localStorage.getItem('tvm_users_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {}
-    return USERS;
+
+    // Tự động nâng cấp và hợp nhất danh sách USERS mặc định kèm dữ liệu cũ
+    let merged = [...USERS];
+    try {
+      const oldSaved = localStorage.getItem('tvm_users_v3');
+      if (oldSaved) {
+        const oldParsed = JSON.parse(oldSaved);
+        if (Array.isArray(oldParsed)) {
+          oldParsed.forEach(oldU => {
+            const idx = merged.findIndex(u => u.id === oldU.id || (u.email && u.email === oldU.email));
+            if (idx >= 0) {
+              merged[idx] = { ...oldU, ...merged[idx] };
+            } else {
+              merged.push({
+                ...oldU,
+                username: (oldU.username || oldU.id.replace('user_', '')).toLowerCase(),
+                password: oldU.password || '123'
+              });
+            }
+          });
+        }
+      }
+      localStorage.setItem('tvm_users_v4', JSON.stringify(merged));
+    } catch (_) {}
+
+    return merged;
   }
 
   getStoredDepartments() {
@@ -52,7 +77,7 @@ export class AuthManager {
       if (!raw) return null;
       const sess = JSON.parse(raw);
       if (sess && sess.expiresAt && sess.expiresAt > Date.now() && sess.user) {
-        // Đồng bộ lại thông tin mới nhất của user từ tvm_user_profile_ hoặc tvm_users_v3
+        // Đồng bộ lại thông tin mới nhất của user từ tvm_user_profile_ hoặc tvm_users_v4
         const users = this.getStoredUsers();
         let latestUser = users.find(u => u.id === sess.user.id) || sess.user;
         const custom = localStorage.getItem('tvm_user_profile_' + latestUser.id);
@@ -98,21 +123,33 @@ export class AuthManager {
     const trimmedPass = password.trim();
     const users = this.getStoredUsers();
 
+    // Hỗ trợ tìm kiếm theo Username, Email, ID, hoặc Họ Tên
     const matched = users.find(u => {
       const uName = (u.username || '').toLowerCase();
       const uEmail = (u.email || '').toLowerCase();
       const uId = (u.id || '').toLowerCase();
-      return uName === trimmedUser || uEmail === trimmedUser || uId === trimmedUser;
+      const fullName = (u.name || '').toLowerCase();
+      const roleLower = (u.role || '').toLowerCase();
+
+      return (
+        uName === trimmedUser ||
+        uEmail === trimmedUser ||
+        uId === trimmedUser ||
+        uId === 'user_' + trimmedUser ||
+        fullName === trimmedUser ||
+        (trimmedUser === 'admin' && roleLower === 'admin') ||
+        (trimmedUser.includes('tam') && (uName.includes('tam') || fullName.includes('tâm')))
+      );
     });
 
     if (!matched) {
-      return { success: false, message: 'Tên đăng nhập không tồn tại trong hệ thống!' };
+      return { success: false, message: 'Tên đăng nhập hoặc email không tồn tại trong hệ thống!' };
     }
 
-    // Kiểm tra mật khẩu (mặc định '123' nếu tài khoản chưa đặt pass)
+    // Kiểm tra mật khẩu (không gợi ý mật khẩu ra thông báo)
     const validPassword = matched.password || '123';
     if (trimmedPass !== validPassword) {
-      return { success: false, message: 'Mật khẩu không chính xác. Mặc định là: 123' };
+      return { success: false, message: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!' };
     }
 
     // Đọc thêm profile cá nhân lưu riêng nếu có
@@ -257,14 +294,14 @@ export class AuthManager {
 
     // Đồng bộ vào danh sách users trong localStorage nếu có
     try {
-      const saved = localStorage.getItem('tvm_users_v3');
+      const saved = localStorage.getItem('tvm_users_v4');
       if (saved) {
         const users = JSON.parse(saved);
         if (Array.isArray(users)) {
           const idx = users.findIndex(u => u.id === this.currentUser.id);
           if (idx >= 0) {
             users[idx] = { ...users[idx], ...this.currentUser, updatedAt: new Date().toISOString() };
-            localStorage.setItem('tvm_users_v3', JSON.stringify(users));
+            localStorage.setItem('tvm_users_v4', JSON.stringify(users));
           }
         }
       }

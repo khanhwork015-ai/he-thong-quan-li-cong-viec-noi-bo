@@ -8,7 +8,7 @@ import { auth } from './auth.js';
 import { appScriptBridge } from './services/appScriptBridge.js';
 
 const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
-const USERS_STORAGE_KEY = 'tvm_users_v3';
+const USERS_STORAGE_KEY = 'tvm_users_v4';
 const DEPTS_STORAGE_KEY = 'tvm_departments_v4';
 
 export class Store {

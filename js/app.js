@@ -116,20 +116,30 @@ class App {
     // NẾU CHƯA ĐĂNG NHẬP HOẶC HẾT HẠN PHIÊN -> HIỆN LOGIN VIEW
     if (!auth.isAuthenticated()) {
       if (loginContainer) {
-        loginContainer.classList.remove('hidden');
+        loginContainer.className = 'fixed inset-0 z-[100] overflow-y-auto';
+        loginContainer.style.display = 'block';
+        loginContainer.style.pointerEvents = 'auto';
         this.loginView.render();
       }
-      if (mainShell) mainShell.classList.add('hidden');
-      if (sidebarContainer) sidebarContainer.classList.add('hidden');
-      if (mobileNav) mobileNav.classList.add('hidden');
+      if (mainShell) mainShell.style.display = 'none';
+      if (sidebarContainer) sidebarContainer.style.display = 'none';
+      if (mobileNav) mobileNav.style.display = 'none';
+      document.body.classList.remove('overflow-hidden');
       return;
     }
 
-    // ĐÃ ĐĂNG NHẬP HỢP LỆ -> HIỆN GIAO DIỆN CHÍNH
-    if (loginContainer) loginContainer.classList.add('hidden');
-    if (mainShell) mainShell.classList.remove('hidden');
-    if (sidebarContainer) sidebarContainer.classList.remove('hidden');
-    if (mobileNav) mobileNav.classList.remove('hidden');
+    // ĐÃ ĐĂNG NHẬP HỢP LỆ -> HỦY HOÀN TOÀN LOGIN CONTAINER ĐỂ KHÔNG CHẶN CUỘN TRANG
+    if (loginContainer) {
+      loginContainer.className = 'hidden';
+      loginContainer.style.display = 'none';
+      loginContainer.style.pointerEvents = 'none';
+      loginContainer.innerHTML = '';
+    }
+    if (mainShell) mainShell.style.display = '';
+    if (sidebarContainer) sidebarContainer.style.display = '';
+    if (mobileNav) mobileNav.style.display = '';
+    document.body.classList.remove('overflow-hidden');
+    document.documentElement.classList.remove('overflow-hidden');
 
     this.sidebar.render();
     this.bottomNav.render();

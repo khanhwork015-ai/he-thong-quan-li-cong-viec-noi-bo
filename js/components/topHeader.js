@@ -146,10 +146,7 @@ export class TopHeader {
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">settings</span>
                 <span>Cài đặt hệ thống</span>
               </button>
-              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 border-t border-[#f1f5f9] mt-1 pt-2 min-h-[44px]" id="btnOpenRoleSwitcher">
-                <span class="material-symbols-outlined text-[18px] text-blue-600">switch_account</span>
-                <span>Chuyển tài khoản (Test)</span>
-              </button>
+
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 border-t border-[#f1f5f9] mt-1 pt-2 min-h-[44px]" id="btnLogoutTopHeader">
                 <span class="material-symbols-outlined text-[18px]">logout</span>
                 <span>Đăng Xuất (Logout)</span>
