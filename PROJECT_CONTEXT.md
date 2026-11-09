@@ -76,6 +76,12 @@
   - **Khắc phục lỗi mở Task Drawer:** Chuẩn hóa kiểu dữ liệu mảng phòng thủ (defensive array sanitization) cho `subtasks` và `comments` từ Google Sheets/LocalStorage, triệt tiêu lỗi `TypeError: map is not a function` làm sập Drawer.
   - **Đồng bộ hóa trạng thái công việc:** Hỗ trợ đầy đủ ánh xạ giữa `pending_approval` / `review` và `completed` / `done` trên toàn bộ Kanban, Table View và bộ lọc tab.
   - **Chống lưu cache trình duyệt:** Thêm tiền tố versioning `?v=4.2` cho toàn bộ các module ES import giúp GitHub Pages cập nhật ngay lập tức.
+- [x] **9. Hỗ Trợ Đầy Đủ Cấp/Sửa Nhân Sự Đa Phòng Ban & Bổ Sung Chức Vụ Phó Trưởng Phòng (`departmentView.js`, `memberModal.js`, `store.js`, `app.js`)**:
+  - **Thêm nhân sự cho các phòng ban bất kỳ:** Modal Cấp tài khoản mới tự động nhận diện đúng phòng ban đang được chọn trên màn hình (`defaultDeptId`), không còn bị gán nhầm về phòng đầu tiên.
+  - **Bổ sung vai trò Phó Trưởng Phòng (`DEPUTY_MANAGER`):** Đã bổ sung tùy chọn `⭐ Phó Trưởng Phòng (DEPUTY_MANAGER)` vào danh sách vai trò phân quyền và thẻ hiển thị riêng biệt.
+  - **Nút sửa thông tin & thăng chức trực tiếp:** Thêm nút icon bút chì `Sửa` trên mọi thẻ nhân viên, Trưởng phòng và Phó phòng trong giao diện phòng ban.
+  - **Trạng thái phòng ban trống:** Hiển thị nút kêu gọi hành động (CTA) nổi bật `+ Cấp Tài Khoản Nhân Sự Đầu Tiên` khi phòng ban chưa có nhân sự nào.
+  - **Tự động thăng cấp khi gán Trưởng phòng:** Khi gán một chuyên viên làm Trưởng phòng trong form sửa phòng ban, hệ thống tự động cập nhật role thành `MANAGER`.
 
 ---
 

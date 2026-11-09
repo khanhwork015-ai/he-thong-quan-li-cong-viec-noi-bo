@@ -65,8 +65,16 @@ export class DepartmentView {
     });
 
     const selectedDeptUsers = selectedDept ? store.getDepartmentUsers(selectedDept.id) : [];
-    const deptManager = selectedDept ? selectedDeptUsers.find(u => u.id === selectedDept.managerId || u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER') : null;
-    const regularStaff = selectedDeptUsers.filter(u => u.id !== deptManager?.id);
+    
+    // Danh sách ứng viên cho chức danh Trưởng phòng của phòng ban này
+    const candidateMap = new Map();
+    managers.forEach(m => candidateMap.set(m.id, m));
+    selectedDeptUsers.forEach(u => candidateMap.set(u.id, u));
+    const assignableManagers = Array.from(candidateMap.values());
+
+    const deptManager = selectedDept ? selectedDeptUsers.find(u => u.id === selectedDept.managerId || u.role === 'MANAGER') : null;
+    const deptDeputies = selectedDept ? selectedDeptUsers.filter(u => u.role === 'DEPUTY_MANAGER' && u.id !== deptManager?.id) : [];
+    const regularStaff = selectedDeptUsers.filter(u => u.id !== deptManager?.id && !deptDeputies.some(d => d.id === u.id));
 
     // Tự động giải phóng nếu Trưởng phòng từng bị kéo nhầm vào bộ phận con -> Trả về Quản lý Toàn phòng
     if (deptManager && deptManager.teamId) {
@@ -286,7 +294,7 @@ export class DepartmentView {
                     <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Trưởng phòng phụ trách</label>
                     <select id="editDeptManagerView" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
                       <option value="">-- Chưa gán Trưởng phòng --</option>
-                      ${managers.map(m => `<option value="${m.id}" ${m.id === selectedDept.managerId ? 'selected' : ''}>${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}
+                      ${assignableManagers.map(m => `<option value="${m.id}" ${m.id === selectedDept.managerId ? 'selected' : ''}>${esc(m.name)} (${esc(m.badge || m.title || '')})</option>`).join('')}
                     </select>
                   </div>
 
@@ -452,11 +460,54 @@ export class DepartmentView {
                           <span class="material-symbols-outlined text-[16px] text-[#d6a52a]">verified</span>
                           <span>Quản trị Toàn phòng</span>
                         </span>
+                        <button type="button" class="btn-edit-dept-member px-3 py-1.5 rounded-xl border border-amber-300 text-amber-800 hover:bg-amber-100/70 font-bold text-[11.5px] flex items-center gap-1 transition-all cursor-pointer shadow-2xs shrink-0" data-user-id="${deptManager.id}" title="Chỉnh sửa thông tin Trưởng phòng">
+                          <span class="material-symbols-outlined text-[16px]">edit</span>
+                          <span>Sửa</span>
+                        </button>
                       </div>
                     </div>
                   ` : ''}
 
-                  <!-- 2. TIÊU ĐỀ CHUYÊN VIÊN TRỰC THUỘC (CÓ THỂ KÉO THẢ VÀO BỘ PHẬN) -->
+                  <!-- 2. THẺ PHÓ TRƯỞNG PHÒNG (NẾU CÓ) -->
+                  ${deptDeputies.map(deputy => `
+                    <div class="p-4 rounded-2xl border-2 border-indigo-200/80 bg-gradient-to-r from-indigo-50/60 via-white to-indigo-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                      <div class="flex items-center gap-3.5 min-w-0">
+                        <div class="relative shrink-0">
+                          <img src="${deputy.avatar}" alt="${deputy.name}" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-indigo-300 shadow-xs" />
+                          <span class="absolute -top-1.5 -right-1.5 bg-indigo-500 text-white text-[12px] font-black rounded-full px-1.5 py-0.2 shadow-xs">⭐</span>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[14.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">${esc(deputy.name)}</span>
+                            <span class="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                              ⭐ Phó Trưởng Phòng
+                            </span>
+                            <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                              Toàn phòng
+                            </span>
+                          </div>
+                          <div class="text-[12px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
+                            ${esc(deputy.title || 'Phó Trưởng phòng')} • <span class="font-mono-data">${esc(deputy.email || deputy.username || '')}</span>
+                            ${deputy.phone ? ` • <span class="font-mono-data">${esc(deputy.phone)}</span>` : ''}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
+                        <span class="text-[11.5px] font-bold text-indigo-800 bg-white/90 border border-indigo-200 px-3 py-1.5 rounded-xl shadow-2xs flex items-center gap-1.5">
+                          <span class="material-symbols-outlined text-[16px] text-indigo-600">stars</span>
+                          <span>Phó Phòng</span>
+                        </span>
+                        <button type="button" class="btn-edit-dept-member px-3 py-1.5 rounded-xl border border-indigo-300 text-indigo-800 hover:bg-indigo-100/70 font-bold text-[11.5px] flex items-center gap-1 transition-all cursor-pointer shadow-2xs shrink-0" data-user-id="${deputy.id}" title="Chỉnh sửa thông tin Phó phòng">
+                          <span class="material-symbols-outlined text-[16px]">edit</span>
+                          <span>Sửa</span>
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+
+                  <!-- 3. TIÊU ĐỀ CHUYÊN VIÊN TRỰC THUỘC (CÓ THỂ KÉO THẢ VÀO BỘ PHẬN) -->
                   <div class="flex items-center justify-between flex-wrap gap-2 pt-2">
                     <span class="text-[13px] font-bold text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
                       <span>Chuyên Viên / Nhân Sự Trực Thuộc (${regularStaff.length})</span>
@@ -468,9 +519,25 @@ export class DepartmentView {
 
                   <!-- LƯỚI THẺ CHUYÊN VIÊN (DRAGGABLE = TRUE) -->
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="departmentUsersGrid">
-                    ${regularStaff.length === 0 ? `
+                    ${(selectedDeptUsers.length === 0) ? `
+                      <div class="col-span-1 sm:col-span-2 p-8 rounded-3xl text-center bg-gradient-to-b from-[#fffbeb]/60 to-white border border-dashed border-[#d6a52a] flex flex-col items-center justify-center gap-3 shadow-xs">
+                        <div class="w-14 h-14 rounded-2xl bg-[#fffbeb] text-[#795900] flex items-center justify-center ring-4 ring-[#fef3c7]">
+                          <span class="material-symbols-outlined text-[30px]">person_add</span>
+                        </div>
+                        <div class="max-w-md">
+                          <h4 class="font-bold text-[15px] text-[#0d1c2f]">Phòng ban này chưa có nhân sự nào</h4>
+                          <p class="text-[12px] text-[#817663] mt-1">
+                            Hãy cấp tài khoản Trưởng phòng, Phó phòng hoặc Nhân viên đầu tiên để kích hoạt vận hành cho ${esc(selectedDept.name)}.
+                          </p>
+                        </div>
+                        <button type="button" class="btn-empty-add-member px-4 py-2.5 rounded-xl font-bold text-[12.5px] shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:scale-105" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                          <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                          <span>+ Cấp Tài Khoản Nhân Sự Đầu Tiên</span>
+                        </button>
+                      </div>
+                    ` : (regularStaff.length === 0 ? `
                       <div class="col-span-2 p-6 rounded-2xl text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] border border-dashed border-[#e2e8f0]">
-                        Chưa có chuyên viên nào trong phòng ban này.
+                        Chưa có chuyên viên nào ngoài lãnh đạo phòng.
                       </div>
                     ` : regularStaff.map(u => {
                       const team = (selectedDept.teams || []).find(t => t.id === u.teamId);
@@ -478,18 +545,24 @@ export class DepartmentView {
                         <!-- THẺ NHÂN VIÊN CÓ THỂ KÉO THẢ (DRAGGABLE) -->
                         <div class="member-drag-card p-3.5 rounded-2xl border border-[#e2e8f0] bg-white flex flex-col gap-2.5 shadow-2xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:border-[#d6a52a]" draggable="true" data-user-id="${u.id}" style="background-color: var(--card); border-color: var(--border);">
                           
-                          <div class="flex items-center gap-3">
-                            <div class="relative shrink-0">
-                              <img src="${u.avatar}" alt="${u.name}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-2xs" />
-                              <span class="material-symbols-outlined absolute -bottom-1 -right-1 bg-amber-100 text-amber-800 text-[13px] rounded-full p-0.5 shadow-2xs">drag_indicator</span>
-                            </div>
+                          <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-3 min-w-0">
+                              <div class="relative shrink-0">
+                                <img src="${u.avatar}" alt="${u.name}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-2xs" />
+                                <span class="material-symbols-outlined absolute -bottom-1 -right-1 bg-amber-100 text-amber-800 text-[13px] rounded-full p-0.5 shadow-2xs">drag_indicator</span>
+                              </div>
 
-                            <div class="min-w-0 flex-1">
-                              <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</div>
-                              <div class="text-[11.5px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
-                                ${esc(u.title || 'Chuyên viên')} • <span class="font-mono-data">${esc(u.email || u.username || '')}</span>
+                              <div class="min-w-0 flex-1">
+                                <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</div>
+                                <div class="text-[11.5px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
+                                  ${esc(u.title || 'Chuyên viên')} • <span class="font-mono-data">${esc(u.email || u.username || '')}</span>
+                                </div>
                               </div>
                             </div>
+
+                            <button type="button" class="btn-edit-dept-member p-1.5 rounded-xl text-gray-400 hover:text-amber-800 hover:bg-amber-50 transition-colors cursor-pointer shrink-0" data-user-id="${u.id}" title="Chỉnh sửa thông tin / phân quyền">
+                              <span class="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
                           </div>
 
                           <!-- BỘ CHỌN NHANH BỘ PHẬN NGAY TRÊN THẺ NHÂN VIÊN -->
@@ -505,7 +578,7 @@ export class DepartmentView {
 
                         </div>
                       `;
-                    }).join('')}
+                    }).join(''))}
                   </div>
                 </div>
 
@@ -794,6 +867,14 @@ export class DepartmentView {
           color: color || currentDept.color
         });
 
+        // Nếu chọn một nhân sự làm Trưởng phòng mà người đó chưa có role MANAGER -> Tự động cập nhật chức danh
+        if (managerId) {
+          const selectedManagerUser = store.getUserById(managerId);
+          if (selectedManagerUser && selectedManagerUser.role !== 'MANAGER' && selectedManagerUser.role !== 'ADMIN') {
+            store.updateUser(managerId, { role: 'MANAGER', badge: 'Trưởng phòng', teamId: '' });
+          }
+        }
+
         if (res.success) {
           toast(`Đã cập nhật phòng ban: ${name}`, 'success');
           this.isEditingDept = false;
@@ -975,12 +1056,32 @@ export class DepartmentView {
 
     // 14. Nút Cấp tài khoản mới cho phòng này
     const btnAddMember = this.container.querySelector('#btnAddMemberToDept');
-    if (btnAddMember) {
+    if (btnAddMember && currentDept) {
       btnAddMember.addEventListener('click', () => {
         rung(10);
-        if (this.onOpenMemberModal) this.onOpenMemberModal();
+        if (this.onOpenMemberModal) this.onOpenMemberModal(currentDept.id);
       });
     }
+
+    // 14b. Nút Cấp tài khoản khi phòng chưa có nhân sự (Empty State)
+    this.container.querySelectorAll('.btn-empty-add-member').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(10);
+        if (this.onOpenMemberModal && currentDept) this.onOpenMemberModal(currentDept.id);
+      });
+    });
+
+    // 14c. Nút Chỉnh sửa thông tin nhân sự / thăng chức trực tiếp
+    this.container.querySelectorAll('.btn-edit-dept-member').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        const uId = btn.dataset.userId;
+        if (this.onOpenMemberModal && currentDept && uId) {
+          this.onOpenMemberModal(currentDept.id, uId);
+        }
+      });
+    });
 
     // 15. NÚT "+ THÊM NHÂN VIÊN" TRÊN TỪNG BỘ PHẬN CON (MỞ MODAL GÁN NHANH)
     this.container.querySelectorAll('.btn-quick-add-member').forEach(btn => {

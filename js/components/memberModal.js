@@ -31,7 +31,7 @@ export class MemberModal {
     this.editingUser = null;
   }
 
-  show(userId = null) {
+  show(userId = null, defaultDeptId = null) {
     if (!this.container) return;
 
     if (!auth.canManageMembers()) {
@@ -47,8 +47,10 @@ export class MemberModal {
     const isLeadership = auth.isLeadership();
     const isManager = auth.isManager();
 
-    // Xác định phòng ban ban đầu
-    const initialDeptId = this.editingUser ? this.editingUser.departmentId : (isAdmin ? allDepts[0]?.id : currentDept.id);
+    // Xác định phòng ban ban đầu (ưu tiên defaultDeptId nếu đang xem phòng ban cụ thể)
+    const initialDeptId = this.editingUser 
+      ? this.editingUser.departmentId 
+      : (defaultDeptId || (isAdmin ? allDepts[0]?.id : currentDept.id));
     const initialDept = allDepts.find(d => d.id === initialDeptId) || allDepts[0];
 
     this.container.innerHTML = `
@@ -147,7 +149,8 @@ export class MemberModal {
                 </label>
                 <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
                   <option value="MEMBER" ${this.editingUser && this.editingUser.role === 'MEMBER' ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
-                  <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>👔 Trưởng phòng (MANAGER)</option>
+                  <option value="DEPUTY_MANAGER" ${this.editingUser && this.editingUser.role === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Trưởng Phòng (DEPUTY_MANAGER)</option>
+                  <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng (MANAGER)</option>
                   <option value="LEADERSHIP" ${this.editingUser && this.editingUser.role === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo (LEADERSHIP)</option>
                   <option value="ADMIN" ${this.editingUser && this.editingUser.role === 'ADMIN' ? 'selected' : ''}>👑 Quản Trị Viên (ADMIN)</option>
                 </select>
@@ -406,6 +409,9 @@ export class MemberModal {
             badge,
             unit: deptName
           });
+          if (role === 'MANAGER' && dept && (!dept.managerId || dept.managerId === this.editingUser.id)) {
+            store.updateDepartment(departmentId, { managerId: this.editingUser.id });
+          }
           toast(`Đã cập nhật thông tin nhân viên: ${name}`, 'success');
         } else {
           const newUser = store.createUser({
@@ -426,6 +432,9 @@ export class MemberModal {
           if (!newUser) {
             toast('Lỗi khi cấp tài khoản. Vui lòng thử lại!', 'warning');
             return;
+          }
+          if (role === 'MANAGER' && dept && !dept.managerId) {
+            store.updateDepartment(departmentId, { managerId: newUser.id });
           }
           toast(`Đã cấp tài khoản thành công cho: ${newUser.name} (${newUser.username})`, 'success');
         }

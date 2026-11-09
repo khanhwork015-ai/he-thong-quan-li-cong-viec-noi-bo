@@ -4,25 +4,25 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=4.2';
-import { store } from './store.js?v=4.2';
-import { Sidebar } from './components/sidebar.js?v=4.2';
-import { TopHeader } from './components/topHeader.js?v=4.2';
-import { BottomNav } from './components/bottomNav.js?v=4.2';
-import { DashboardView } from './components/dashboardView.js?v=4.2';
-import { WorkspaceView } from './components/workspaceView.js?v=4.2';
-import { TaskDrawer } from './components/taskDrawer.js?v=4.2';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=4.2';
-import { CreateTaskModal } from './components/createTaskModal.js?v=4.2';
-import { ProfileModal } from './components/profileModal.js?v=4.2';
-import { MemberModal } from './components/memberModal.js?v=4.2';
-import { SettingsModal } from './components/settingsModal.js?v=4.2';
-import { LoginView } from './components/loginView.js?v=4.2';
-import { DepartmentModal } from './components/departmentModal.js?v=4.2';
-import { DepartmentView } from './components/departmentView.js?v=4.2';
-import { appScriptBridge } from './services/appScriptBridge.js?v=4.2';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.2';
-import { shinTheme } from './theme.js?v=4.2';
+import { auth } from './auth.js?v=4.3';
+import { store } from './store.js?v=4.3';
+import { Sidebar } from './components/sidebar.js?v=4.3';
+import { TopHeader } from './components/topHeader.js?v=4.3';
+import { BottomNav } from './components/bottomNav.js?v=4.3';
+import { DashboardView } from './components/dashboardView.js?v=4.3';
+import { WorkspaceView } from './components/workspaceView.js?v=4.3';
+import { TaskDrawer } from './components/taskDrawer.js?v=4.3';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=4.3';
+import { CreateTaskModal } from './components/createTaskModal.js?v=4.3';
+import { ProfileModal } from './components/profileModal.js?v=4.3';
+import { MemberModal } from './components/memberModal.js?v=4.3';
+import { SettingsModal } from './components/settingsModal.js?v=4.3';
+import { LoginView } from './components/loginView.js?v=4.3';
+import { DepartmentModal } from './components/departmentModal.js?v=4.3';
+import { DepartmentView } from './components/departmentView.js?v=4.3';
+import { appScriptBridge } from './services/appScriptBridge.js?v=4.3';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.3';
+import { shinTheme } from './theme.js?v=4.3';
 
 class App {
   constructor() {
@@ -57,7 +57,7 @@ class App {
     this.memberModal = new MemberModal('modal-container', () => this.refreshCurrentView());
     this.settingsModal = new SettingsModal('modal-container', () => this.refreshCurrentView());
     this.departmentModal = new DepartmentModal('modal-container', () => this.refreshCurrentView());
-    this.departmentView = new DepartmentView('main-content-canvas', () => this.refreshCurrentView(), () => this.memberModal.show());
+    this.departmentView = new DepartmentView('main-content-canvas', () => this.refreshCurrentView(), (deptId, userId = null) => this.memberModal.show(userId, deptId));
 
     this.sidebar = new Sidebar('sidebar-container', 
       (navId) => this.switchNav(navId),
@@ -348,7 +348,7 @@ class App {
     if (btnAdd) {
       btnAdd.addEventListener('click', () => {
         rung(10);
-        this.memberModal.show();
+        this.memberModal.show(null, currentDept.id);
       });
     }
 

@@ -409,7 +409,7 @@ export class Store {
       title: userData.title.trim() || 'Chuyên viên',
       unit: userData.unit || (this.getDepartmentById(targetDeptId)?.name || 'Thanh Vũ Medic'),
       avatar: userData.avatar?.trim() || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=160&q=80',
-      badge: userData.badge || (targetRole === 'MANAGER' ? 'Trưởng phòng' : (targetRole === 'ADMIN' ? 'Admin' : (targetRole === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Chuyên viên'))),
+      badge: userData.badge || (targetRole === 'MANAGER' ? 'Trưởng phòng' : (targetRole === 'DEPUTY_MANAGER' ? 'Phó phòng' : (targetRole === 'ADMIN' ? 'Admin' : (targetRole === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Chuyên viên')))),
       phone: userData.phone || '',
       email: userData.email || '',
       dob: userData.dob || '',
