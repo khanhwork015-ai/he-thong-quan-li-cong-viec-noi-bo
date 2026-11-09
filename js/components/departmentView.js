@@ -733,6 +733,9 @@ export class DepartmentView {
         rung(10);
         this.editingTeamId = null;
         this.isEditingDept = false;
+        if (auth.canSwitchDepartment()) {
+          auth.switchDepartment(dId);
+        }
         this.render(dId);
       });
     });

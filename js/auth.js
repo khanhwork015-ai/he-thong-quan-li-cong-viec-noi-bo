@@ -284,6 +284,16 @@ export class AuthManager {
   }
 
   getActiveDepartment() {
+    if (this.activeDepartmentId === 'all') {
+      return {
+        id: 'all',
+        name: 'Toàn Bệnh Viện (Tất cả PB)',
+        code: 'TOÀN VIỆN',
+        badge: 'TOÀN VIỆN',
+        unit: 'Cơ Sở 3 (Cà Mau)',
+        color: '#D6A52A'
+      };
+    }
     const depts = this.getStoredDepartments();
     const dept = depts.find(d => d.id === this.activeDepartmentId);
     return dept || depts[0] || DEPARTMENTS[0];
@@ -394,6 +404,13 @@ export class AuthManager {
     if (!this.canSwitchDepartment()) {
       toast('Chỉ Ban Lãnh Đạo & Quản Trị Viên mới có quyền chuyển phòng ban!', 'warning');
       return false;
+    }
+    if (deptId === 'all') {
+      this.activeDepartmentId = 'all';
+      localStorage.setItem(ACTIVE_DEPT_KEY, 'all');
+      rung(15);
+      window.dispatchEvent(new CustomEvent('tvm:department_changed', { detail: { dept: this.getActiveDepartment() } }));
+      return true;
     }
     const depts = this.getStoredDepartments();
     const dept = depts.find(d => d.id === deptId);

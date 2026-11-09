@@ -244,6 +244,9 @@ export class Store {
   }
 
   getDepartmentUsers(deptId) {
+    if (!deptId || deptId === 'all') {
+      return this.getAllUsers();
+    }
     return this.getAllUsers().filter(u => u.departmentId === deptId || u.departmentId === 'all');
   }
 

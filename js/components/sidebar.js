@@ -271,14 +271,26 @@ export class Sidebar {
           Dữ liệu mỗi phòng ban được cô lập độc lập. Chọn phòng ban để chuyển không gian làm việc:
         </p>
 
-        <div class="flex flex-col gap-2.5">
+        <div class="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-1">
+          <!-- TÙY CHỌN TOÀN VIỆN DÀNH CHO ADMIN & BAN LÃNH ĐẠO -->
+          <div class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${activeDept.id === 'all' ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="all">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] shrink-0"></span>
+              <div class="min-w-0">
+                <div class="text-[13.5px] font-bold text-[#0d1c2f]">🏥 Toàn Viện (Tất cả Phòng Ban) ${activeDept.id === 'all' ? '✓' : ''}</div>
+                <div class="text-[11.5px] text-[#64748b]">Bao quát toàn bộ nhân sự và luồng công việc toàn viện</div>
+              </div>
+            </div>
+            <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">TOÀN VIỆN</span>
+          </div>
+
           ${store.getAllDepartments().map(d => `
-            <div class="p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${d.id === activeDept.id ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="${d.id}">
-              <div class="flex items-center gap-3">
-                <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] shrink-0"></span>
-                <div>
-                  <div class="text-[13.5px] font-bold text-[#0d1c2f]">${d.name} ${d.id === activeDept.id ? '✓' : ''}</div>
-                  <div class="text-[11.5px] text-[#64748b]">${d.unit} • ${d.description}</div>
+            <div class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${d.id === activeDept.id ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="${d.id}">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background-color: ${d.color || '#D6A52A'};"></span>
+                <div class="min-w-0">
+                  <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate">${d.name} ${d.id === activeDept.id ? '✓' : ''}</div>
+                  <div class="text-[11.5px] text-[#64748b] truncate">${d.unit || 'Cơ Sở 3'} • ${store.getDepartmentUsers(d.id).length} nhân sự</div>
                 </div>
               </div>
               <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">${d.code}</span>

@@ -82,6 +82,11 @@
   - **Nút sửa thông tin & thăng chức trực tiếp:** Thêm nút icon bút chì `Sửa` trên mọi thẻ nhân viên, Trưởng phòng và Phó phòng trong giao diện phòng ban.
   - **Trạng thái phòng ban trống:** Hiển thị nút kêu gọi hành động (CTA) nổi bật `+ Cấp Tài Khoản Nhân Sự Đầu Tiên` khi phòng ban chưa có nhân sự nào.
   - **Tự động thăng cấp khi gán Trưởng phòng:** Khi gán một chuyên viên làm Trưởng phòng trong form sửa phòng ban, hệ thống tự động cập nhật role thành `MANAGER`.
+- [x] **10. Nâng Cấp Quản Lý Nhân Sự Toàn Viện & Bộ Lọc Phòng Ban Trực Quan (`app.js`, `store.js`, `auth.js`, `sidebar.js`, `departmentView.js`)**:
+  - **Bộ lọc phòng ban trên trang Nhân sự:** Admin có thể chuyển đổi mượt mà giữa xem `🏥 Toàn viện (${allCount})` và từng phòng ban (`Khoa Dược`, `PTKH`, `Ban QLDA`) bằng thanh tab cuộn ngang.
+  - **Tự động tìm kiếm nhân sự:** Tích hợp ô tìm kiếm theo tên, chức danh, email, số điện thoại, username ngay trên trang Nhân sự.
+  - **Đồng bộ hóa phạm vi phòng ban toàn viện (`'all'`):** Hỗ trợ trạng thái phòng ban `all` trong `auth.js`, `store.js` (`getDepartmentUsers('all')` trả về 100% nhân sự) và modal chuyển đổi phòng ban ở Sidebar.
+  - **Đồng bộ khi chọn phòng ban trong Quản lý cơ cấu:** Bấm chọn phòng ban ở `DepartmentView` tự động đồng bộ `activeDepartment` sang phòng ban đó cho toàn bộ ứng dụng.
 
 ---
 

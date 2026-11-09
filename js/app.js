@@ -4,25 +4,25 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=4.3';
-import { store } from './store.js?v=4.3';
-import { Sidebar } from './components/sidebar.js?v=4.3';
-import { TopHeader } from './components/topHeader.js?v=4.3';
-import { BottomNav } from './components/bottomNav.js?v=4.3';
-import { DashboardView } from './components/dashboardView.js?v=4.3';
-import { WorkspaceView } from './components/workspaceView.js?v=4.3';
-import { TaskDrawer } from './components/taskDrawer.js?v=4.3';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=4.3';
-import { CreateTaskModal } from './components/createTaskModal.js?v=4.3';
-import { ProfileModal } from './components/profileModal.js?v=4.3';
-import { MemberModal } from './components/memberModal.js?v=4.3';
-import { SettingsModal } from './components/settingsModal.js?v=4.3';
-import { LoginView } from './components/loginView.js?v=4.3';
-import { DepartmentModal } from './components/departmentModal.js?v=4.3';
-import { DepartmentView } from './components/departmentView.js?v=4.3';
-import { appScriptBridge } from './services/appScriptBridge.js?v=4.3';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.3';
-import { shinTheme } from './theme.js?v=4.3';
+import { auth } from './auth.js?v=4.4';
+import { store } from './store.js?v=4.4';
+import { Sidebar } from './components/sidebar.js?v=4.4';
+import { TopHeader } from './components/topHeader.js?v=4.4';
+import { BottomNav } from './components/bottomNav.js?v=4.4';
+import { DashboardView } from './components/dashboardView.js?v=4.4';
+import { WorkspaceView } from './components/workspaceView.js?v=4.4';
+import { TaskDrawer } from './components/taskDrawer.js?v=4.4';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=4.4';
+import { CreateTaskModal } from './components/createTaskModal.js?v=4.4';
+import { ProfileModal } from './components/profileModal.js?v=4.4';
+import { MemberModal } from './components/memberModal.js?v=4.4';
+import { SettingsModal } from './components/settingsModal.js?v=4.4';
+import { LoginView } from './components/loginView.js?v=4.4';
+import { DepartmentModal } from './components/departmentModal.js?v=4.4';
+import { DepartmentView } from './components/departmentView.js?v=4.4';
+import { appScriptBridge } from './services/appScriptBridge.js?v=4.4';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.4';
+import { shinTheme } from './theme.js?v=4.4';
 
 class App {
   constructor() {
@@ -261,85 +261,217 @@ class App {
     });
   }
 
-  // --- MÀN HÌNH QUẢN LÝ NHÂN SỰ PHÒNG BAN (MOBILE RESPONSIVE) ---
+  // --- MÀN HÌNH QUẢN LÝ NHÂN SỰ TOÀN VIỆN & TỪNG PHÒNG BAN (SHIN AIOS v2.7) ---
   renderEmployeesView() {
     const canvas = document.getElementById('main-content-canvas');
-    const currentDept = auth.getActiveDepartment();
-    const members = store.getDepartmentUsers(currentDept.id);
+    const isAdmin = auth.isAdmin();
+    const isLeadership = auth.isLeadership();
+    const canSwitch = isAdmin || isLeadership;
     const canManage = auth.canManageMembers();
+    const allDepts = store.getAllDepartments();
+    const allUsers = store.getAllUsers();
+
+    // Khởi tạo bộ lọc phòng ban cho màn hình nhân sự (Admin mặc định xem Toàn viện 'all')
+    if (!canSwitch) {
+      this.employeeDeptFilter = auth.getActiveDepartment().id;
+    } else if (!this.employeeDeptFilter) {
+      this.employeeDeptFilter = 'all';
+    }
+
+    // Lọc danh sách theo phòng ban
+    let filteredMembers = (this.employeeDeptFilter === 'all') 
+      ? allUsers 
+      : store.getDepartmentUsers(this.employeeDeptFilter);
+
+    // Lọc tiếp theo từ khóa tìm kiếm
+    if (this.employeeSearchQuery) {
+      const q = this.employeeSearchQuery.toLowerCase().trim();
+      filteredMembers = filteredMembers.filter(u => 
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.title && u.title.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.phone && u.phone.includes(q)) ||
+        (u.username && u.username.toLowerCase().includes(q))
+      );
+    }
+
+    const currentFilterDept = allDepts.find(d => d.id === this.employeeDeptFilter);
+    const filterTitle = (this.employeeDeptFilter === 'all') ? 'Toàn Bệnh Viện (Tất cả Phòng Ban)' : (currentFilterDept?.name || 'Phòng ban');
 
     canvas.innerHTML = `
-      <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-sm">
+      <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl pb-12 overflow-x-hidden">
+        
+        <!-- 1. HEADER BANNER QUẢN LÝ NHÂN SỰ -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white p-5 rounded-3xl border border-[#e2e8f0] shadow-sm" style="background-color: var(--card); border-color: var(--border);">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="font-mono-data text-[11px] text-[#795900] font-bold bg-[#fffbeb] px-2 py-0.5 rounded border border-[#fef3c7]">${currentDept.code}</span>
-              <span class="text-[12px] text-[#64748b]">Danh bạ phòng ban</span>
+              <span class="font-mono-data text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--border);">
+                ${this.employeeDeptFilter === 'all' ? 'TOÀN VIỆN' : (currentFilterDept?.code || 'PB')}
+              </span>
+              <span class="text-[12px] text-[#64748b]" style="color: var(--text-muted);">Danh bạ &amp; Nhân sự viện</span>
             </div>
-            <h1 class="font-bold text-[18px] sm:text-[20px] text-[#0d1c2f]">Quản lý nhân sự</h1>
-            <p class="text-[12px] sm:text-[12.5px] text-[#64748b]">${currentDept.name} • Danh bạ &amp; Phân quyền</p>
+            <h1 class="font-extrabold text-[20px] sm:text-[22px] text-[#0d1c2f] tracking-tight" style="color: var(--text);">
+              Quản Lý Nhân Sự • ${esc(filterTitle)}
+            </h1>
+            <p class="text-[12.5px] text-[#817663] mt-0.5" style="color: var(--text-muted);">
+              Theo dõi hồ sơ chuyên môn, phân bổ phòng ban &amp; bộ phận, đánh giá năng suất toàn viện
+            </p>
           </div>
 
-          <div class="flex items-center justify-between sm:justify-end gap-2.5">
-            <span class="px-3 py-1.5 rounded-full bg-[#fffbeb] text-[#795900] font-mono-data text-[11.5px] font-bold border border-[#fef3c7]">
-              ${members.length} nhân sự
+          <div class="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
+            <span class="px-3.5 py-2 rounded-2xl font-mono-data text-[12px] font-bold shadow-2xs" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--border);">
+              ${filteredMembers.length} nhân sự
             </span>
             ${canManage ? `
-              <button type="button" class="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[12.5px] sm:text-[13px] hover:bg-[#795900] hover:text-white shadow-xs transition-all min-h-[40px]" id="btnOpenAddMember">
-                <span class="material-symbols-outlined text-[18px]">person_add</span>
-                <span>+ Thêm nhân viên</span>
+              <button type="button" class="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl font-bold text-[12.5px] sm:text-[13px] shadow-xs hover:shadow-md transition-all min-h-[44px] cursor-pointer" id="btnOpenAddMember" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                <span class="material-symbols-outlined text-[19px]">person_add</span>
+                <span>+ Cấp Tài Khoản Mới</span>
               </button>
             ` : ''}
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          ${members.map(u => {
-            const userTasks = store.getDepartmentTasks().filter(t => t.assigneeId === u.id);
-            const done = userTasks.filter(t => t.status === 'done').length;
-            const inProg = userTasks.filter(t => t.status === 'in_progress').length;
+        <!-- 2. BỘ LỌC TABS PHÒNG BAN (DÀNH CHO ADMIN & LÃNH ĐẠO) + Ô TÌM KIẾM NHÂN SỰ -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-3xl border border-[#e2e8f0] shadow-sm" style="background-color: var(--card); border-color: var(--border);">
+          
+          <!-- TABS PHÒNG BAN (CUỘN NGANG MƯỢT MÀ TRÊN MOBILE) -->
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 flex-1 min-w-0" id="employeeDeptTabs">
+            ${canSwitch ? `
+              <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${this.employeeDeptFilter === 'all' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.employeeDeptFilter === 'all' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="all">
+                <span>🏥 Toàn viện</span>
+                <span class="px-1.5 py-0.2 rounded-full text-[10.5px] font-mono-data font-bold bg-white/40">${allUsers.length}</span>
+              </button>
+            ` : ''}
+
+            ${allDepts.map(d => {
+              const dCount = allUsers.filter(u => u.departmentId === d.id).length;
+              const isActive = this.employeeDeptFilter === d.id;
+              return `
+                <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${isActive ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${isActive ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="${d.id}">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${d.color || '#D6A52A'};"></span>
+                  <span class="truncate max-w-[150px] sm:max-w-none">${esc(d.name)}</span>
+                  <span class="px-1.5 py-0.2 rounded-full text-[10.5px] font-mono-data font-bold bg-black/10">${dCount}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Ô TÌM KIẾM NHÂN SỰ -->
+          <div class="relative w-full sm:w-64 shrink-0">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">search</span>
+            <input type="text" id="inputEmployeeSearch" value="${esc(this.employeeSearchQuery || '')}" placeholder="Tìm theo tên, chức danh, email..." class="w-full h-10 pl-9 pr-3.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-[#f8f9ff] text-[#0d1c2f] focus:border-[#d6a52a] focus:bg-white transition-all" />
+          </div>
+
+        </div>
+
+        <!-- 3. LƯỚI THẺ NHÂN SỰ (RESPONSIVE 1 - 2 - 3 COLS) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="employeeCardsGrid">
+          ${filteredMembers.length === 0 ? `
+            <div class="col-span-full p-10 rounded-3xl text-center bg-white border border-dashed border-[#e2e8f0] flex flex-col items-center justify-center gap-3" style="background-color: var(--card); border-color: var(--border);">
+              <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[30px]">group_off</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-[15px] text-[#0d1c2f]">Không tìm thấy nhân sự phù hợp</h4>
+                <p class="text-[12px] text-[#817663] mt-1">
+                  ${this.employeeSearchQuery ? 'Thử tìm với từ khóa khác hoặc xóa ô tìm kiếm.' : 'Chưa có nhân sự nào trong phòng ban này.'}
+                </p>
+              </div>
+              ${canManage ? `
+                <button type="button" class="btn-empty-add-emp-card px-4 py-2.5 rounded-xl font-bold text-[12.5px] shadow-xs flex items-center gap-1.5 cursor-pointer mt-1" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                  <span class="material-symbols-outlined text-[18px]">person_add</span>
+                  <span>+ Cấp Tài Khoản Mới</span>
+                </button>
+              ` : ''}
+            </div>
+          ` : filteredMembers.map(u => {
+            const userDept = allDepts.find(d => d.id === u.departmentId);
+            const userTeam = userDept?.teams?.find(t => t.id === u.teamId);
+            const userTasks = store.getAllTasksRaw().filter(t => t.assigneeId === u.id);
+            const done = userTasks.filter(t => t.status === 'done' || t.status === 'completed').length;
+            const inProg = userTasks.filter(t => t.status === 'in_progress' || t.status === 'pending_approval' || t.status === 'review').length;
             const isSelf = auth.getCurrentUser().id === u.id;
 
+            let roleBadge = { text: 'Chuyên Viên', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: 'person' };
+            if (u.role === 'ADMIN') roleBadge = { text: 'Admin Hệ Thống', color: 'bg-amber-100 text-amber-900 border-amber-300', icon: 'shield_person' };
+            else if (u.role === 'LEADERSHIP') roleBadge = { text: 'Ban Lãnh Đạo', color: 'bg-purple-100 text-purple-900 border-purple-300', icon: 'account_balance' };
+            else if (u.role === 'MANAGER') roleBadge = { text: '👑 Trưởng Phòng', color: 'bg-[#fef3c7] text-[#92400e] border-amber-300 font-extrabold', icon: 'verified' };
+            else if (u.role === 'DEPUTY_MANAGER') roleBadge = { text: '⭐ Phó Trưởng Phòng', color: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-extrabold', icon: 'stars' };
+
             return `
-              <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] transition-all relative group">
+              <div class="bg-white p-4 sm:p-5 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] hover:shadow-md transition-all relative group" style="background-color: var(--card); border-color: var(--border);">
+                
                 ${canManage ? `
-                  <div class="absolute top-3 right-3 flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                    <button type="button" class="p-2 rounded-lg hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#0d1c2f] btn-edit-member min-w-[44px] min-h-[44px] flex items-center justify-center" data-member-id="${u.id}" title="Sửa thông tin nhân viên">
+                  <div class="absolute top-3.5 right-3.5 flex items-center gap-1 z-10">
+                    <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#0d1c2f] btn-edit-member min-w-[38px] min-h-[38px] flex items-center justify-center transition-colors cursor-pointer" data-member-id="${u.id}" title="Sửa thông tin nhân viên">
                       <span class="material-symbols-outlined text-[18px]">edit</span>
                     </button>
                     ${u.role !== 'ADMIN' && !isSelf ? `
-                      <button type="button" class="p-2 rounded-lg hover:bg-red-50 text-[#64748b] hover:text-red-600 btn-delete-member min-w-[44px] min-h-[44px] flex items-center justify-center" data-member-id="${u.id}" data-member-name="${u.name}" title="Xóa nhân viên">
+                      <button type="button" class="p-2 rounded-xl hover:bg-red-50 text-[#64748b] hover:text-red-600 btn-delete-member min-w-[38px] min-h-[38px] flex items-center justify-center transition-colors cursor-pointer" data-member-id="${u.id}" data-member-name="${esc(u.name)}" title="Xóa nhân viên">
                         <span class="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     ` : ''}
                   </div>
                 ` : ''}
 
-                <div class="flex items-center gap-3 mb-4">
-                  <img src="${u.avatar}" class="w-12 h-12 rounded-full object-cover ring-2 ring-gray-100 shrink-0" />
-                  <div class="min-w-0 pr-8">
-                    <div class="font-bold text-[14.5px] text-[#0d1c2f] truncate">
-                      ${u.name} ${isSelf ? '<span class="text-[10px] text-[#795900] bg-[#fffbeb] px-1.5 py-0.5 rounded border border-[#fef3c7] font-bold ml-1">Bạn</span>' : ''}
+                <!-- THÔNG TIN ĐỊNH DANH NHÂN SỰ -->
+                <div class="flex flex-col gap-3">
+                  
+                  <!-- BADGES: PHÒNG BAN & VAI TRÒ -->
+                  <div class="flex items-center gap-1.5 flex-wrap pr-16">
+                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono-data uppercase text-white shadow-2xs" style="background-color: ${userDept?.color || '#D6A52A'};">
+                      ${esc(userDept?.code || 'TOÀN VIỆN')}
+                    </span>
+                    <span class="px-2 py-0.5 rounded-lg text-[10.5px] font-bold border flex items-center gap-1 ${roleBadge.color}">
+                      <span>${roleBadge.text}</span>
+                    </span>
+                    ${userTeam ? `
+                      <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#f1f5f9] text-[#475569] border border-gray-200">
+                        ${esc(userTeam.name)}
+                      </span>
+                    ` : ''}
+                  </div>
+
+                  <!-- AVATAR & HỌ TÊN -->
+                  <div class="flex items-center gap-3">
+                    <div class="relative shrink-0">
+                      <img src="${u.avatar}" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-gray-100 shadow-2xs" alt="${esc(u.name)}" />
+                      ${u.role === 'MANAGER' ? '<span class="absolute -top-1.5 -right-1.5 text-[11px]">👑</span>' : ''}
                     </div>
-                    <div class="text-[12px] text-[#795900] font-semibold truncate">${u.title}</div>
-                    <div class="text-[11px] text-[#64748b] truncate">${u.email || u.phone || u.unit}</div>
+
+                    <div class="min-w-0 flex-1">
+                      <div class="font-bold text-[14.5px] sm:text-[15px] text-[#0d1c2f] truncate flex items-center gap-1.5" style="color: var(--text);">
+                        <span>${esc(u.name)}</span>
+                        ${isSelf ? '<span class="text-[9.5px] text-[#795900] bg-[#fffbeb] px-1.5 py-0.2 rounded border border-[#fef3c7] font-bold">Bạn</span>' : ''}
+                      </div>
+                      <div class="text-[12px] font-semibold text-[#795900] truncate mt-0.5" style="color: var(--primary);">
+                        ${esc(u.title || 'Chuyên viên')}
+                      </div>
+                      <div class="text-[11px] text-[#64748b] truncate mt-0.5 font-mono-data" style="color: var(--text-muted);">
+                        ${esc(u.email || u.phone || u.username || '')}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- CHỈ SỐ CÔNG VIỆC -->
+                <div class="grid grid-cols-2 gap-2 pt-3.5 border-t border-[#f1f5f9] text-center mt-3" style="border-color: var(--border);">
+                  <div class="p-2 rounded-xl bg-[#f8f9ff]" style="background-color: var(--background);">
+                    <span class="text-[10px] text-[#64748b] uppercase font-bold" style="color: var(--text-muted);">Đang thực hiện</span>
+                    <div class="text-[17px] font-extrabold text-[#1d4ed8]">${inProg}</div>
+                  </div>
+                  <div class="p-2 rounded-xl bg-[#f8f9ff]" style="background-color: var(--background);">
+                    <span class="text-[10px] text-[#64748b] uppercase font-bold" style="color: var(--text-muted);">Đã hoàn thành</span>
+                    <div class="text-[17px] font-extrabold text-[#16a34a]">${done}</div>
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 pt-3 border-t border-[#f1f5f9] text-center">
-                  <div class="p-2.5 rounded-xl bg-[#f8f9ff]">
-                    <span class="text-[10px] text-[#64748b] uppercase font-bold">Đang làm</span>
-                    <div class="text-[18px] font-extrabold text-[#1d4ed8]">${inProg}</div>
-                  </div>
-                  <div class="p-2.5 rounded-xl bg-[#f8f9ff]">
-                    <span class="text-[10px] text-[#64748b] uppercase font-bold">Hoàn tất</span>
-                    <div class="text-[18px] font-extrabold text-[#16a34a]">${done}</div>
-                  </div>
-                </div>
               </div>
             `;
           }).join('')}
         </div>
+
       </div>
     `;
 
@@ -348,10 +480,44 @@ class App {
     if (btnAdd) {
       btnAdd.addEventListener('click', () => {
         rung(10);
-        this.memberModal.show(null, currentDept.id);
+        const defaultDept = (this.employeeDeptFilter === 'all') ? null : this.employeeDeptFilter;
+        this.memberModal.show(null, defaultDept);
       });
     }
 
+    const btnEmptyAdd = canvas.querySelector('.btn-empty-add-emp-card');
+    if (btnEmptyAdd) {
+      btnEmptyAdd.addEventListener('click', () => {
+        rung(10);
+        const defaultDept = (this.employeeDeptFilter === 'all') ? null : this.employeeDeptFilter;
+        this.memberModal.show(null, defaultDept);
+      });
+    }
+
+    // Tabs chuyển đổi phòng ban
+    canvas.querySelectorAll('.btn-emp-dept-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(10);
+        const deptId = btn.dataset.deptFilter;
+        this.employeeDeptFilter = deptId;
+        // Nếu chọn phòng cụ thể, đồng bộ active department cho hệ thống
+        if (deptId !== 'all' && auth.canSwitchDepartment()) {
+          auth.switchDepartment(deptId);
+        }
+        this.renderEmployeesView();
+      });
+    });
+
+    // Ô tìm kiếm nhân sự
+    const inputSearch = canvas.querySelector('#inputEmployeeSearch');
+    if (inputSearch) {
+      inputSearch.addEventListener('input', (e) => {
+        this.employeeSearchQuery = e.target.value;
+        this.renderEmployeesView();
+      });
+    }
+
+    // Nút sửa nhân viên
     canvas.querySelectorAll('.btn-edit-member').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(10);
@@ -360,6 +526,7 @@ class App {
       });
     });
 
+    // Nút xóa nhân viên
     canvas.querySelectorAll('.btn-delete-member').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(20);
