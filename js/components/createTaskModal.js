@@ -6,9 +6,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=4.7';
-import { store } from '../store.js?v=4.7';
-import { toast, rung, esc } from '../helpers.js?v=4.7';
+import { auth } from '../auth.js?v=4.8';
+import { store } from '../store.js?v=4.8';
+import { toast, rung, esc } from '../helpers.js?v=4.8';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {

@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=4.7';
-import { store } from '../store.js?v=4.7';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=4.7';
+import { auth } from '../auth.js?v=4.8';
+import { store } from '../store.js?v=4.8';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=4.8';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated) {
@@ -477,13 +477,13 @@ export class TaskDrawer {
                 <!-- NÚT TỪ CHỐI -->
                 <button type="button" class="px-4 py-2.5 rounded-xl border border-rose-300 text-rose-700 bg-rose-50/50 hover:bg-rose-100 font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs" id="btnRejectTask">
                   <span class="material-symbols-outlined text-[18px]">close</span>
-                  <span>✕ Từ Chối</span>
+                  <span>Từ Chối</span>
                 </button>
 
                 <!-- NÚT DUYỆT 1-CHẠM -->
                 <button type="button" class="flex-1 py-2.5 rounded-xl font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);" id="btnApproveTask">
                   <span class="material-symbols-outlined text-[19px]">verified</span>
-                  <span>✓ Phê Duyệt 1-Chạm</span>
+                  <span>Phê Duyệt 1-Chạm</span>
                 </button>
               ` : `
                 <div class="text-[12.5px] text-amber-700 font-semibold flex items-center gap-1.5 py-1">
