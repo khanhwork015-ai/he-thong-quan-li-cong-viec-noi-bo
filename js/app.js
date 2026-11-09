@@ -4,25 +4,25 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=4.5';
-import { store } from './store.js?v=4.5';
-import { Sidebar } from './components/sidebar.js?v=4.5';
-import { TopHeader } from './components/topHeader.js?v=4.5';
-import { BottomNav } from './components/bottomNav.js?v=4.5';
-import { DashboardView } from './components/dashboardView.js?v=4.5';
-import { WorkspaceView } from './components/workspaceView.js?v=4.5';
-import { TaskDrawer } from './components/taskDrawer.js?v=4.5';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=4.5';
-import { CreateTaskModal } from './components/createTaskModal.js?v=4.5';
-import { ProfileModal } from './components/profileModal.js?v=4.5';
-import { MemberModal } from './components/memberModal.js?v=4.5';
-import { SettingsModal } from './components/settingsModal.js?v=4.5';
-import { LoginView } from './components/loginView.js?v=4.5';
-import { DepartmentModal } from './components/departmentModal.js?v=4.5';
-import { DepartmentView } from './components/departmentView.js?v=4.5';
-import { appScriptBridge } from './services/appScriptBridge.js?v=4.5';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.5';
-import { shinTheme } from './theme.js?v=4.5';
+import { auth } from './auth.js?v=4.6';
+import { store } from './store.js?v=4.6';
+import { Sidebar } from './components/sidebar.js?v=4.6';
+import { TopHeader } from './components/topHeader.js?v=4.6';
+import { BottomNav } from './components/bottomNav.js?v=4.6';
+import { DashboardView } from './components/dashboardView.js?v=4.6';
+import { WorkspaceView } from './components/workspaceView.js?v=4.6';
+import { TaskDrawer } from './components/taskDrawer.js?v=4.6';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=4.6';
+import { CreateTaskModal } from './components/createTaskModal.js?v=4.6';
+import { ProfileModal } from './components/profileModal.js?v=4.6';
+import { MemberModal } from './components/memberModal.js?v=4.6';
+import { SettingsModal } from './components/settingsModal.js?v=4.6';
+import { LoginView } from './components/loginView.js?v=4.6';
+import { DepartmentModal } from './components/departmentModal.js?v=4.6';
+import { DepartmentView } from './components/departmentView.js?v=4.6';
+import { appScriptBridge } from './services/appScriptBridge.js?v=4.6';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.6';
+import { shinTheme } from './theme.js?v=4.6';
 
 class App {
   constructor() {
