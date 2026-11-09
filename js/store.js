@@ -110,7 +110,36 @@ export class Store {
       }
 
       if (cloudData.depts && cloudData.depts.length > 0) {
-        localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(cloudData.depts));
+        const localDepts = this.getAllDepartments();
+        const mergedDepts = cloudData.depts.map(cd => {
+          const ld = localDepts.find(l => l.id === cd.id);
+          let cdTeams = cd.teams;
+          if (typeof cdTeams === 'string') {
+            try { cdTeams = JSON.parse(cdTeams); } catch (_) { cdTeams = []; }
+          }
+          if (!Array.isArray(cdTeams)) cdTeams = [];
+          
+          const ldTeams = (ld && Array.isArray(ld.teams)) ? ld.teams : [];
+          // Hợp nhất teams của phòng ban giữa Local và Cloud, bảo toàn 100% dữ liệu đã tạo
+          const teamMap = new Map();
+          ldTeams.forEach(t => { if (t && t.id) teamMap.set(t.id, t); });
+          cdTeams.forEach(t => { if (t && t.id) teamMap.set(t.id, { ...(teamMap.get(t.id) || {}), ...t }); });
+
+          return {
+            ...(ld || {}),
+            ...cd,
+            teams: Array.from(teamMap.values())
+          };
+        });
+
+        // Giữ lại các phòng ban tạo ở local chưa kịp đẩy lên Cloud
+        localDepts.forEach(ld => {
+          if (!mergedDepts.some(md => md.id === ld.id)) {
+            mergedDepts.push(ld);
+          }
+        });
+
+        localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(mergedDepts));
       }
 
       if (cloudData.notifications && cloudData.notifications.length > 0) {
@@ -144,13 +173,15 @@ export class Store {
     const tasks = this.getAllTasksRaw();
     const users = this.getAllUsers();
     const notifs = this.getAllNotifications();
-    const success = await appScriptBridge.pushAllToCloud(tasks, users, notifs);
+    const depts = this.getAllDepartments();
+    const success = await appScriptBridge.pushAllToCloud(tasks, users, notifs, depts);
     return {
       success,
       taskCount: tasks.length,
       userCount: users.length,
+      deptCount: depts.length,
       message: success 
-        ? `Đã đẩy ${tasks.length} công việc và ${users.length} nhân sự lên Google Sheet thành công!` 
+        ? `Đã đẩy ${tasks.length} công việc, ${users.length} nhân sự và ${depts.length} phòng ban lên Google Sheet thành công!` 
         : 'Gửi dữ liệu lên Google Sheet thất bại'
     };
   }
@@ -212,6 +243,10 @@ export class Store {
     localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(depts));
     window.dispatchEvent(new CustomEvent('tvm:departments_changed', { detail: { departments: depts } }));
     window.dispatchEvent(new CustomEvent('tvm:data_changed'));
+    // Tự động đồng bộ lên Google Sheets (nếu có kết nối)
+    if (appScriptBridge.isConnected()) {
+      appScriptBridge.pushDepartments(depts);
+    }
   }
 
   getDepartmentById(deptId) {

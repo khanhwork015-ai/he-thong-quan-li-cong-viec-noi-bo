@@ -36,7 +36,14 @@ function doGet(e) {
     if (action === 'getData' || action === 'seed') {
       const tasks = getSheetData(ss.getSheetByName(SHEET_TASKS));
       const users = getSheetData(ss.getSheetByName(SHEET_USERS));
-      const depts = getSheetData(ss.getSheetByName(SHEET_DEPTS));
+      const rawDepts = getSheetData(ss.getSheetByName(SHEET_DEPTS));
+      const depts = rawDepts.map(d => {
+        if (typeof d.teams === 'string' && d.teams.trim().startsWith('[')) {
+          try { d.teams = JSON.parse(d.teams); } catch (_) { d.teams = []; }
+        }
+        if (!Array.isArray(d.teams)) d.teams = [];
+        return d;
+      });
       const notifs = getSheetData(ss.getSheetByName(SHEET_NOTIFS));
 
       return responseJSON({
@@ -92,7 +99,15 @@ function doPost(e) {
         clearDataRows(notifSheet);
         body.notifications.forEach(n => saveOrUpdateRow(notifSheet, n, 'id'));
       }
-      return responseJSON({ success: true, message: 'Đã đồng bộ toàn bộ dữ liệu (Tasks, Users, Notifications) lên Google Sheets' });
+      if (body.departments && Array.isArray(body.departments)) {
+        const deptSheet = ss.getSheetByName(SHEET_DEPTS);
+        clearDataRows(deptSheet);
+        body.departments.forEach(d => {
+          const toSave = { ...d, teams: JSON.stringify(d.teams || []) };
+          saveOrUpdateRow(deptSheet, toSave, 'id');
+        });
+      }
+      return responseJSON({ success: true, message: 'Đã đồng bộ toàn bộ dữ liệu (Tasks, Users, Departments, Notifications) lên Google Sheets' });
     }
 
     // 2. Thao tác đơn lẻ
@@ -114,6 +129,16 @@ function doPost(e) {
     if (action === 'deleteUser') {
       deleteRow(ss.getSheetByName(SHEET_USERS), body.userId, 'id');
       return responseJSON({ success: true, message: 'User deleted' });
+    }
+
+    if (action === 'saveDepartments' && body.departments) {
+      const deptSheet = ss.getSheetByName(SHEET_DEPTS);
+      clearDataRows(deptSheet);
+      body.departments.forEach(d => {
+        const toSave = { ...d, teams: JSON.stringify(d.teams || []) };
+        saveOrUpdateRow(deptSheet, toSave, 'id');
+      });
+      return responseJSON({ success: true, message: 'Departments saved' });
     }
 
     if (action === 'saveNotification') {
@@ -198,9 +223,19 @@ function seedInitialData(ss) {
 
   // 1. Departments
   const depts = [
-    { id: 'dept_ptkh', name: 'Phòng Phát Triển Khách Hàng', code: 'PTKH-CS3', unit: 'Cơ Sở 3 (Cà Mau)', managerId: 'user_tam_ptkh', description: 'Khám đoàn doanh nghiệp, bảo hiểm y tế & chăm sóc khách hàng', badge: 'PTKH', color: '#D6A52A' },
-    { id: 'dept_duoc', name: 'Kho Dược & Vật Tư Y Tế', code: 'DUOC-CS3', unit: 'Cơ Sở 3 (Cà Mau)', managerId: 'user_minh_duoc', description: 'Cung ứng thuốc, quản lý kho lạnh GSP & hóa chất xét nghiệm', badge: 'DƯỢC', color: '#0D9488' },
-    { id: 'dept_qlda', name: 'Ban QLDA & Thi Công Cải Tạo', code: 'QLDA-SVH', unit: 'Công trường SVH & STN', managerId: 'user_nghia_qlda', description: 'Giám sát thi công hoàn thiện cơ sở Phan Ngọc Hiển', badge: 'QLDA', color: '#2563EB' }
+    { id: 'dept_ptkh', name: 'Phòng Phát Triển Khách Hàng', code: 'PTKH-CS3', unit: 'Cơ Sở 3 (Cà Mau)', managerId: 'user_tam_ptkh', description: 'Khám đoàn doanh nghiệp, bảo hiểm y tế & chăm sóc khách hàng', badge: 'PTKH', color: '#D6A52A', teams: JSON.stringify([
+      { id: 'team_cskh', name: 'Chăm Sóc Khách Hàng', code: 'CSKH' },
+      { id: 'team_mkt', name: 'Marketing & Truyền Thông', code: 'MKT' },
+      { id: 'team_hotro', name: 'Hỗ Trợ & Tiếp Đón', code: 'HOTRO' }
+    ]) },
+    { id: 'dept_duoc', name: 'Kho Dược & Vật Tư Y Tế', code: 'DUOC-CS3', unit: 'Cơ Sở 3 (Cà Mau)', managerId: 'user_minh_duoc', description: 'Cung ứng thuốc, quản lý kho lạnh GSP & hóa chất xét nghiệm', badge: 'DƯỢC', color: '#0D9488', teams: JSON.stringify([
+      { id: 'team_duoc_gsp', name: 'Kho Thuốc GSP', code: 'GSP' },
+      { id: 'team_duoc_vaccine', name: 'Kho Lạnh Vaccine', code: 'VAC' }
+    ]) },
+    { id: 'dept_qlda', name: 'Ban QLDA & Thi Công Cải Tạo', code: 'QLDA-SVH', unit: 'Công trường SVH & STN', managerId: 'user_nghia_qlda', description: 'Giám sát thi công hoàn thiện cơ sở Phan Ngọc Hiển', badge: 'QLDA', color: '#2563EB', teams: JSON.stringify([
+      { id: 'team_qlda_thicong', name: 'Tổ Thi Công Xây Dựng', code: 'TC' },
+      { id: 'team_qlda_giamsat', name: 'Tổ Giám Sát Kỹ Thuật', code: 'GS' }
+    ]) }
   ];
   depts.forEach(d => saveOrUpdateRow(deptSheet, d, 'id'));
 

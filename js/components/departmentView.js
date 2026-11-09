@@ -67,7 +67,7 @@ export class DepartmentView {
     const selectedDeptUsers = selectedDept ? store.getDepartmentUsers(selectedDept.id) : [];
 
     this.container.innerHTML = `
-      <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl pb-12">
+      <div class="flex flex-col w-full gap-5 sm:gap-6 max-w-7xl pb-12 overflow-x-hidden">
         
         <!-- 1. HERO BANNER MỞ MÀN CHUẨN SHIN AIOS -->
         <div class="p-5 sm:p-6 rounded-3xl border border-[#e2e8f0] shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4" style="background: linear-gradient(135deg, var(--card) 0%, var(--primary-soft) 100%); border-color: var(--border);">
@@ -119,8 +119,8 @@ export class DepartmentView {
 
               <!-- Ô TÌM KIẾM PHÒNG BAN -->
               <div class="relative">
-                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
-                <input type="text" id="inputSearchDept" value="${esc(this.searchQuery)}" placeholder="Tìm theo tên hoặc mã phòng ban..." class="w-full h-10 pl-9.5 pr-3.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
+                <input type="text" id="inputSearchDept" value="${esc(this.searchQuery)}" placeholder="Tìm theo tên hoặc mã phòng ban..." class="w-full h-10 pl-10 pr-3.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
               </div>
 
               <!-- FORM THÊM PHÒNG BAN MỚI (ẨN/HIỆN) -->
@@ -772,28 +772,58 @@ export class DepartmentView {
 
     // 8. Submit Thêm Bộ Phận Con (Team)
     const btnAddTeam = this.container.querySelector('#btnAddTeamSubmitView');
-    if (btnAddTeam && currentDept) {
-      btnAddTeam.addEventListener('click', () => {
-        rung(15);
-        const teamName = this.container.querySelector('#inputNewTeamNameView')?.value.trim();
-        const teamCode = this.container.querySelector('#inputNewTeamCodeView')?.value.trim();
+    const inputTeamName = this.container.querySelector('#inputNewTeamNameView');
+    const inputTeamCode = this.container.querySelector('#inputNewTeamCodeView');
 
-        if (!teamName) {
-          toast('Vui lòng nhập tên bộ phận con (VD: CSKH, Marketing...)!', 'warning');
-          return;
+    const handleAddTeam = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (!currentDept) return;
+
+      rung(15);
+      const teamName = inputTeamName?.value.trim();
+      const teamCode = inputTeamCode?.value.trim();
+
+      if (!teamName) {
+        toast('Vui lòng nhập tên bộ phận con (VD: CSKH, Marketing...)!', 'warning');
+        inputTeamName?.focus();
+        return;
+      }
+
+      const res = store.addTeamToDepartment(currentDept.id, {
+        name: teamName,
+        code: teamCode || teamName.slice(0, 4).toUpperCase()
+      });
+
+      if (res.success) {
+        toast(`Đã thêm bộ phận "${teamName}" vào ${currentDept.name}!`, 'success');
+        if (inputTeamName) inputTeamName.value = '';
+        if (inputTeamCode) inputTeamCode.value = '';
+        // Re-render đúng phòng ban này và duy trì vị trí cuộn
+        this.render(currentDept.id);
+      } else {
+        toast(res.message, 'warning');
+      }
+    };
+
+    if (btnAddTeam) {
+      btnAddTeam.addEventListener('click', handleAddTeam);
+    }
+    if (inputTeamName) {
+      inputTeamName.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleAddTeam(e);
         }
-
-        const res = store.addTeamToDepartment(currentDept.id, {
-          name: teamName,
-          code: teamCode || teamName.slice(0, 4).toUpperCase()
-        });
-
-        if (res.success) {
-          toast(`Đã thêm bộ phận "${teamName}" vào ${currentDept.name}!`, 'success');
-          this.render(currentDept.id);
-          if (this.onUpdated) this.onUpdated();
-        } else {
-          toast(res.message, 'warning');
+      });
+    }
+    if (inputTeamCode) {
+      inputTeamCode.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleAddTeam(e);
         }
       });
     }

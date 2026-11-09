@@ -97,7 +97,7 @@ export class AppScriptBridge {
   }
 
   // Đẩy toàn bộ dữ liệu từ LocalStorage lên Google Sheet (Batch Sync qua POST text/plain)
-  async pushAllToCloud(tasks, users) {
+  async pushAllToCloud(tasks, users, notifications = [], departments = []) {
     if (!this.isConnected()) return false;
     try {
       // Dùng text/plain để không bị CORS preflight OPTIONS
@@ -108,6 +108,8 @@ export class AppScriptBridge {
           action: 'pushAll',
           tasks: tasks,
           users: users,
+          notifications: notifications,
+          departments: departments,
           timestamp: new Date().toISOString()
         }),
         mode: 'no-cors'
@@ -118,6 +120,26 @@ export class AppScriptBridge {
       return true;
     } catch (err) {
       console.warn('[AppsScript Bridge] Lỗi push dữ liệu lên Google Sheet:', err);
+      return false;
+    }
+  }
+
+
+  // Gửi danh sách phòng ban & bộ phận con lên Google Sheet
+  async pushDepartments(departments) {
+    if (!this.isConnected()) return false;
+    try {
+      await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'saveDepartments',
+          departments: departments
+        }),
+        mode: 'no-cors'
+      });
+      return true;
+    } catch (_) {
       return false;
     }
   }
