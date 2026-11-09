@@ -64,6 +64,10 @@
   - Cố định `font-size: 16px` trên `html` để layout (width, padding, modal, drawer) không bị phình to khi tăng cỡ chữ; chỉ scale các class font-size của chữ (1.1x / 1.2x).
   - Cài đặt Google Apps Script Web App và Reset dữ liệu mẫu: CHỈ ADMIN mới nhìn thấy và cập nhật được.
   - Cung cấp nút đồng bộ thông minh 2 chiều duy nhất (`🔄 Đồng Bộ 2 Chiều Ngay`) kèm tùy chọn tải/đẩy nâng cao cho Admin.
+- [x] **7. Quản lý Cơ cấu Bộ Phận Con & Phân bổ Nhân sự Linh Hoạt (`departmentView.js`)**:
+  - Hỗ trợ Kéo Thả (Drag & Drop) trực tiếp thẻ nhân viên vào bộ phận con.
+  - Nút "+ Thêm nhân viên" trên mỗi bộ phận con mở popup gán nhanh 1-chạm.
+  - Bộ chọn nhanh (Dropdown selector) trực tiếp trên từng thẻ nhân sự và nút gỡ nhân sự nhanh.
 
 ---
 
