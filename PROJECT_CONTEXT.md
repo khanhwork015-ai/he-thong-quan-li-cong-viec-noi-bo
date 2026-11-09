@@ -109,6 +109,13 @@
   - **Thêm việc con ngay khi tạo công việc mới:** Nâng cấp modal `createTaskModal.js` cho phép người dùng thêm 1 hoặc nhiều việc con ban đầu trước khi bấm "Tạo & Giao Việc".
   - **Phòng vệ kiểu dữ liệu:** Thêm fallback `currentUser` an toàn trong `store.js` chống lỗi sập khi session chưa sẵn sàng.
   - Cập nhật cache buster `?v=4.9` và đồng bộ Git `origin/main`.
+- [x] **14. Nâng Cấp Nút Show Task Con Riêng Biệt, Modal Chi Tiết Việc Con & Chỉnh Sửa Task Cha Toàn Diện**:
+  - **Bỏ dropdown nhỏ trong tiêu đề:** Thay thế bằng nút bấm độc lập chuẩn Touch Target $\ge 44\text{px}$ trên Table (`.btn-open-subtasks-modal`) và Mobile Card full-width (`Danh sách việc con (x/y) • Chi tiết >`).
+  - **Modal Chi Tiết Việc Con (`subtaskDetailModal.js`):** Hiển thị chi tiết toàn diện của việc con (mã, tiêu đề, task cha, người phụ trách kèm avatar, hạn chót, mô tả & tiêu chuẩn bàn giao, checkbox hoàn thành và nút sửa nhanh).
+  - **Modal Danh Sách Việc Con (`subtasksModal.js`):** Quản lý tập trung subtasks với thanh tiến độ %, form thêm mới và sửa inline.
+  - **Khắc phục lỗi nút sửa việc con:** Sửa lỗi CSS Selector khi ID việc con chứa dấu chấm (`.`) bằng `data-subtask-form-id` và tìm form qua mảng DOM an toàn.
+  - **Chỉnh sửa toàn diện Task Cha:** Bổ sung nút "Chỉnh sửa" trên Header Task Drawer, trên Table View và Mobile Card. Nâng cấp `createTaskModal.js` (`show(taskToEdit)`) và `store.updateTask(taskId, updates)` đồng bộ dữ liệu đa chiều.
+  - Cập nhật cache buster `?v=5.0` và đồng bộ Git `origin/main`.
 
 ---
 

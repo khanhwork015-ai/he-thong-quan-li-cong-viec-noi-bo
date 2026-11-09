@@ -1,35 +1,57 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - CREATE TASK MODAL COMPONENT (SHIN AIOS v2.7)
+/**
+ * THANH VŨ MEDIC CS3 - CREATE / EDIT TASK MODAL COMPONENT (SHIN AIOS v2.7)
  * Giao diện form chuẩn Google Stitch Gold:
  * Nút Gold #D6A52A, Border #E2E8F0, Text #0D1C2F
  * Thân thiện với thiết bị di động: Vùng chạm >= 44px, nút xếp hàng dọc trên mobile
+ * Hỗ trợ Tạo Mới & Chỉnh Sửa Công Việc Cha (Edit Parent Task)
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=4.9';
-import { store } from '../store.js?v=4.9';
-import { toast, rung, esc } from '../helpers.js?v=4.9';
+import { auth } from '../auth.js?v=5.0';
+import { store } from '../store.js?v=5.0';
+import { toast, rung, esc } from '../helpers.js?v=5.0';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
     this.container = document.getElementById(containerId);
     this.onTaskCreated = onTaskCreated;
+    this.taskToEdit = null;
   }
 
-  show() {
+  show(taskToEdit = null) {
     if (!this.container) return;
 
     rung(10);
+    this.taskToEdit = taskToEdit;
+    const isEdit = Boolean(taskToEdit);
+
     const currentDept = auth.getActiveDepartment();
     const allUsers = store.getAllUsers();
     const currentUser = auth.getCurrentUser();
     const depts = store.getAllDepartments();
-    const currentTeams = currentDept.teams || [];
+    
+    // Nếu đang sửa task của phòng ban khác, lấy phòng ban của task đó
+    const taskDept = isEdit && taskToEdit.departmentId 
+      ? (store.getDepartmentById(taskToEdit.departmentId) || currentDept) 
+      : currentDept;
+    const currentTeams = taskDept.teams || [];
 
     // Danh sách người có thẩm quyền phê duyệt (Admin, Leadership, Manager)
     const approvers = allUsers.filter(u => u.role === 'ADMIN' || u.role === 'LEADERSHIP' || u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER');
     // Mặc định người duyệt: Trưởng phòng hiện tại hoặc Ban Lãnh Đạo
-    const defaultApproverId = currentDept.managerId || (approvers.find(u => u.role === 'LEADERSHIP')?.id || approvers[0]?.id || currentUser.id);
+    const defaultApproverId = isEdit && taskToEdit.approverId
+      ? taskToEdit.approverId
+      : (taskDept.managerId || (approvers.find(u => u.role === 'LEADERSHIP')?.id || approvers[0]?.id || currentUser.id));
+
+    const selectedAssigneeId = isEdit && taskToEdit.assigneeId ? taskToEdit.assigneeId : currentUser.id;
+    const currentAssigneeUser = store.getUserById(selectedAssigneeId) || currentUser;
+
+    const requiresApproval = isEdit ? Boolean(taskToEdit.requiresApproval) : false;
+    const currentPriority = isEdit && taskToEdit.priority ? taskToEdit.priority : 'P2';
+    const currentDueDate = isEdit && taskToEdit.dueDate ? taskToEdit.dueDate : new Date().toISOString().split('T')[0];
+    const currentCategory = isEdit && taskToEdit.category ? taskToEdit.category : 'Chuyên môn';
+    const currentCost = isEdit && taskToEdit.cost !== undefined ? taskToEdit.cost : 0;
+    const currentTeamId = isEdit && taskToEdit.teamId ? taskToEdit.teamId : '';
 
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="createModalOverlay">
@@ -37,16 +59,20 @@ export class CreateTaskModal {
           
           <!-- HEADER -->
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] mb-4" style="border-color: var(--border);">
-            <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0">
               <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
-                <span class="material-symbols-outlined text-[22px]">add_task</span>
+                <span class="material-symbols-outlined text-[22px]">${isEdit ? 'edit_note' : 'add_task'}</span>
               </div>
               <div class="min-w-0">
-                <h3 class="font-bold text-[16.5px] text-[#0d1c2f] truncate" style="color: var(--text);">Giao Việc &amp; Đề Xuất Mới</h3>
-                <span class="text-[11.5px] font-semibold truncate block" style="color: var(--primary);">${esc(currentDept.name)} • ${esc(currentDept.code)}</span>
+                <h3 class="font-bold text-[16.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
+                  ${isEdit ? `Chỉnh Sửa Công Việc • ${esc(taskToEdit.id)}` : 'Giao Việc &amp; Đề Xuất Mới'}
+                </h3>
+                <span class="text-[11.5px] font-semibold truncate block" style="color: var(--primary);">
+                  ${esc(taskDept.name)} • ${isEdit ? esc(taskToEdit.id) : esc(taskDept.code)}
+                </span>
               </div>
             </div>
-            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer" id="btnCloseCreateModal" aria-label="Đóng">&times;</button>
+            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer shrink-0" id="btnCloseCreateModal" aria-label="Đóng">&times;</button>
           </div>
 
           <!-- FORM -->
@@ -55,7 +81,7 @@ export class CreateTaskModal {
             <!-- TÊN CÔNG VIỆC -->
             <div>
               <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Tên công việc / Nhiệm vụ *</label>
-              <input type="text" id="newTaskTitle" required placeholder="Ví dụ: Đàm phán hợp đồng khám đoàn Minh Phú (1.200 CBCNV)" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[14px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
+              <input type="text" id="newTaskTitle" required value="${isEdit ? esc(taskToEdit.title) : ''}" placeholder="Ví dụ: Đàm phán hợp đồng khám đoàn Minh Phú (1.200 CBCNV)" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[14px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
             </div>
 
             <!-- BỘ PHẬN CON (TEAMS) TRONG PHÒNG BAN -->
@@ -64,7 +90,7 @@ export class CreateTaskModal {
               <select id="newTaskTeam" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f] cursor-pointer">
                 <option value="">-- Toàn phòng ban / Chưa phân tổ --</option>
                 ${currentTeams.map(t => `
-                  <option value="${t.id}">${esc(t.name)} (${esc(t.code)})</option>
+                  <option value="${t.id}" ${t.id === currentTeamId ? 'selected' : ''}>${esc(t.name)} (${esc(t.code)})</option>
                 `).join('')}
               </select>
             </div>
@@ -72,15 +98,15 @@ export class CreateTaskModal {
             <!-- MÔ TẢ CHI TIẾT -->
             <div>
               <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mô tả chi tiết &amp; Tiêu chuẩn nghiệm thu</label>
-              <textarea id="newTaskDesc" rows="3" placeholder="Ghi chú yêu cầu kỹ thuật, mốc hoàn thành, phạm vi phối hợp..." class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]"></textarea>
+              <textarea id="newTaskDesc" rows="3" placeholder="Ghi chú yêu cầu kỹ thuật, mốc hoàn thành, phạm vi phối hợp..." class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]">${isEdit ? esc(taskToEdit.description || '') : ''}</textarea>
             </div>
 
-            <!-- DANH SÁCH VIỆC CON BAN ĐẦU (SUBTASKS) -->
+            <!-- DANH SÁCH VIỆC CON (SUBTASKS) -->
             <div class="p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#fffbeb]/40 flex flex-col gap-2.5 shadow-2xs">
               <div class="flex items-center justify-between">
                 <label class="block text-[12.5px] font-bold text-[#795900] flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[18px]">account_tree</span>
-                  <span>Danh sách việc con (Subtasks) - Tùy chọn</span>
+                  <span>Danh sách việc con (Subtasks)</span>
                 </label>
                 <span class="text-[11px] font-bold text-[#92400e] bg-[#fef3c7] px-2 py-0.5 rounded-full" id="modalSubtaskCountBadge">0 việc con</span>
               </div>
@@ -95,7 +121,7 @@ export class CreateTaskModal {
               </div>
 
               <!-- DANH SÁCH CÁC VIỆC CON ĐÃ THÊM -->
-              <div id="modalSubtasksContainer" class="flex flex-col gap-1.5 empty:hidden pt-0.5"></div>
+              <div id="modalSubtasksContainer" class="flex flex-col gap-1.5 empty:hidden pt-0.5 max-h-48 overflow-y-auto"></div>
             </div>
 
             <!-- PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE) -->
@@ -109,7 +135,7 @@ export class CreateTaskModal {
               </div>
 
               <div class="flex items-center gap-3">
-                <img id="newTaskAssigneeAvatar" src="${currentUser.avatar}" class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow-xs" />
+                <img id="newTaskAssigneeAvatar" src="${currentAssigneeUser.avatar}" class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow-xs" />
                 <div class="flex-1 min-w-0">
                   <select id="newTaskAssignee" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] font-bold text-[#0d1c2f] outline-none focus:border-[#d6a52a] bg-white cursor-pointer shadow-2xs">
                     ${depts.map(d => {
@@ -120,7 +146,7 @@ export class CreateTaskModal {
                           ${dUsers.map(u => {
                             const team = (d.teams || []).find(t => t.id === u.teamId);
                             const teamLabel = team ? `[${team.code}] ` : '';
-                            return `<option value="${u.id}" ${u.id === currentUser.id ? 'selected' : ''}>${teamLabel}${esc(u.name)} (${esc(u.title)})</option>`;
+                            return `<option value="${u.id}" ${u.id === selectedAssigneeId ? 'selected' : ''}>${teamLabel}${esc(u.name)} (${esc(u.title)})</option>`;
                           }).join('')}
                         </optgroup>
                       `;
@@ -129,7 +155,7 @@ export class CreateTaskModal {
                 </div>
               </div>
               <span class="text-[11px] text-[#817663]">
-                * Bất kỳ ai cũng có thể tạo và giao việc cho bất kỳ nhân sự nào trên toàn viện.
+                * Bất kỳ ai cũng có thể phân công nhiệm vụ cho nhân sự trên toàn hệ thống viện.
               </span>
             </div>
 
@@ -137,7 +163,7 @@ export class CreateTaskModal {
             <div class="p-3.5 rounded-2xl border border-amber-200 bg-amber-50/60 flex flex-col gap-2.5">
               <div class="flex items-center justify-between">
                 <label for="newTaskRequireApproval" class="flex items-center gap-2.5 cursor-pointer select-none">
-                  <input type="checkbox" id="newTaskRequireApproval" class="w-5 h-5 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer" />
+                  <input type="checkbox" id="newTaskRequireApproval" ${requiresApproval ? 'checked' : ''} class="w-5 h-5 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer" />
                   <span class="text-[13px] font-bold text-[#0d1c2f]">Yêu cầu phê duyệt (One-Tap Approval)</span>
                 </label>
                 <span class="text-[11px] font-bold text-amber-800 bg-amber-200/70 px-2 py-0.5 rounded-full">Trình ký</span>
@@ -145,7 +171,7 @@ export class CreateTaskModal {
               <p class="text-[11.5px] text-[#64748b]">Bật tùy chọn này nếu công việc cần Trưởng phòng hoặc Ban Lãnh Đạo ký duyệt trước khi nghiệm thu.</p>
 
               <!-- KHỐI CHỌN NGƯỜI DUYỆT (ẨN/HIỆN KHI BẬT SWITCH) -->
-              <div id="approverSelectionBox" class="hidden flex flex-col gap-1.5 pt-2 border-t border-amber-200/70">
+              <div id="approverSelectionBox" class="${requiresApproval ? '' : 'hidden'} flex flex-col gap-1.5 pt-2 border-t border-amber-200/70">
                 <label class="block text-[12px] font-bold text-[#0d1c2f]">Chỉ định Người phê duyệt *</label>
                 <select id="newTaskApprover" class="w-full h-11 px-3 rounded-xl border border-amber-300 text-[13.5px] font-bold text-[#0d1c2f] outline-none focus:border-[#d6a52a] bg-white cursor-pointer shadow-2xs">
                   ${approvers.map(u => {
@@ -164,15 +190,15 @@ export class CreateTaskModal {
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mức độ ưu tiên *</label>
                 <select id="newTaskPriority" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f] cursor-pointer">
-                  <option value="P1">P1 - Khẩn cấp (Cần xử lý ngay)</option>
-                  <option value="P2" selected>P2 - Quan trọng</option>
-                  <option value="P3">P3 - Tiêu chuẩn</option>
+                  <option value="P1" ${currentPriority === 'P1' ? 'selected' : ''}>P1 - Khẩn cấp (Cần xử lý ngay)</option>
+                  <option value="P2" ${currentPriority === 'P2' ? 'selected' : ''}>P2 - Quan trọng</option>
+                  <option value="P3" ${currentPriority === 'P3' ? 'selected' : ''}>P3 - Tiêu chuẩn</option>
                 </select>
               </div>
 
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Hạn hoàn thành *</label>
-                <input type="date" id="newTaskDueDate" required value="${new Date().toISOString().split('T')[0]}" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
+                <input type="date" id="newTaskDueDate" required value="${currentDueDate}" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
               </div>
             </div>
 
@@ -180,12 +206,12 @@ export class CreateTaskModal {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Chuyên môn / Danh mục</label>
-                <input type="text" id="newTaskCategory" placeholder="Ví dụ: Khám Đoàn, BHYT, CSKH" value="Chuyên môn" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
+                <input type="text" id="newTaskCategory" placeholder="Ví dụ: Khám Đoàn, BHYT, CSKH" value="${esc(currentCategory)}" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
               </div>
 
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Dự toán kinh phí (VNĐ)</label>
-                <input type="number" id="newTaskCost" value="0" step="500000" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
+                <input type="number" id="newTaskCost" value="${currentCost}" step="500000" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
               </div>
             </div>
 
@@ -195,8 +221,13 @@ export class CreateTaskModal {
                 Hủy bỏ
               </button>
               <button type="submit" class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-[13px] font-bold shadow-xs transition-all min-h-[44px] flex items-center justify-center gap-1.5 cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
-                <span class="material-symbols-outlined text-[18px]">send</span>
-                <span>Tạo &amp; Giao Việc</span>
+                ${isEdit ? `
+                  <span class="material-symbols-outlined text-[18px]">save</span>
+                  <span>Lưu Thay Đổi Nhiệm Vụ</span>
+                ` : `
+                  <span class="material-symbols-outlined text-[18px]">send</span>
+                  <span>Tạo &amp; Giao Việc</span>
+                `}
               </button>
             </div>
           </form>
@@ -204,10 +235,10 @@ export class CreateTaskModal {
       </div>
     `;
 
-    this.bindEvents();
+    this.bindEvents(isEdit);
   }
 
-  bindEvents() {
+  bindEvents(isEdit = false) {
     const overlay = this.container.querySelector('#createModalOverlay');
     const btnClose = this.container.querySelector('#btnCloseCreateModal');
     const btnCancel = this.container.querySelector('#btnCancelCreateTask');
@@ -237,12 +268,17 @@ export class CreateTaskModal {
       });
     }
 
-    // QUẢN LÝ VIỆC CON TRONG FORM TẠO VIỆC MỚI
+    // QUẢN LÝ VIỆC CON TRONG FORM (INITIALIZE TỪ TASK ĐANG SỬA HOẶC MỚI)
     const inputModalSubtaskTitle = this.container.querySelector('#inputModalSubtaskTitle');
     const btnAddModalSubtask = this.container.querySelector('#btnAddModalSubtask');
     const modalSubtasksContainer = this.container.querySelector('#modalSubtasksContainer');
     const modalSubtaskCountBadge = this.container.querySelector('#modalSubtaskCountBadge');
-    const tempSubtasks = [];
+    
+    // Nạp việc con từ task hiện tại nếu đang ở chế độ chỉnh sửa
+    const initialSubtasks = (isEdit && this.taskToEdit && Array.isArray(this.taskToEdit.subtasks))
+      ? JSON.parse(JSON.stringify(this.taskToEdit.subtasks))
+      : [];
+    const tempSubtasks = [...initialSubtasks];
 
     const renderTempSubtasks = () => {
       if (!modalSubtasksContainer) return;
@@ -253,18 +289,21 @@ export class CreateTaskModal {
       }
 
       if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = `${tempSubtasks.length} việc con`;
-      modalSubtasksContainer.innerHTML = tempSubtasks.map((st, idx) => `
-        <div class="p-2 sm:px-3 rounded-xl bg-white border border-[#e2e8f0] flex items-center justify-between gap-2 shadow-2xs">
-          <div class="flex items-center gap-2 min-w-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#d6a52a] shrink-0"></span>
-            <span class="text-[12px] font-bold text-[#795900] font-mono-data">#${idx + 1}</span>
-            <span class="text-[12.5px] font-semibold text-[#0d1c2f] truncate">${esc(st.title)}</span>
+      modalSubtasksContainer.innerHTML = tempSubtasks.map((st, idx) => {
+        const isCompleted = st.completed || st.status === 'done';
+        return `
+          <div class="p-2 sm:px-3 rounded-xl bg-white border border-[#e2e8f0] flex items-center justify-between gap-2 shadow-2xs">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-[#d6a52a]'} shrink-0"></span>
+              <span class="text-[12px] font-bold text-[#795900] font-mono-data">#${idx + 1}</span>
+              <span class="text-[12.5px] font-semibold text-[#0d1c2f] truncate ${isCompleted ? 'line-through text-gray-400' : ''}">${esc(st.title || st.text)}</span>
+            </div>
+            <button type="button" class="btn-remove-temp-subtask text-rose-500 hover:text-rose-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-50 cursor-pointer shrink-0" data-index="${idx}" title="Xóa việc con này">
+              <span class="material-symbols-outlined text-[17px]">close</span>
+            </button>
           </div>
-          <button type="button" class="btn-remove-temp-subtask text-rose-500 hover:text-rose-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-50 cursor-pointer shrink-0" data-index="${idx}" title="Xóa việc con này">
-            <span class="material-symbols-outlined text-[17px]">close</span>
-          </button>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       modalSubtasksContainer.querySelectorAll('.btn-remove-temp-subtask').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -277,6 +316,9 @@ export class CreateTaskModal {
       });
     };
 
+    // Render danh sách ban đầu nếu có
+    renderTempSubtasks();
+
     const addTempSubtask = () => {
       if (!inputModalSubtaskTitle) return;
       const title = inputModalSubtaskTitle.value.trim();
@@ -287,8 +329,11 @@ export class CreateTaskModal {
       rung(10);
       tempSubtasks.push({
         title,
+        description: '',
         assigneeId: selectAssignee ? selectAssignee.value : '',
-        status: 'todo'
+        dueDate: this.container.querySelector('#newTaskDueDate')?.value || new Date().toISOString().split('T')[0],
+        status: 'todo',
+        completed: false
       });
       inputModalSubtaskTitle.value = '';
       renderTempSubtasks();
@@ -306,6 +351,7 @@ export class CreateTaskModal {
 
     const closeModal = () => {
       rung(10);
+      this.taskToEdit = null;
       if (overlay) overlay.remove();
     };
 
@@ -341,27 +387,48 @@ export class CreateTaskModal {
           return;
         }
 
-        const newTask = store.createTask({
-          title,
-          description,
-          departmentId: currentDept.id,
-          teamId,
-          assigneeId,
-          creatorId: currentUser.id,
-          priority,
-          dueDate,
-          category,
-          cost,
-          requiresApproval,
-          approverId,
-          subtasks: tempSubtasks
-        });
+        if (isEdit && this.taskToEdit) {
+          // CHẾ ĐỘ CẬP NHẬT CÔNG VIỆC HIỆN TẠI
+          const updatedTask = store.updateTask(this.taskToEdit.id, {
+            title,
+            description,
+            teamId,
+            assigneeId,
+            priority,
+            dueDate,
+            category,
+            cost,
+            requiresApproval,
+            approverId,
+            subtasks: tempSubtasks
+          });
 
-        toast(`Đã giao việc thành công: ${newTask.id}`, 'success');
-        closeModal();
-        if (this.onTaskCreated) this.onTaskCreated(newTask);
+          toast(`Đã lưu thay đổi nhiệm vụ: ${this.taskToEdit.id}`, 'success');
+          closeModal();
+          if (this.onTaskCreated) this.onTaskCreated(updatedTask);
+        } else {
+          // CHẾ ĐỘ TẠO MỚI CÔNG VIỆC
+          const newTask = store.createTask({
+            title,
+            description,
+            departmentId: currentDept.id,
+            teamId,
+            assigneeId,
+            creatorId: currentUser.id,
+            priority,
+            dueDate,
+            category,
+            cost,
+            requiresApproval,
+            approverId,
+            subtasks: tempSubtasks
+          });
+
+          toast(`Đã giao việc thành công: ${newTask.id}`, 'success');
+          closeModal();
+          if (this.onTaskCreated) this.onTaskCreated(newTask);
+        }
       });
     }
   }
 }
-

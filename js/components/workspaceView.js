@@ -1,25 +1,28 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - WORKSPACE TASK MANAGEMENT COMPONENT (MOBILE FIRST)
  * Khôi phục tông Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
  * Giao diện Thẻ Task chạm thông minh trên Mobile (md:hidden) & Bảng chi tiết trên Desktop (md:block)
+ * Nút Show Việc Con riêng biệt chuẩn Touch Target >= 44px (bỏ hoàn toàn dropdown nhỏ kẹp tiêu đề)
+ * Thêm nút Chỉnh sửa Task cha trực tiếp trên cả Mobile Card và Table Row
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=4.9';
-import { store } from '../store.js?v=4.9';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=4.9';
+import { auth } from '../auth.js?v=5.0';
+import { store } from '../store.js?v=5.0';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.0';
 
 export class WorkspaceView {
-  constructor(containerId, onOpenCreateModal, onSelectTask) {
+  constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
     this.container = document.getElementById(containerId);
     this.onOpenCreateModal = onOpenCreateModal;
     this.onSelectTask = onSelectTask;
+    this.onOpenSubtasksModal = onOpenSubtasksModal;
+    this.onEditTask = onEditTask;
     this.activeTab = 'assigned_to_me'; // 'assigned_to_me' | 'created_by_me' | 'pending_approval' | 'completed' | 'all'
     this.viewMode = 'table'; // 'table' | 'kanban'
     this.priorityFilter = 'ALL';
     this.searchQuery = '';
     this.teamFilter = 'ALL';
-    this.expandedTaskIds = new Set();
   }
 
   setTab(tab) {
@@ -87,7 +90,7 @@ export class WorkspaceView {
               </div>
 
               ${canCreate ? `
-                <button type="button" class="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] text-[12px] sm:text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all min-h-[40px] shrink-0" id="btnWorkspaceCreateTask">
+                <button type="button" class="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] text-[12px] sm:text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all min-h-[40px] shrink-0 cursor-pointer" id="btnWorkspaceCreateTask">
                   <span class="material-symbols-outlined text-[18px]">add_circle</span>
                   <span>Giao việc</span>
                 </button>
@@ -97,28 +100,28 @@ export class WorkspaceView {
 
           <!-- NOTION STYLE TABS (SWIPEABLE NO-SCROLLBAR ON MOBILE) -->
           <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-[#f1f5f9] -mx-1 px-1">
-            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'assigned_to_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="assigned_to_me">
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] cursor-pointer ${this.activeTab === 'assigned_to_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="assigned_to_me">
               <span>Được giao cho tôi</span>
               <span class="px-2 py-0.2 rounded-full bg-[#d6a52a] text-[#533d00] font-mono-data text-[10.5px] font-bold">${countAssigned}</span>
             </button>
 
-            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'created_by_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="created_by_me">
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] cursor-pointer ${this.activeTab === 'created_by_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="created_by_me">
               <span>Do tôi tạo</span>
               <span class="px-2 py-0.2 rounded-full bg-gray-100 text-[#0d1c2f] font-mono-data text-[10.5px] font-bold">${countCreated}</span>
             </button>
 
-            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'pending_approval' ? 'bg-[#fef3c7] text-[#92400e] font-bold border border-amber-300' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="pending_approval">
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] cursor-pointer ${this.activeTab === 'pending_approval' ? 'bg-[#fef3c7] text-[#92400e] font-bold border border-amber-300' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="pending_approval">
               <span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
               <span>Chờ duyệt</span>
               <span class="px-2 py-0.2 rounded-full bg-[#f59e0b] text-white font-mono-data text-[10.5px] font-bold">${countPending}</span>
             </button>
 
-            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'completed' ? 'bg-[#ccfbf1] text-[#0f766e] font-bold border border-teal-200' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="completed">
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] cursor-pointer ${this.activeTab === 'completed' ? 'bg-[#ccfbf1] text-[#0f766e] font-bold border border-teal-200' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="completed">
               <span>Hoàn thành</span>
               <span class="px-2 py-0.2 rounded-full bg-[#0d9488] text-white font-mono-data text-[10.5px] font-bold">${countDone}</span>
             </button>
 
-            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] ${this.activeTab === 'all' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="all">
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] cursor-pointer ${this.activeTab === 'all' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="all">
               <span>Tất cả (${allDeptTasks.length})</span>
             </button>
           </div>
@@ -139,7 +142,7 @@ export class WorkspaceView {
             <!-- Priority filter pills -->
             <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
               ${['ALL', 'P1', 'P2', 'P3'].map(p => `
-                <button type="button" class="px-3 py-2 rounded-lg text-[11.5px] font-bold shrink-0 transition-all min-h-[36px] ${this.priorityFilter === p ? 'bg-[#d6a52a] text-[#533d00] shadow-xs' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-priority="${p}">
+                <button type="button" class="px-3 py-2 rounded-lg text-[11.5px] font-bold shrink-0 transition-all min-h-[36px] cursor-pointer ${this.priorityFilter === p ? 'bg-[#d6a52a] text-[#533d00] shadow-xs' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-priority="${p}">
                   ${p === 'ALL' ? 'Tất cả mức' : p}
                 </button>
               `).join('')}
@@ -150,13 +153,13 @@ export class WorkspaceView {
           ${deptTeams.length > 0 ? `
             <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-[#f1f5f9]">
               <span class="text-[11px] font-bold text-[#817663] shrink-0">Bộ phận:</span>
-              <button type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all ${this.teamFilter === 'ALL' ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-team-filter="ALL">
+              <button type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all cursor-pointer ${this.teamFilter === 'ALL' ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-team-filter="ALL">
                 Tất cả (${allDeptTasks.length})
               </button>
               ${deptTeams.map(t => {
                 const count = allDeptTasks.filter(item => item.teamId === t.id).length;
                 return `
-                  <button type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all ${this.teamFilter === t.id ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-team-filter="${t.id}">
+                  <button type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all cursor-pointer ${this.teamFilter === t.id ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-team-filter="${t.id}">
                     ${t.name} (${count})
                   </button>
                 `;
@@ -182,7 +185,7 @@ export class WorkspaceView {
             <span class="material-symbols-outlined text-[24px]">inbox</span>
           </div>
           <div class="text-[15px] font-bold text-[#0d1c2f]">Không tìm thấy công việc nào</div>
-          <p class="text-[12.5px] text-[#64748b] mt-1">Hãy thử đổi tab, bộ lọc hoặc bấm "Giao việc mới".</p>
+          <p class="text-[12.5px] text-[#64748b] mt-1">Hãy thử đổi tab, bộ lọc hoặc bấm "Giao việc".</p>
         </div>
       `;
     }
@@ -194,8 +197,9 @@ export class WorkspaceView {
           const assignee = store.getUserById(t.assigneeId);
           const creator = store.getUserById(t.creatorId);
           const statusMeta = this.getStatusMeta(t.status);
-          const hasSubtasks = t.subtasks && t.subtasks.length > 0;
-          const isExpanded = this.expandedTaskIds.has(t.id);
+          const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
+          const hasSubtasks = subtasks.length > 0;
+          const completedSubtasksCount = subtasks.filter(s => s.completed || s.status === 'done').length;
 
           return `
             <div class="p-4 bg-white rounded-2xl border border-[#e2e8f0] shadow-xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer row-task-item" data-task-id="${t.id}">
@@ -206,9 +210,14 @@ export class WorkspaceView {
                     ${t.priority}
                   </span>
                 </div>
-                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background-color: ${statusMeta.bg}; color: ${statusMeta.text};">
-                  ${statusMeta.label}
-                </span>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" class="btn-edit-task p-1 rounded-lg text-amber-700 hover:bg-amber-100/70 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer" data-task-id="${t.id}" title="Chỉnh sửa công việc">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                  </button>
+                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background-color: ${statusMeta.bg}; color: ${statusMeta.text};">
+                    ${statusMeta.label}
+                  </span>
+                </div>
               </div>
 
               <h4 class="font-bold text-[14.5px] text-[#0d1c2f] mb-0.5 leading-snug">
@@ -236,56 +245,15 @@ export class WorkspaceView {
                 </span>
               </div>
 
-              <!-- NÚT XỔ DROPDOWN VIỆC CON TRÊN MOBILE & DANH SÁCH VIỆC CON -->
+              <!-- NÚT RIÊNG MỞ MODAL VIỆC CON TRÊN MOBILE (CHUẨN TOUCH TARGET >= 44PX) -->
               ${hasSubtasks ? `
-                <div class="mt-2.5 pt-2 border-t border-[#f1f5f9]">
-                  <button type="button" class="btn-toggle-subtasks-mobile w-full py-2 px-3 rounded-xl bg-[#f8f9ff] hover:bg-[#fffbeb] border border-[#e2e8f0] text-[12px] font-bold text-[#795900] flex items-center justify-between transition-all cursor-pointer min-h-[44px]" data-task-id="${t.id}">
-                    <span class="flex items-center gap-1.5">
-                      <span class="material-symbols-outlined text-[18px]">account_tree</span>
-                      <span>Việc con (${t.subtasks.filter(s => s.completed || s.status === 'done').length}/${t.subtasks.length})</span>
-                    </span>
-                    <div class="flex items-center gap-1 text-[11px] font-semibold text-[#817663]">
-                      <span>${isExpanded ? 'Thu gọn' : 'Xem danh sách'}</span>
-                      <span class="material-symbols-outlined text-[18px] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}">expand_more</span>
-                    </div>
-                  </button>
-
-                  ${isExpanded ? `
-                    <div class="flex flex-col gap-2 mt-2 pt-1 border-l-2 border-[#d6a52a] pl-2.5 animate-fade-in">
-                      ${t.subtasks.map(s => {
-                        const sAssignee = store.getUserById(s.assigneeId);
-                        const isDone = s.completed || s.status === 'done';
-                        return `
-                          <div class="subtask-card-click p-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8f9ff] hover:border-[#d6a52a] flex flex-col gap-1.5 shadow-2xs cursor-pointer active:scale-[0.99] transition-all" data-task-id="${t.id}" data-subtask-id="${s.id}">
-                            <div class="flex items-start justify-between gap-1.5">
-                              <div class="flex items-center gap-2 min-w-0">
-                                <span class="w-2 h-2 rounded-full shrink-0 ${isDone ? 'bg-emerald-500' : s.status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-400'}"></span>
-                                <span class="font-mono-data text-[10px] font-bold text-[#795900] px-1.5 py-0.2 rounded bg-[#fffbeb]">${esc(s.id)}</span>
-                                <span class="font-bold text-[12.5px] text-[#0d1c2f] ${isDone ? 'line-through text-gray-400' : ''} truncate">${esc(s.title || s.text)}</span>
-                              </div>
-                              <span class="text-[9.5px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
-                                ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
-                              </span>
-                            </div>
-
-                            ${s.description ? `<p class="text-[11px] text-[#64748b] line-clamp-2 pl-4">${esc(s.description)}</p>` : ''}
-
-                            <div class="flex items-center justify-between text-[11px] text-[#817663] pt-1 border-t border-[#e2e8f0]">
-                              <div class="flex items-center gap-1.5 min-w-0">
-                                <img src="${sAssignee ? sAssignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-4 h-4 rounded-full object-cover shrink-0" />
-                                <span class="truncate font-semibold text-[#0d1c2f]">${sAssignee ? esc(sAssignee.name) : 'Chưa giao'}</span>
-                              </div>
-                              <span class="font-mono-data shrink-0 flex items-center gap-1 text-[10.5px]">
-                                <span class="material-symbols-outlined text-[13px] text-[#795900]">event</span>
-                                ${s.dueDate ? ngayVN(s.dueDate) : 'Chưa có hạn'}
-                              </span>
-                            </div>
-                          </div>
-                        `;
-                      }).join('')}
-                    </div>
-                  ` : ''}
-                </div>
+                <button type="button" class="btn-open-subtasks-modal w-full py-2.5 px-3.5 rounded-xl bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a] font-bold text-[13px] flex items-center justify-between transition-colors min-h-[44px] cursor-pointer mt-2.5" data-task-id="${t.id}">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[19px]">account_tree</span>
+                    <span>Danh sách việc con (${completedSubtasksCount}/${subtasks.length})</span>
+                  </div>
+                  <span class="text-[11.5px] font-semibold text-[#817663] flex items-center gap-1">Chi tiết <span class="material-symbols-outlined text-[16px]">chevron_right</span></span>
+                </button>
               ` : ''}
             </div>
           `;
@@ -305,7 +273,7 @@ export class WorkspaceView {
                 <th class="py-3 px-4 w-32">Danh mục</th>
                 <th class="py-3 px-4 w-32">Hạn chót</th>
                 <th class="py-3 px-4 w-36">Trạng thái</th>
-                <th class="py-3 px-4 w-20 text-center">Thao tác</th>
+                <th class="py-3 px-4 min-w-[160px] text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#f1f5f9] text-[13px]">
@@ -313,28 +281,21 @@ export class WorkspaceView {
                 const assignee = store.getUserById(t.assigneeId);
                 const creator = store.getUserById(t.creatorId);
                 const statusMeta = this.getStatusMeta(t.status);
-                const hasSubtasks = t.subtasks && t.subtasks.length > 0;
-                const isExpanded = this.expandedTaskIds.has(t.id);
+                const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
+                const hasSubtasks = subtasks.length > 0;
+                const completedSubtasksCount = subtasks.filter(s => s.completed || s.status === 'done').length;
 
                 return `
                   <tr class="hover:bg-[#fffbeb]/40 transition-colors cursor-pointer row-task-item" data-task-id="${t.id}">
                     <td class="py-3 px-4 font-mono-data font-bold text-[#795900]">${t.id}</td>
                     <td class="py-3 px-4">
-                      <div class="flex items-start justify-between gap-2">
-                        <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
-                        ${hasSubtasks ? `
-                          <button type="button" class="btn-toggle-subtasks px-2 py-0.5 rounded-lg text-[11px] font-bold bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a]/60 transition-all cursor-pointer shadow-2xs shrink-0 flex items-center gap-1" data-task-id="${t.id}" title="Xem danh sách ${t.subtasks.length} việc con">
-                            <span class="material-symbols-outlined text-[15px] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}">expand_more</span>
-                            <span>${t.subtasks.filter(s => s.completed || s.status === 'done').length}/${t.subtasks.length} việc con</span>
-                          </button>
-                        ` : ''}
-                      </div>
+                      <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
                       <div class="text-[11px] text-[#795900] font-medium flex items-center gap-1.5 mt-0.5">
                         <span>Tạo bởi: <strong>${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong></span>
                         <span>•</span>
                         <span class="text-[#817663] font-mono-data">${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}</span>
                       </div>
-                      <div class="text-[11.5px] text-[#64748b] line-clamp-1 mt-0.5">${esc(t.description)}</div>
+                      <div class="text-[11.5px] text-[#64748b] line-clamp-1 mt-0.5">${esc(t.description || '')}</div>
                     </td>
                     <td class="py-3 px-4">
                       <span class="px-2 py-0.5 rounded-full font-bold text-[10.5px] ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : t.priority === 'P2' ? 'bg-[#fef3c7] text-[#92400e]' : 'bg-[#eff4ff] text-[#1d4ed8]'}">
@@ -355,62 +316,22 @@ export class WorkspaceView {
                       </span>
                     </td>
                     <td class="py-3 px-4 text-center">
-                      <button type="button" class="p-1 rounded-lg text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100 min-w-[44px] min-h-[44px] inline-flex items-center justify-center" title="Xem chi tiết">
-                        <span class="material-symbols-outlined text-[18px]">open_in_new</span>
-                      </button>
+                      <div class="flex items-center justify-center gap-1.5">
+                        ${hasSubtasks ? `
+                          <button type="button" class="btn-open-subtasks-modal px-2.5 py-1.5 rounded-xl font-bold text-[12px] bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a] hover:border-[#d6a52a] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0" data-task-id="${t.id}" title="Xem danh sách ${subtasks.length} việc con">
+                            <span class="material-symbols-outlined text-[16px]">account_tree</span>
+                            <span>${completedSubtasksCount}/${subtasks.length} việc con</span>
+                          </button>
+                        ` : ''}
+                        <button type="button" class="btn-edit-task p-1.5 rounded-lg text-amber-700 hover:bg-amber-100/70 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer shrink-0" data-task-id="${t.id}" title="Chỉnh sửa công việc">
+                          <span class="material-symbols-outlined text-[18px]">edit</span>
+                        </button>
+                        <button type="button" class="btn-view-detail p-1.5 rounded-lg text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer shrink-0" data-task-id="${t.id}" title="Xem chi tiết">
+                          <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
-
-                  <!-- SUBTASKS DROPDOWN ROW TRÊN TABLE VIEW (DESKTOP & TABLET) -->
-                  ${hasSubtasks && isExpanded ? `
-                    <tr class="subtasks-accordion-row bg-[#f8f9ff]/90 border-b border-[#e2e8f0] animate-fade-in">
-                      <td colspan="8" class="p-0">
-                        <div class="p-3 sm:p-4 sm:pl-12 border-l-4 border-[#d6a52a] bg-gradient-to-r from-[#fffbeb]/50 via-white/40 to-transparent">
-                          <div class="flex items-center justify-between mb-2.5">
-                            <div class="flex items-center gap-2">
-                              <span class="material-symbols-outlined text-[17px] text-[#795900]">account_tree</span>
-                              <span class="text-[12.5px] font-bold text-[#795900]">Danh sách việc con (${t.subtasks.length} task con của ${t.id})</span>
-                            </div>
-                            <span class="text-[11px] text-[#817663] italic">Bấm vào bất kỳ việc con nào để mở chi tiết &amp; chỉnh sửa</span>
-                          </div>
-
-                          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                            ${t.subtasks.map(s => {
-                              const sAssignee = store.getUserById(s.assigneeId);
-                              const isDone = s.completed || s.status === 'done';
-                              return `
-                                <div class="subtask-card-click p-3 rounded-xl border border-[#e2e8f0] bg-white hover:border-[#d6a52a] hover:shadow-xs transition-all flex flex-col justify-between gap-1.5 cursor-pointer shadow-2xs" data-task-id="${t.id}" data-subtask-id="${s.id}">
-                                  <div class="flex items-start justify-between gap-1.5">
-                                    <div class="flex items-center gap-2 min-w-0">
-                                      <span class="w-2 h-2 rounded-full shrink-0 ${isDone ? 'bg-emerald-500' : s.status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-400'}"></span>
-                                      <span class="font-mono-data text-[10px] font-bold text-[#795900] px-1.5 py-0.2 rounded bg-[#fffbeb] border border-[#fef3c7] shrink-0">${esc(s.id)}</span>
-                                      <span class="font-bold text-[12.5px] text-[#0d1c2f] ${isDone ? 'line-through text-gray-400' : ''} truncate">${esc(s.title || s.text)}</span>
-                                    </div>
-                                    <span class="text-[9.5px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
-                                      ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
-                                    </span>
-                                  </div>
-
-                                  ${s.description ? `<p class="text-[11.5px] text-[#64748b] line-clamp-2 pl-4">${esc(s.description)}</p>` : ''}
-
-                                  <div class="flex items-center justify-between text-[11px] text-[#817663] pt-1.5 border-t border-[#f1f5f9]">
-                                    <div class="flex items-center gap-1.5 min-w-0">
-                                      <img src="${sAssignee ? sAssignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-4 h-4 rounded-full object-cover shrink-0" />
-                                      <span class="truncate font-semibold text-[#4f4635]">${sAssignee ? esc(sAssignee.name) : 'Chưa giao'}</span>
-                                    </div>
-                                    <span class="font-mono-data shrink-0 flex items-center gap-1 text-[10.5px]">
-                                      <span class="material-symbols-outlined text-[13px] text-[#795900]">event</span>
-                                      ${s.dueDate ? ngayVN(s.dueDate) : 'Chưa có hạn'}
-                                    </span>
-                                  </div>
-                                </div>
-                              `;
-                            }).join('')}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ` : ''}
                 `;
               }).join('')}
             </tbody>
@@ -455,20 +376,39 @@ export class WorkspaceView {
                 ` : colTasks.map(t => {
                   const assignee = store.getUserById(t.assigneeId);
                   const creator = store.getUserById(t.creatorId);
+                  const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
+                  const hasSubtasks = subtasks.length > 0;
+                  const completedSubtasksCount = subtasks.filter(s => s.completed || s.status === 'done').length;
+
                   return `
-                    <div class="p-3.5 bg-white rounded-xl border border-[#e2e8f0] hover:border-[#d6a52a] active:bg-[#fffbeb]/20 shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card" data-task-id="${t.id}">
-                      <div class="flex items-center justify-between mb-1.5">
+                    <div class="p-3.5 bg-white rounded-xl border border-[#e2e8f0] hover:border-[#d6a52a] active:bg-[#fffbeb]/20 shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card flex flex-col gap-2" data-task-id="${t.id}">
+                      <div class="flex items-center justify-between">
                         <span class="font-mono-data text-[10.5px] font-bold text-[#795900] px-1.5 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7]">${t.id}</span>
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">${t.priority}</span>
+                        <div class="flex items-center gap-1">
+                          <button type="button" class="btn-edit-task p-1 text-amber-700 hover:bg-amber-100/70 rounded min-w-[28px] min-h-[28px] flex items-center justify-center cursor-pointer" data-task-id="${t.id}" title="Chỉnh sửa">
+                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                          </button>
+                          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">${t.priority}</span>
+                        </div>
                       </div>
 
-                      <div class="font-bold text-[13px] text-[#0d1c2f] line-clamp-2 leading-snug mb-1">
+                      <div class="font-bold text-[13px] text-[#0d1c2f] line-clamp-2 leading-snug">
                         ${esc(t.title)}
                       </div>
 
-                      <div class="text-[10.5px] text-[#795900] truncate mb-2">
+                      <div class="text-[10.5px] text-[#795900] truncate">
                         Tạo bởi: ${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}
                       </div>
+
+                      ${hasSubtasks ? `
+                        <button type="button" class="btn-open-subtasks-modal py-1.5 px-2 rounded-lg bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a] text-[11px] font-bold flex items-center justify-between transition-colors min-h-[34px] cursor-pointer" data-task-id="${t.id}">
+                          <span class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[15px]">account_tree</span>
+                            <span>Việc con: ${completedSubtasksCount}/${subtasks.length}</span>
+                          </span>
+                          <span class="material-symbols-outlined text-[15px]">chevron_right</span>
+                        </button>
+                      ` : ''}
 
                       <div class="flex items-center justify-between pt-2 border-t border-[#f1f5f9] text-[11px]">
                         <div class="flex items-center gap-1.5 min-w-0">
@@ -547,36 +487,47 @@ export class WorkspaceView {
       });
     });
 
-    // BẬT / TẮT DROPDOWN XEM VIỆC CON TRÊN BẢNG VÀ MOBILE
-    this.container.querySelectorAll('.btn-toggle-subtasks, .btn-toggle-subtasks-mobile').forEach(btn => {
+    // MỞ MODAL XEM DANH SÁCH VIỆC CON RIÊNG BIỆT
+    this.container.querySelectorAll('.btn-open-subtasks-modal').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         rung(10);
         const taskId = btn.dataset.taskId;
-        if (!taskId) return;
-        if (this.expandedTaskIds.has(taskId)) {
-          this.expandedTaskIds.delete(taskId);
-        } else {
-          this.expandedTaskIds.add(taskId);
+        if (taskId && this.onOpenSubtasksModal) {
+          this.onOpenSubtasksModal(taskId);
         }
-        this.render();
       });
     });
 
-    // BẤM VÀO THẺ VIỆC CON TRONG DROPDOWN ĐỂ MỞ NGAY CHI TIẾT
-    this.container.querySelectorAll('.subtask-card-click').forEach(card => {
-      card.addEventListener('click', (e) => {
+    // NÚT CHỈNH SỬA CÔNG VIỆC CHA
+    this.container.querySelectorAll('.btn-edit-task').forEach(btn => {
+      btn.addEventListener('click', (e) => {
         e.stopPropagation();
         rung(10);
-        const taskId = card.dataset.taskId;
+        const taskId = btn.dataset.taskId;
+        if (taskId && this.onEditTask) {
+          this.onEditTask(taskId);
+        }
+      });
+    });
+
+    // NÚT XEM CHI TIẾT
+    this.container.querySelectorAll('.btn-view-detail').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        const taskId = btn.dataset.taskId;
         if (taskId && this.onSelectTask) {
           this.onSelectTask(taskId);
         }
       });
     });
 
+    // BẤM VÀO THẺ HOẶC DÒNG ĐỂ XEM CHI TIẾT
     this.container.querySelectorAll('.row-task-item, .kanban-card').forEach(item => {
       item.addEventListener('click', (e) => {
+        // Nếu click vào nút con hoặc link, không xử lý
+        if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
         rung(10);
         const taskId = item.dataset.taskId;
         if (taskId && this.onSelectTask) {
@@ -586,4 +537,3 @@ export class WorkspaceView {
     });
   }
 }
-

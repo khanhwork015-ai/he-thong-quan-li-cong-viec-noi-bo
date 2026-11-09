@@ -5,14 +5,16 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=4.9';
-import { store } from '../store.js?v=4.9';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=4.9';
+import { auth } from '../auth.js?v=5.0';
+import { store } from '../store.js?v=5.0';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=5.0';
 
 export class TaskDrawer {
-  constructor(containerId, onTaskUpdated) {
+  constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
     this.container = document.getElementById(containerId);
     this.onTaskUpdated = onTaskUpdated;
+    this.onEditTask = onEditTask;
+    this.onOpenSubtaskDetail = onOpenSubtaskDetail;
     this.currentTaskId = null;
   }
 
@@ -111,7 +113,11 @@ export class TaskDrawer {
             </div>
 
             <div class="flex items-center gap-2">
-              <button type="button" class="p-2 rounded-xl text-[#64748b] hover:text-[#0d1c2f] hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer" id="btnCloseDrawer" aria-label="Đóng">
+              <button type="button" id="btnDrawerEditTask" class="px-3 py-1.5 rounded-xl border border-[#d6a52a] text-[#795900] bg-[#fffbeb] hover:bg-[#fde68a] font-bold text-[12.5px] min-h-[38px] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs shrink-0" title="Chỉnh sửa thông tin nhiệm vụ cha">
+                <span class="material-symbols-outlined text-[17px]">edit</span>
+                <span>Chỉnh sửa</span>
+              </button>
+              <button type="button" class="p-2 rounded-xl text-[#64748b] hover:text-[#0d1c2f] hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer shrink-0" id="btnCloseDrawer" aria-label="Đóng">
                 <span class="material-symbols-outlined text-[22px]">close</span>
               </button>
             </div>
@@ -297,16 +303,19 @@ export class TaskDrawer {
                     <div class="subtask-card p-3 sm:p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff] flex flex-col gap-2.5 hover:border-[#d6a52a] transition-all shadow-2xs" data-subtask-id="${s.id}">
                       <!-- Hàng 1: Checkbox, Mã việc con, Tiêu đề, Huy hiệu trạng thái & Nút thao tác -->
                       <div class="flex items-start justify-between gap-2">
-                        <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                        <div class="flex items-center gap-2.5 flex-1 min-w-0 subtask-clickable-area cursor-pointer" data-subtask-id="${s.id}" title="Bấm để xem đầy đủ chi tiết việc con này">
                           <input type="checkbox" class="chk-subtask w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0 mt-0.5" data-subtask-id="${s.id}" ${isDone ? 'checked' : ''} />
                           <span class="font-mono-data text-[10.5px] font-bold px-2 py-0.5 rounded bg-[#fffbeb] text-[#795900] border border-[#fef3c7] shrink-0">${esc(s.id)}</span>
-                          <span class="text-[13px] sm:text-[13.5px] font-bold text-[#0d1c2f] ${isDone ? 'line-through text-gray-400' : ''} truncate">${esc(s.title || s.text)}</span>
+                          <span class="text-[13px] sm:text-[13.5px] font-bold text-[#0d1c2f] ${isDone ? 'line-through text-gray-400' : ''} truncate hover:text-[#795900] transition-colors">${esc(s.title || s.text)}</span>
                         </div>
 
                         <div class="flex items-center gap-1 shrink-0">
                           <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
                             ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
                           </span>
+                          <button type="button" class="btn-detail-subtask p-1.5 text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer transition-colors" data-subtask-id="${s.id}" title="Xem chi tiết việc con">
+                            <span class="material-symbols-outlined text-[17px]">open_in_new</span>
+                          </button>
                           <button type="button" class="btn-toggle-edit-subtask p-1.5 text-[#817663] hover:text-[#795900] hover:bg-amber-100/60 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer transition-colors" data-subtask-id="${s.id}" title="Sửa việc con này">
                             <span class="material-symbols-outlined text-[17px]">edit</span>
                           </button>
@@ -336,7 +345,7 @@ export class TaskDrawer {
                       </div>
 
                       <!-- FORM CHỈNH SỬA VIỆC CON (INLINE EDIT FORM - MẶC ĐỊNH ẨN) -->
-                      <div id="edit-subtask-form-${s.id}" class="hidden p-3 mt-1 bg-white rounded-xl border border-[#d6a52a] flex flex-col gap-2.5 animate-fade-in shadow-xs">
+                      <div class="edit-subtask-form-box hidden p-3 mt-1 bg-white rounded-xl border border-[#d6a52a] flex flex-col gap-2.5 animate-fade-in shadow-xs" data-subtask-form-id="${esc(s.id)}">
                         <div class="text-[11.5px] font-bold text-[#795900] flex items-center gap-1">
                           <span class="material-symbols-outlined text-[16px]">edit_note</span>
                           <span>Chỉnh sửa việc con ${esc(s.id)}</span>
@@ -603,13 +612,37 @@ export class TaskDrawer {
       });
     });
 
-    // MỞ / ĐÓNG FORM SỬA VIỆC CON
+    // CHỈNH SỬA NHIỆM VỤ CHA
+    const btnDrawerEditTask = this.container.querySelector('#btnDrawerEditTask');
+    if (btnDrawerEditTask) {
+      btnDrawerEditTask.addEventListener('click', () => {
+        rung(10);
+        if (this.onEditTask) {
+          this.onEditTask(task);
+        }
+      });
+    }
+
+    // XEM ĐẦY ĐỦ CHI TIẾT VIỆC CON (SUBTASK DETAIL MODAL)
+    this.container.querySelectorAll('.btn-detail-subtask, .subtask-clickable-area').forEach(el => {
+      el.addEventListener('click', (e) => {
+        if (e.target && e.target.classList.contains('chk-subtask')) return;
+        e.stopPropagation();
+        rung(10);
+        const sid = el.dataset.subtaskId;
+        if (this.onOpenSubtaskDetail) {
+          this.onOpenSubtaskDetail(task.id, sid);
+        }
+      });
+    });
+
+    // MỞ / ĐÓNG FORM SỬA VIỆC CON (AN TOÀN SELECTOR CÓ DẤU CHẤM)
     this.container.querySelectorAll('.btn-toggle-edit-subtask').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         rung(10);
         const sid = btn.dataset.subtaskId;
-        const form = this.container.querySelector(`#edit-subtask-form-${sid}`);
+        const form = Array.from(this.container.querySelectorAll('.edit-subtask-form-box')).find(f => f.dataset.subtaskFormId === sid);
         if (form) form.classList.toggle('hidden');
       });
     });
@@ -619,7 +652,7 @@ export class TaskDrawer {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const sid = btn.dataset.subtaskId;
-        const form = this.container.querySelector(`#edit-subtask-form-${sid}`);
+        const form = Array.from(this.container.querySelectorAll('.edit-subtask-form-box')).find(f => f.dataset.subtaskFormId === sid);
         if (form) form.classList.add('hidden');
       });
     });
@@ -630,7 +663,7 @@ export class TaskDrawer {
         e.stopPropagation();
         rung(10);
         const sid = btn.dataset.subtaskId;
-        const form = this.container.querySelector(`#edit-subtask-form-${sid}`);
+        const form = Array.from(this.container.querySelectorAll('.edit-subtask-form-box')).find(f => f.dataset.subtaskFormId === sid);
         if (!form) return;
 
         const title = form.querySelector('.edit-subtask-title')?.value.trim();

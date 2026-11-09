@@ -743,6 +743,92 @@ export class Store {
     return newTask;
   }
 
+  updateTask(taskId, updates = {}) {
+    const tasks = this.getAllTasksRaw();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return null;
+
+    const currentUser = auth.getCurrentUser() || { id: '', name: 'Hệ thống' };
+
+    if (updates.title !== undefined) task.title = updates.title.trim();
+    if (updates.description !== undefined) task.description = (updates.description || '').trim();
+    if (updates.teamId !== undefined) task.teamId = updates.teamId || '';
+    if (updates.priority !== undefined) task.priority = updates.priority;
+    if (updates.dueDate !== undefined) task.dueDate = updates.dueDate;
+    if (updates.category !== undefined) task.category = updates.category.trim() || 'Chuyên môn';
+    if (updates.cost !== undefined) task.cost = parseInt(updates.cost, 10) || 0;
+    if (updates.departmentId !== undefined) task.departmentId = updates.departmentId;
+
+    // Phân công người thực hiện
+    const oldAssigneeId = task.assigneeId;
+    if (updates.assigneeId !== undefined) {
+      task.assigneeId = updates.assigneeId;
+      if (oldAssigneeId !== updates.assigneeId && updates.assigneeId && updates.assigneeId !== currentUser.id) {
+        this.addNotification({
+          recipientId: updates.assigneeId,
+          senderId: currentUser.id,
+          type: 'task_assigned',
+          title: '📋 Bạn được phân công nhiệm vụ',
+          content: `${currentUser.name} đã cập nhật người thực hiện nhiệm vụ "${task.title}" (${task.id}) cho bạn.`,
+          taskId: task.id
+        });
+      }
+    }
+
+    // Yêu cầu phê duyệt
+    if (updates.requiresApproval !== undefined) {
+      task.requiresApproval = Boolean(updates.requiresApproval);
+      if (task.requiresApproval && (!task.approvalStatus || task.approvalStatus === 'NONE')) {
+        task.approvalStatus = 'PENDING';
+      }
+    }
+    if (updates.approverId !== undefined) task.approverId = updates.approverId || null;
+
+    // Trạng thái công việc
+    if (updates.status !== undefined) {
+      task.status = updates.status;
+      if (updates.status === 'done' || updates.status === 'completed') {
+        task.progress = 100;
+        task.completedAt = task.completedAt || new Date().toISOString();
+      }
+    }
+
+    // Đồng bộ và tính toán subtasks nếu có truyền vào
+    if (Array.isArray(updates.subtasks)) {
+      task.subtasks = updates.subtasks.map((s, idx) => {
+        const isCompleted = s.status === 'done' || Boolean(s.completed);
+        return {
+          id: s.id || `${task.id}.${idx + 1}`,
+          title: (s.title || s.text || '').trim(),
+          description: (s.description || '').trim(),
+          assigneeId: s.assigneeId || task.assigneeId || currentUser.id,
+          dueDate: s.dueDate || task.dueDate || new Date().toISOString().split('T')[0],
+          status: s.status || (isCompleted ? 'done' : 'todo'),
+          completed: isCompleted,
+          createdAt: s.createdAt || new Date().toISOString()
+        };
+      });
+
+      task.checklist = task.subtasks.map(s => ({
+        id: s.id,
+        text: s.title,
+        done: Boolean(s.completed || s.status === 'done'),
+        assigneeId: s.assigneeId,
+        dueDate: s.dueDate
+      }));
+
+      const completedCount = task.subtasks.filter(s => s.completed || s.status === 'done').length;
+      task.progress = task.subtasks.length > 0 ? Math.round((completedCount / task.subtasks.length) * 100) : task.progress;
+    }
+
+    task.updatedAt = new Date().toISOString();
+
+    this.saveAllTasks(tasks);
+    appScriptBridge.pushTask(task);
+
+    return task;
+  }
+
   updateTaskAssignee(taskId, newAssigneeId) {
     const tasks = this.getAllTasksRaw();
     const task = tasks.find(t => t.id === taskId);

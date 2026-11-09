@@ -4,25 +4,27 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=4.9';
-import { store } from './store.js?v=4.9';
-import { Sidebar } from './components/sidebar.js?v=4.9';
-import { TopHeader } from './components/topHeader.js?v=4.9';
-import { BottomNav } from './components/bottomNav.js?v=4.9';
-import { DashboardView } from './components/dashboardView.js?v=4.9';
-import { WorkspaceView } from './components/workspaceView.js?v=4.9';
-import { TaskDrawer } from './components/taskDrawer.js?v=4.9';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=4.9';
-import { CreateTaskModal } from './components/createTaskModal.js?v=4.9';
-import { ProfileModal } from './components/profileModal.js?v=4.9';
-import { MemberModal } from './components/memberModal.js?v=4.9';
-import { SettingsModal } from './components/settingsModal.js?v=4.9';
-import { LoginView } from './components/loginView.js?v=4.9';
-import { DepartmentModal } from './components/departmentModal.js?v=4.9';
-import { DepartmentView } from './components/departmentView.js?v=4.9';
-import { appScriptBridge } from './services/appScriptBridge.js?v=4.9';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.9';
-import { shinTheme } from './theme.js?v=4.9';
+import { auth } from './auth.js?v=5.0';
+import { store } from './store.js?v=5.0';
+import { Sidebar } from './components/sidebar.js?v=5.0';
+import { TopHeader } from './components/topHeader.js?v=5.0';
+import { BottomNav } from './components/bottomNav.js?v=5.0';
+import { DashboardView } from './components/dashboardView.js?v=5.0';
+import { WorkspaceView } from './components/workspaceView.js?v=5.0';
+import { TaskDrawer } from './components/taskDrawer.js?v=5.0';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=5.0';
+import { CreateTaskModal } from './components/createTaskModal.js?v=5.0'
+import { SubtasksModal } from './components/subtasksModal.js?v=5.0';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.0';;
+import { ProfileModal } from './components/profileModal.js?v=5.0';
+import { MemberModal } from './components/memberModal.js?v=5.0';
+import { SettingsModal } from './components/settingsModal.js?v=5.0';
+import { LoginView } from './components/loginView.js?v=5.0';
+import { DepartmentModal } from './components/departmentModal.js?v=5.0';
+import { DepartmentView } from './components/departmentView.js?v=5.0';
+import { appScriptBridge } from './services/appScriptBridge.js?v=5.0';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.0';
+import { shinTheme } from './theme.js?v=5.0';
 
 class App {
   constructor() {
@@ -35,6 +37,8 @@ class App {
     this.taskDrawer = null;
     this.notificationDrawer = null;
     this.createTaskModal = null;
+    this.subtasksModal = null;
+    this.subtaskDetailModal = null;
     this.profileModal = null;
     this.memberModal = null;
     this.settingsModal = null;
@@ -83,7 +87,20 @@ class App {
       () => this.notificationDrawer.open()
     );
 
-    this.taskDrawer = new TaskDrawer('drawer-container', () => this.refreshCurrentView());
+    this.subtaskDetailModal = new SubtaskDetailModal('modal-container', () => this.refreshCurrentView());
+    this.subtasksModal = new SubtasksModal(
+      'modal-container',
+      () => this.refreshCurrentView(),
+      (taskId) => this.openTask(taskId),
+      (taskId, subtaskId) => this.subtaskDetailModal.show(taskId, subtaskId)
+    );
+
+    this.taskDrawer = new TaskDrawer(
+      'drawer-container',
+      () => this.refreshCurrentView(),
+      (task) => this.openCreateModal(task),
+      (taskId, subtaskId) => this.subtaskDetailModal.show(taskId, subtaskId)
+    );
     this.createTaskModal = new CreateTaskModal('modal-container', () => this.refreshCurrentView());
 
     this.dashboardView = new DashboardView('main-content-canvas',
@@ -99,9 +116,15 @@ class App {
       (taskId) => this.taskDrawer.open(taskId)
     );
 
-    this.workspaceView = new WorkspaceView('main-content-canvas',
+    this.workspaceView = new WorkspaceView(
+      'main-content-canvas',
       () => this.openCreateModal(),
-      (taskId) => this.taskDrawer.open(taskId)
+      (taskId) => this.taskDrawer.open(taskId),
+      (taskId) => this.subtasksModal.show(taskId),
+      (taskId) => {
+        const t = store.getTaskById(taskId);
+        if (t) this.openCreateModal(t);
+      }
     );
 
     this.bindGlobalEvents();
@@ -214,12 +237,12 @@ class App {
     }
   }
 
-  openCreateModal() {
+  openCreateModal(taskToEdit = null) {
     if (!auth.canCreateTask()) {
-      toast('Quyền hạn bị từ chối: Chỉ Trưởng phòng hoặc Admin mới được giao việc mới!', 'warning');
+      toast('Quyền hạn bị từ chối: Bạn không có quyền thao tác nhiệm vụ này!', 'warning');
       return;
     }
-    this.createTaskModal.show();
+    this.createTaskModal.show(taskToEdit);
   }
 
   refreshCurrentView() {
