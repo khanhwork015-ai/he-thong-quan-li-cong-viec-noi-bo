@@ -243,11 +243,11 @@ export class Store {
     return this.getAllUsers().find(u => u.id === userId) || null;
   }
 
-  getDepartmentUsers(deptId) {
+  getDepartmentUsers(deptId, includeGlobal = false) {
     if (!deptId || deptId === 'all') {
       return this.getAllUsers();
     }
-    return this.getAllUsers().filter(u => u.departmentId === deptId || u.departmentId === 'all');
+    return this.getAllUsers().filter(u => u.departmentId === deptId || (includeGlobal && u.departmentId === 'all'));
   }
 
   // --- QUẢN LÝ PHÒNG BAN & BỘ PHẬN CON (CRUD DEPARTMENTS & TEAMS) ---
