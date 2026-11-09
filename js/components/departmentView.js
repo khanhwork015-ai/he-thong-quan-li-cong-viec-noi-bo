@@ -1,7 +1,11 @@
 /**
  * THANH VŨ MEDIC CS3 - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT VIEW
  * Màn hình quản lý Cơ cấu Phòng Ban & Bộ Phận Con toàn diện (Dành cho Quản Trị Viên)
- * Chuẩn SHIN AIOS v2.6.4: Full Screen View, Responsive 2 cột, Thiết kế công thái học >= 44px
+ * Chuẩn SHIN AIOS v2.7:
+ * - Hỗ trợ KÉO THẢ (Drag & Drop) nhân sự vào từng bộ phận con trực quan
+ * - Nút 1-chạm "+ Thêm nhân sự" trên từng bộ phận con (mở popup gán nhanh)
+ * - Bộ chọn nhanh bộ phận (Quick Team Selector) trực tiếp trên từng thẻ nhân viên
+ * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
 import { auth } from '../auth.js';
@@ -18,6 +22,7 @@ export class DepartmentView {
     this.isEditingDept = false;
     this.isAddingDept = false;
     this.searchQuery = '';
+    this.quickAssignTeamId = null; // ID của team đang mở modal thêm nhân sự
   }
 
   render(deptIdToSelect = null) {
@@ -43,6 +48,7 @@ export class DepartmentView {
     if (deptIdToSelect && deptIdToSelect !== this.selectedDeptId) {
       this.editingTeamId = null;
       this.isEditingDept = false;
+      this.quickAssignTeamId = null;
     }
 
     this.selectedDeptId = deptIdToSelect || this.selectedDeptId || (depts[0] ? depts[0].id : null);
@@ -50,12 +56,6 @@ export class DepartmentView {
     if (selectedDept) {
       this.selectedDeptId = selectedDept.id;
     }
-
-    // Tính toán số liệu tổng quan
-    const totalDepts = depts.length;
-    let totalTeams = 0;
-    depts.forEach(d => { totalTeams += (d.teams || []).length; });
-    const assignedManagersCount = depts.filter(d => !!d.managerId).length;
 
     // Filter depts nếu có tìm kiếm
     const filteredDepts = depts.filter(d => {
@@ -91,112 +91,85 @@ export class DepartmentView {
           </div>
 
           <div class="flex items-center gap-2.5 shrink-0">
-            <button type="button" id="btnHeroAddDept" class="px-4 py-2.5 rounded-xl text-[12.5px] sm:text-[13px] font-bold shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 min-h-[44px]" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+            <button type="button" id="btnHeroAddDept" class="px-4 py-2.5 rounded-xl text-[12.5px] sm:text-[13px] font-bold shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 min-h-[44px] cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
               <span class="material-symbols-outlined text-[20px]">add</span>
               <span>Thêm Phòng Ban</span>
             </button>
           </div>
         </div>
 
-        <!-- 2. QUICK STATS CARDS -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div class="p-4 rounded-2xl border bg-white shadow-2xs flex items-center gap-3" style="background-color: var(--card); border-color: var(--border);">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
-              <span class="material-symbols-outlined text-[22px]">corporate_fare</span>
-            </div>
-            <div class="min-w-0">
-              <div class="text-[11px] font-bold text-[#817663] uppercase tracking-wider" style="color: var(--text-muted);">Phòng Ban</div>
-              <div class="text-[18px] sm:text-[20px] font-extrabold text-[#0d1c2f] font-mono-data" style="color: var(--text);">${totalDepts}</div>
-            </div>
-          </div>
-
-          <div class="p-4 rounded-2xl border bg-white shadow-2xs flex items-center gap-3" style="background-color: var(--card); border-color: var(--border);">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
-              <span class="material-symbols-outlined text-[22px]">account_tree</span>
-            </div>
-            <div class="min-w-0">
-              <div class="text-[11px] font-bold text-[#817663] uppercase tracking-wider" style="color: var(--text-muted);">Bộ Phận Con (Teams)</div>
-              <div class="text-[18px] sm:text-[20px] font-extrabold text-[#0d1c2f] font-mono-data" style="color: var(--text);">${totalTeams}</div>
-            </div>
-          </div>
-
-          <div class="p-4 rounded-2xl border bg-white shadow-2xs flex items-center gap-3" style="background-color: var(--card); border-color: var(--border);">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
-              <span class="material-symbols-outlined text-[22px]">badge</span>
-            </div>
-            <div class="min-w-0">
-              <div class="text-[11px] font-bold text-[#817663] uppercase tracking-wider" style="color: var(--text-muted);">Trưởng Phòng Đã Gán</div>
-              <div class="text-[18px] sm:text-[20px] font-extrabold text-[#0d1c2f] font-mono-data" style="color: var(--text);">${assignedManagersCount} / ${totalDepts}</div>
-            </div>
-          </div>
-
-          <div class="p-4 rounded-2xl border bg-white shadow-2xs flex items-center gap-3" style="background-color: var(--card); border-color: var(--border);">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
-              <span class="material-symbols-outlined text-[22px]">group</span>
-            </div>
-            <div class="min-w-0">
-              <div class="text-[11px] font-bold text-[#817663] uppercase tracking-wider" style="color: var(--text-muted);">Tổng Nhân Sự Phân Bổ</div>
-              <div class="text-[18px] sm:text-[20px] font-extrabold text-[#0d1c2f] font-mono-data" style="color: var(--text);">${allUsers.length}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. MAIN WORKSPACE: 2-COLUMN RESPONSIVE LAYOUT -->
+        <!-- 2. BỐ CỤC 2 CỘT CHÍNH (CỘT TRÁI: DANH SÁCH PB • CỘT PHẢI: BỘ PHẬN CON & NHÂN SỰ) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
           
           <!-- CỘT TRÁI (5 COLS TRÊN LG): DANH SÁCH PHÒNG BAN -->
           <div class="lg:col-span-5 flex flex-col gap-3.5">
             <div class="bg-white rounded-3xl p-4 sm:p-5 border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5" style="background-color: var(--card); border-color: var(--border);">
               
-              <div class="flex items-center justify-between">
+              <!-- TIÊU ĐỀ & TÌM KIẾM -->
+              <div class="flex items-center justify-between pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                 <div>
-                  <h3 class="font-bold text-[15px] text-[#0d1c2f]" style="color: var(--text);">
-                    Danh Sách Phòng Ban (${depts.length})
-                  </h3>
-                  <span class="text-[11.5px] text-[#817663]" style="color: var(--text-muted);">
-                    Chọn phòng ban để quản lý cấu trúc &amp; bộ phận
-                  </span>
+                  <h3 class="font-bold text-[15.5px] text-[#0d1c2f]" style="color: var(--text);">Danh Sách Phòng Ban (${depts.length})</h3>
+                  <span class="text-[11.5px] text-[#64748b]" style="color: var(--text-muted);">Chọn phòng ban để quản lý cấu trúc &amp; bộ phận</span>
                 </div>
-
-                <button type="button" id="btnToggleAddDeptSide" class="px-2.5 py-1.5 rounded-xl text-[11.5px] font-bold flex items-center gap-1 transition-all shadow-xs" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                <button type="button" id="btnToggleAddDeptSide" class="px-3 py-1.5 rounded-xl text-[12px] font-bold shadow-2xs flex items-center gap-1 min-h-[38px] cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                   <span class="material-symbols-outlined text-[16px]">add</span>
                   <span>Thêm PB</span>
                 </button>
               </div>
 
-              <!-- FORM TẠO PHÒNG BAN MỚI (ẨN / HIỆN) -->
-              <div id="boxAddDeptFormView" class="${this.isAddingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/50 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
+              <!-- Ô TÌM KIẾM PHÒNG BAN -->
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
+                <input type="text" id="inputSearchDept" value="${esc(this.searchQuery)}" placeholder="Tìm theo tên hoặc mã phòng ban..." class="w-full h-10 pl-9.5 pr-3.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
+              </div>
+
+              <!-- FORM THÊM PHÒNG BAN MỚI (ẨN/HIỆN) -->
+              <div id="boxAddDeptFormView" class="${this.isAddingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/60 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
                 <div class="flex items-center justify-between">
-                  <span class="text-[12.5px] font-bold text-[#795900]" style="color: var(--primary);">Tạo phòng ban mới</span>
-                  <button type="button" id="btnCancelAddDeptTop" class="text-gray-400 hover:text-gray-700 text-lg font-bold min-w-[32px] min-h-[32px] flex items-center justify-center">&times;</button>
+                  <span class="text-[12.5px] font-bold" style="color: var(--primary);">Thêm Phòng Ban Mới</span>
+                  <button type="button" id="btnCancelAddDeptTop" class="text-gray-400 hover:text-gray-700 text-lg font-bold min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer">&times;</button>
                 </div>
-                <input type="text" id="newDeptNameView" placeholder="Tên phòng ban *" class="h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
-                <div class="grid grid-cols-2 gap-2.5">
-                  <input type="text" id="newDeptCodeView" placeholder="Mã PB (VD: PTKH)" class="h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] uppercase focus:border-[#d6a52a]" />
-                  <div class="flex items-center gap-2">
-                    <input type="color" id="newDeptColorView" value="#D6A52A" class="h-10 w-12 rounded-xl border border-[#e2e8f0] cursor-pointer" title="Chọn màu nhận diện" />
-                    <span id="newDeptColorTextView" class="text-[11.5px] font-mono text-gray-500">#D6A52A</span>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Tên phòng ban *</label>
+                  <input type="text" id="newDeptNameView" placeholder="Ví dụ: Khoa Dược &amp; VTYT" class="w-full h-9.5 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mã nhận diện (Code) *</label>
+                    <input type="text" id="newDeptCodeView" placeholder="VD: DUOC-CS3" class="w-full h-9.5 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none uppercase bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Màu sắc nhận diện</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" id="newDeptColorView" value="#D6A52A" class="h-9.5 w-10 rounded-xl border border-[#e2e8f0] cursor-pointer" />
+                      <span id="newDeptColorTextView" class="text-[11.5px] font-mono text-gray-500 font-bold">#D6A52A</span>
+                    </div>
                   </div>
                 </div>
-                <select id="newDeptManagerView" class="h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
-                  <option value="">-- Chọn Trưởng phòng phụ trách --</option>
-                  ${managers.map(m => `<option value="${m.id}">${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}
-                </select>
-                <div class="flex items-center justify-end gap-2 pt-1">
-                  <button type="button" id="btnCancelAddDeptView" class="px-3.5 py-1.5 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-colors">Hủy</button>
-                  <button type="button" id="btnSubmitAddDeptView" class="px-4 py-1.5 rounded-xl text-[12px] font-bold bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white transition-all shadow-2xs">Tạo Phòng Ban</button>
+
+                <div>
+                  <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Trưởng phòng phụ trách</label>
+                  <select id="newDeptManagerView" class="w-full h-9.5 px-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
+                    <option value="">-- Chưa gán Trưởng phòng --</option>
+                    ${managers.map(m => `<option value="${m.id}">${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}
+                  </select>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-1 border-t border-[#f1f5f9]">
+                  <button type="button" id="btnCancelAddDeptView" class="px-3.5 py-1.5 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer">Hủy</button>
+                  <button type="button" id="btnSubmitAddDeptView" class="px-4 py-1.5 rounded-xl text-[12px] font-bold shadow-2xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">Tạo Phòng Ban</button>
                 </div>
               </div>
 
-              <!-- TÌM KIẾM NHANH PHÒNG BAN -->
-              <div class="relative">
-                <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#817663]">search</span>
-                <input type="text" id="inputSearchDept" value="${esc(this.searchQuery)}" placeholder="Tìm theo tên hoặc mã phòng ban..." class="w-full h-9 pl-9 pr-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none bg-[#f8f9ff] text-[#0d1c2f] focus:bg-white focus:border-[#d6a52a]" />
-              </div>
-
-              <!-- DANH SÁCH CARDS PHÒNG BAN -->
-              <div class="flex flex-col gap-2.5">
-                ${filteredDepts.map(d => {
+              <!-- DANH SÁCH CÁC PHÒNG BAN -->
+              <div class="flex flex-col gap-2 max-h-[560px] overflow-y-auto pr-1">
+                ${filteredDepts.length === 0 ? `
+                  <div class="p-6 text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] rounded-2xl border border-dashed border-[#e2e8f0]">
+                    Không tìm thấy phòng ban nào khớp từ khóa.
+                  </div>
+                ` : filteredDepts.map(d => {
                   const isAct = selectedDept && selectedDept.id === d.id;
                   const mgr = allUsers.find(u => u.id === d.managerId);
                   const teamCount = (d.teams || []).length;
@@ -256,11 +229,11 @@ export class DepartmentView {
                   </div>
 
                   <div class="flex items-center gap-1.5 shrink-0">
-                    <button type="button" id="btnToggleEditDeptView" class="px-3 py-1.5 rounded-xl border border-amber-200 text-amber-700 hover:bg-amber-50 font-bold text-[12px] flex items-center gap-1 min-h-[38px] transition-colors" title="Chỉnh sửa phòng ban này">
+                    <button type="button" id="btnToggleEditDeptView" class="px-3 py-1.5 rounded-xl border border-amber-200 text-amber-700 hover:bg-amber-50 font-bold text-[12px] flex items-center gap-1 min-h-[38px] transition-colors cursor-pointer" title="Chỉnh sửa phòng ban này">
                       <span class="material-symbols-outlined text-[18px]">edit</span>
                       <span class="hidden sm:inline">Chỉnh sửa</span>
                     </button>
-                    <button type="button" id="btnDeleteDeptView" class="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 font-bold text-[12px] flex items-center gap-1 min-h-[38px] transition-colors" title="Xóa phòng ban này">
+                    <button type="button" id="btnDeleteDeptView" class="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 font-bold text-[12px] flex items-center gap-1 min-h-[38px] transition-colors cursor-pointer" title="Xóa phòng ban này">
                       <span class="material-symbols-outlined text-[18px]">delete</span>
                       <span class="hidden sm:inline">Xóa PB</span>
                     </button>
@@ -271,7 +244,7 @@ export class DepartmentView {
                 <div id="boxEditDeptFormView" class="${this.isEditingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/50 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
                   <div class="flex items-center justify-between">
                     <span class="text-[12.5px] font-bold text-[#795900]" style="color: var(--primary);">Cập nhật thông tin phòng ban</span>
-                    <button type="button" id="btnCancelEditDeptTopView" class="text-gray-400 hover:text-gray-700 text-lg font-bold min-w-[32px] min-h-[32px] flex items-center justify-center">&times;</button>
+                    <button type="button" id="btnCancelEditDeptTopView" class="text-gray-400 hover:text-gray-700 text-lg font-bold min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer">&times;</button>
                   </div>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -303,21 +276,21 @@ export class DepartmentView {
 
                   <div>
                     <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Trưởng phòng phụ trách</label>
-                    <select id="editDeptManagerView" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
+                    <select id="editDeptManagerView" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
                       <option value="">-- Chưa gán Trưởng phòng --</option>
                       ${managers.map(m => `<option value="${m.id}" ${m.id === selectedDept.managerId ? 'selected' : ''}>${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}
                     </select>
                   </div>
 
                   <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#f1f5f9]">
-                    <button type="button" id="btnCancelEditDeptView" class="px-4 py-2 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-colors">Hủy</button>
-                    <button type="button" id="btnSubmitEditDeptView" class="px-4 py-2 rounded-xl text-[12px] font-bold bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white transition-all shadow-2xs">Lưu Thay Đổi</button>
+                    <button type="button" id="btnCancelEditDeptView" class="px-4 py-2 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer">Hủy</button>
+                    <button type="button" id="btnSubmitEditDeptView" class="px-4 py-2 rounded-xl text-[12px] font-bold shadow-2xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">Lưu Thay Đổi</button>
                   </div>
                 </div>
 
-                <!-- BỘ PHẬN CON (TEAMS) TRỰC THUỘC -->
+                <!-- BỘ PHẬN CON (TEAMS) TRỰC THUỘC (HỖ TRỢ KÉO THẢ & NÚT THÊM NHÂN SỰ) -->
                 <div class="flex flex-col gap-3 mt-1">
-                  <div class="flex items-center justify-between">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h4 class="font-bold text-[15px] text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
                         <span>Các Bộ Phận Con Trực Thuộc</span>
@@ -326,7 +299,7 @@ export class DepartmentView {
                         </span>
                       </h4>
                       <p class="text-[11.5px] text-[#64748b] mt-0.5" style="color: var(--text-muted);">
-                        Ví dụ: Phòng PTKH gồm Marketing, CSKH, Hỗ trợ... Trưởng phòng quản lý toàn bộ các bộ phận này.
+                        💡 <strong>Mẹo phân bổ:</strong> Kéo thả thẻ nhân viên bên dưới vào bộ phận, hoặc bấm <em>"+ Thêm nhân sự"</em> trên từng bộ phận.
                       </p>
                     </div>
                   </div>
@@ -335,14 +308,14 @@ export class DepartmentView {
                   <div class="p-3.5 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shadow-2xs" style="background-color: var(--background); border-color: var(--border);">
                     <input type="text" id="inputNewTeamNameView" placeholder="Tên bộ phận (VD: CSKH, Marketing, Hỗ trợ...)" class="flex-1 h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                     <input type="text" id="inputNewTeamCodeView" placeholder="Mã (VD: CSKH)" class="w-full sm:w-32 h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none uppercase bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
-                    <button type="button" id="btnAddTeamSubmitView" class="px-4 py-2 rounded-xl text-[12.5px] font-bold shadow-xs transition-all shrink-0 min-h-[40px] flex items-center justify-center gap-1.5" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                    <button type="button" id="btnAddTeamSubmitView" class="px-4 py-2 rounded-xl text-[12.5px] font-bold shadow-xs transition-all shrink-0 min-h-[40px] flex items-center justify-center gap-1.5 cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                       <span class="material-symbols-outlined text-[18px]">add</span>
                       <span>Thêm bộ phận</span>
                     </button>
                   </div>
 
-                  <!-- DANH SÁCH BỘ PHẬN CON HIỆN CÓ -->
-                  <div class="flex flex-col gap-2 mt-1">
+                  <!-- DANH SÁCH BỘ PHẬN CON (CÁC VÙNG DROP-ZONE KÉO THẢ) -->
+                  <div class="flex flex-col gap-2.5 mt-1" id="teamDropZonesContainer">
                     ${(!selectedDept.teams || selectedDept.teams.length === 0) ? `
                       <div class="p-6 rounded-2xl text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] border border-dashed border-[#e2e8f0]" style="background-color: var(--background); border-color: var(--border);">
                         Chưa có bộ phận con nào trong phòng ban này. Nhập tên và mã ở trên để tạo bộ phận đầu tiên.
@@ -357,73 +330,129 @@ export class DepartmentView {
                             <input type="text" id="inputEditTeamNameView_${t.id}" value="${esc(t.name)}" class="flex-1 h-9 px-3 rounded-xl border border-[#e2e8f0] text-[13px] bg-white text-[#0d1c2f] outline-none focus:border-[#d6a52a]" placeholder="Tên bộ phận *" />
                             <input type="text" id="inputEditTeamCodeView_${t.id}" value="${esc(t.code || '')}" class="w-full sm:w-28 h-9 px-3 rounded-xl border border-[#e2e8f0] text-[13px] uppercase bg-white text-[#0d1c2f] outline-none focus:border-[#d6a52a]" placeholder="Mã (VD: CSKH)" />
                             <div class="flex items-center gap-2 justify-end shrink-0">
-                              <button type="button" class="btn-save-edit-team-view px-3.5 py-1.5 rounded-xl text-[12px] font-bold bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white transition-all shadow-2xs" data-team-id="${t.id}">Lưu</button>
-                              <button type="button" class="btn-cancel-edit-team-view px-3 py-1.5 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-all" data-team-id="${t.id}">Hủy</button>
+                              <button type="button" class="btn-save-edit-team-view px-3.5 py-1.5 rounded-xl text-[12px] font-bold shadow-2xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);" data-team-id="${t.id}">Lưu</button>
+                              <button type="button" class="btn-cancel-edit-team-view px-3 py-1.5 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-all cursor-pointer" data-team-id="${t.id}">Hủy</button>
                             </div>
                           </div>
                         `;
                       }
 
                       return `
-                        <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0] flex items-center justify-between shadow-2xs hover:border-[#d6a52a] transition-all" style="background-color: var(--card); border-color: var(--border);">
-                          <div class="flex items-center gap-3 min-w-0">
-                            <span class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[11px] font-mono-data shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
-                              ${esc(t.code || 'TEAM')}
-                            </span>
-                            <div class="min-w-0">
-                              <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(t.name)}</div>
-                              <div class="text-[11.5px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">${membersInTeam.length} nhân viên trực thuộc</div>
+                        <!-- DROPZONE BỘ PHẬN CON: NHẬN THẢ NHÂN VIÊN VÀ CÓ NÚT THÊM NHÂN SỰ -->
+                        <div class="team-drop-card p-3.5 sm:p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col gap-2.5 shadow-2xs hover:border-[#d6a52a] transition-all relative" data-team-id="${t.id}" style="background-color: var(--card); border-color: var(--border);">
+                          
+                          <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div class="flex items-center gap-3 min-w-0">
+                              <span class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-[11.5px] font-mono-data shrink-0 shadow-2xs" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--border);">
+                                ${esc(t.code || 'TEAM')}
+                              </span>
+                              <div class="min-w-0">
+                                <div class="text-[14px] font-bold text-[#0d1c2f] truncate flex items-center gap-2" style="color: var(--text);">
+                                  <span>${esc(t.name)}</span>
+                                  <span class="text-[11px] font-semibold text-gray-400">(${membersInTeam.length} nhân sự)</span>
+                                </div>
+                                <div class="text-[11.5px] text-[#64748b] truncate mt-0.5 flex items-center gap-1.5" style="color: var(--text-muted);">
+                                  <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+                                  <span>Thả nhân viên vào đây để phân vào bộ phận này</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-1.5 shrink-0">
+                              <!-- NÚT 1-CHẠM THÊM NHÂN SỰ VÀO BỘ PHẬN NÀY -->
+                              <button type="button" class="btn-quick-add-member px-3 py-1.5 rounded-xl border border-amber-200 text-amber-800 bg-amber-50 hover:bg-amber-100 font-bold text-[11.5px] flex items-center gap-1 min-h-[36px] transition-colors shadow-2xs cursor-pointer" data-team-id="${t.id}" title="Thêm nhân sự vào bộ phận ${esc(t.name)}">
+                                <span class="material-symbols-outlined text-[16px]">person_add</span>
+                                <span>Thêm nhân viên</span>
+                              </button>
+
+                              <button type="button" class="btn-edit-team-view p-2 rounded-xl text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer" data-team-id="${t.id}" title="Chỉnh sửa bộ phận này">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                              </button>
+                              <button type="button" class="btn-delete-team-view p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer" data-team-id="${t.id}" title="Xóa bộ phận này">
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                              </button>
                             </div>
                           </div>
-                          
-                          <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" class="btn-edit-team-view p-2 rounded-xl text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center" data-team-id="${t.id}" title="Chỉnh sửa bộ phận này">
-                              <span class="material-symbols-outlined text-[19px]">edit</span>
-                            </button>
-                            <button type="button" class="btn-delete-team-view p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center" data-team-id="${t.id}" title="Xóa bộ phận này">
-                              <span class="material-symbols-outlined text-[19px]">delete</span>
-                            </button>
+
+                          <!-- DANH SÁCH NHÂN SỰ ĐANG TRỰC THUỘC BỘ PHẬN NÀY (CÓ NÚT GỠ RA NHANH) -->
+                          <div class="pt-2 border-t border-[#f1f5f9] flex items-center gap-2 flex-wrap" style="border-color: var(--border);">
+                            ${membersInTeam.length === 0 ? `
+                              <span class="text-[11.5px] text-[#94a3b8] italic">Chưa có nhân sự nào trong bộ phận này.</span>
+                            ` : membersInTeam.map(m => `
+                              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] text-[12px] font-medium shadow-2xs" style="background-color: var(--background); border-color: var(--border);">
+                                <img src="${m.avatar}" class="w-5 h-5 rounded-full object-cover shrink-0" />
+                                <span class="font-bold text-[#0d1c2f] truncate max-w-[130px]" style="color: var(--text);">${esc(m.name)}</span>
+                                <button type="button" class="btn-remove-user-from-team text-gray-400 hover:text-rose-600 p-0.5 rounded-full transition-colors cursor-pointer" data-user-id="${m.id}" data-team-id="${t.id}" title="Gỡ ${esc(m.name)} khỏi bộ phận này về Toàn phòng">
+                                  &times;
+                                </button>
+                              </div>
+                            `).join('')}
                           </div>
+
                         </div>
                       `;
                     }).join('')}
                   </div>
                 </div>
 
-                <!-- DANH SÁCH NHÂN SỰ ĐANG LÀM VIỆC TẠI PHÒNG NÀY -->
-                <div class="flex flex-col gap-3 pt-3 border-t border-[#f1f5f9]" style="border-color: var(--border);">
-                  <div class="flex items-center justify-between">
+                <!-- DANH SÁCH NHÂN SỰ ĐANG LÀM VIỆC TẠI PHÒNG NÀY (HỖ TRỢ DRAGGABLE & SELECTOR TRỰC TIẾP) -->
+                <div class="flex flex-col gap-3 pt-4 border-t border-[#f1f5f9]" style="border-color: var(--border);">
+                  <div class="flex items-center justify-between flex-wrap gap-2">
                     <div>
-                      <h4 class="font-bold text-[14px] text-[#0d1c2f]" style="color: var(--text);">
-                        Nhân Sự Thuộc Phòng (${selectedDeptUsers.length})
+                      <h4 class="font-bold text-[14.5px] text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
+                        <span>Nhân Sự Thuộc Phòng (${selectedDeptUsers.length})</span>
+                        <span class="text-[11px] font-normal text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                          🖐️ Giữ &amp; Kéo thả vào bộ phận ở trên
+                        </span>
                       </h4>
-                      <span class="text-[11px] text-[#64748b]" style="color: var(--text-muted);">
-                        Được phân bổ theo từng bộ phận chuyên môn
+                      <span class="text-[11.5px] text-[#64748b]" style="color: var(--text-muted);">
+                        Bạn có thể kéo thẻ nhân viên thả vào bộ phận con, hoặc chọn trực tiếp từ danh sách thả xuống
                       </span>
                     </div>
 
-                    <button type="button" id="btnAddMemberToDept" class="px-3 py-1.5 rounded-xl border border-[#e2e8f0] text-[12px] font-semibold text-[#0d1c2f] hover:bg-gray-50 flex items-center gap-1 min-h-[36px] transition-colors" style="color: var(--text); border-color: var(--border);">
-                      <span class="material-symbols-outlined text-[17px]">person_add</span>
+                    <button type="button" id="btnAddMemberToDept" class="px-3.5 py-1.5 rounded-xl border border-[#e2e8f0] text-[12px] font-bold text-[#0d1c2f] hover:bg-gray-50 flex items-center gap-1.5 min-h-[38px] transition-colors shadow-2xs cursor-pointer" style="color: var(--text); border-color: var(--border);">
+                      <span class="material-symbols-outlined text-[18px]">person_add</span>
                       <span>Cấp tài khoản mới</span>
                     </button>
                   </div>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <!-- LƯỚI THẺ NHÂN VIÊN (DRAGGABLE = TRUE) -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="departmentUsersGrid">
                     ${selectedDeptUsers.length === 0 ? `
-                      <div class="col-span-2 p-4 rounded-xl text-center text-[12px] text-[#817663] bg-[#f8f9ff]">
+                      <div class="col-span-2 p-6 rounded-2xl text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] border border-dashed border-[#e2e8f0]">
                         Chưa có nhân sự nào được gán vào phòng ban này.
                       </div>
                     ` : selectedDeptUsers.map(u => {
                       const team = (selectedDept.teams || []).find(t => t.id === u.teamId);
                       return `
-                        <div class="p-3 rounded-2xl border border-[#e2e8f0] bg-white flex items-center gap-3 shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
-                          <img src="${u.avatar}" alt="${u.name}" class="w-9 h-9 rounded-full object-cover shrink-0 ring-1 ring-gray-200" />
-                          <div class="min-w-0 flex-1">
-                            <div class="text-[13px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</div>
-                            <div class="text-[11px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
-                              ${esc(u.title)} • <strong class="text-amber-700">${team ? esc(team.name) : 'Toàn phòng'}</strong>
+                        <!-- THẺ NHÂN VIÊN CÓ THỂ KÉO THẢ (DRAGGABLE) -->
+                        <div class="member-drag-card p-3.5 rounded-2xl border border-[#e2e8f0] bg-white flex flex-col gap-2.5 shadow-2xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:border-[#d6a52a]" draggable="true" data-user-id="${u.id}" style="background-color: var(--card); border-color: var(--border);">
+                          
+                          <div class="flex items-center gap-3">
+                            <div class="relative shrink-0">
+                              <img src="${u.avatar}" alt="${u.name}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-2xs" />
+                              <span class="material-symbols-outlined absolute -bottom-1 -right-1 bg-amber-100 text-amber-800 text-[13px] rounded-full p-0.5 shadow-2xs">drag_indicator</span>
+                            </div>
+
+                            <div class="min-w-0 flex-1">
+                              <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</div>
+                              <div class="text-[11.5px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
+                                ${esc(u.title || 'Nhân viên')} • <span class="font-mono-data">${esc(u.email || u.username || '')}</span>
+                              </div>
                             </div>
                           </div>
+
+                          <!-- BỘ CHỌN NHANH BỘ PHẬN NGAY TRÊN THẺ NHÂN VIÊN -->
+                          <div class="pt-2 border-t border-[#f1f5f9] flex items-center justify-between gap-2" style="border-color: var(--border);">
+                            <span class="text-[11px] font-bold text-[#64748b] shrink-0" style="color: var(--text-muted);">Bộ phận:</span>
+                            <select class="select-user-team-direct h-8 px-2.5 rounded-xl border border-[#e2e8f0] text-[11.5px] font-bold outline-none bg-[#f8f9ff] text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer max-w-[190px] truncate" data-user-id="${u.id}">
+                              <option value="" ${!u.teamId ? 'selected' : ''}>-- Toàn phòng (Chưa phân tổ) --</option>
+                              ${(selectedDept.teams || []).map(tm => `
+                                <option value="${tm.id}" ${u.teamId === tm.id ? 'selected' : ''}>[${esc(tm.code || 'TEAM')}] ${esc(tm.name)}</option>
+                              `).join('')}
+                            </select>
+                          </div>
+
                         </div>
                       `;
                     }).join('')}
@@ -440,10 +469,136 @@ export class DepartmentView {
 
         </div>
 
+        <!-- 3. MODAL GÁN NHÂN SỰ NHANH VÀO BỘ PHẬN (KHI BẤM NÚT "THÊM NHÂN VIÊN") -->
+        <div id="quickAssignModalContainer"></div>
+
       </div>
     `;
 
     this.bindEvents(selectedDept);
+  }
+
+  // Mở popup gán nhân sự nhanh vào bộ phận con
+  openQuickAssignModal(teamId, dept) {
+    const modalBox = this.container.querySelector('#quickAssignModalContainer');
+    if (!modalBox || !dept) return;
+
+    rung(10);
+    const targetTeam = (dept.teams || []).find(t => t.id === teamId);
+    if (!targetTeam) return;
+
+    const deptUsers = store.getDepartmentUsers(dept.id);
+
+    modalBox.innerHTML = `
+      <div class="modal-overlay fixed inset-0 z-[110] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="quickAssignOverlay">
+        <div class="modal-card bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl border border-[#e2e8f0] max-h-[85vh] overflow-y-auto" style="background-color: var(--card); border-color: var(--border);">
+          
+          <!-- HEADER -->
+          <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9] mb-4" style="border-color: var(--border);">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
+                <span class="material-symbols-outlined text-[22px]">group_add</span>
+              </div>
+              <div class="min-w-0">
+                <h3 class="font-bold text-[16px] text-[#0d1c2f] truncate" style="color: var(--text);">Thêm Nhân Sự Vào Bộ Phận</h3>
+                <span class="text-[12px] font-semibold truncate block" style="color: var(--primary);">${esc(targetTeam.name)} (${esc(targetTeam.code || 'TEAM')})</span>
+              </div>
+            </div>
+            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl hover:bg-gray-100 cursor-pointer" id="btnCloseQuickAssignModal">&times;</button>
+          </div>
+
+          <!-- DANH SÁCH NHÂN SỰ PHÒNG BAN -->
+          <p class="text-[12px] text-[#64748b] mb-3" style="color: var(--text-muted);">
+            Bấm nút <strong>"+ Gán vào bộ phận"</strong> để đưa nhân viên vào <strong>${esc(targetTeam.name)}</strong>:
+          </p>
+
+          <div class="flex flex-col gap-2.5 max-h-[400px] overflow-y-auto pr-1">
+            ${deptUsers.length === 0 ? `
+              <div class="p-6 text-center text-[12px] text-gray-500 bg-gray-50 rounded-xl">Phòng ban này hiện chưa có nhân viên nào.</div>
+            ` : deptUsers.map(u => {
+              const isAlreadyInTeam = u.teamId === targetTeam.id;
+              const currentTeam = (dept.teams || []).find(t => t.id === u.teamId);
+
+              return `
+                <div class="p-3 rounded-2xl border ${isAlreadyInTeam ? 'border-amber-300 bg-amber-50/70' : 'border-[#e2e8f0] bg-white'} flex items-center justify-between gap-3 shadow-2xs">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover shrink-0 ring-1 ring-gray-200" />
+                    <div class="min-w-0">
+                      <div class="text-[13px] font-bold text-[#0d1c2f] truncate">${esc(u.name)}</div>
+                      <div class="text-[11px] text-[#64748b] truncate">
+                        ${isAlreadyInTeam ? '<span class="text-emerald-700 font-bold">✓ Đang trong bộ phận này</span>' : (currentTeam ? `Thuộc: ${esc(currentTeam.name)}` : 'Toàn phòng (Chưa phân tổ)')}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="shrink-0">
+                    ${isAlreadyInTeam ? `
+                      <button type="button" class="btn-modal-unassign-user px-3 py-1.5 rounded-xl text-[11.5px] font-bold border border-rose-200 text-rose-600 hover:bg-rose-50 cursor-pointer transition-colors" data-user-id="${u.id}">
+                        Gỡ ra
+                      </button>
+                    ` : `
+                      <button type="button" class="btn-modal-assign-user px-3 py-1.5 rounded-xl text-[11.5px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 cursor-pointer transition-colors flex items-center gap-1" data-user-id="${u.id}">
+                        <span class="material-symbols-outlined text-[15px]">add</span>
+                        <span>Gán vào</span>
+                      </button>
+                    `}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="pt-3 border-t border-[#f1f5f9] mt-3 flex justify-end">
+            <button type="button" id="btnDoneQuickAssign" class="px-5 py-2 rounded-xl text-[12.5px] font-bold shadow-xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+              Xong
+            </button>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    // Bind events cho modal
+    const overlay = modalBox.querySelector('#quickAssignOverlay');
+    const btnClose = modalBox.querySelector('#btnCloseQuickAssignModal');
+    const btnDone = modalBox.querySelector('#btnDoneQuickAssign');
+
+    const closeModal = () => {
+      rung(10);
+      modalBox.innerHTML = '';
+      this.render(dept.id);
+      if (this.onUpdated) this.onUpdated();
+    };
+
+    if (btnClose) btnClose.addEventListener('click', closeModal);
+    if (btnDone) btnDone.addEventListener('click', closeModal);
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+      });
+    }
+
+    // Nút gán vào
+    modalBox.querySelectorAll('.btn-modal-assign-user').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(15);
+        const uId = btn.dataset.userId;
+        store.updateUser(uId, { teamId: targetTeam.id });
+        toast(`Đã thêm nhân viên vào ${targetTeam.name}!`, 'success');
+        this.openQuickAssignModal(teamId, dept); // Re-render modal
+      });
+    });
+
+    // Nút gỡ ra
+    modalBox.querySelectorAll('.btn-modal-unassign-user').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(10);
+        const uId = btn.dataset.userId;
+        store.updateUser(uId, { teamId: '' });
+        toast(`Đã chuyển nhân viên về Toàn phòng!`, 'info');
+        this.openQuickAssignModal(teamId, dept); // Re-render modal
+      });
+    });
   }
 
   bindEvents(currentDept) {
@@ -745,5 +900,100 @@ export class DepartmentView {
         if (this.onOpenMemberModal) this.onOpenMemberModal();
       });
     }
+
+    // 15. NÚT "+ THÊM NHÂN VIÊN" TRÊN TỪNG BỘ PHẬN CON (MỞ MODAL GÁN NHANH)
+    this.container.querySelectorAll('.btn-quick-add-member').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const teamId = btn.dataset.teamId;
+        if (currentDept && teamId) {
+          this.openQuickAssignModal(teamId, currentDept);
+        }
+      });
+    });
+
+    // 16. NÚT GỠ NHÂN VIÊN KHỎI BỘ PHẬN (TRÊN THẺ BỘ PHẬN CON)
+    this.container.querySelectorAll('.btn-remove-user-from-team').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        const userId = btn.dataset.userId;
+        const u = store.getUserById(userId);
+        if (u) {
+          store.updateUser(userId, { teamId: '' });
+          toast(`Đã đưa ${u.name} về lại Toàn phòng!`, 'info');
+          this.render(currentDept.id);
+          if (this.onUpdated) this.onUpdated();
+        }
+      });
+    });
+
+    // 17. BỘ CHỌN NHANH BỘ PHẬN TRỰC TIẾP TRÊN THẺ NHÂN VIÊN (<select>)
+    this.container.querySelectorAll('.select-user-team-direct').forEach(sel => {
+      sel.addEventListener('change', (e) => {
+        e.stopPropagation();
+        rung(15);
+        const userId = sel.dataset.userId;
+        const newTeamId = sel.value;
+        const u = store.getUserById(userId);
+        if (u) {
+          store.updateUser(userId, { teamId: newTeamId });
+          const team = (currentDept.teams || []).find(t => t.id === newTeamId);
+          toast(`Đã gán ${u.name} vào ${team ? team.name : 'Toàn phòng'}!`, 'success');
+          this.render(currentDept.id);
+          if (this.onUpdated) this.onUpdated();
+        }
+      });
+    });
+
+    // 18. TÍNH NĂNG KÉO THẢ (DRAG & DROP) NHÂN VIÊN VÀO BỘ PHẬN CON
+    const dragCards = this.container.querySelectorAll('.member-drag-card');
+    const dropZones = this.container.querySelectorAll('.team-drop-card');
+
+    dragCards.forEach(card => {
+      card.addEventListener('dragstart', (e) => {
+        const userId = card.dataset.userId;
+        e.dataTransfer.setData('text/plain', userId);
+        e.dataTransfer.effectAllowed = 'move';
+        card.classList.add('opacity-40', 'scale-95');
+        rung(10);
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('opacity-40', 'scale-95');
+      });
+    });
+
+    dropZones.forEach(zone => {
+      zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        zone.classList.add('border-[#d6a52a]', 'bg-amber-50/80', 'ring-2', 'ring-[#d6a52a]/50');
+      });
+
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('border-[#d6a52a]', 'bg-amber-50/80', 'ring-2', 'ring-[#d6a52a]/50');
+      });
+
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('border-[#d6a52a]', 'bg-amber-50/80', 'ring-2', 'ring-[#d6a52a]/50');
+        rung(20);
+
+        const userId = e.dataTransfer.getData('text/plain');
+        const targetTeamId = zone.dataset.teamId;
+
+        if (userId && targetTeamId && currentDept) {
+          const user = store.getUserById(userId);
+          const team = (currentDept.teams || []).find(t => t.id === targetTeamId);
+          if (user && team) {
+            store.updateUser(userId, { teamId: targetTeamId });
+            toast(`🎉 Đã kéo thả thành công: ${user.name} ➔ ${team.name}!`, 'success');
+            this.render(currentDept.id);
+            if (this.onUpdated) this.onUpdated();
+          }
+        }
+      });
+    });
   }
 }
