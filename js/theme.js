@@ -1,4 +1,4 @@
-/**
+﻿/**
  * SHIN AIOS v2.6.4 - THEME & COLOR PALETTE MANAGER
  * Quản lý 8 bảng màu (8 Palettes), 4 chế độ hiển thị (Theme Modes),
  * 3 mức cỡ chữ (Font Scales) và công tắc Bottom Navigation chuẩn SHIN.
@@ -413,3 +413,4 @@ class ThemeService {
 }
 
 export const shinTheme = new ThemeService();
+

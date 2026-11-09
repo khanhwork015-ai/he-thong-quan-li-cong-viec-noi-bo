@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - CREATE TASK MODAL COMPONENT (SHIN AIOS v2.7)
  * Giao diện form chuẩn Google Stitch Gold:
  * Nút Gold #D6A52A, Border #E2E8F0, Text #0D1C2F
@@ -6,9 +6,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
-import { toast, rung, esc } from '../helpers.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
+import { toast, rung, esc } from '../helpers.js?v=4.9';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -73,6 +73,29 @@ export class CreateTaskModal {
             <div>
               <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mô tả chi tiết &amp; Tiêu chuẩn nghiệm thu</label>
               <textarea id="newTaskDesc" rows="3" placeholder="Ghi chú yêu cầu kỹ thuật, mốc hoàn thành, phạm vi phối hợp..." class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]"></textarea>
+            </div>
+
+            <!-- DANH SÁCH VIỆC CON BAN ĐẦU (SUBTASKS) -->
+            <div class="p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#fffbeb]/40 flex flex-col gap-2.5 shadow-2xs">
+              <div class="flex items-center justify-between">
+                <label class="block text-[12.5px] font-bold text-[#795900] flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">account_tree</span>
+                  <span>Danh sách việc con (Subtasks) - Tùy chọn</span>
+                </label>
+                <span class="text-[11px] font-bold text-[#92400e] bg-[#fef3c7] px-2 py-0.5 rounded-full" id="modalSubtaskCountBadge">0 việc con</span>
+              </div>
+
+              <!-- Ô NHẬP VIỆC CON NHANH -->
+              <div class="flex gap-2">
+                <input type="text" id="inputModalSubtaskTitle" placeholder="Thêm việc con (VD: Đối soát tài liệu, kiểm kê lô hàng...) rồi bấm ＋" class="flex-1 h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
+                <button type="button" id="btnAddModalSubtask" class="px-4 h-10 rounded-xl bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[12.5px] flex items-center gap-1 shrink-0 cursor-pointer transition-colors shadow-2xs min-h-[40px]">
+                  <span class="material-symbols-outlined text-[18px]">add</span>
+                  <span>Thêm</span>
+                </button>
+              </div>
+
+              <!-- DANH SÁCH CÁC VIỆC CON ĐÃ THÊM -->
+              <div id="modalSubtasksContainer" class="flex flex-col gap-1.5 empty:hidden pt-0.5"></div>
             </div>
 
             <!-- PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE) -->
@@ -214,6 +237,73 @@ export class CreateTaskModal {
       });
     }
 
+    // QUẢN LÝ VIỆC CON TRONG FORM TẠO VIỆC MỚI
+    const inputModalSubtaskTitle = this.container.querySelector('#inputModalSubtaskTitle');
+    const btnAddModalSubtask = this.container.querySelector('#btnAddModalSubtask');
+    const modalSubtasksContainer = this.container.querySelector('#modalSubtasksContainer');
+    const modalSubtaskCountBadge = this.container.querySelector('#modalSubtaskCountBadge');
+    const tempSubtasks = [];
+
+    const renderTempSubtasks = () => {
+      if (!modalSubtasksContainer) return;
+      if (tempSubtasks.length === 0) {
+        modalSubtasksContainer.innerHTML = '';
+        if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = '0 việc con';
+        return;
+      }
+
+      if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = `${tempSubtasks.length} việc con`;
+      modalSubtasksContainer.innerHTML = tempSubtasks.map((st, idx) => `
+        <div class="p-2 sm:px-3 rounded-xl bg-white border border-[#e2e8f0] flex items-center justify-between gap-2 shadow-2xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#d6a52a] shrink-0"></span>
+            <span class="text-[12px] font-bold text-[#795900] font-mono-data">#${idx + 1}</span>
+            <span class="text-[12.5px] font-semibold text-[#0d1c2f] truncate">${esc(st.title)}</span>
+          </div>
+          <button type="button" class="btn-remove-temp-subtask text-rose-500 hover:text-rose-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-50 cursor-pointer shrink-0" data-index="${idx}" title="Xóa việc con này">
+            <span class="material-symbols-outlined text-[17px]">close</span>
+          </button>
+        </div>
+      `).join('');
+
+      modalSubtasksContainer.querySelectorAll('.btn-remove-temp-subtask').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          rung(10);
+          const idx = parseInt(btn.dataset.index, 10);
+          tempSubtasks.splice(idx, 1);
+          renderTempSubtasks();
+        });
+      });
+    };
+
+    const addTempSubtask = () => {
+      if (!inputModalSubtaskTitle) return;
+      const title = inputModalSubtaskTitle.value.trim();
+      if (!title) {
+        toast('Vui lòng nhập tên việc con', 'warning');
+        return;
+      }
+      rung(10);
+      tempSubtasks.push({
+        title,
+        assigneeId: selectAssignee ? selectAssignee.value : '',
+        status: 'todo'
+      });
+      inputModalSubtaskTitle.value = '';
+      renderTempSubtasks();
+    };
+
+    if (btnAddModalSubtask) btnAddModalSubtask.addEventListener('click', addTempSubtask);
+    if (inputModalSubtaskTitle) {
+      inputModalSubtaskTitle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addTempSubtask();
+        }
+      });
+    }
+
     const closeModal = () => {
       rung(10);
       if (overlay) overlay.remove();
@@ -263,7 +353,8 @@ export class CreateTaskModal {
           category,
           cost,
           requiresApproval,
-          approverId
+          approverId,
+          subtasks: tempSubtasks
         });
 
         toast(`Đã giao việc thành công: ${newTask.id}`, 'success');
@@ -273,3 +364,4 @@ export class CreateTaskModal {
     }
   }
 }
+

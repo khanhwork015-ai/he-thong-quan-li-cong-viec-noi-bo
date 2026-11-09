@@ -36,10 +36,20 @@ function doGet(e) {
     if (action === 'getData' || action === 'seed') {
       const rawTasks = getSheetData(ss.getSheetByName(SHEET_TASKS));
       const tasks = rawTasks.map(t => {
-        if (typeof t.subtasks === 'string' && t.subtasks.trim().startsWith('[')) {
-          try { t.subtasks = JSON.parse(t.subtasks); } catch (_) { t.subtasks = []; }
+        let subtasks = t.subtasks;
+        if (typeof subtasks === 'string' && subtasks.trim().startsWith('[')) {
+          try { subtasks = JSON.parse(subtasks); } catch (_) { subtasks = []; }
         }
-        if (!Array.isArray(t.subtasks)) t.subtasks = [];
+        if (!Array.isArray(subtasks) || subtasks.length === 0) {
+          if (typeof t.checklist === 'string' && t.checklist.trim().startsWith('[')) {
+            try { subtasks = JSON.parse(t.checklist); } catch (_) { subtasks = []; }
+          } else if (Array.isArray(t.checklist)) {
+            subtasks = t.checklist;
+          }
+        }
+        if (!Array.isArray(subtasks)) subtasks = [];
+        t.subtasks = subtasks;
+        t.checklist = subtasks.map(s => ({ id: s.id, text: s.title || s.text || '', done: Boolean(s.completed || s.status === 'done' || s.done) }));
 
         if (typeof t.comments === 'string' && t.comments.trim().startsWith('[')) {
           try { t.comments = JSON.parse(t.comments); } catch (_) { t.comments = []; }

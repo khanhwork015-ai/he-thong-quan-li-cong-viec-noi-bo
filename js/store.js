@@ -80,28 +80,88 @@ export class Store {
       let userCount = 0;
 
       if (cloudData.tasks && cloudData.tasks.length > 0) {
-        const sanitizedTasks = cloudData.tasks.map(t => {
-          if (!t) return t;
-          let subtasks = t.subtasks;
-          if (typeof subtasks === 'string') {
-            try { subtasks = JSON.parse(subtasks); } catch (_) { subtasks = []; }
-          }
-          if (!Array.isArray(subtasks)) subtasks = [];
+        // HỢP NHẤT DỮ LIỆU CÔNG VIỆC & VIỆC CON 2 CHIỀU (ZERO DATA LOSS)
+        const localTasks = this.getAllTasksRaw();
+        const taskMap = new Map();
+        localTasks.forEach(lt => { if (lt && lt.id) taskMap.set(lt.id, lt); });
 
-          let comments = t.comments;
-          if (typeof comments === 'string') {
-            try { comments = JSON.parse(comments); } catch (_) { comments = []; }
-          }
-          if (!Array.isArray(comments)) comments = [];
+        cloudData.tasks.forEach(ct => {
+          if (!ct || !ct.id) return;
+          const local = taskMap.get(ct.id) || {};
 
-          return {
-            ...t,
-            subtasks,
-            comments
+          // Chuẩn hóa subtasks từ cloud (hỗ trợ cả trường subtasks và checklist)
+          let ctSubtasks = ct.subtasks;
+          if (typeof ctSubtasks === 'string' && ctSubtasks.trim().startsWith('[')) {
+            try { ctSubtasks = JSON.parse(ctSubtasks); } catch (_) { ctSubtasks = []; }
+          }
+          if (!Array.isArray(ctSubtasks) || ctSubtasks.length === 0) {
+            let ctChecklist = ct.checklist;
+            if (typeof ctChecklist === 'string' && ctChecklist.trim().startsWith('[')) {
+              try { ctChecklist = JSON.parse(ctChecklist); } catch (_) { ctChecklist = []; }
+            }
+            if (Array.isArray(ctChecklist) && ctChecklist.length > 0) {
+              ctSubtasks = ctChecklist.map((c, i) => ({
+                id: c.id || `${ct.id}.${i + 1}`,
+                title: c.text || c.title || '',
+                description: c.description || '',
+                assigneeId: c.assigneeId || ct.assigneeId || '',
+                dueDate: c.dueDate || ct.dueDate || '',
+                status: (c.done || c.completed) ? 'done' : 'in_progress',
+                completed: Boolean(c.done || c.completed),
+                createdAt: c.createdAt || new Date().toISOString()
+              }));
+            }
+          }
+          if (!Array.isArray(ctSubtasks)) ctSubtasks = [];
+
+          // Hợp nhất việc con: Ưu tiên giữ lại toàn bộ việc con cục bộ đã tạo mà cloud chưa kịp nhận
+          const localSubtasks = Array.isArray(local.subtasks) ? local.subtasks : [];
+          const subMap = new Map();
+          ctSubtasks.forEach(s => { if (s && s.id) subMap.set(s.id, s); });
+          localSubtasks.forEach(ls => {
+            if (!ls || !ls.id) return;
+            if (!subMap.has(ls.id)) {
+              subMap.set(ls.id, ls);
+            } else {
+              const existing = subMap.get(ls.id);
+              subMap.set(ls.id, { ...existing, ...ls });
+            }
+          });
+          const mergedSubtasks = Array.from(subMap.values());
+
+          // Hợp nhất bình luận & trao đổi
+          let ctComments = ct.comments;
+          if (typeof ctComments === 'string' && ctComments.trim().startsWith('[')) {
+            try { ctComments = JSON.parse(ctComments); } catch (_) { ctComments = []; }
+          }
+          if (!Array.isArray(ctComments)) ctComments = [];
+          const localComments = Array.isArray(local.comments) ? local.comments : [];
+          const commentMap = new Map();
+          ctComments.forEach(c => { if (c && c.id) commentMap.set(c.id, c); });
+          localComments.forEach(lc => { if (lc && lc.id) commentMap.set(lc.id, lc); });
+          const mergedComments = Array.from(commentMap.values());
+
+          const completedCount = mergedSubtasks.filter(s => s.completed || s.status === 'done').length;
+          const progress = mergedSubtasks.length > 0 ? Math.round((completedCount / mergedSubtasks.length) * 100) : (ct.progress || local.progress || 0);
+
+          const mergedTask = {
+            ...local,
+            ...ct,
+            subtasks: mergedSubtasks,
+            checklist: mergedSubtasks.map(s => ({
+              id: s.id,
+              text: s.title,
+              done: Boolean(s.completed || s.status === 'done')
+            })),
+            comments: mergedComments,
+            progress
           };
+          taskMap.set(ct.id, mergedTask);
         });
-        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(sanitizedTasks));
-        taskCount = sanitizedTasks.length;
+
+        const mergedList = Array.from(taskMap.values());
+        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(mergedList));
+        taskCount = mergedList.length;
       }
       if (cloudData.users && cloudData.users.length > 0) {
         // Chuẩn hóa và hợp nhất người dùng an toàn (Zero Data Loss & Type Safety)
@@ -542,8 +602,8 @@ export class Store {
 
   getDepartmentTasks(options = {}) {
     const allTasks = this.getAllTasksRaw();
-    const currentDept = auth.getActiveDepartment();
-    const currentUser = auth.getCurrentUser();
+    const currentDept = auth.getActiveDepartment() || { id: 'all' };
+    const currentUser = auth.getCurrentUser() || { id: '' };
 
     let filtered = allTasks;
     if (!auth.isAdmin() || currentDept.id !== 'all') {
@@ -594,8 +654,8 @@ export class Store {
 
   createTask(taskData) {
     const tasks = this.getAllTasksRaw();
-    const currentDept = auth.getActiveDepartment();
-    const currentUser = auth.getCurrentUser();
+    const currentDept = auth.getActiveDepartment() || { id: 'dept_ptkh', code: 'PTKH-CS3' };
+    const currentUser = auth.getCurrentUser() || { id: 'user_admin', name: 'Ban Giám Đốc' };
 
     const prefix = currentDept.code.split('-')[0] || 'TASK';
     const newId = `${prefix}-${Date.now().toString().slice(-4)}`;
@@ -603,6 +663,23 @@ export class Store {
     const requiresApproval = Boolean(taskData.requiresApproval);
     const approverId = requiresApproval ? (taskData.approverId || currentDept.managerId || 'user_lanhdao') : null;
     const initialStatus = requiresApproval ? 'pending_approval' : (taskData.status || 'todo');
+
+    const rawSubtasks = Array.isArray(taskData.subtasks) ? taskData.subtasks : [];
+    const subtasks = rawSubtasks.map((s, idx) => {
+      const isCompleted = s.status === 'done' || Boolean(s.completed);
+      return {
+        id: s.id || `${newId}.${idx + 1}`,
+        title: (s.title || s.text || '').trim(),
+        description: (s.description || '').trim(),
+        assigneeId: s.assigneeId || taskData.assigneeId || currentUser.id,
+        dueDate: s.dueDate || taskData.dueDate || new Date().toISOString().split('T')[0],
+        status: s.status || (isCompleted ? 'done' : 'todo'),
+        completed: isCompleted,
+        createdAt: s.createdAt || new Date().toISOString()
+      };
+    });
+    const completedCount = subtasks.filter(s => s.completed || s.status === 'done').length;
+    const initialProgress = subtasks.length > 0 ? Math.round((completedCount / subtasks.length) * 100) : 0;
 
     const newTask = {
       id: newId,
@@ -620,9 +697,16 @@ export class Store {
       status: initialStatus,
       dueDate: taskData.dueDate || new Date().toISOString().split('T')[0],
       category: taskData.category || 'Hành chính',
-      progress: 0,
+      progress: initialProgress,
       cost: parseInt(taskData.cost, 10) || 0,
-      subtasks: [],
+      subtasks: subtasks,
+      checklist: subtasks.map(s => ({
+        id: s.id,
+        text: s.title,
+        done: Boolean(s.completed || s.status === 'done'),
+        assigneeId: s.assigneeId,
+        dueDate: s.dueDate
+      })),
       comments: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -862,7 +946,8 @@ export class Store {
   toggleSubtask(taskId, subtaskId) {
     const tasks = this.getAllTasksRaw();
     const task = tasks.find(t => t.id === taskId);
-    if (!task || !task.subtasks) return;
+    if (!task) return;
+    if (!Array.isArray(task.subtasks)) task.subtasks = [];
 
     const sub = task.subtasks.find(s => s.id === subtaskId);
     if (sub) {
@@ -873,6 +958,14 @@ export class Store {
       if (task.progress === 100 && task.status !== 'done') {
         task.status = 'review';
       }
+      task.checklist = task.subtasks.map(s => ({
+        id: s.id,
+        text: s.title,
+        done: Boolean(s.completed || s.status === 'done'),
+        assigneeId: s.assigneeId,
+        dueDate: s.dueDate
+      }));
+      task.updatedAt = new Date().toISOString();
       this.saveAllTasks(tasks);
       appScriptBridge.pushTask(task);
 
@@ -899,8 +992,9 @@ export class Store {
     if (!Array.isArray(task.subtasks)) task.subtasks = [];
     const subtaskNumber = task.subtasks.length + 1;
     const isCompleted = status === 'done';
+    const subUniqueId = `${task.id}.${subtaskNumber}-${Date.now().toString().slice(-3)}`;
     const newSubtask = {
-      id: `${task.id}.${subtaskNumber}`,
+      id: subUniqueId,
       title: title.trim(),
       description: (description || '').trim(),
       assigneeId: assigneeId || task.assigneeId || '',
@@ -911,8 +1005,18 @@ export class Store {
     };
     task.subtasks.push(newSubtask);
 
+    // Đồng bộ sang checklist cho tương thích ngược
+    task.checklist = task.subtasks.map(s => ({
+      id: s.id,
+      text: s.title,
+      done: Boolean(s.completed || s.status === 'done'),
+      assigneeId: s.assigneeId,
+      dueDate: s.dueDate
+    }));
+
     const completedCount = task.subtasks.filter(s => s.completed || s.status === 'done').length;
     task.progress = Math.round((completedCount / task.subtasks.length) * 100);
+    task.updatedAt = new Date().toISOString();
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
@@ -954,8 +1058,17 @@ export class Store {
       sub.status = sub.completed ? 'done' : 'in_progress';
     }
 
+    task.checklist = task.subtasks.map(s => ({
+      id: s.id,
+      text: s.title,
+      done: Boolean(s.completed || s.status === 'done'),
+      assigneeId: s.assigneeId,
+      dueDate: s.dueDate
+    }));
+
     const completedCount = task.subtasks.filter(s => s.completed || s.status === 'done').length;
     task.progress = task.subtasks.length > 0 ? Math.round((completedCount / task.subtasks.length) * 100) : 0;
+    task.updatedAt = new Date().toISOString();
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
@@ -968,8 +1081,17 @@ export class Store {
     if (!task || !Array.isArray(task.subtasks)) return false;
 
     task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+    task.checklist = task.subtasks.map(s => ({
+      id: s.id,
+      text: s.title,
+      done: Boolean(s.completed || s.status === 'done'),
+      assigneeId: s.assigneeId,
+      dueDate: s.dueDate
+    }));
+
     const completedCount = task.subtasks.filter(s => s.completed || s.status === 'done').length;
     task.progress = task.subtasks.length > 0 ? Math.round((completedCount / task.subtasks.length) * 100) : 0;
+    task.updatedAt = new Date().toISOString();
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
@@ -1121,3 +1243,4 @@ export class Store {
 }
 
 export const store = new Store();
+

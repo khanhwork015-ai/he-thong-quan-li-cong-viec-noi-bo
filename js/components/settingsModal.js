@@ -1,15 +1,15 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - SETTINGS MODAL COMPONENT (SHIN AIOS v2.7)
  * Hộp thoại cài đặt hệ thống & Cấu hình Google Apps Script / SHIN AIOS
  * Đổi màu giao diện (8 Palettes, 4 Theme Modes, 3 Cỡ chữ, Bottom Nav)
  * Bảo mật: Chỉ ADMIN mới được xem, cấu hình và đồng bộ Google Apps Script Web App
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
 import { appScriptBridge } from '../services/appScriptBridge.js';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=4.8';
-import { shinTheme } from '../theme.js?v=4.8';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=4.9';
+import { shinTheme } from '../theme.js?v=4.9';
 
 export class SettingsModal {
   constructor(containerId, onSettingsUpdated) {
@@ -281,3 +281,4 @@ export class SettingsModal {
     }
   }
 }
+

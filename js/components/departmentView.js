@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT VIEW
  * Màn hình quản lý Cơ cấu Phòng Ban & Bộ Phận Con toàn diện (Dành cho Quản Trị Viên)
  * Chuẩn SHIN AIOS v2.7:
@@ -8,9 +8,9 @@
  * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=4.9';
 
 export class DepartmentView {
   constructor(containerId, onUpdated, onOpenMemberModal) {
@@ -1186,3 +1186,4 @@ export class DepartmentView {
     });
   }
 }
+

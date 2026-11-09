@@ -1,12 +1,12 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - LOGIN VIEW COMPONENT (SHIN AIOS v2.6.4)
  * Màn hình Đăng Nhập Mobile-First & Quản Lý Phiên Bảo Mật
  * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y Tế (#0D1C2F)
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
-import { toast, rung } from '../helpers.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
+import { toast, rung } from '../helpers.js?v=4.9';
 
 export class LoginView {
   constructor(containerId, onLoginSuccess) {
@@ -177,3 +177,4 @@ export class LoginView {
     }
   }
 }
+

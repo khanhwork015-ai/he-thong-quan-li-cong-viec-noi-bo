@@ -103,6 +103,12 @@
 - [x] **12. Loại Bỏ Biểu Tượng Trùng Lặp Trên Nút Phê Duyệt & Từ Chối (`taskDrawer.js`)**:
   - Loại bỏ ký tự `✕` và `✓` trong nhãn văn bản, giữ lại đúng 1 Material Symbol (`close` cho "Từ Chối", `verified` cho "Phê Duyệt 1-Chạm") tạo giao diện sạch sẽ, chuyên nghiệp chuẩn Touch Target ≥ 44px.
   - Đẩy cache buster toàn diện `?v=4.8` và đồng bộ git `origin/main`.
+- [x] **13. Sửa Triệt Để Lỗi Lưu & Khắc Phục Mất Dữ Liệu Việc Con (Subtasks Persistence & Zero Data Loss)**:
+  - **Khắc phục lỗi F5 bị mất việc con:** Xây dựng cơ chế hợp nhất dữ liệu 2 chiều (Two-Way Safe Merge) giữa LocalStorage và Cloud trong `store.js` (`syncFromCloudIfAvailable` & `pullAllFromCloud`), ngăn chặn triệt để tình trạng cloud trống/cũ đè mất việc con mới tạo.
+  - **Đồng bộ song hành `subtasks` & `checklist`:** Duy trì cập nhật song song 2 trường dữ liệu trên toàn bộ các phương thức `createTask`, `addSubtask`, `updateSubtask`, `toggleSubtask`, `deleteSubtask` và `Code.gs`.
+  - **Thêm việc con ngay khi tạo công việc mới:** Nâng cấp modal `createTaskModal.js` cho phép người dùng thêm 1 hoặc nhiều việc con ban đầu trước khi bấm "Tạo & Giao Việc".
+  - **Phòng vệ kiểu dữ liệu:** Thêm fallback `currentUser` an toàn trong `store.js` chống lỗi sập khi session chưa sẵn sàng.
+  - Cập nhật cache buster `?v=4.9` và đồng bộ Git `origin/main`.
 
 ---
 

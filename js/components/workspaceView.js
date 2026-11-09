@@ -1,13 +1,13 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - WORKSPACE TASK MANAGEMENT COMPONENT (MOBILE FIRST)
  * Khôi phục tông Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
  * Giao diện Thẻ Task chạm thông minh trên Mobile (md:hidden) & Bảng chi tiết trên Desktop (md:block)
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=4.9';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask) {
@@ -586,3 +586,4 @@ export class WorkspaceView {
     });
   }
 }
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - DATA MODELS & MULTI-DEPARTMENT ARCHITECTURE
  * Cấu trúc thực thể hỗ trợ mở rộng không giới hạn phòng ban (Multi-tenant ready)
  * Hỗ trợ phân cấp 4 nhóm quyền (RBAC) & Cơ cấu Phòng ban - Bộ phận con (Teams)
@@ -409,3 +409,4 @@ export const INITIAL_NOTIFICATIONS = [
     createdAt: new Date(Date.now() - 3600000 * 1).toISOString()
   }
 ];
+

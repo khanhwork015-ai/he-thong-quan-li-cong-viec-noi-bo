@@ -1,12 +1,12 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - NOTIFICATION CENTER SLIDE-OVER DRAWER (SHIN AIOS v2.7)
  * Trung tâm thông báo chuyên nghiệp, hỗ trợ lọc Chưa đọc/Tất cả,
  * Đánh dấu đã đọc và Deep-linking mở thẳng Task Detail Drawer
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
-import { esc, timeAgo, rung, toast } from '../helpers.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
+import { esc, timeAgo, rung, toast } from '../helpers.js?v=4.9';
 
 export class NotificationDrawer {
   constructor(containerId, onSelectTask) {
@@ -256,3 +256,4 @@ export class NotificationDrawer {
     });
   }
 }
+

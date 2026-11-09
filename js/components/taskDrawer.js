@@ -1,13 +1,13 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - TASK DETAIL SLIDE-OVER DRAWER COMPONENT
  * Ngăn trượt chi tiết công việc từ bên phải phong cách Linear / Notion chuẩn Google Stitch
  * Chuẩn màu Vàng Hoàng Kim Gold #D6A52A / #795900, Badges theo quy chuẩn 6 màu
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=4.9';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated) {
@@ -51,6 +51,18 @@ export class TaskDrawer {
       } else {
         task.subtasks = [];
       }
+    }
+    if (task.subtasks.length === 0 && Array.isArray(task.checklist) && task.checklist.length > 0) {
+      task.subtasks = task.checklist.map((c, i) => ({
+        id: c.id || `${task.id}.${i + 1}`,
+        title: c.text || c.title || '',
+        description: '',
+        assigneeId: c.assigneeId || task.assigneeId || '',
+        dueDate: c.dueDate || task.dueDate || '',
+        status: (c.done || c.completed) ? 'done' : 'in_progress',
+        completed: Boolean(c.done || c.completed),
+        createdAt: new Date().toISOString()
+      }));
     }
     if (!Array.isArray(task.comments)) {
       if (typeof task.comments === 'string' && task.comments.trim().startsWith('[')) {
@@ -762,3 +774,4 @@ export class TaskDrawer {
     }
   }
 }
+

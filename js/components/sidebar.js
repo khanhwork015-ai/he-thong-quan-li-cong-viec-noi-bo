@@ -1,12 +1,12 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - SIDEBAR NAVIGATION COMPONENT (MOBILE RESPONSIVE DRAWER)
  * Khôi phục tông Vàng Hoàng Kim (#D6A52A / #795900) chuẩn Google Stitch
  * Hỗ trợ giao diện ngăn kéo trượt mượt mà cho Mobile/Tablet và cố định trên Desktop (lg)
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
-import { toast, rung } from '../helpers.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
+import { toast, rung } from '../helpers.js?v=4.9';
 
 export class Sidebar {
   constructor(containerId, onNavChange, onModeChange, onLogout) {
@@ -313,3 +313,4 @@ export class Sidebar {
     });
   }
 }
+

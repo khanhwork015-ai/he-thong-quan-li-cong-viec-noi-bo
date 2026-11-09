@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - HELPER UTILITIES & SHIN TOOLKIT
  * Hỗ trợ định dạng dữ liệu, toast thông báo, xác nhận 2 lần và bảo mật XSS
  */
@@ -121,3 +121,4 @@ export function xacNhan2Lan(khoa, msg, viec) {
   rung(15);
   toast(`${msg} – Bấm lại lần 2 trong 5 giây để thực thi!`, 'warning');
 }
+

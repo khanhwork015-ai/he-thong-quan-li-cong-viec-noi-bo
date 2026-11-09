@@ -1,28 +1,28 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - MAIN APPLICATION CONTROLLER (MOBILE FIRST & RESPONSIVE)
  * Tích hợp Quản lý nhân viên (Thêm/Sửa/Xóa), Profile Modal, Settings Grid, Bottom Nav & Google Apps Script
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=4.8';
-import { store } from './store.js?v=4.8';
-import { Sidebar } from './components/sidebar.js?v=4.8';
-import { TopHeader } from './components/topHeader.js?v=4.8';
-import { BottomNav } from './components/bottomNav.js?v=4.8';
-import { DashboardView } from './components/dashboardView.js?v=4.8';
-import { WorkspaceView } from './components/workspaceView.js?v=4.8';
-import { TaskDrawer } from './components/taskDrawer.js?v=4.8';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=4.8';
-import { CreateTaskModal } from './components/createTaskModal.js?v=4.8';
-import { ProfileModal } from './components/profileModal.js?v=4.8';
-import { MemberModal } from './components/memberModal.js?v=4.8';
-import { SettingsModal } from './components/settingsModal.js?v=4.8';
-import { LoginView } from './components/loginView.js?v=4.8';
-import { DepartmentModal } from './components/departmentModal.js?v=4.8';
-import { DepartmentView } from './components/departmentView.js?v=4.8';
-import { appScriptBridge } from './services/appScriptBridge.js?v=4.8';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.8';
-import { shinTheme } from './theme.js?v=4.8';
+import { auth } from './auth.js?v=4.9';
+import { store } from './store.js?v=4.9';
+import { Sidebar } from './components/sidebar.js?v=4.9';
+import { TopHeader } from './components/topHeader.js?v=4.9';
+import { BottomNav } from './components/bottomNav.js?v=4.9';
+import { DashboardView } from './components/dashboardView.js?v=4.9';
+import { WorkspaceView } from './components/workspaceView.js?v=4.9';
+import { TaskDrawer } from './components/taskDrawer.js?v=4.9';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=4.9';
+import { CreateTaskModal } from './components/createTaskModal.js?v=4.9';
+import { ProfileModal } from './components/profileModal.js?v=4.9';
+import { MemberModal } from './components/memberModal.js?v=4.9';
+import { SettingsModal } from './components/settingsModal.js?v=4.9';
+import { LoginView } from './components/loginView.js?v=4.9';
+import { DepartmentModal } from './components/departmentModal.js?v=4.9';
+import { DepartmentView } from './components/departmentView.js?v=4.9';
+import { appScriptBridge } from './services/appScriptBridge.js?v=4.9';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=4.9';
+import { shinTheme } from './theme.js?v=4.9';
 
 class App {
   constructor() {
@@ -834,3 +834,4 @@ document.addEventListener('DOMContentLoaded', () => {
   app.init();
   window.TVM_APP = app;
 });
+

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - EXECUTIVE DASHBOARD COMPONENT (SHIN AIOS v2.7)
  * Thiết kế chuẩn Archetype B:
  * - Compact Bar (40px) chọn phạm vi Toàn viện / Từng phòng ban
@@ -8,9 +8,9 @@
  * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
  */
 
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
-import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=4.8';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
+import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=4.9';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
@@ -415,3 +415,4 @@ export class DashboardView {
     });
   }
 }
+

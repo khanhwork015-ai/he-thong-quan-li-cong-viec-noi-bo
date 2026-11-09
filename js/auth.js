@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - STRICT RBAC & DATA ISOLATION ENGINE
  * Phân quyền 4 cấp độ (SHIN AIOS v2.6.4):
  * 1. ADMIN (Quản trị viên): Toàn quyền toàn viện, CRUD phòng ban & bộ phận con, cấp mọi tài khoản.
@@ -425,3 +425,4 @@ export class AuthManager {
 }
 
 export const auth = new AuthManager();
+

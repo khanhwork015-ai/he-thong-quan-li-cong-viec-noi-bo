@@ -1,13 +1,13 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - MOBILE BOTTOM NAVIGATION COMPONENT (SHIN AIOS v2.6.4)
  * Thanh điều hướng đáy dành riêng cho thiết bị di động (Mobile First)
  * Chuẩn công thái học: Vùng bấm >= 44x44px, phản hồi xúc giác rung(10)
  * Đổi màu đồng bộ theo 8 Palettes của SHIN AIOS
  */
 
-import { rung } from '../helpers.js?v=4.8';
-import { auth } from '../auth.js?v=4.8';
-import { store } from '../store.js?v=4.8';
+import { rung } from '../helpers.js?v=4.9';
+import { auth } from '../auth.js?v=4.9';
+import { store } from '../store.js?v=4.9';
 
 export class BottomNav {
   constructor(containerId, onNavChange) {
@@ -83,3 +83,4 @@ export class BottomNav {
     });
   }
 }
+
