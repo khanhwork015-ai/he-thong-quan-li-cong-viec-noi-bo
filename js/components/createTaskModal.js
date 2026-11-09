@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - CREATE / EDIT TASK MODAL COMPONENT (SHIN AIOS v2.7)
  * Giao diện form chuẩn Google Stitch Gold:
  * Nút Gold #D6A52A, Border #E2E8F0, Text #0D1C2F
@@ -7,9 +7,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=5.0';
-import { store } from '../store.js?v=5.0';
-import { toast, rung, esc } from '../helpers.js?v=5.0';
+import { auth } from '../auth.js?v=5.1';
+import { store } from '../store.js?v=5.1';
+import { toast, rung, esc } from '../helpers.js?v=5.1';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -432,3 +432,4 @@ export class CreateTaskModal {
     }
   }
 }
+

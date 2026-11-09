@@ -4,27 +4,27 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=5.0';
-import { store } from './store.js?v=5.0';
-import { Sidebar } from './components/sidebar.js?v=5.0';
-import { TopHeader } from './components/topHeader.js?v=5.0';
-import { BottomNav } from './components/bottomNav.js?v=5.0';
-import { DashboardView } from './components/dashboardView.js?v=5.0';
-import { WorkspaceView } from './components/workspaceView.js?v=5.0';
-import { TaskDrawer } from './components/taskDrawer.js?v=5.0';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=5.0';
-import { CreateTaskModal } from './components/createTaskModal.js?v=5.0'
-import { SubtasksModal } from './components/subtasksModal.js?v=5.0';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.0';;
-import { ProfileModal } from './components/profileModal.js?v=5.0';
-import { MemberModal } from './components/memberModal.js?v=5.0';
-import { SettingsModal } from './components/settingsModal.js?v=5.0';
-import { LoginView } from './components/loginView.js?v=5.0';
-import { DepartmentModal } from './components/departmentModal.js?v=5.0';
-import { DepartmentView } from './components/departmentView.js?v=5.0';
-import { appScriptBridge } from './services/appScriptBridge.js?v=5.0';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.0';
-import { shinTheme } from './theme.js?v=5.0';
+import { auth } from './auth.js?v=5.1';
+import { store } from './store.js?v=5.1';
+import { Sidebar } from './components/sidebar.js?v=5.1';
+import { TopHeader } from './components/topHeader.js?v=5.1';
+import { BottomNav } from './components/bottomNav.js?v=5.1';
+import { DashboardView } from './components/dashboardView.js?v=5.1';
+import { WorkspaceView } from './components/workspaceView.js?v=5.1';
+import { TaskDrawer } from './components/taskDrawer.js?v=5.1';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=5.1';
+import { CreateTaskModal } from './components/createTaskModal.js?v=5.1'
+import { SubtasksModal } from './components/subtasksModal.js?v=5.1';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.1';;
+import { ProfileModal } from './components/profileModal.js?v=5.1';
+import { MemberModal } from './components/memberModal.js?v=5.1';
+import { SettingsModal } from './components/settingsModal.js?v=5.1';
+import { LoginView } from './components/loginView.js?v=5.1';
+import { DepartmentModal } from './components/departmentModal.js?v=5.1';
+import { DepartmentView } from './components/departmentView.js?v=5.1';
+import { appScriptBridge } from './services/appScriptBridge.js?v=5.1';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.1';
+import { shinTheme } from './theme.js?v=5.1';
 
 class App {
   constructor() {
@@ -857,4 +857,5 @@ document.addEventListener('DOMContentLoaded', () => {
   app.init();
   window.TVM_APP = app;
 });
+
 

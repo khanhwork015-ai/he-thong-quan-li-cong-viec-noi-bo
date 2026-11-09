@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - WORKSPACE TASK MANAGEMENT COMPONENT (MOBILE FIRST)
  * Khôi phục tông Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
  * Giao diện Thẻ Task chạm thông minh trên Mobile (md:hidden) & Bảng chi tiết trên Desktop (md:block)
@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=5.0';
-import { store } from '../store.js?v=5.0';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.0';
+import { auth } from '../auth.js?v=5.1';
+import { store } from '../store.js?v=5.1';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.1';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
@@ -273,7 +273,8 @@ export class WorkspaceView {
                 <th class="py-3 px-4 w-32">Danh mục</th>
                 <th class="py-3 px-4 w-32">Hạn chót</th>
                 <th class="py-3 px-4 w-36">Trạng thái</th>
-                <th class="py-3 px-4 min-w-[160px] text-center">Thao tác</th>
+                <th class="py-3 px-4 w-40 text-center">Việc con</th>
+                <th class="py-3 px-4 w-24 text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#f1f5f9] text-[13px]">
@@ -315,14 +316,23 @@ export class WorkspaceView {
                         ${statusMeta.label}
                       </span>
                     </td>
+                    <!-- CỘT RIÊNG CHO VIỆC CON -->
                     <td class="py-3 px-4 text-center">
-                      <div class="flex items-center justify-center gap-1.5">
-                        ${hasSubtasks ? `
-                          <button type="button" class="btn-open-subtasks-modal px-2.5 py-1.5 rounded-xl font-bold text-[12px] bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a] hover:border-[#d6a52a] transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0" data-task-id="${t.id}" title="Xem danh sách ${subtasks.length} việc con">
-                            <span class="material-symbols-outlined text-[16px]">account_tree</span>
-                            <span>${completedSubtasksCount}/${subtasks.length} việc con</span>
-                          </button>
-                        ` : ''}
+                      ${hasSubtasks ? `
+                        <button type="button" class="btn-open-subtasks-modal px-2.5 py-1.5 rounded-xl font-bold text-[12px] bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a] hover:border-[#d6a52a] transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs min-h-[36px]" data-task-id="${t.id}" title="Xem danh sách ${subtasks.length} việc con">
+                          <span class="material-symbols-outlined text-[16px]">account_tree</span>
+                          <span>${completedSubtasksCount}/${subtasks.length} việc con</span>
+                        </button>
+                      ` : `
+                        <button type="button" class="btn-open-subtasks-modal px-2.5 py-1 rounded-xl text-[11px] font-semibold text-gray-400 border border-dashed border-gray-200 hover:border-[#d6a52a] hover:text-[#795900] hover:bg-[#fffbeb] transition-all inline-flex items-center justify-center gap-1 cursor-pointer min-h-[32px]" data-task-id="${t.id}" title="Thêm việc con cho nhiệm vụ này">
+                          <span class="material-symbols-outlined text-[14px]">add</span>
+                          <span>Thêm việc con</span>
+                        </button>
+                      `}
+                    </td>
+                    <!-- CỘT THAO TÁC GỌN GÀNG -->
+                    <td class="py-3 px-4 text-center">
+                      <div class="flex items-center justify-center gap-1">
                         <button type="button" class="btn-edit-task p-1.5 rounded-lg text-amber-700 hover:bg-amber-100/70 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer shrink-0" data-task-id="${t.id}" title="Chỉnh sửa công việc">
                           <span class="material-symbols-outlined text-[18px]">edit</span>
                         </button>
@@ -537,3 +547,4 @@ export class WorkspaceView {
     });
   }
 }
+

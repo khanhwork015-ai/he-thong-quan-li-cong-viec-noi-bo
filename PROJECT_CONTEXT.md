@@ -116,6 +116,12 @@
   - **Khắc phục lỗi nút sửa việc con:** Sửa lỗi CSS Selector khi ID việc con chứa dấu chấm (`.`) bằng `data-subtask-form-id` và tìm form qua mảng DOM an toàn.
   - **Chỉnh sửa toàn diện Task Cha:** Bổ sung nút "Chỉnh sửa" trên Header Task Drawer, trên Table View và Mobile Card. Nâng cấp `createTaskModal.js` (`show(taskToEdit)`) và `store.updateTask(taskId, updates)` đồng bộ dữ liệu đa chiều.
   - Cập nhật cache buster `?v=5.0` và đồng bộ Git `origin/main`.
+- [x] **15. Tách Riêng Cột "Việc Con" Độc Lập Trên Bảng Quản Lý Công Việc (`workspaceView.js`)**:
+  - Tách nút xem việc con ra khỏi cột Thao tác, bố trí thành 1 cột riêng biệt `VIỆC CON` (rộng 160px, căn giữa).
+  - Nhiệm vụ đã có việc con: hiển thị nút Vàng Gold `[🌿 x/y việc con]` nổi bật, diện tích bấm rộng rãi.
+  - Nhiệm vụ chưa có việc con: hiển thị nút viền nét đứt `[+ Thêm việc con]` trang nhã, hỗ trợ thao tác nhanh.
+  - Cột `THAO TÁC` được thu gọn gàng chỉ giữ 2 icon hành động chuẩn (Chỉnh sửa `edit` và Mở chi tiết `open_in_new`).
+  - Cập nhật cache buster `?v=5.1` và đồng bộ Git `origin/main`.
 
 ---
 

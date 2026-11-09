@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - CENTRALIZED REACTIVE STORE (APPS SCRIPT INTEGRATED)
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
@@ -1329,4 +1329,5 @@ export class Store {
 }
 
 export const store = new Store();
+
 

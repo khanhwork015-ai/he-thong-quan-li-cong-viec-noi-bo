@@ -1,4 +1,4 @@
-/**
+﻿/**
  * THANH VŨ MEDIC CS3 - SUBTASKS LIST MODAL COMPONENT (SHIN AIOS v2.7)
  * Modal hiển thị toàn bộ danh sách việc con của một nhiệm vụ cha được chọn:
  * - Thay thế hoàn toàn dropdown nhỏ khó bấm
@@ -8,8 +8,8 @@
  * - Hỗ trợ mở chi tiết đầy đủ từng việc con (SubtaskDetailModal)
  */
 
-import { store } from '../store.js?v=5.0';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=5.0';
+import { store } from '../store.js?v=5.1';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=5.1';
 
 export class SubtasksModal {
   constructor(containerId, onTaskUpdated, onOpenTaskDetail = null, onOpenSubtaskDetail = null) {
@@ -453,3 +453,4 @@ export class SubtasksModal {
     });
   }
 }
+
