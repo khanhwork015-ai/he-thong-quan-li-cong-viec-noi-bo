@@ -6,9 +6,9 @@
  * (Ví dụ: Phòng PTKH gồm các bộ phận Marketing, CSKH, Hỗ trợ)
  */
 
-import { auth } from '../auth.js';
-import { store } from '../store.js';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js';
+import { auth } from '../auth.js?v=4.5';
+import { store } from '../store.js?v=4.5';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=4.5';
 
 export class DepartmentModal {
   constructor(containerId, onUpdated) {
