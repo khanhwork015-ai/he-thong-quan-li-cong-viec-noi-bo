@@ -191,6 +191,7 @@ export class WorkspaceView {
       <div class="md:hidden flex flex-col gap-3">
         ${tasks.map(t => {
           const assignee = store.getUserById(t.assigneeId);
+          const creator = store.getUserById(t.creatorId);
           const statusMeta = this.getStatusMeta(t.status);
 
           return `
@@ -207,9 +208,15 @@ export class WorkspaceView {
                 </span>
               </div>
 
-              <h4 class="font-bold text-[14.5px] text-[#0d1c2f] mb-1 leading-snug">
+              <h4 class="font-bold text-[14.5px] text-[#0d1c2f] mb-0.5 leading-snug">
                 ${esc(t.title)}
               </h4>
+
+              <div class="text-[11px] text-[#795900] font-medium mb-1.5 flex items-center gap-1">
+                <span>Tạo bởi: <strong>${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong></span>
+                <span>•</span>
+                <span class="text-[#817663] font-mono-data">${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}</span>
+              </div>
 
               <p class="text-[12px] text-[#64748b] line-clamp-2 mb-3">
                 ${esc(t.description || 'Chưa có mô tả chi tiết')}
@@ -249,6 +256,7 @@ export class WorkspaceView {
             <tbody class="divide-y divide-[#f1f5f9] text-[13px]">
               ${tasks.map(t => {
                 const assignee = store.getUserById(t.assigneeId);
+                const creator = store.getUserById(t.creatorId);
                 const statusMeta = this.getStatusMeta(t.status);
 
                 return `
@@ -256,7 +264,12 @@ export class WorkspaceView {
                     <td class="py-3 px-4 font-mono-data font-bold text-[#795900]">${t.id}</td>
                     <td class="py-3 px-4">
                       <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
-                      <div class="text-[11.5px] text-[#64748b] line-clamp-1">${esc(t.description)}</div>
+                      <div class="text-[11px] text-[#795900] font-medium flex items-center gap-1.5 mt-0.5">
+                        <span>Tạo bởi: <strong>${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong></span>
+                        <span>•</span>
+                        <span class="text-[#817663] font-mono-data">${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}</span>
+                      </div>
+                      <div class="text-[11.5px] text-[#64748b] line-clamp-1 mt-0.5">${esc(t.description)}</div>
                     </td>
                     <td class="py-3 px-4">
                       <span class="px-2 py-0.5 rounded-full font-bold text-[10.5px] ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : t.priority === 'P2' ? 'bg-[#fef3c7] text-[#92400e]' : 'bg-[#eff4ff] text-[#1d4ed8]'}">
@@ -325,6 +338,7 @@ export class WorkspaceView {
                   </div>
                 ` : colTasks.map(t => {
                   const assignee = store.getUserById(t.assigneeId);
+                  const creator = store.getUserById(t.creatorId);
                   return `
                     <div class="p-3.5 bg-white rounded-xl border border-[#e2e8f0] hover:border-[#d6a52a] active:bg-[#fffbeb]/20 shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card" data-task-id="${t.id}">
                       <div class="flex items-center justify-between mb-1.5">
@@ -334,6 +348,10 @@ export class WorkspaceView {
 
                       <div class="font-bold text-[13px] text-[#0d1c2f] line-clamp-2 leading-snug mb-1">
                         ${esc(t.title)}
+                      </div>
+
+                      <div class="text-[10.5px] text-[#795900] truncate mb-2">
+                        Tạo bởi: ${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}
                       </div>
 
                       <div class="flex items-center justify-between pt-2 border-t border-[#f1f5f9] text-[11px]">

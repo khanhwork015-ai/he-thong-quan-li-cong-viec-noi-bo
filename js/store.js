@@ -496,11 +496,17 @@ export class Store {
       if (Array.isArray(raw)) {
         return raw.map(t => {
           if (!t) return t;
-          let subtasks = t.subtasks;
+          let subtasks = t.subtasks || t.checklist || [];
           if (typeof subtasks === 'string') {
             try { subtasks = JSON.parse(subtasks); } catch (_) { subtasks = []; }
           }
           if (!Array.isArray(subtasks)) subtasks = [];
+          subtasks = subtasks.map(s => ({
+            id: s.id || `sub_${Math.random().toString(36).slice(2, 7)}`,
+            title: s.title || s.text || '',
+            completed: s.completed !== undefined ? Boolean(s.completed) : Boolean(s.done),
+            assigneeId: s.assigneeId || t.assigneeId || ''
+          }));
 
           let comments = t.comments;
           if (typeof comments === 'string') {
@@ -508,7 +514,12 @@ export class Store {
           }
           if (!Array.isArray(comments)) comments = [];
 
-          return { ...t, subtasks, comments };
+          return { 
+            ...t, 
+            subtasks, 
+            comments,
+            creatorName: t.creatorName || (this.getUserById(t.creatorId)?.name || 'Hệ thống')
+          };
         });
       }
       return INITIAL_TASKS;
@@ -591,6 +602,7 @@ export class Store {
       departmentId: taskData.departmentId || currentDept.id,
       teamId: taskData.teamId || '',
       creatorId: currentUser.id,
+      creatorName: currentUser.name,
       assigneeId: taskData.assigneeId || currentUser.id,
       approverId: approverId,
       requiresApproval: requiresApproval,
@@ -869,6 +881,72 @@ export class Store {
         });
       }
     }
+  }
+
+  addSubtask(taskId, { title, assigneeId = null }) {
+    const tasks = this.getAllTasksRaw();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !title || !title.trim()) return null;
+
+    if (!Array.isArray(task.subtasks)) task.subtasks = [];
+    const newSubtask = {
+      id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      title: title.trim(),
+      assigneeId: assigneeId || task.assigneeId || '',
+      completed: false,
+      createdAt: new Date().toISOString()
+    };
+    task.subtasks.push(newSubtask);
+
+    const completedCount = task.subtasks.filter(s => s.completed).length;
+    task.progress = Math.round((completedCount / task.subtasks.length) * 100);
+
+    this.saveAllTasks(tasks);
+    appScriptBridge.pushTask(task);
+
+    // Gửi thông báo cho người được assign việc con nếu khác currentUser
+    const currentUser = auth.getCurrentUser();
+    if (newSubtask.assigneeId && newSubtask.assigneeId !== currentUser.id) {
+      this.addNotification({
+        recipientId: newSubtask.assigneeId,
+        senderId: currentUser.id,
+        type: 'task_assigned',
+        title: '📋 Bạn được giao việc con mới',
+        content: `${currentUser.name} đã phân công việc con "${newSubtask.title}" trong nhiệm vụ "${task.title}" cho bạn.`,
+        taskId: task.id
+      });
+    }
+
+    return newSubtask;
+  }
+
+  deleteSubtask(taskId, subtaskId) {
+    const tasks = this.getAllTasksRaw();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !Array.isArray(task.subtasks)) return false;
+
+    task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+    const completedCount = task.subtasks.filter(s => s.completed).length;
+    task.progress = task.subtasks.length > 0 ? Math.round((completedCount / task.subtasks.length) * 100) : 0;
+
+    this.saveAllTasks(tasks);
+    appScriptBridge.pushTask(task);
+    return true;
+  }
+
+  updateSubtaskAssignee(taskId, subtaskId, newAssigneeId) {
+    const tasks = this.getAllTasksRaw();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !Array.isArray(task.subtasks)) return false;
+
+    const sub = task.subtasks.find(s => s.id === subtaskId);
+    if (sub) {
+      sub.assigneeId = newAssigneeId;
+      this.saveAllTasks(tasks);
+      appScriptBridge.pushTask(task);
+      return true;
+    }
+    return false;
   }
 
   addComment(taskId, content) {

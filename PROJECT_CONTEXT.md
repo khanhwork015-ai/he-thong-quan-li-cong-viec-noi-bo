@@ -87,6 +87,17 @@
   - **Tự động tìm kiếm nhân sự:** Tích hợp ô tìm kiếm theo tên, chức danh, email, số điện thoại, username ngay trên trang Nhân sự.
   - **Đồng bộ hóa phạm vi phòng ban toàn viện (`'all'`):** Hỗ trợ trạng thái phòng ban `all` trong `auth.js`, `store.js` (`getDepartmentUsers('all')` trả về 100% nhân sự) và modal chuyển đổi phòng ban ở Sidebar.
   - **Đồng bộ khi chọn phòng ban trong Quản lý cơ cấu:** Bấm chọn phòng ban ở `DepartmentView` tự động đồng bộ `activeDepartment` sang phòng ban đó cho toàn bộ ứng dụng.
+- [x] **11. Nâng Cấp Quản Lý Việc Con (Subtasks), Thông Tin Người Tạo, Custom Status Dropdown & Bỏ Ca Trực (`taskDrawer.js`, `workspaceView.js`, `topHeader.js`, `store.js`)**:
+  - **Lưu vết và hiển thị Người tạo & Thời gian tạo:** Lưu trữ đầy đủ `creatorId`, `creatorName`, `createdAt` trong `store.js`; hiển thị rõ ràng trên thẻ công việc (Mobile Cards, Table View, Kanban) và trong Task Drawer.
+  - **Quản lý danh sách việc con (Subtasks Checklist):**
+    + Giao diện danh sách việc con trực quan kèm thanh tiến độ tự động tính % theo số lượng việc hoàn thành.
+    + Cho phép phân công (Assign) đích danh từng chuyên viên thực hiện cho từng việc con cụ thể (`select-subtask-assignee`).
+    + Tích hợp ô thêm việc con mới nhanh chóng (`#inputNewSubtaskTitle` + `#selectNewSubtaskAssignee` + `#btnAddSubtask`) kèm phím tắt Enter.
+    + Nút xóa việc con trực tiếp (`btn-delete-subtask`).
+    + Tự động bắn thông báo chuông tới nhân sự khi được giao việc con mới.
+  - **Custom Status Dropdown (Không dùng OS default):** Thay thế `<select>` mặc định của hệ điều hành bằng menu popup tùy biến cao cấp phong cách Google Stitch Gold với huy hiệu màu sắc trực quan (Chưa bắt đầu, Đang thực hiện, Chờ phê duyệt, Đã hoàn thành, Tạm dừng).
+  - **Mở rộng khung nhập bình luận & chỉ đạo:** Tăng chiều cao lên `min-h-[90px]` với thẻ `<textarea>` rộng rãi, hỗ trợ gõ nhiều dòng thoải mái và nút gửi phản hồi tiêu chuẩn.
+  - **Loại bỏ huy hiệu Ca trực:** Đã xóa bỏ hoàn toàn badge `Ca hành chính: 07:00 - 17:00` khỏi Top Header theo yêu cầu.
 
 ---
 

@@ -70,12 +70,6 @@ export class TopHeader {
 
         <!-- RIGHT ACTIONS & USER PROFILE -->
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-          <!-- CA TRỰC Y TẾ -->
-          <div class="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border" style="background-color: var(--primary-soft); color: var(--primary); border-color: var(--accent-soft, var(--border));">
-            <span class="material-symbols-outlined text-[16px]">schedule</span>
-            <span class="text-[11.5px] font-bold">Ca hành chính: 07:00 - 17:00</span>
-          </div>
-
           <!-- NÚT CHUYỂN NHANH DARK / LIGHT MODE (SHIN CHUẨN) -->
           <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="${isDark ? 'Chuyển sang chế độ Sáng' : 'Chuyển sang chế độ Tối (Dark Mode)'}" id="btnQuickThemeToggle">
             <span class="material-symbols-outlined text-[20px] text-[#64748b]">${isDark ? 'light_mode' : 'dark_mode'}</span>
