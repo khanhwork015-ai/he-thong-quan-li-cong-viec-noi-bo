@@ -501,12 +501,19 @@ export class Store {
             try { subtasks = JSON.parse(subtasks); } catch (_) { subtasks = []; }
           }
           if (!Array.isArray(subtasks)) subtasks = [];
-          subtasks = subtasks.map(s => ({
-            id: s.id || `sub_${Math.random().toString(36).slice(2, 7)}`,
-            title: s.title || s.text || '',
-            completed: s.completed !== undefined ? Boolean(s.completed) : Boolean(s.done),
-            assigneeId: s.assigneeId || t.assigneeId || ''
-          }));
+          subtasks = subtasks.map((s, idx) => {
+            const isCompleted = s.status === 'done' || s.completed === true || s.done === true;
+            return {
+              id: s.id || `${t.id}.${idx + 1}`,
+              title: s.title || s.text || '',
+              description: s.description || '',
+              assigneeId: s.assigneeId || t.assigneeId || '',
+              dueDate: s.dueDate || t.dueDate || '',
+              status: s.status || (isCompleted ? 'done' : 'in_progress'),
+              completed: isCompleted,
+              createdAt: s.createdAt || t.createdAt || new Date().toISOString()
+            };
+          });
 
           let comments = t.comments;
           if (typeof comments === 'string') {
@@ -860,7 +867,8 @@ export class Store {
     const sub = task.subtasks.find(s => s.id === subtaskId);
     if (sub) {
       sub.completed = !sub.completed;
-      const completedCount = task.subtasks.filter(s => s.completed).length;
+      sub.status = sub.completed ? 'done' : 'in_progress';
+      const completedCount = task.subtasks.filter(s => s.completed || s.status === 'done').length;
       task.progress = Math.round((completedCount / task.subtasks.length) * 100);
       if (task.progress === 100 && task.status !== 'done') {
         task.status = 'review';
@@ -883,22 +891,27 @@ export class Store {
     }
   }
 
-  addSubtask(taskId, { title, assigneeId = null }) {
+  addSubtask(taskId, { title, description = '', assigneeId = null, dueDate = null, status = 'todo' }) {
     const tasks = this.getAllTasksRaw();
     const task = tasks.find(t => t.id === taskId);
     if (!task || !title || !title.trim()) return null;
 
     if (!Array.isArray(task.subtasks)) task.subtasks = [];
+    const subtaskNumber = task.subtasks.length + 1;
+    const isCompleted = status === 'done';
     const newSubtask = {
-      id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      id: `${task.id}.${subtaskNumber}`,
       title: title.trim(),
+      description: (description || '').trim(),
       assigneeId: assigneeId || task.assigneeId || '',
-      completed: false,
+      dueDate: dueDate || task.dueDate || new Date().toISOString().split('T')[0],
+      status: status || 'todo',
+      completed: isCompleted,
       createdAt: new Date().toISOString()
     };
     task.subtasks.push(newSubtask);
 
-    const completedCount = task.subtasks.filter(s => s.completed).length;
+    const completedCount = task.subtasks.filter(s => s.completed || s.status === 'done').length;
     task.progress = Math.round((completedCount / task.subtasks.length) * 100);
 
     this.saveAllTasks(tasks);
@@ -920,13 +933,42 @@ export class Store {
     return newSubtask;
   }
 
+  updateSubtask(taskId, subtaskId, updates) {
+    const tasks = this.getAllTasksRaw();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || !Array.isArray(task.subtasks)) return null;
+
+    const sub = task.subtasks.find(s => s.id === subtaskId);
+    if (!sub) return null;
+
+    if (updates.title !== undefined) sub.title = updates.title.trim();
+    if (updates.description !== undefined) sub.description = (updates.description || '').trim();
+    if (updates.assigneeId !== undefined) sub.assigneeId = updates.assigneeId;
+    if (updates.dueDate !== undefined) sub.dueDate = updates.dueDate;
+    if (updates.status !== undefined) {
+      sub.status = updates.status;
+      sub.completed = updates.status === 'done';
+    }
+    if (updates.completed !== undefined) {
+      sub.completed = Boolean(updates.completed);
+      sub.status = sub.completed ? 'done' : 'in_progress';
+    }
+
+    const completedCount = task.subtasks.filter(s => s.completed || s.status === 'done').length;
+    task.progress = task.subtasks.length > 0 ? Math.round((completedCount / task.subtasks.length) * 100) : 0;
+
+    this.saveAllTasks(tasks);
+    appScriptBridge.pushTask(task);
+    return sub;
+  }
+
   deleteSubtask(taskId, subtaskId) {
     const tasks = this.getAllTasksRaw();
     const task = tasks.find(t => t.id === taskId);
     if (!task || !Array.isArray(task.subtasks)) return false;
 
     task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
-    const completedCount = task.subtasks.filter(s => s.completed).length;
+    const completedCount = task.subtasks.filter(s => s.completed || s.status === 'done').length;
     task.progress = task.subtasks.length > 0 ? Math.round((completedCount / task.subtasks.length) * 100) : 0;
 
     this.saveAllTasks(tasks);
@@ -935,18 +977,7 @@ export class Store {
   }
 
   updateSubtaskAssignee(taskId, subtaskId, newAssigneeId) {
-    const tasks = this.getAllTasksRaw();
-    const task = tasks.find(t => t.id === taskId);
-    if (!task || !Array.isArray(task.subtasks)) return false;
-
-    const sub = task.subtasks.find(s => s.id === subtaskId);
-    if (sub) {
-      sub.assigneeId = newAssigneeId;
-      this.saveAllTasks(tasks);
-      appScriptBridge.pushTask(task);
-      return true;
-    }
-    return false;
+    return this.updateSubtask(taskId, subtaskId, { assigneeId: newAssigneeId });
   }
 
   addComment(taskId, content) {

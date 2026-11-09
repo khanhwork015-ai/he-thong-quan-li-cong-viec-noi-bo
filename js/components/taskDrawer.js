@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=4.6';
-import { store } from '../store.js?v=4.6';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=4.6';
+import { auth } from '../auth.js?v=4.7';
+import { store } from '../store.js?v=4.7';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=4.7';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated) {
@@ -247,14 +247,24 @@ export class TaskDrawer {
               </div>
             </div>
 
-            <!-- 6. SUBTASKS / CHECKLIST -->
-            <div class="p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col gap-3 shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
+            <!-- 6. SUBTASKS / CHECKLIST (TASK CON CHUYÊN SÂU CHUẨN CÔNG THÁI HỌC) -->
+            <div class="p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col gap-3.5 shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
               <div class="flex items-center justify-between">
-                <span class="text-[13px] font-bold text-[#0d1c2f] flex items-center gap-1.5" style="color: var(--text);">
-                  <span class="material-symbols-outlined text-[18px] text-[#795900]">checklist_rtl</span>
-                  <span>Danh sách việc con (${task.subtasks ? task.subtasks.filter(s => s.completed).length : 0}/${task.subtasks ? task.subtasks.length : 0})</span>
-                </span>
-                <span class="text-[12px] font-bold font-mono-data text-[#795900]">${task.progress || 0}%</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-xl bg-[#fffbeb] text-[#795900] border border-[#fef3c7] flex items-center justify-center font-bold">
+                    <span class="material-symbols-outlined text-[19px]">account_tree</span>
+                  </div>
+                  <div>
+                    <h3 class="text-[13.5px] font-bold text-[#0d1c2f] flex items-center gap-1.5" style="color: var(--text);">
+                      <span>Danh sách việc con (${task.subtasks ? task.subtasks.filter(s => s.completed || s.status === 'done').length : 0}/${task.subtasks ? task.subtasks.length : 0})</span>
+                    </h3>
+                    <p class="text-[11px] text-[#64748b]">Các đầu việc con cụ thể bên trong nhiệm vụ này</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-[13px] font-bold font-mono-data text-[#795900]">${task.progress || 0}%</span>
+                  <span class="block text-[10px] text-[#817663] font-medium">Tiến độ</span>
+                </div>
               </div>
 
               <!-- PROGRESS BAR -->
@@ -263,61 +273,159 @@ export class TaskDrawer {
               </div>
 
               <!-- SUBTASK ITEMS LIST -->
-              <div class="flex flex-col gap-2 mt-1">
+              <div class="flex flex-col gap-2.5 mt-1">
                 ${(!task.subtasks || task.subtasks.length === 0) ? `
-                  <div class="text-[12px] text-[#64748b] italic py-2.5 text-center bg-[#f8f9ff] rounded-xl border border-dashed border-[#e2e8f0]">
-                    Chưa có việc con nào. Nhập tên việc và phân công ở ô bên dưới.
+                  <div class="text-[12.5px] text-[#64748b] italic py-3 px-4 text-center bg-[#f8f9ff] rounded-2xl border border-dashed border-[#e2e8f0]">
+                    Chưa có việc con nào. Thêm việc con mới với đầy đủ mô tả, người phụ trách và hạn chót ở biểu mẫu bên dưới.
                   </div>
                 ` : task.subtasks.map(s => {
                   const sAssignee = store.getUserById(s.assigneeId);
+                  const isDone = s.completed || s.status === 'done';
                   return `
-                    <div class="p-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8f9ff] flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition-all hover:border-[#d6a52a]">
-                      <!-- Checkbox + Title -->
-                      <label class="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0">
-                        <input type="checkbox" class="chk-subtask w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer" data-subtask-id="${s.id}" ${s.completed ? 'checked' : ''} />
-                        <span class="text-[13px] ${s.completed ? 'line-through text-[#64748b]' : 'text-[#0d1c2f] font-medium'} truncate">${esc(s.title || s.text)}</span>
-                      </label>
-
-                      <!-- Assignee Selector + Delete Button -->
-                      <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
-                        <div class="relative">
-                          <select class="select-subtask-assignee h-8 px-2 pr-5 rounded-lg bg-white border border-[#e2e8f0] text-[11.5px] font-semibold text-[#0d1c2f] outline-none focus:border-[#d6a52a] cursor-pointer shadow-2xs" data-subtask-id="${s.id}">
-                            <option value="">-- Chưa giao --</option>
-                            ${store.getAllUsers().map(u => `
-                              <option value="${u.id}" ${u.id === s.assigneeId ? 'selected' : ''}>${esc(u.name)} (${esc(u.departmentCode || u.deptCode || 'CS3')})</option>
-                            `).join('')}
-                          </select>
+                    <div class="subtask-card p-3 sm:p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff] flex flex-col gap-2.5 hover:border-[#d6a52a] transition-all shadow-2xs" data-subtask-id="${s.id}">
+                      <!-- Hàng 1: Checkbox, Mã việc con, Tiêu đề, Huy hiệu trạng thái & Nút thao tác -->
+                      <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                          <input type="checkbox" class="chk-subtask w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0 mt-0.5" data-subtask-id="${s.id}" ${isDone ? 'checked' : ''} />
+                          <span class="font-mono-data text-[10.5px] font-bold px-2 py-0.5 rounded bg-[#fffbeb] text-[#795900] border border-[#fef3c7] shrink-0">${esc(s.id)}</span>
+                          <span class="text-[13px] sm:text-[13.5px] font-bold text-[#0d1c2f] ${isDone ? 'line-through text-gray-400' : ''} truncate">${esc(s.title || s.text)}</span>
                         </div>
 
-                        <button type="button" class="btn-delete-subtask text-gray-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer" data-subtask-id="${s.id}" title="Xóa việc con này">
-                          <span class="material-symbols-outlined text-[17px]">delete</span>
-                        </button>
+                        <div class="flex items-center gap-1 shrink-0">
+                          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
+                            ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
+                          </span>
+                          <button type="button" class="btn-toggle-edit-subtask p-1.5 text-[#817663] hover:text-[#795900] hover:bg-amber-100/60 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer transition-colors" data-subtask-id="${s.id}" title="Sửa việc con này">
+                            <span class="material-symbols-outlined text-[17px]">edit</span>
+                          </button>
+                          <button type="button" class="btn-delete-subtask p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer transition-colors" data-subtask-id="${s.id}" title="Xóa việc con này">
+                            <span class="material-symbols-outlined text-[17px]">delete</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Hàng 2: Mô tả việc con (nếu có) -->
+                      ${s.description ? `
+                        <div class="text-[12px] text-[#4f4635] bg-white p-2.5 rounded-xl border border-[#e2e8f0] leading-relaxed">
+                          ${esc(s.description)}
+                        </div>
+                      ` : ''}
+
+                      <!-- Hàng 3: Người phụ trách & Hạn chót -->
+                      <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#e2e8f0] text-[11.5px] text-[#64748b]">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                          <img src="${sAssignee ? sAssignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-4 h-4 rounded-full object-cover shrink-0 ring-1 ring-[#e2e8f0]" />
+                          <span class="truncate">Phụ trách: <strong class="text-[#0d1c2f] font-semibold">${sAssignee ? esc(sAssignee.name) : 'Chưa giao'}</strong></span>
+                        </div>
+                        <div class="flex items-center gap-1 font-mono-data text-[#817663] shrink-0">
+                          <span class="material-symbols-outlined text-[14px] text-[#795900]">event</span>
+                          <span>Hạn: <strong class="text-[#0d1c2f]">${s.dueDate ? ngayVN(s.dueDate) : 'Chưa đặt'}</strong></span>
+                        </div>
+                      </div>
+
+                      <!-- FORM CHỈNH SỬA VIỆC CON (INLINE EDIT FORM - MẶC ĐỊNH ẨN) -->
+                      <div id="edit-subtask-form-${s.id}" class="hidden p-3 mt-1 bg-white rounded-xl border border-[#d6a52a] flex flex-col gap-2.5 animate-fade-in shadow-xs">
+                        <div class="text-[11.5px] font-bold text-[#795900] flex items-center gap-1">
+                          <span class="material-symbols-outlined text-[16px]">edit_note</span>
+                          <span>Chỉnh sửa việc con ${esc(s.id)}</span>
+                        </div>
+                        
+                        <div>
+                          <label class="block text-[11px] font-bold text-[#0d1c2f] mb-0.5">Tiêu đề việc con *</label>
+                          <input type="text" class="edit-subtask-title w-full h-9 px-3 rounded-lg border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a]" value="${esc(s.title || s.text)}" />
+                        </div>
+
+                        <div>
+                          <label class="block text-[11px] font-bold text-[#0d1c2f] mb-0.5">Mô tả &amp; Tiêu chuẩn bàn giao</label>
+                          <textarea class="edit-subtask-desc w-full p-2 rounded-lg border border-[#e2e8f0] text-[12px] outline-none focus:border-[#d6a52a]" rows="2" placeholder="Ghi chú yêu cầu kỹ thuật...">${esc(s.description || '')}</textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <div>
+                            <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Phân công</label>
+                            <select class="edit-subtask-assignee w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-semibold outline-none focus:border-[#d6a52a]">
+                              <option value="">-- Chưa giao --</option>
+                              ${store.getAllUsers().map(u => `
+                                <option value="${u.id}" ${u.id === s.assigneeId ? 'selected' : ''}>${esc(u.name)}</option>
+                              `).join('')}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Hạn chót</label>
+                            <input type="date" class="edit-subtask-duedate w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-mono-data outline-none focus:border-[#d6a52a]" value="${s.dueDate ? s.dueDate.slice(0, 10) : ''}" />
+                          </div>
+
+                          <div>
+                            <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Trạng thái</label>
+                            <select class="edit-subtask-status w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-bold outline-none focus:border-[#d6a52a]">
+                              <option value="todo" ${s.status === 'todo' ? 'selected' : ''}>Chưa bắt đầu</option>
+                              <option value="in_progress" ${s.status === 'in_progress' ? 'selected' : ''}>Đang thực hiện</option>
+                              <option value="done" ${isDone ? 'selected' : ''}>Đã hoàn thành</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-1">
+                          <button type="button" class="btn-cancel-edit-subtask px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 text-[11.5px] font-semibold hover:bg-gray-100 min-h-[36px] cursor-pointer" data-subtask-id="${s.id}">Hủy</button>
+                          <button type="button" class="btn-save-edit-subtask px-3.5 py-1.5 rounded-lg bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white text-[11.5px] font-bold min-h-[36px] cursor-pointer" data-subtask-id="${s.id}">Lưu thay đổi</button>
+                        </div>
                       </div>
                     </div>
                   `;
                 }).join('')}
               </div>
 
-              <!-- ADD NEW SUBTASK FORM -->
-              <div class="p-3 rounded-xl border border-[#e2e8f0] bg-[#fffbeb]/40 flex flex-col gap-2 mt-2">
-                <span class="text-[11.5px] font-bold text-[#795900] flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[16px]">add_circle</span>
-                  <span>Thêm việc con mới &amp; Phân công thực hiện:</span>
-                </span>
-                
-                <div class="flex flex-col sm:flex-row gap-2">
-                  <input type="text" id="inputNewSubtaskTitle" placeholder="Tên việc con / đầu việc..." class="flex-1 h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f] shadow-2xs" />
-                  
-                  <select id="selectNewSubtaskAssignee" class="h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-semibold text-[#0d1c2f] bg-white outline-none focus:border-[#d6a52a] cursor-pointer shadow-2xs shrink-0 max-w-[170px]">
-                    <option value="${task.assigneeId}">Phụ trách: ${assignee ? esc(assignee.name) : 'Người làm chính'}</option>
-                    ${store.getAllUsers().filter(u => u.id !== task.assigneeId).map(u => `
-                      <option value="${u.id}">${esc(u.name)}</option>
-                    `).join('')}
-                  </select>
+              <!-- FORM THÊM VIỆC CON MỚI CHUYÊN NGHIỆP -->
+              <div class="p-3.5 sm:p-4 rounded-2xl border border-[#d6a52a]/40 bg-[#fffbeb]/50 flex flex-col gap-3 mt-1 shadow-2xs">
+                <div class="flex items-center justify-between">
+                  <span class="text-[12.5px] font-bold text-[#795900] flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                    <span>Thêm việc con mới (Đầy đủ thông tin task)</span>
+                  </span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e]">Subtask</span>
+                </div>
 
-                  <button type="button" id="btnAddSubtask" class="h-10 px-3.5 rounded-xl bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[12.5px] transition-colors shadow-xs flex items-center justify-center gap-1 shrink-0 cursor-pointer min-h-[40px]">
-                    <span class="material-symbols-outlined text-[18px]">add</span>
-                    <span>Thêm</span>
+                <div>
+                  <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Tên việc con / mục tiêu cụ thể *</label>
+                  <input type="text" id="inputNewSubtaskTitle" placeholder="Ví dụ: Đối soát số lô và hạn sử dụng 45 danh mục vaccine" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f] shadow-2xs" />
+                </div>
+
+                <div>
+                  <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Mô tả &amp; Tiêu chuẩn bàn giao (Tùy chọn)</label>
+                  <textarea id="inputNewSubtaskDesc" rows="2" placeholder="Ghi chú chi tiết yêu cầu, thiết bị sử dụng, cách thức nghiệm thu..." class="w-full p-2.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f] shadow-2xs"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1">Phân công người làm</label>
+                    <select id="selectNewSubtaskAssignee" class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-semibold text-[#0d1c2f] bg-white outline-none focus:border-[#d6a52a] cursor-pointer shadow-2xs">
+                      <option value="${task.assigneeId}">Phụ trách: ${assignee ? esc(assignee.name) : 'Người làm chính'}</option>
+                      ${store.getAllUsers().filter(u => u.id !== task.assigneeId).map(u => `
+                        <option value="${u.id}">${esc(u.name)} (${esc(u.departmentCode || u.deptCode || 'CS3')})</option>
+                      `).join('')}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1">Hạn hoàn thành</label>
+                    <input type="date" id="inputNewSubtaskDueDate" value="${task.dueDate ? task.dueDate.slice(0, 10) : ''}" class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-mono-data text-[#0d1c2f] bg-white outline-none focus:border-[#d6a52a] shadow-2xs cursor-pointer" />
+                  </div>
+
+                  <div>
+                    <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1">Trạng thái ban đầu</label>
+                    <select id="selectNewSubtaskStatus" class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-bold text-[#0d1c2f] bg-white outline-none focus:border-[#d6a52a] cursor-pointer shadow-2xs">
+                      <option value="todo">Chưa bắt đầu</option>
+                      <option value="in_progress">Đang thực hiện</option>
+                      <option value="done">Đã hoàn thành</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="flex justify-end pt-1">
+                  <button type="button" id="btnAddSubtask" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[13px] transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]">
+                    <span class="material-symbols-outlined text-[19px]">add_circle</span>
+                    <span>＋ Thêm Việc Con Mới</span>
                   </button>
                 </div>
               </div>
@@ -483,16 +591,58 @@ export class TaskDrawer {
       });
     });
 
-    // PHÂN CÔNG VIỆC CON CHO NHÂN SỰ
-    this.container.querySelectorAll('.select-subtask-assignee').forEach(sel => {
-      sel.addEventListener('change', (e) => {
+    // MỞ / ĐÓNG FORM SỬA VIỆC CON
+    this.container.querySelectorAll('.btn-toggle-edit-subtask').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         rung(10);
-        const sid = sel.dataset.subtaskId;
-        const newAssigneeId = e.target.value;
-        store.updateSubtaskAssignee(task.id, sid, newAssigneeId);
-        const user = store.getUserById(newAssigneeId);
-        toast(`Đã giao việc con cho: ${user ? user.name : 'nhân sự'}`, 'success');
+        const sid = btn.dataset.subtaskId;
+        const form = this.container.querySelector(`#edit-subtask-form-${sid}`);
+        if (form) form.classList.toggle('hidden');
+      });
+    });
+
+    // HỦY SỬA VIỆC CON
+    this.container.querySelectorAll('.btn-cancel-edit-subtask').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const sid = btn.dataset.subtaskId;
+        const form = this.container.querySelector(`#edit-subtask-form-${sid}`);
+        if (form) form.classList.add('hidden');
+      });
+    });
+
+    // LƯU SỬA VIỆC CON
+    this.container.querySelectorAll('.btn-save-edit-subtask').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        const sid = btn.dataset.subtaskId;
+        const form = this.container.querySelector(`#edit-subtask-form-${sid}`);
+        if (!form) return;
+
+        const title = form.querySelector('.edit-subtask-title')?.value.trim();
+        if (!title) {
+          toast('Vui lòng nhập tiêu đề việc con', 'warning');
+          return;
+        }
+
+        const description = form.querySelector('.edit-subtask-desc')?.value.trim() || '';
+        const assigneeId = form.querySelector('.edit-subtask-assignee')?.value || '';
+        const dueDate = form.querySelector('.edit-subtask-duedate')?.value || '';
+        const status = form.querySelector('.edit-subtask-status')?.value || 'todo';
+
+        store.updateSubtask(task.id, sid, {
+          title,
+          description,
+          assigneeId,
+          dueDate,
+          status
+        });
+
+        toast('Đã cập nhật việc con thành công!', 'success');
         if (this.onTaskUpdated) this.onTaskUpdated();
+        this.render();
       });
     });
 
@@ -509,10 +659,14 @@ export class TaskDrawer {
       });
     });
 
-    // THÊM VIỆC CON MỚI
+    // THÊM VIỆC CON MỚI (ĐẦY ĐỦ CÁC TRƯỜNG THÔNG TIN)
     const btnAddSubtask = this.container.querySelector('#btnAddSubtask');
     const inputNewSubtaskTitle = this.container.querySelector('#inputNewSubtaskTitle');
+    const inputNewSubtaskDesc = this.container.querySelector('#inputNewSubtaskDesc');
     const selectNewSubtaskAssignee = this.container.querySelector('#selectNewSubtaskAssignee');
+    const inputNewSubtaskDueDate = this.container.querySelector('#inputNewSubtaskDueDate');
+    const selectNewSubtaskStatus = this.container.querySelector('#selectNewSubtaskStatus');
+
     if (btnAddSubtask && inputNewSubtaskTitle) {
       const doAddSubtask = () => {
         const title = inputNewSubtaskTitle.value.trim();
@@ -521,9 +675,22 @@ export class TaskDrawer {
           return;
         }
         rung(10);
+        const description = inputNewSubtaskDesc ? inputNewSubtaskDesc.value.trim() : '';
         const assigneeId = selectNewSubtaskAssignee ? selectNewSubtaskAssignee.value : task.assigneeId;
-        store.addSubtask(task.id, { title, assigneeId });
+        const dueDate = inputNewSubtaskDueDate ? inputNewSubtaskDueDate.value : '';
+        const status = selectNewSubtaskStatus ? selectNewSubtaskStatus.value : 'todo';
+
+        store.addSubtask(task.id, {
+          title,
+          description,
+          assigneeId,
+          dueDate,
+          status
+        });
+
         inputNewSubtaskTitle.value = '';
+        if (inputNewSubtaskDesc) inputNewSubtaskDesc.value = '';
+
         toast('Đã thêm việc con mới thành công!', 'success');
         if (this.onTaskUpdated) this.onTaskUpdated();
         this.render();

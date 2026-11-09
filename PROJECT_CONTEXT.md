@@ -89,14 +89,16 @@
   - **Đồng bộ khi chọn phòng ban trong Quản lý cơ cấu:** Bấm chọn phòng ban ở `DepartmentView` tự động đồng bộ `activeDepartment` sang phòng ban đó cho toàn bộ ứng dụng.
 - [x] **11. Nâng Cấp Quản Lý Việc Con (Subtasks), Thông Tin Người Tạo, Custom Status Dropdown & Bỏ Ca Trực (`taskDrawer.js`, `workspaceView.js`, `topHeader.js`, `store.js`)**:
   - **Lưu vết và hiển thị Người tạo & Thời gian tạo:** Lưu trữ đầy đủ `creatorId`, `creatorName`, `createdAt` trong `store.js`; hiển thị rõ ràng trên thẻ công việc (Mobile Cards, Table View, Kanban) và trong Task Drawer.
-  - **Quản lý danh sách việc con (Subtasks Checklist):**
-    + Giao diện danh sách việc con trực quan kèm thanh tiến độ tự động tính % theo số lượng việc hoàn thành.
-    + Cho phép phân công (Assign) đích danh từng chuyên viên thực hiện cho từng việc con cụ thể (`select-subtask-assignee`).
-    + Tích hợp ô thêm việc con mới nhanh chóng (`#inputNewSubtaskTitle` + `#selectNewSubtaskAssignee` + `#btnAddSubtask`) kèm phím tắt Enter.
-    + Nút xóa việc con trực tiếp (`btn-delete-subtask`).
-    + Tự động bắn thông báo chuông tới nhân sự khi được giao việc con mới.
-  - **Custom Status Dropdown (Không dùng OS default):** Thay thế `<select>` mặc định của hệ điều hành bằng menu popup tùy biến cao cấp phong cách Google Stitch Gold với huy hiệu màu sắc trực quan (Chưa bắt đầu, Đang thực hiện, Chờ phê duyệt, Đã hoàn thành, Tạm dừng).
-  - **Mở rộng khung nhập bình luận & chỉ đạo:** Tăng chiều cao lên `min-h-[90px]` với thẻ `<textarea>` rộng rãi, hỗ trợ gõ nhiều dòng thoải mái và nút gửi phản hồi tiêu chuẩn.
+  - **Quản lý danh sách việc con (Subtasks Checklist) & Chi tiết như một Task hoàn chỉnh:**
+    + Mỗi việc con là một task hoàn chỉnh mang đầy đủ: Mã việc con (`${taskId}.${index}`), Tiêu đề, Mô tả chi tiết & Tiêu chuẩn bàn giao, Người được phân công (`assigneeId`), Hạn chót (`dueDate`), Trạng thái (`status`: Chưa làm / Đang làm / Hoàn thành).
+    + Cho phép chỉnh sửa trực tiếp (Inline Edit Form) từng việc con hoặc xóa bỏ.
+    + Form thêm việc con mới mở rộng đầy đủ các trường nhập chuyên nghiệp.
+    + Tự động tính % tiến độ công việc cha dựa trên tỷ lệ việc con hoàn thành.
+  - **Xem việc con ở bên ngoài danh sách (Dropdown Accordion - Chuẩn Mobile & Tablet):**
+    + Trên Bảng Table View (Desktop & Tablet): Nút `[ x/y việc con ▾ ]` xổ ra hàng phụ hiển thị lưới thẻ các việc con với thông tin ngắn gọn, bấm vào xem chi tiết ngay.
+    + Trên Mobile Cards: Thanh bấm mở rộng `Việc con (x/y)` xổ dropdown các thẻ việc con thụt lề mượt mà, hỗ trợ thao tác chạm mượt trên mobile 320px - 414px, không tràn ngang.
+  - **Custom Status Dropdown (Không dùng OS default):** Thay thế `<select>` mặc định của hệ điều hành bằng menu popup tùy biến cao cấp phong cách Google Stitch Gold.
+  - **Mở rộng khung nhập bình luận & chỉ đạo:** Tăng chiều cao lên `min-h-[90px]` với thẻ `<textarea>` rộng rãi.
   - **Loại bỏ huy hiệu Ca trực:** Đã xóa bỏ hoàn toàn badge `Ca hành chính: 07:00 - 17:00` khỏi Top Header theo yêu cầu.
 
 ---

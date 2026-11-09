@@ -5,9 +5,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=4.6';
-import { store } from '../store.js?v=4.6';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=4.6';
+import { auth } from '../auth.js?v=4.7';
+import { store } from '../store.js?v=4.7';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=4.7';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask) {
@@ -19,6 +19,7 @@ export class WorkspaceView {
     this.priorityFilter = 'ALL';
     this.searchQuery = '';
     this.teamFilter = 'ALL';
+    this.expandedTaskIds = new Set();
   }
 
   setTab(tab) {
@@ -193,6 +194,8 @@ export class WorkspaceView {
           const assignee = store.getUserById(t.assigneeId);
           const creator = store.getUserById(t.creatorId);
           const statusMeta = this.getStatusMeta(t.status);
+          const hasSubtasks = t.subtasks && t.subtasks.length > 0;
+          const isExpanded = this.expandedTaskIds.has(t.id);
 
           return `
             <div class="p-4 bg-white rounded-2xl border border-[#e2e8f0] shadow-xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer row-task-item" data-task-id="${t.id}">
@@ -232,6 +235,58 @@ export class WorkspaceView {
                   ${ngayVN(t.dueDate)}
                 </span>
               </div>
+
+              <!-- NÚT XỔ DROPDOWN VIỆC CON TRÊN MOBILE & DANH SÁCH VIỆC CON -->
+              ${hasSubtasks ? `
+                <div class="mt-2.5 pt-2 border-t border-[#f1f5f9]">
+                  <button type="button" class="btn-toggle-subtasks-mobile w-full py-2 px-3 rounded-xl bg-[#f8f9ff] hover:bg-[#fffbeb] border border-[#e2e8f0] text-[12px] font-bold text-[#795900] flex items-center justify-between transition-all cursor-pointer min-h-[44px]" data-task-id="${t.id}">
+                    <span class="flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-[18px]">account_tree</span>
+                      <span>Việc con (${t.subtasks.filter(s => s.completed || s.status === 'done').length}/${t.subtasks.length})</span>
+                    </span>
+                    <div class="flex items-center gap-1 text-[11px] font-semibold text-[#817663]">
+                      <span>${isExpanded ? 'Thu gọn' : 'Xem danh sách'}</span>
+                      <span class="material-symbols-outlined text-[18px] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}">expand_more</span>
+                    </div>
+                  </button>
+
+                  ${isExpanded ? `
+                    <div class="flex flex-col gap-2 mt-2 pt-1 border-l-2 border-[#d6a52a] pl-2.5 animate-fade-in">
+                      ${t.subtasks.map(s => {
+                        const sAssignee = store.getUserById(s.assigneeId);
+                        const isDone = s.completed || s.status === 'done';
+                        return `
+                          <div class="subtask-card-click p-2.5 rounded-xl border border-[#e2e8f0] bg-[#f8f9ff] hover:border-[#d6a52a] flex flex-col gap-1.5 shadow-2xs cursor-pointer active:scale-[0.99] transition-all" data-task-id="${t.id}" data-subtask-id="${s.id}">
+                            <div class="flex items-start justify-between gap-1.5">
+                              <div class="flex items-center gap-2 min-w-0">
+                                <span class="w-2 h-2 rounded-full shrink-0 ${isDone ? 'bg-emerald-500' : s.status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-400'}"></span>
+                                <span class="font-mono-data text-[10px] font-bold text-[#795900] px-1.5 py-0.2 rounded bg-[#fffbeb]">${esc(s.id)}</span>
+                                <span class="font-bold text-[12.5px] text-[#0d1c2f] ${isDone ? 'line-through text-gray-400' : ''} truncate">${esc(s.title || s.text)}</span>
+                              </div>
+                              <span class="text-[9.5px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
+                                ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
+                              </span>
+                            </div>
+
+                            ${s.description ? `<p class="text-[11px] text-[#64748b] line-clamp-2 pl-4">${esc(s.description)}</p>` : ''}
+
+                            <div class="flex items-center justify-between text-[11px] text-[#817663] pt-1 border-t border-[#e2e8f0]">
+                              <div class="flex items-center gap-1.5 min-w-0">
+                                <img src="${sAssignee ? sAssignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-4 h-4 rounded-full object-cover shrink-0" />
+                                <span class="truncate font-semibold text-[#0d1c2f]">${sAssignee ? esc(sAssignee.name) : 'Chưa giao'}</span>
+                              </div>
+                              <span class="font-mono-data shrink-0 flex items-center gap-1 text-[10.5px]">
+                                <span class="material-symbols-outlined text-[13px] text-[#795900]">event</span>
+                                ${s.dueDate ? ngayVN(s.dueDate) : 'Chưa có hạn'}
+                              </span>
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
             </div>
           `;
         }).join('')}
@@ -258,12 +313,22 @@ export class WorkspaceView {
                 const assignee = store.getUserById(t.assigneeId);
                 const creator = store.getUserById(t.creatorId);
                 const statusMeta = this.getStatusMeta(t.status);
+                const hasSubtasks = t.subtasks && t.subtasks.length > 0;
+                const isExpanded = this.expandedTaskIds.has(t.id);
 
                 return `
                   <tr class="hover:bg-[#fffbeb]/40 transition-colors cursor-pointer row-task-item" data-task-id="${t.id}">
                     <td class="py-3 px-4 font-mono-data font-bold text-[#795900]">${t.id}</td>
                     <td class="py-3 px-4">
-                      <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
+                      <div class="flex items-start justify-between gap-2">
+                        <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
+                        ${hasSubtasks ? `
+                          <button type="button" class="btn-toggle-subtasks px-2 py-0.5 rounded-lg text-[11px] font-bold bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a]/60 transition-all cursor-pointer shadow-2xs shrink-0 flex items-center gap-1" data-task-id="${t.id}" title="Xem danh sách ${t.subtasks.length} việc con">
+                            <span class="material-symbols-outlined text-[15px] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}">expand_more</span>
+                            <span>${t.subtasks.filter(s => s.completed || s.status === 'done').length}/${t.subtasks.length} việc con</span>
+                          </button>
+                        ` : ''}
+                      </div>
                       <div class="text-[11px] text-[#795900] font-medium flex items-center gap-1.5 mt-0.5">
                         <span>Tạo bởi: <strong>${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong></span>
                         <span>•</span>
@@ -295,6 +360,57 @@ export class WorkspaceView {
                       </button>
                     </td>
                   </tr>
+
+                  <!-- SUBTASKS DROPDOWN ROW TRÊN TABLE VIEW (DESKTOP & TABLET) -->
+                  ${hasSubtasks && isExpanded ? `
+                    <tr class="subtasks-accordion-row bg-[#f8f9ff]/90 border-b border-[#e2e8f0] animate-fade-in">
+                      <td colspan="8" class="p-0">
+                        <div class="p-3 sm:p-4 sm:pl-12 border-l-4 border-[#d6a52a] bg-gradient-to-r from-[#fffbeb]/50 via-white/40 to-transparent">
+                          <div class="flex items-center justify-between mb-2.5">
+                            <div class="flex items-center gap-2">
+                              <span class="material-symbols-outlined text-[17px] text-[#795900]">account_tree</span>
+                              <span class="text-[12.5px] font-bold text-[#795900]">Danh sách việc con (${t.subtasks.length} task con của ${t.id})</span>
+                            </div>
+                            <span class="text-[11px] text-[#817663] italic">Bấm vào bất kỳ việc con nào để mở chi tiết &amp; chỉnh sửa</span>
+                          </div>
+
+                          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                            ${t.subtasks.map(s => {
+                              const sAssignee = store.getUserById(s.assigneeId);
+                              const isDone = s.completed || s.status === 'done';
+                              return `
+                                <div class="subtask-card-click p-3 rounded-xl border border-[#e2e8f0] bg-white hover:border-[#d6a52a] hover:shadow-xs transition-all flex flex-col justify-between gap-1.5 cursor-pointer shadow-2xs" data-task-id="${t.id}" data-subtask-id="${s.id}">
+                                  <div class="flex items-start justify-between gap-1.5">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                      <span class="w-2 h-2 rounded-full shrink-0 ${isDone ? 'bg-emerald-500' : s.status === 'in_progress' ? 'bg-blue-500' : 'bg-slate-400'}"></span>
+                                      <span class="font-mono-data text-[10px] font-bold text-[#795900] px-1.5 py-0.2 rounded bg-[#fffbeb] border border-[#fef3c7] shrink-0">${esc(s.id)}</span>
+                                      <span class="font-bold text-[12.5px] text-[#0d1c2f] ${isDone ? 'line-through text-gray-400' : ''} truncate">${esc(s.title || s.text)}</span>
+                                    </div>
+                                    <span class="text-[9.5px] font-bold px-1.5 py-0.2 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
+                                      ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
+                                    </span>
+                                  </div>
+
+                                  ${s.description ? `<p class="text-[11.5px] text-[#64748b] line-clamp-2 pl-4">${esc(s.description)}</p>` : ''}
+
+                                  <div class="flex items-center justify-between text-[11px] text-[#817663] pt-1.5 border-t border-[#f1f5f9]">
+                                    <div class="flex items-center gap-1.5 min-w-0">
+                                      <img src="${sAssignee ? sAssignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-4 h-4 rounded-full object-cover shrink-0" />
+                                      <span class="truncate font-semibold text-[#4f4635]">${sAssignee ? esc(sAssignee.name) : 'Chưa giao'}</span>
+                                    </div>
+                                    <span class="font-mono-data shrink-0 flex items-center gap-1 text-[10.5px]">
+                                      <span class="material-symbols-outlined text-[13px] text-[#795900]">event</span>
+                                      ${s.dueDate ? ngayVN(s.dueDate) : 'Chưa có hạn'}
+                                    </span>
+                                  </div>
+                                </div>
+                              `;
+                            }).join('')}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ` : ''}
                 `;
               }).join('')}
             </tbody>
@@ -428,6 +544,34 @@ export class WorkspaceView {
         rung(10);
         this.teamFilter = btn.dataset.teamFilter;
         this.render();
+      });
+    });
+
+    // BẬT / TẮT DROPDOWN XEM VIỆC CON TRÊN BẢNG VÀ MOBILE
+    this.container.querySelectorAll('.btn-toggle-subtasks, .btn-toggle-subtasks-mobile').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        const taskId = btn.dataset.taskId;
+        if (!taskId) return;
+        if (this.expandedTaskIds.has(taskId)) {
+          this.expandedTaskIds.delete(taskId);
+        } else {
+          this.expandedTaskIds.add(taskId);
+        }
+        this.render();
+      });
+    });
+
+    // BẤM VÀO THẺ VIỆC CON TRONG DROPDOWN ĐỂ MỞ NGAY CHI TIẾT
+    this.container.querySelectorAll('.subtask-card-click').forEach(card => {
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        const taskId = card.dataset.taskId;
+        if (taskId && this.onSelectTask) {
+          this.onSelectTask(taskId);
+        }
       });
     });
 

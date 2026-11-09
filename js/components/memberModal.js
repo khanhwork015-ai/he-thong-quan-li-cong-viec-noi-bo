@@ -9,9 +9,9 @@
  * - Nhân viên: Không được phép cấp tài khoản.
  */
 
-import { auth } from '../auth.js?v=4.6';
-import { store } from '../store.js?v=4.6';
-import { esc, toast, rung } from '../helpers.js?v=4.6';
+import { auth } from '../auth.js?v=4.7';
+import { store } from '../store.js?v=4.7';
+import { esc, toast, rung } from '../helpers.js?v=4.7';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
