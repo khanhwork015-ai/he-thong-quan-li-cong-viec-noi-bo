@@ -428,12 +428,107 @@ body {
   }
 }
 
-/* ĐIỀU CHỈNH CỠ CHỮ TOÀN ỨNG DỤNG (FONT SCALING) */
-[data-cochu="lon"] {
-  font-size: 106%;
+/* ==========================================================================
+   CHỈ SCALE CỠ CHỮ (FONT SCALING), TUYỆT ĐỐI KHÔNG SCALE BỐ CỤC LAYOUT
+   (Giữ 1rem = 16px cố định để container, modal, sidebar, padding KHÔNG bị phình to)
+   ========================================================================== */
+html {
+  font-size: 16px !important;
 }
+
+:root {
+  --font-scale: 1;
+}
+
+[data-cochu="vua"] {
+  --font-scale: 1;
+}
+
+[data-cochu="lon"] {
+  --font-scale: 1.1;
+}
+
 [data-cochu="rat_lon"] {
-  font-size: 114%;
+  --font-scale: 1.2;
+}
+
+/* Base body font size scaling */
+[data-cochu="lon"] body {
+  font-size: 17.6px;
+}
+[data-cochu="rat_lon"] body {
+  font-size: 19.2px;
+}
+
+/* Áp dụng tỷ lệ tăng chữ 1.1x khi chọn LỚN (1.1x) */
+[data-cochu="lon"] .text-\[9px\] { font-size: 10px !important; }
+[data-cochu="lon"] .text-\[9\.5px\] { font-size: 10.5px !important; }
+[data-cochu="lon"] .text-\[10px\] { font-size: 11px !important; }
+[data-cochu="lon"] .text-\[10\.5px\] { font-size: 11.5px !important; }
+[data-cochu="lon"] .text-\[11px\] { font-size: 12px !important; }
+[data-cochu="lon"] .text-\[11\.5px\] { font-size: 12.6px !important; }
+[data-cochu="lon"] .text-\[12px\] { font-size: 13.2px !important; }
+[data-cochu="lon"] .text-\[12\.5px\] { font-size: 13.8px !important; }
+[data-cochu="lon"] .text-\[13px\] { font-size: 14.3px !important; }
+[data-cochu="lon"] .text-\[13\.5px\] { font-size: 14.8px !important; }
+[data-cochu="lon"] .text-\[14px\] { font-size: 15.4px !important; }
+[data-cochu="lon"] .text-\[14\.5px\] { font-size: 16px !important; }
+[data-cochu="lon"] .text-\[15px\] { font-size: 16.5px !important; }
+[data-cochu="lon"] .text-\[15\.5px\] { font-size: 17px !important; }
+[data-cochu="lon"] .text-\[16px\] { font-size: 17.6px !important; }
+[data-cochu="lon"] .text-\[16\.5px\] { font-size: 18.1px !important; }
+[data-cochu="lon"] .text-\[17px\] { font-size: 18.7px !important; }
+[data-cochu="lon"] .text-\[17\.5px\] { font-size: 19.2px !important; }
+[data-cochu="lon"] .text-\[18px\] { font-size: 19.8px !important; }
+[data-cochu="lon"] .text-\[19px\] { font-size: 21px !important; }
+[data-cochu="lon"] .text-\[20px\] { font-size: 22px !important; }
+[data-cochu="lon"] .text-\[22px\] { font-size: 24.2px !important; }
+[data-cochu="lon"] .text-\[24px\] { font-size: 26.4px !important; }
+[data-cochu="lon"] .text-\[28px\] { font-size: 30.8px !important; }
+[data-cochu="lon"] .text-\[32px\] { font-size: 35.2px !important; }
+[data-cochu="lon"] .text-\[36px\] { font-size: 39.6px !important; }
+[data-cochu="lon"] .text-xs { font-size: 0.825rem !important; }
+[data-cochu="lon"] .text-sm { font-size: 0.9625rem !important; }
+[data-cochu="lon"] .text-base { font-size: 1.1rem !important; }
+[data-cochu="lon"] .text-lg { font-size: 1.2375rem !important; }
+[data-cochu="lon"] .text-xl { font-size: 1.375rem !important; }
+
+/* Áp dụng tỷ lệ tăng chữ 1.2x khi chọn RẤT LỚN (1.2x) */
+[data-cochu="rat_lon"] .text-\[9px\] { font-size: 11px !important; }
+[data-cochu="rat_lon"] .text-\[9\.5px\] { font-size: 11.5px !important; }
+[data-cochu="rat_lon"] .text-\[10px\] { font-size: 12px !important; }
+[data-cochu="rat_lon"] .text-\[10\.5px\] { font-size: 12.6px !important; }
+[data-cochu="rat_lon"] .text-\[11px\] { font-size: 13.2px !important; }
+[data-cochu="rat_lon"] .text-\[11\.5px\] { font-size: 13.8px !important; }
+[data-cochu="rat_lon"] .text-\[12px\] { font-size: 14.4px !important; }
+[data-cochu="rat_lon"] .text-\[12\.5px\] { font-size: 15px !important; }
+[data-cochu="rat_lon"] .text-\[13px\] { font-size: 15.6px !important; }
+[data-cochu="rat_lon"] .text-\[13\.5px\] { font-size: 16.2px !important; }
+[data-cochu="rat_lon"] .text-\[14px\] { font-size: 16.8px !important; }
+[data-cochu="rat_lon"] .text-\[14\.5px\] { font-size: 17.4px !important; }
+[data-cochu="rat_lon"] .text-\[15px\] { font-size: 18px !important; }
+[data-cochu="rat_lon"] .text-\[15\.5px\] { font-size: 18.6px !important; }
+[data-cochu="rat_lon"] .text-\[16px\] { font-size: 19.2px !important; }
+[data-cochu="rat_lon"] .text-\[16\.5px\] { font-size: 19.8px !important; }
+[data-cochu="rat_lon"] .text-\[17px\] { font-size: 20.4px !important; }
+[data-cochu="rat_lon"] .text-\[17\.5px\] { font-size: 21px !important; }
+[data-cochu="rat_lon"] .text-\[18px\] { font-size: 21.6px !important; }
+[data-cochu="rat_lon"] .text-\[19px\] { font-size: 22.8px !important; }
+[data-cochu="rat_lon"] .text-\[20px\] { font-size: 24px !important; }
+[data-cochu="rat_lon"] .text-\[22px\] { font-size: 26.4px !important; }
+[data-cochu="rat_lon"] .text-\[24px\] { font-size: 28.8px !important; }
+[data-cochu="rat_lon"] .text-\[28px\] { font-size: 33.6px !important; }
+[data-cochu="rat_lon"] .text-\[32px\] { font-size: 38.4px !important; }
+[data-cochu="rat_lon"] .text-\[36px\] { font-size: 43.2px !important; }
+[data-cochu="rat_lon"] .text-xs { font-size: 0.9rem !important; }
+[data-cochu="rat_lon"] .text-sm { font-size: 1.05rem !important; }
+[data-cochu="rat_lon"] .text-base { font-size: 1.2rem !important; }
+[data-cochu="rat_lon"] .text-lg { font-size: 1.35rem !important; }
+[data-cochu="rat_lon"] .text-xl { font-size: 1.5rem !important; }
+
+/* Giữ nguyên kích thước và định dạng icon Material Symbols khi tăng cỡ chữ */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* TỰ ĐỘNG NGẮT CHUYỂN ĐỘNG NẾU NGƯỜI DÙNG BẬT PREFERS-REDUCED-MOTION */

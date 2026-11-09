@@ -13,6 +13,26 @@
 import { USERS, DEPARTMENTS, ROLES } from './models.js';
 import { toast, rung } from './helpers.js';
 
+/**
+ * Băm mật khẩu SHA-256 an toàn bằng Web Cryptography API
+ * @param {string} plainText
+ * @returns {Promise<string>} Chuỗi hex 64 ký tự
+ */
+export async function hashPassword(plainText) {
+  if (plainText === null || plainText === undefined || String(plainText).trim() === '') return '';
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(String(plainText).trim());
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (err) {
+    console.warn('[AUTH] crypto.subtle không khả dụng, dùng fallback:', err);
+    return String(plainText).trim();
+  }
+}
+
+
 const AUTH_KEY = 'tvm_auth_user_v3';
 const ACTIVE_DEPT_KEY = 'tvm_active_dept_v3';
 const SESSION_KEY = 'tvm_auth_session_v4';
@@ -199,9 +219,17 @@ export class AuthManager {
       };
     }
 
-    // Kiểm tra mật khẩu (So sánh String chuẩn, hỗ trợ số 123 hoặc chữ '123' từ Sheet)
+    // Kiểm tra mật khẩu (So sánh String chuẩn & băm SHA-256 bảo mật)
     const validPassword = String(matched.password !== undefined && matched.password !== null && String(matched.password).trim() !== '' ? matched.password : '123').trim();
-    if (trimmedPass !== validPassword) {
+    let isPasswordCorrect = (trimmedPass === validPassword);
+    if (!isPasswordCorrect && typeof crypto !== 'undefined' && crypto.subtle) {
+      try {
+        const hashedInput = await hashPassword(trimmedPass);
+        isPasswordCorrect = (hashedInput.toLowerCase() === validPassword.toLowerCase());
+      } catch (_) {}
+    }
+
+    if (!isPasswordCorrect) {
       return { 
         success: false, 
         code: 'WRONG_PASSWORD',
@@ -296,24 +324,8 @@ export class AuthManager {
   // - Nhân viên: Tuyệt đối KHÔNG được cấp tài khoản!
   canProvisionAccount(targetRole = 'MEMBER', targetDeptId = null) {
     if (!this.isAuthenticated()) return false;
-
-    // 1. Admin: Toàn quyền cấp mọi role cho mọi phòng ban
-    if (this.isAdmin()) return true;
-
-    // 2. Ban lãnh đạo: Có thể cấp tài khoản trừ Admin
-    if (this.isLeadership()) {
-      return targetRole !== 'ADMIN';
-    }
-
-    // 3. Trưởng/Phó phòng: CHỈ cấp được cho Nhân viên và CHỈ thuộc phòng ban của mình
-    if (this.isManager()) {
-      if (targetRole !== 'MEMBER') return false; // Không cấp được Admin, Lãnh đạo, Trưởng phòng khác
-      if (targetDeptId && targetDeptId !== this.currentUser.departmentId) return false;
-      return true;
-    }
-
-    // 4. Nhân viên: Không được phép cấp tài khoản
-    return false;
+    // DUY NHẤT ADMIN CÓ QUYỀN CẤP TÀI KHOẢN VÀ PHÂN QUYỀN (SET ROLE)
+    return this.isAdmin();
   }
 
   // Quyền tạo & giao việc: "Bất cứ ai cũng có quyền tạo và assign task cho bất kì nhân viên nào"
@@ -328,7 +340,8 @@ export class AuthManager {
 
   // Quyền quản lý nhân sự & phân bổ bộ phận con
   canManageMembers() {
-    return this.isAdmin() || this.isLeadership() || this.isManager();
+    // DUY NHẤT ADMIN CÓ QUYỀN THÊM / SỬA / XÓA TÀI KHOẢN NHÂN VIÊN
+    return this.isAdmin();
   }
 
   // Cập nhật thông tin hồ sơ cá nhân

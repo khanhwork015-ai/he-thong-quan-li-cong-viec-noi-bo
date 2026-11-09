@@ -113,6 +113,11 @@ export class Store {
         localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(cloudData.depts));
       }
 
+      if (cloudData.notifications && cloudData.notifications.length > 0) {
+        localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(cloudData.notifications));
+        window.dispatchEvent(new CustomEvent('tvm:notifications_changed', { detail: { count: cloudData.notifications.length } }));
+      }
+
       window.dispatchEvent(new CustomEvent('tvm:data_changed'));
       window.dispatchEvent(new CustomEvent('tvm:users_changed'));
 
@@ -138,7 +143,8 @@ export class Store {
 
     const tasks = this.getAllTasksRaw();
     const users = this.getAllUsers();
-    const success = await appScriptBridge.pushAllToCloud(tasks, users);
+    const notifs = this.getAllNotifications();
+    const success = await appScriptBridge.pushAllToCloud(tasks, users, notifs);
     return {
       success,
       taskCount: tasks.length,
@@ -499,15 +505,23 @@ export class Store {
     const prefix = currentDept.code.split('-')[0] || 'TASK';
     const newId = `${prefix}-${Date.now().toString().slice(-4)}`;
 
+    const requiresApproval = Boolean(taskData.requiresApproval);
+    const approverId = requiresApproval ? (taskData.approverId || currentDept.managerId || 'user_lanhdao') : null;
+    const initialStatus = requiresApproval ? 'pending_approval' : (taskData.status || 'todo');
+
     const newTask = {
       id: newId,
-      departmentId: currentDept.id,
+      departmentId: taskData.departmentId || currentDept.id,
+      teamId: taskData.teamId || '',
       creatorId: currentUser.id,
       assigneeId: taskData.assigneeId || currentUser.id,
+      approverId: approverId,
+      requiresApproval: requiresApproval,
+      approvalStatus: requiresApproval ? 'PENDING' : 'NONE',
       title: taskData.title,
       description: taskData.description || '',
       priority: taskData.priority || 'P2',
-      status: 'todo',
+      status: initialStatus,
       dueDate: taskData.dueDate || new Date().toISOString().split('T')[0],
       category: taskData.category || 'Hành chính',
       progress: 0,
@@ -523,13 +537,25 @@ export class Store {
     appScriptBridge.pushTask(newTask);
 
     // Gửi thông báo cho Assignee
-    if (newTask.assigneeId) {
+    if (newTask.assigneeId && newTask.assigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: newTask.assigneeId,
         senderId: currentUser.id,
         type: 'task_assigned',
         title: '📋 Bạn được giao công việc mới',
         content: `${currentUser.name} đã giao nhiệm vụ "${newTask.title}" (${newTask.id}) cho bạn. Hạn hoàn thành: ${newTask.dueDate}.`,
+        taskId: newTask.id
+      });
+    }
+
+    // Nếu công việc cần phê duyệt, gửi thông báo khẩn cho Người phê duyệt
+    if (newTask.requiresApproval && newTask.approverId && newTask.approverId !== currentUser.id) {
+      this.addNotification({
+        recipientId: newTask.approverId,
+        senderId: currentUser.id,
+        type: 'approval_request',
+        title: '⏳ Nhiệm vụ mới cần bạn phê duyệt',
+        content: `${currentUser.name} đã gửi yêu cầu phê duyệt công việc "${newTask.title}" (${newTask.id}).`,
         taskId: newTask.id
       });
     }
@@ -643,7 +669,7 @@ export class Store {
     return task;
   }
 
-  approveTask(taskId) {
+  approveTask(taskId, note = '') {
     const tasks = this.getAllTasksRaw();
     const task = tasks.find(t => t.id === taskId);
     if (!task) return false;
@@ -651,24 +677,78 @@ export class Store {
     const currentUser = auth.getCurrentUser();
     task.status = 'done';
     task.progress = 100;
+    task.approvalStatus = 'APPROVED';
     task.approvedBy = currentUser.name;
     task.approvedAt = new Date().toISOString();
     task.updatedAt = new Date().toISOString();
 
+    if (!task.comments) task.comments = [];
+    task.comments.push({
+      id: `cm-${Date.now()}`,
+      userId: currentUser.id,
+      content: `[ĐÃ PHÊ DUYỆT 1-CHẠM] Người duyệt: ${currentUser.name}${note ? ` - Ghi chú: "${note}"` : ''}.`,
+      createdAt: new Date().toISOString()
+    });
+
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // Thông báo cho Assignee
-    if (task.assigneeId && task.assigneeId !== currentUser.id) {
-      this.addNotification({
-        recipientId: task.assigneeId,
-        senderId: currentUser.id,
-        type: 'approval',
-        title: '✅ Công việc đã được phê duyệt nghiệm thu',
-        content: `${currentUser.name} đã ký duyệt hoàn thành 100% nhiệm vụ "${task.title}" (${task.id}).`,
-        taskId: task.id
-      });
-    }
+    // Gửi thông báo cho Assignee và Creator
+    const targets = new Set([task.assigneeId, task.creatorId].filter(Boolean));
+    targets.forEach(userId => {
+      if (userId !== currentUser.id) {
+        this.addNotification({
+          recipientId: userId,
+          senderId: currentUser.id,
+          type: 'approval_approved',
+          title: '✅ Nhiệm vụ đã được phê duyệt 1-chạm',
+          content: `${currentUser.name} đã ký duyệt hoàn thành nhiệm vụ "${task.title}" (${task.id}).`,
+          taskId: task.id
+        });
+      }
+    });
+
+    return true;
+  }
+
+  rejectTask(taskId, reason = 'Chưa đạt tiêu chuẩn yêu cầu') {
+    const tasks = this.getAllTasksRaw();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return false;
+
+    const currentUser = auth.getCurrentUser();
+    task.status = 'todo';
+    task.approvalStatus = 'REJECTED';
+    task.rejectedBy = currentUser.name;
+    task.rejectReason = reason;
+    task.rejectedAt = new Date().toISOString();
+    task.updatedAt = new Date().toISOString();
+
+    if (!task.comments) task.comments = [];
+    task.comments.push({
+      id: `cm-${Date.now()}`,
+      userId: currentUser.id,
+      content: `[TỪ CHỐI PHÊ DUYỆT] Người duyệt: ${currentUser.name}. Lý do: "${reason}"`,
+      createdAt: new Date().toISOString()
+    });
+
+    this.saveAllTasks(tasks);
+    appScriptBridge.pushTask(task);
+
+    // Gửi thông báo cho Assignee và Creator
+    const targets = new Set([task.assigneeId, task.creatorId].filter(Boolean));
+    targets.forEach(userId => {
+      if (userId !== currentUser.id) {
+        this.addNotification({
+          recipientId: userId,
+          senderId: currentUser.id,
+          type: 'approval_rejected',
+          title: '❌ Nhiệm vụ bị từ chối phê duyệt',
+          content: `${currentUser.name} đã từ chối duyệt nhiệm vụ "${task.title}" (${task.id}). Lý do: "${reason}"`,
+          taskId: task.id
+        });
+      }
+    });
 
     return true;
   }
@@ -797,6 +877,7 @@ export class Store {
     // Giữ tối đa 100 thông báo gần nhất
     if (notifs.length > 100) notifs.length = 100;
     this.saveAllNotifications(notifs);
+    appScriptBridge.pushNotification(newNotif);
     return newNotif;
   }
 
@@ -806,6 +887,7 @@ export class Store {
     if (notif) {
       notif.isRead = true;
       this.saveAllNotifications(notifs);
+      appScriptBridge.markNotificationRead(notifId);
     }
   }
 

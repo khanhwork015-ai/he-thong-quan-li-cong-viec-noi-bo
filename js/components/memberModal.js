@@ -35,7 +35,7 @@ export class MemberModal {
     if (!this.container) return;
 
     if (!auth.canManageMembers()) {
-      toast('Chỉ Quản Trị Viên hoặc Trưởng/Phó Phòng mới có quyền quản lý nhân sự!', 'warning');
+      toast('Chỉ Quản Trị Viên (Admin) mới có quyền cấp và quản lý tài khoản nhân sự!', 'warning');
       return;
     }
 
@@ -146,18 +146,10 @@ export class MemberModal {
                   Vai trò phân quyền (Role) *
                 </label>
                 <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
-                  <!-- TRƯỞNG PHÒNG CHỈ CẤP ĐƯỢC CHO NHÂN VIÊN -->
-                  <option value="MEMBER" ${this.editingUser && this.editingUser.role === 'MEMBER' ? 'selected' : ''}>Nhân viên / Chuyên viên</option>
-                  
-                  ${(isAdmin || isLeadership) ? `
-                    <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>Trưởng phòng (Quản lý phòng ban)</option>
-                    <option value="DEPUTY_MANAGER" ${this.editingUser && this.editingUser.role === 'DEPUTY_MANAGER' ? 'selected' : ''}>Phó trưởng phòng</option>
-                  ` : ''}
-
-                  ${isAdmin ? `
-                    <option value="LEADERSHIP" ${this.editingUser && this.editingUser.role === 'LEADERSHIP' ? 'selected' : ''}>Ban Lãnh Đạo (Giám sát toàn viện)</option>
-                    <option value="ADMIN" ${this.editingUser && this.editingUser.role === 'ADMIN' ? 'selected' : ''}>Quản Trị Viên (Admin toàn quyền)</option>
-                  ` : ''}
+                  <option value="MEMBER" ${this.editingUser && this.editingUser.role === 'MEMBER' ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
+                  <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>👔 Trưởng phòng (MANAGER)</option>
+                  <option value="LEADERSHIP" ${this.editingUser && this.editingUser.role === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo (LEADERSHIP)</option>
+                  <option value="ADMIN" ${this.editingUser && this.editingUser.role === 'ADMIN' ? 'selected' : ''}>👑 Quản Trị Viên (ADMIN)</option>
                 </select>
                 ${isManager ? `
                   <span class="text-[10px] text-amber-600 block mt-1">

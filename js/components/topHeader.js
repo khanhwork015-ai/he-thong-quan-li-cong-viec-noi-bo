@@ -11,7 +11,7 @@ import { toast, rung, esc, timeAgo } from '../helpers.js';
 import { shinTheme } from '../theme.js';
 
 export class TopHeader {
-  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask) {
+  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications) {
     this.container = document.getElementById(containerId);
     this.onSearch = onSearch;
     this.onOpenCreateModal = onOpenCreateModal;
@@ -21,6 +21,7 @@ export class TopHeader {
     this.onOpenDepartmentModal = onOpenDepartmentModal;
     this.onLogout = onLogout;
     this.onOpenTask = onOpenTask;
+    this.onOpenNotifications = onOpenNotifications;
   }
 
   render() {
@@ -363,12 +364,16 @@ export class TopHeader {
     const btnMarkAll = this.container.querySelector('#btnMarkAllNotifsRead');
     const btnClearAll = this.container.querySelector('#btnClearAllNotifs');
 
-    if (btnNotif && notifDropdown) {
+    if (btnNotif) {
       btnNotif.addEventListener('click', (e) => {
         e.stopPropagation();
         rung(10);
         if (dropdown) dropdown.classList.add('hidden');
-        notifDropdown.classList.toggle('hidden');
+        if (this.onOpenNotifications) {
+          this.onOpenNotifications();
+        } else if (notifDropdown) {
+          notifDropdown.classList.toggle('hidden');
+        }
       });
 
       document.addEventListener('click', () => {

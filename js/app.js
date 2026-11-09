@@ -12,6 +12,7 @@ import { BottomNav } from './components/bottomNav.js';
 import { DashboardView } from './components/dashboardView.js';
 import { WorkspaceView } from './components/workspaceView.js';
 import { TaskDrawer } from './components/taskDrawer.js';
+import { NotificationDrawer } from './components/notificationDrawer.js';
 import { CreateTaskModal } from './components/createTaskModal.js';
 import { ProfileModal } from './components/profileModal.js';
 import { MemberModal } from './components/memberModal.js';
@@ -32,6 +33,7 @@ class App {
     this.dashboardView = null;
     this.workspaceView = null;
     this.taskDrawer = null;
+    this.notificationDrawer = null;
     this.createTaskModal = null;
     this.profileModal = null;
     this.memberModal = null;
@@ -67,6 +69,8 @@ class App {
       (navId) => this.switchNav(navId)
     );
 
+    this.notificationDrawer = new NotificationDrawer('notification-drawer-container', (taskId) => this.taskDrawer.open(taskId));
+
     this.header = new TopHeader('header-container',
       (query) => this.onSearch(query),
       () => this.openCreateModal(),
@@ -75,7 +79,8 @@ class App {
       () => this.sidebar.toggle(),
       () => this.switchNav('phong-ban'),
       () => this.onLogout(),
-      (taskId) => this.taskDrawer.open(taskId)
+      (taskId) => this.taskDrawer.open(taskId),
+      () => this.notificationDrawer.open()
     );
 
     this.taskDrawer = new TaskDrawer('drawer-container', () => this.refreshCurrentView());
@@ -200,6 +205,12 @@ class App {
     if (this.workspaceView) {
       this.workspaceView.searchQuery = query;
       this.workspaceView.render();
+    }
+  }
+
+  openTask(taskId) {
+    if (this.taskDrawer) {
+      this.taskDrawer.open(taskId);
     }
   }
 

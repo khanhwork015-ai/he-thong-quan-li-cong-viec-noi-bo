@@ -243,8 +243,10 @@ export const INITIAL_TASKS = [
     description: 'Khảo sát nhu cầu khám lưu động tại Nhà máy Chế biến Thủy sản Giá Rai. Đóng gói bảng giá ưu đãi xét nghiệm sinh hóa và chụp X-Quang phổi kỹ thuật số.',
     priority: 'P2',
     status: 'pending_approval',
+    requiresApproval: true,
+    approvalStatus: 'PENDING',
     assigneeId: 'user_mai_ptkh',
-    creatorId: 'user_tam_ptkh',
+    creatorId: 'user_mai_ptkh',
     approverId: 'user_tam_ptkh',
     dueDate: '2026-11-08T17:00:00.000Z',
     category: 'Khám Đoàn Doanh Nghiệp',
@@ -358,5 +360,52 @@ export const INITIAL_TASKS = [
     cost: 45000000,
     createdAt: '2026-11-02T08:00:00.000Z',
     updatedAt: '2026-11-06T07:15:00.000Z'
+  }
+];
+
+export const INITIAL_NOTIFICATIONS = [
+  {
+    id: 'notif_init_1',
+    recipientId: 'user_tam_ptkh',
+    senderId: 'user_lanhdao',
+    type: 'task_assigned',
+    title: '📋 Phân công công việc mới',
+    content: 'ThS.BS Nguyễn Thanh Vũ đã giao việc "Chuẩn bị tài liệu & báo cáo tiếp đón Đoàn kiểm tra Sở Y Tế Cà Mau" cho bạn.',
+    taskId: 'PTKH-101',
+    isRead: false,
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
+  },
+  {
+    id: 'notif_init_2',
+    recipientId: 'user_tam_ptkh',
+    senderId: 'user_mai_ptkh',
+    type: 'approval_request',
+    title: '⏳ Đề xuất cần phê duyệt',
+    content: 'CN. Nguyễn Thị Tuyết Mai đã gửi đề xuất phê duyệt hợp đồng khám Minh Phú (1.200 CBCNV).',
+    taskId: 'PTKH-102',
+    isRead: false,
+    createdAt: new Date(Date.now() - 3600000 * 4).toISOString()
+  },
+  {
+    id: 'notif_init_3',
+    recipientId: 'user_mai_ptkh',
+    senderId: 'user_tam_ptkh',
+    type: 'task_assigned',
+    title: '📋 Phân công công việc mới',
+    content: 'Huỳnh Trường Thanh Tâm đã phân công nhiệm vụ "Khám sức khỏe Minh Phú" cho bạn.',
+    taskId: 'PTKH-102',
+    isRead: true,
+    createdAt: new Date(Date.now() - 3600000 * 8).toISOString()
+  },
+  {
+    id: 'notif_init_4',
+    recipientId: 'user_lanhdao',
+    senderId: 'user_tam_ptkh',
+    type: 'approval_request',
+    title: '🏛️ Báo cáo trình Ban Lãnh Đạo phê duyệt',
+    content: 'Phòng PTKH trình ký duyệt slide tổng kết và kế hoạch tiếp đoàn Sở Y Tế.',
+    taskId: 'PTKH-101',
+    isRead: false,
+    createdAt: new Date(Date.now() - 3600000 * 1).toISOString()
   }
 ];

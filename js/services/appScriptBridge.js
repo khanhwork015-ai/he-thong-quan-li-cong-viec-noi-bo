@@ -185,6 +185,38 @@ export class AppScriptBridge {
       return false;
     }
   }
+
+  // Gửi 1 thông báo lên Google Sheet
+  async pushNotification(notification) {
+    if (!this.isConnected()) return false;
+    try {
+      await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'saveNotification', notification }),
+        mode: 'no-cors'
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Đánh dấu thông báo đã đọc trên Google Sheet
+  async markNotificationRead(notifId) {
+    if (!this.isConnected()) return false;
+    try {
+      await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'markNotificationRead', notifId }),
+        mode: 'no-cors'
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 export const appScriptBridge = new AppScriptBridge();
