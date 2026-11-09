@@ -65,6 +65,14 @@ export class DepartmentView {
     });
 
     const selectedDeptUsers = selectedDept ? store.getDepartmentUsers(selectedDept.id) : [];
+    const deptManager = selectedDept ? selectedDeptUsers.find(u => u.id === selectedDept.managerId || u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER') : null;
+    const regularStaff = selectedDeptUsers.filter(u => u.id !== deptManager?.id);
+
+    // Tự động giải phóng nếu Trưởng phòng từng bị kéo nhầm vào bộ phận con -> Trả về Quản lý Toàn phòng
+    if (deptManager && deptManager.teamId) {
+      deptManager.teamId = '';
+      store.updateUser(deptManager.id, { teamId: '' });
+    }
 
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-5 sm:gap-6 max-w-7xl pb-12 overflow-x-hidden">
@@ -322,7 +330,7 @@ export class DepartmentView {
                       </div>
                     ` : selectedDept.teams.map(t => {
                       const isEditingThisTeam = this.editingTeamId === t.id;
-                      const membersInTeam = selectedDeptUsers.filter(u => u.teamId === t.id);
+                      const membersInTeam = selectedDeptUsers.filter(u => u.teamId === t.id && u.id !== deptManager?.id);
 
                       if (isEditingThisTeam) {
                         return `
@@ -401,12 +409,9 @@ export class DepartmentView {
                     <div>
                       <h4 class="font-bold text-[14.5px] text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
                         <span>Nhân Sự Thuộc Phòng (${selectedDeptUsers.length})</span>
-                        <span class="text-[11px] font-normal text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                          🖐️ Giữ &amp; Kéo thả vào bộ phận ở trên
-                        </span>
                       </h4>
                       <span class="text-[11.5px] text-[#64748b]" style="color: var(--text-muted);">
-                        Bạn có thể kéo thẻ nhân viên thả vào bộ phận con, hoặc chọn trực tiếp từ danh sách thả xuống
+                        Trưởng phòng quản trị điều hành chung toàn bộ các bộ phận con. Chuyên viên trực thuộc có thể phân bổ vào từng bộ phận.
                       </span>
                     </div>
 
@@ -416,13 +421,58 @@ export class DepartmentView {
                     </button>
                   </div>
 
-                  <!-- LƯỚI THẺ NHÂN VIÊN (DRAGGABLE = TRUE) -->
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="departmentUsersGrid">
-                    ${selectedDeptUsers.length === 0 ? `
-                      <div class="col-span-2 p-6 rounded-2xl text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] border border-dashed border-[#e2e8f0]">
-                        Chưa có nhân sự nào được gán vào phòng ban này.
+                  <!-- 1. THẺ TRƯỞNG PHÒNG ĐẶC BIỆT (QUẢN TRỊ TOÀN PHÒNG - CỐ ĐỊNH, KHÔNG KÉO THẢ VÀO BỘ PHẬN NHỎ) -->
+                  ${deptManager ? `
+                    <div class="p-4 rounded-2xl border-2 border-[#d6a52a]/60 bg-gradient-to-r from-[#fffbeb] via-white to-[#fffbeb] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                      <div class="flex items-center gap-3.5 min-w-0">
+                        <div class="relative shrink-0">
+                          <img src="${deptManager.avatar}" alt="${deptManager.name}" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-[#d6a52a] shadow-xs" />
+                          <span class="absolute -top-1.5 -right-1.5 bg-[#d6a52a] text-[#533d00] text-[12px] font-black rounded-full px-1.5 py-0.2 shadow-xs">👑</span>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[14.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">${esc(deptManager.name)}</span>
+                            <span class="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e] border border-amber-300">
+                              👑 Trưởng Phòng
+                            </span>
+                            <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+                              Toàn phòng
+                            </span>
+                          </div>
+                          <div class="text-[12px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
+                            ${esc(deptManager.title || 'Trưởng phòng')} • <span class="font-mono-data">${esc(deptManager.email || deptManager.username || '')}</span>
+                            ${deptManager.phone ? ` • <span class="font-mono-data">${esc(deptManager.phone)}</span>` : ''}
+                          </div>
+                        </div>
                       </div>
-                    ` : selectedDeptUsers.map(u => {
+
+                      <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
+                        <span class="text-[11.5px] font-bold text-[#795900] bg-white/90 border border-amber-200 px-3 py-1.5 rounded-xl shadow-2xs flex items-center gap-1.5">
+                          <span class="material-symbols-outlined text-[16px] text-[#d6a52a]">verified</span>
+                          <span>Quản trị Toàn phòng</span>
+                        </span>
+                      </div>
+                    </div>
+                  ` : ''}
+
+                  <!-- 2. TIÊU ĐỀ CHUYÊN VIÊN TRỰC THUỘC (CÓ THỂ KÉO THẢ VÀO BỘ PHẬN) -->
+                  <div class="flex items-center justify-between flex-wrap gap-2 pt-2">
+                    <span class="text-[13px] font-bold text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
+                      <span>Chuyên Viên / Nhân Sự Trực Thuộc (${regularStaff.length})</span>
+                      <span class="text-[10.5px] font-normal text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        🖐️ Giữ &amp; Kéo thả vào bộ phận ở trên
+                      </span>
+                    </span>
+                  </div>
+
+                  <!-- LƯỚI THẺ CHUYÊN VIÊN (DRAGGABLE = TRUE) -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="departmentUsersGrid">
+                    ${regularStaff.length === 0 ? `
+                      <div class="col-span-2 p-6 rounded-2xl text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] border border-dashed border-[#e2e8f0]">
+                        Chưa có chuyên viên nào trong phòng ban này.
+                      </div>
+                    ` : regularStaff.map(u => {
                       const team = (selectedDept.teams || []).find(t => t.id === u.teamId);
                       return `
                         <!-- THẺ NHÂN VIÊN CÓ THỂ KÉO THẢ (DRAGGABLE) -->
@@ -437,7 +487,7 @@ export class DepartmentView {
                             <div class="min-w-0 flex-1">
                               <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</div>
                               <div class="text-[11.5px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
-                                ${esc(u.title || 'Nhân viên')} • <span class="font-mono-data">${esc(u.email || u.username || '')}</span>
+                                ${esc(u.title || 'Chuyên viên')} • <span class="font-mono-data">${esc(u.email || u.username || '')}</span>
                               </div>
                             </div>
                           </div>
@@ -488,6 +538,7 @@ export class DepartmentView {
     if (!targetTeam) return;
 
     const deptUsers = store.getDepartmentUsers(dept.id);
+    const assignableUsers = deptUsers.filter(u => u.id !== dept.managerId && u.role !== 'MANAGER' && u.role !== 'DEPUTY_MANAGER');
 
     modalBox.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[110] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="quickAssignOverlay">
@@ -513,9 +564,9 @@ export class DepartmentView {
           </p>
 
           <div class="flex flex-col gap-2.5 max-h-[400px] overflow-y-auto pr-1">
-            ${deptUsers.length === 0 ? `
-              <div class="p-6 text-center text-[12px] text-gray-500 bg-gray-50 rounded-xl">Phòng ban này hiện chưa có nhân viên nào.</div>
-            ` : deptUsers.map(u => {
+            ${assignableUsers.length === 0 ? `
+              <div class="p-6 text-center text-[12px] text-gray-500 bg-gray-50 rounded-xl">Không có chuyên viên nào khả dụng để gán vào bộ phận.</div>
+            ` : assignableUsers.map(u => {
               const isAlreadyInTeam = u.teamId === targetTeam.id;
               const currentTeam = (dept.teams || []).find(t => t.id === u.teamId);
 
@@ -1017,6 +1068,10 @@ export class DepartmentView {
           const user = store.getUserById(userId);
           const team = (currentDept.teams || []).find(t => t.id === targetTeamId);
           if (user && team) {
+            if (user.id === currentDept.managerId || user.role === 'MANAGER' || user.role === 'DEPUTY_MANAGER') {
+              toast('👑 Trưởng phòng phụ trách quản trị Toàn phòng, không phân bổ vào bộ phận con!', 'warning');
+              return;
+            }
             store.updateUser(userId, { teamId: targetTeamId });
             toast(`🎉 Đã kéo thả thành công: ${user.name} ➔ ${team.name}!`, 'success');
             this.render(currentDept.id);

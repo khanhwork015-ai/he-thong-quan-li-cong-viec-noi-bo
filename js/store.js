@@ -80,8 +80,28 @@ export class Store {
       let userCount = 0;
 
       if (cloudData.tasks && cloudData.tasks.length > 0) {
-        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(cloudData.tasks));
-        taskCount = cloudData.tasks.length;
+        const sanitizedTasks = cloudData.tasks.map(t => {
+          if (!t) return t;
+          let subtasks = t.subtasks;
+          if (typeof subtasks === 'string') {
+            try { subtasks = JSON.parse(subtasks); } catch (_) { subtasks = []; }
+          }
+          if (!Array.isArray(subtasks)) subtasks = [];
+
+          let comments = t.comments;
+          if (typeof comments === 'string') {
+            try { comments = JSON.parse(comments); } catch (_) { comments = []; }
+          }
+          if (!Array.isArray(comments)) comments = [];
+
+          return {
+            ...t,
+            subtasks,
+            comments
+          };
+        });
+        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(sanitizedTasks));
+        taskCount = sanitizedTasks.length;
       }
       if (cloudData.users && cloudData.users.length > 0) {
         // Chuẩn hóa và hợp nhất người dùng an toàn (Zero Data Loss & Type Safety)
@@ -469,7 +489,26 @@ export class Store {
   // --- QUẢN LÝ CÔNG VIỆC (CRUD TASKS) ---
   getAllTasksRaw() {
     try {
-      return JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || INITIAL_TASKS;
+      const raw = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || INITIAL_TASKS;
+      if (Array.isArray(raw)) {
+        return raw.map(t => {
+          if (!t) return t;
+          let subtasks = t.subtasks;
+          if (typeof subtasks === 'string') {
+            try { subtasks = JSON.parse(subtasks); } catch (_) { subtasks = []; }
+          }
+          if (!Array.isArray(subtasks)) subtasks = [];
+
+          let comments = t.comments;
+          if (typeof comments === 'string') {
+            try { comments = JSON.parse(comments); } catch (_) { comments = []; }
+          }
+          if (!Array.isArray(comments)) comments = [];
+
+          return { ...t, subtasks, comments };
+        });
+      }
+      return INITIAL_TASKS;
     } catch (_) {
       return INITIAL_TASKS;
     }
@@ -499,9 +538,9 @@ export class Store {
     } else if (options.tab === 'created_by_me') {
       filtered = filtered.filter(t => t.creatorId === currentUser.id);
     } else if (options.tab === 'pending_approval') {
-      filtered = filtered.filter(t => t.status === 'review');
+      filtered = filtered.filter(t => t.status === 'pending_approval' || t.status === 'review');
     } else if (options.tab === 'completed') {
-      filtered = filtered.filter(t => t.status === 'done');
+      filtered = filtered.filter(t => t.status === 'done' || t.status === 'completed');
     }
 
     if (options.priority && options.priority !== 'ALL') {
@@ -669,8 +708,10 @@ export class Store {
     const statusLabels = {
       'todo': 'Chưa bắt đầu',
       'in_progress': 'Đang thực hiện',
+      'pending_approval': 'Chờ phê duyệt',
       'review': 'Chờ phê duyệt',
       'done': 'Đã hoàn thành',
+      'completed': 'Đã hoàn thành',
       'paused': 'Tạm dừng',
       'overdue': 'Quá hạn'
     };

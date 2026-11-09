@@ -49,8 +49,9 @@ export class WorkspaceView {
     const allDeptTasks = store.getDepartmentTasks();
     const countAssigned = allDeptTasks.filter(t => t.assigneeId === currentUser.id).length;
     const countCreated = allDeptTasks.filter(t => t.creatorId === currentUser.id).length;
-    const countPending = allDeptTasks.filter(t => t.status === 'review').length;
-    const countDone = allDeptTasks.filter(t => t.status === 'done').length;
+    const countPending = allDeptTasks.filter(t => t.status === 'pending_approval' || t.status === 'review').length;
+    const countDone = allDeptTasks.filter(t => t.status === 'done' || t.status === 'completed').length;
+    const deptTeams = Array.isArray(currentDept.teams) ? currentDept.teams : [];
 
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-4 animate-fade-in max-w-7xl">
@@ -145,13 +146,13 @@ export class WorkspaceView {
           </div>
 
           <!-- BỘ LỌC BỘ PHẬN CON (TEAMS) TRONG PHÒNG BAN -->
-          ${(currentDept.teams && currentDept.teams.length > 0) ? `
+          ${deptTeams.length > 0 ? `
             <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-[#f1f5f9]">
               <span class="text-[11px] font-bold text-[#817663] shrink-0">Bộ phận:</span>
               <button type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all ${this.teamFilter === 'ALL' ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-team-filter="ALL">
                 Tất cả (${allDeptTasks.length})
               </button>
-              ${currentDept.teams.map(t => {
+              ${deptTeams.map(t => {
                 const count = allDeptTasks.filter(item => item.teamId === t.id).length;
                 return `
                   <button type="button" class="px-2.5 py-1 rounded-lg text-[11px] font-bold shrink-0 transition-all ${this.teamFilter === t.id ? 'bg-[#d6a52a] text-[#533d00]' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-team-filter="${t.id}">
@@ -302,7 +303,11 @@ export class WorkspaceView {
     return `
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
         ${columns.map(col => {
-          const colTasks = tasks.filter(t => t.status === col.id);
+          const colTasks = tasks.filter(t => {
+            if (col.id === 'review') return t.status === 'review' || t.status === 'pending_approval';
+            if (col.id === 'done') return t.status === 'done' || t.status === 'completed';
+            return t.status === col.id;
+          });
           return `
             <div class="rounded-2xl border border-[#e2e8f0] bg-white p-4 shadow-sm flex flex-col gap-3 min-h-[200px] md:min-h-[480px]">
               <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9]">
@@ -353,8 +358,10 @@ export class WorkspaceView {
     const map = {
       'todo': { label: 'Chưa bắt đầu', bg: '#F1F5F9', text: '#475569' },
       'in_progress': { label: 'Đang thực hiện', bg: '#DBEAFE', text: '#1D4ED8' },
+      'pending_approval': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
       'review': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
       'done': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
+      'completed': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
       'paused': { label: 'Tạm dừng', bg: '#F3E8FF', text: '#7E22CE' },
       'overdue': { label: 'Quá hạn', bg: '#FEE2E2', text: '#B91C1C' }
     };
@@ -407,10 +414,12 @@ export class WorkspaceView {
     });
 
     this.container.querySelectorAll('.row-task-item, .kanban-card').forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
         rung(10);
         const taskId = item.dataset.taskId;
-        if (this.onSelectTask) this.onSelectTask(taskId);
+        if (taskId && this.onSelectTask) {
+          this.onSelectTask(taskId);
+        }
       });
     });
   }

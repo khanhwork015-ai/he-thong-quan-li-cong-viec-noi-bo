@@ -19,7 +19,12 @@ export class TaskDrawer {
   open(taskId) {
     rung(10);
     this.currentTaskId = taskId;
-    this.render();
+    try {
+      this.render();
+    } catch (err) {
+      console.error('[TASK DRAWER OPEN ERROR]', err);
+      toast('Lỗi khi mở công việc: ' + err.message, 'error');
+    }
   }
 
   close() {
@@ -39,12 +44,29 @@ export class TaskDrawer {
       return;
     }
 
-    const currentUser = auth.getCurrentUser();
+    // Đảm bảo subtasks và comments luôn là Mảng chuẩn an toàn
+    if (!Array.isArray(task.subtasks)) {
+      if (typeof task.subtasks === 'string' && task.subtasks.trim().startsWith('[')) {
+        try { task.subtasks = JSON.parse(task.subtasks); } catch (_) { task.subtasks = []; }
+      } else {
+        task.subtasks = [];
+      }
+    }
+    if (!Array.isArray(task.comments)) {
+      if (typeof task.comments === 'string' && task.comments.trim().startsWith('[')) {
+        try { task.comments = JSON.parse(task.comments); } catch (_) { task.comments = []; }
+      } else {
+        task.comments = [];
+      }
+    }
+
+    const currentUser = auth.getCurrentUser() || {};
     const assignee = store.getUserById(task.assigneeId);
     const creator = store.getUserById(task.creatorId);
     const approver = store.getUserById(task.approverId);
     const dept = store.getDepartmentById(task.departmentId);
-    const team = (dept?.teams || []).find(t => t.id === task.teamId);
+    const deptTeams = Array.isArray(dept?.teams) ? dept.teams : [];
+    const team = deptTeams.find(t => t.id === task.teamId);
 
     const isPendingApproval = task.status === 'pending_approval' || task.status === 'review';
     
@@ -129,12 +151,13 @@ export class TaskDrawer {
                     ${store.getAllDepartments().map(d => {
                       const dUsers = store.getAllUsers().filter(u => u.departmentId === d.id || u.departmentId === 'all');
                       if (dUsers.length === 0) return '';
+                      const dTeams = Array.isArray(d.teams) ? d.teams : [];
                       return `
                         <optgroup label="${esc(d.name)} (${esc(d.code)})">
                           ${dUsers.map(u => {
-                            const uTeam = (d.teams || []).find(t => t.id === u.teamId);
+                            const uTeam = dTeams.find(t => t.id === u.teamId);
                             const teamLabel = uTeam ? `[${uTeam.code}] ` : '';
-                            return `<option value="${u.id}" ${u.id === task.assigneeId ? 'selected' : ''}>${teamLabel}${esc(u.name)} (${esc(u.title)})</option>`;
+                            return `<option value="${u.id}" ${u.id === task.assigneeId ? 'selected' : ''}>${teamLabel}${esc(u.name)} (${esc(u.title || 'Nhân sự')})</option>`;
                           }).join('')}
                         </optgroup>
                       `;
@@ -183,7 +206,7 @@ export class TaskDrawer {
                 <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>Chưa bắt đầu</option>
                 <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>Đang thực hiện</option>
                 <option value="pending_approval" ${task.status === 'pending_approval' || task.status === 'review' ? 'selected' : ''}>Chờ phê duyệt</option>
-                <option value="done" ${task.status === 'done' ? 'selected' : ''}>Đã hoàn thành</option>
+                <option value="done" ${task.status === 'done' || task.status === 'completed' ? 'selected' : ''}>Đã hoàn thành</option>
               </select>
             </div>
 
@@ -268,7 +291,7 @@ export class TaskDrawer {
                   <span>Đang chờ <strong>${approver ? esc(approver.name) : 'Người phê duyệt'}</strong> ký duyệt.</span>
                 </div>
               `}
-            ` : task.status !== 'done' ? `
+            ` : (task.status !== 'done' && task.status !== 'completed') ? `
               <button type="button" class="flex-1 py-2.5 rounded-xl bg-[#eff4ff] text-[#1d4ed8] font-bold text-[13px] hover:bg-[#dbeafe] flex items-center justify-center gap-1.5 transition-all min-h-[44px] cursor-pointer" id="btnMarkReview">
                 <span class="material-symbols-outlined text-[18px]">send</span>
                 <span>Gửi Trình Phê Duyệt 1-Chạm</span>
@@ -294,6 +317,7 @@ export class TaskDrawer {
       'pending_approval': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
       'review': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
       'done': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
+      'completed': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
       'paused': { label: 'Tạm dừng', bg: '#F3E8FF', text: '#7E22CE' },
       'overdue': { label: 'Quá hạn', bg: '#FEE2E2', text: '#B91C1C' }
     };

@@ -34,7 +34,20 @@ function doGet(e) {
     }
 
     if (action === 'getData' || action === 'seed') {
-      const tasks = getSheetData(ss.getSheetByName(SHEET_TASKS));
+      const rawTasks = getSheetData(ss.getSheetByName(SHEET_TASKS));
+      const tasks = rawTasks.map(t => {
+        if (typeof t.subtasks === 'string' && t.subtasks.trim().startsWith('[')) {
+          try { t.subtasks = JSON.parse(t.subtasks); } catch (_) { t.subtasks = []; }
+        }
+        if (!Array.isArray(t.subtasks)) t.subtasks = [];
+
+        if (typeof t.comments === 'string' && t.comments.trim().startsWith('[')) {
+          try { t.comments = JSON.parse(t.comments); } catch (_) { t.comments = []; }
+        }
+        if (!Array.isArray(t.comments)) t.comments = [];
+
+        return t;
+      });
       const users = getSheetData(ss.getSheetByName(SHEET_USERS));
       const rawDepts = getSheetData(ss.getSheetByName(SHEET_DEPTS));
       const depts = rawDepts.map(d => {
@@ -183,7 +196,7 @@ function ensureSheets(ss) {
   const sheets = [
     { 
       name: SHEET_TASKS, 
-      headers: ['id', 'departmentId', 'teamId', 'title', 'description', 'priority', 'status', 'requiresApproval', 'approvalStatus', 'approverId', 'assigneeId', 'creatorId', 'dueDate', 'category', 'progress', 'cost', 'createdAt', 'updatedAt'] 
+      headers: ['id', 'departmentId', 'teamId', 'title', 'description', 'priority', 'status', 'requiresApproval', 'approvalStatus', 'approverId', 'assigneeId', 'creatorId', 'dueDate', 'category', 'progress', 'cost', 'subtasks', 'comments', 'createdAt', 'updatedAt'] 
     },
     { 
       name: SHEET_USERS, 
@@ -305,7 +318,16 @@ function saveOrUpdateRow(sheet, item, keyField) {
     }
   }
 
-  const rowValues = headers.map(h => item[h] !== undefined ? item[h] : '');
+  const rowValues = headers.map(h => {
+    const val = item[h];
+    if (val !== undefined && val !== null) {
+      if (typeof val === 'object') {
+        return JSON.stringify(val);
+      }
+      return val;
+    }
+    return '';
+  });
 
   if (foundRowIdx > 0) {
     sheet.getRange(foundRowIdx, 1, 1, headers.length).setValues([rowValues]);
