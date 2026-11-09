@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - WORKSPACE TASK MANAGEMENT COMPONENT (MOBILE FIRST)
  * Khôi phục tông Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
  * Giao diện Thẻ Task chạm thông minh trên Mobile (md:hidden) & Bảng chi tiết trên Desktop (md:block)
@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=5.1';
-import { store } from '../store.js?v=5.1';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.1';
+import { auth } from '../auth.js?v=5.2';
+import { store } from '../store.js?v=5.2';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.2';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
@@ -330,14 +330,11 @@ export class WorkspaceView {
                         </button>
                       `}
                     </td>
-                    <!-- CỘT THAO TÁC GỌN GÀNG -->
+                    <!-- CỘT THAO TÁC GỌN GÀNG (CLICK DÒNG ĐÃ XEM ĐƯỢC CHI TIẾT) -->
                     <td class="py-3 px-4 text-center">
-                      <div class="flex items-center justify-center gap-1">
-                        <button type="button" class="btn-edit-task p-1.5 rounded-lg text-amber-700 hover:bg-amber-100/70 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer shrink-0" data-task-id="${t.id}" title="Chỉnh sửa công việc">
-                          <span class="material-symbols-outlined text-[18px]">edit</span>
-                        </button>
-                        <button type="button" class="btn-view-detail p-1.5 rounded-lg text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer shrink-0" data-task-id="${t.id}" title="Xem chi tiết">
-                          <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                      <div class="flex items-center justify-center">
+                        <button type="button" class="btn-edit-task p-2 rounded-xl text-amber-700 hover:bg-amber-100/70 min-w-[38px] min-h-[38px] flex items-center justify-center cursor-pointer shrink-0 transition-colors" data-task-id="${t.id}" title="Chỉnh sửa công việc">
+                          <span class="material-symbols-outlined text-[19px]">edit</span>
                         </button>
                       </div>
                     </td>
@@ -517,18 +514,6 @@ export class WorkspaceView {
         const taskId = btn.dataset.taskId;
         if (taskId && this.onEditTask) {
           this.onEditTask(taskId);
-        }
-      });
-    });
-
-    // NÚT XEM CHI TIẾT
-    this.container.querySelectorAll('.btn-view-detail').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        rung(10);
-        const taskId = btn.dataset.taskId;
-        if (taskId && this.onSelectTask) {
-          this.onSelectTask(taskId);
         }
       });
     });

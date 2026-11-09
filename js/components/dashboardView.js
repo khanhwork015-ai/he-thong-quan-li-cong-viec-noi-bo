@@ -1,16 +1,16 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - EXECUTIVE DASHBOARD COMPONENT (SHIN AIOS v2.7)
- * Thiết kế chuẩn Archetype B:
- * - Compact Bar (40px) chọn phạm vi Toàn viện / Từng phòng ban
- * - 4 Thẻ KPI toàn viện cô đọng (Tổng việc, Tiến độ %, Chờ duyệt khẩn cấp, Quá hạn)
- * - Biểu đồ so sánh tiến độ đa phòng ban (Horizontal Progress Grid)
- * - Hàng đợi phê duyệt khẩn cấp 1-chạm (Quick Approval Queue)
- * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
+/**
+ * THANH VU MEDIC CS3 - EXECUTIVE DASHBOARD COMPONENT (SHIN AIOS v2.7)
+ * Thi?t k? chu?n Archetype B:
+ * - Compact Bar (40px) ch?n ph?m vi To�n vi?n / T?ng ph�ng ban
+ * - 4 Th? KPI to�n vi?n c� d?ng (T?ng vi?c, Ti?n d? %, Ch? duy?t kh?n c?p, Qu� h?n)
+ * - Bi?u d? so s�nh ti?n d? da ph�ng ban (Horizontal Progress Grid)
+ * - H�ng d?i ph� duy?t kh?n c?p 1-ch?m (Quick Approval Queue)
+ * Chu?n c�ng th�i h?c Mobile-First, Touch Target >= 44px, an to�n DOM v?i esc()
  */
 
-import { auth } from '../auth.js?v=5.1';
-import { store } from '../store.js?v=5.1';
-import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=5.1';
+import { auth } from '../auth.js?v=5.2';
+import { store } from '../store.js?v=5.2';
+import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=5.2';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
@@ -18,7 +18,7 @@ export class DashboardView {
     this.onNavigateToTasks = onNavigateToTasks;
     this.onOpenCreateModal = onOpenCreateModal;
     this.onSelectTask = onSelectTask;
-    this.selectedDeptScope = 'all'; // 'all' hoặc deptId
+    this.selectedDeptScope = 'all'; // 'all' ho?c deptId
   }
 
   render() {
@@ -32,18 +32,18 @@ export class DashboardView {
     const allTasksRaw = store.getAllTasksRaw();
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // Xác định phòng ban hiển thị theo scope
+    // X�c d?nh ph�ng ban hi?n th? theo scope
     let activeDeptId = this.selectedDeptScope;
     if (!isLeadershipOrAdmin) {
       activeDeptId = currentUser.departmentId || allDepartments[0]?.id || 'dept_ptkh';
     }
 
-    // Lọc công việc theo phạm vi được chọn
+    // L?c c�ng vi?c theo ph?m vi du?c ch?n
     const scopedTasks = activeDeptId === 'all' 
       ? allTasksRaw 
       : allTasksRaw.filter(t => t.departmentId === activeDeptId);
 
-    // Tính 4 chỉ số KPI cốt lõi
+    // T�nh 4 ch? s? KPI c?t l�i
     const totalCount = scopedTasks.length;
     const doneTasks = scopedTasks.filter(t => t.status === 'done');
     const doneCount = doneTasks.length;
@@ -55,12 +55,12 @@ export class DashboardView {
     const overdueTasks = scopedTasks.filter(t => t.dueDate < todayStr && t.status !== 'done');
     const overdueCount = overdueTasks.length;
 
-    // Danh sách hàng đợi phê duyệt khẩn cấp (Ưu tiên P1, P2)
+    // Danh s�ch h�ng d?i ph� duy?t kh?n c?p (Uu ti�n P1, P2)
     const approvalQueue = scopedTasks
       .filter(t => t.status === 'pending_approval' || t.status === 'review')
       .sort((a, b) => (a.priority === 'P1' ? -1 : 1));
 
-    // Thống kê tiến độ theo từng phòng ban cho biểu đồ so sánh
+    // Th?ng k� ti?n d? theo t?ng ph�ng ban cho bi?u d? so s�nh
     const deptStats = allDepartments.map(dept => {
       const dTasks = allTasksRaw.filter(t => t.departmentId === dept.id);
       const dDone = dTasks.filter(t => t.status === 'done').length;
@@ -81,22 +81,22 @@ export class DashboardView {
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto">
         
-        <!-- 1. COMPACT BAR CHUẨN ARCHETYPE B (CAO 40PX) & CHỌN PHẠM VI TOÀN VIỆN -->
+        <!-- 1. COMPACT BAR CHU?N ARCHETYPE B (CAO 40PX) & CH?N PH?M VI TO�N VI?N -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:px-4 rounded-2xl bg-white border border-[#e2e8f0] shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
           <div class="flex items-center gap-2.5 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[#16a34a] shrink-0 animate-pulse"></span>
             <span class="font-bold text-[13px] sm:text-[13.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
-              ${isLeadershipOrAdmin ? '🏛️ Executive Dashboard • Điều Hành Bệnh Viện' : '👔 Bảng Điều Hành Phòng Ban'}
+              ${isLeadershipOrAdmin ? '??? Executive Dashboard � �i?u H�nh B?nh Vi?n' : '?? B?ng �i?u H�nh Ph�ng Ban'}
             </span>
-            <span class="text-[11px] text-[#64748b] hidden md:inline truncate">• Cập nhật trực tiếp ${ngayVN(new Date())}</span>
+            <span class="text-[11px] text-[#64748b] hidden md:inline truncate">� C?p nh?t tr?c ti?p ${ngayVN(new Date())}</span>
           </div>
 
-          <!-- BỘ CHỌN PHẠM VI XEM TOÀN VIỆN HOẶC TỪNG PHÒNG -->
+          <!-- B? CH?N PH?M VI XEM TO�N VI?N HO?C T?NG PH�NG -->
           ${isLeadershipOrAdmin ? `
             <div class="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2 min-w-0">
-              <label for="selectDashboardScope" class="text-[12px] font-bold text-[#64748b] shrink-0">Phạm vi:</label>
+              <label for="selectDashboardScope" class="text-[12px] font-bold text-[#64748b] shrink-0">Ph?m vi:</label>
               <select id="selectDashboardScope" class="flex-1 sm:flex-initial max-w-[210px] sm:max-w-xs h-9 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] sm:text-[12.5px] font-bold text-[#0d1c2f] bg-[#f8f9ff] focus:bg-white focus:border-[#d6a52a] outline-none cursor-pointer shadow-2xs truncate">
-                <option value="all" ${this.selectedDeptScope === 'all' ? 'selected' : ''}>🏥 Toàn Viện (Tất Cả)</option>
+                <option value="all" ${this.selectedDeptScope === 'all' ? 'selected' : ''}>?? To�n Vi?n (T?t C?)</option>
                 ${allDepartments.map(d => `
                   <option value="${d.id}" ${this.selectedDeptScope === d.id ? 'selected' : ''}>${esc(d.name)} (${esc(d.code)})</option>
                 `).join('')}
@@ -109,108 +109,108 @@ export class DashboardView {
           `}
         </div>
 
-        <!-- 2. HERO GREETING CARD (CHƯƠNG 1 NGUYÊN TẮC 5) -->
+        <!-- 2. HERO GREETING CARD (CHUONG 1 NGUY�N T?C 5) -->
         <section class="hn-hero">
           <div class="hn-hero-top">
             <div>
               <div class="hn-chao" id="lblLoiChao">${loiChao(currentUser.name)}</div>
               <div class="hn-ngay" id="lblNgayThang">
-                ${ngayVN(new Date())} • ${activeDeptId === 'all' ? 'Toàn Bệnh Viện CS3' : (activeDeptObj?.name || 'Phòng ban')}
+                ${ngayVN(new Date())} � ${activeDeptId === 'all' ? 'To�n B?nh Vi?n CS3' : (activeDeptObj?.name || 'Ph�ng ban')}
               </div>
             </div>
             <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold" style="background-color: var(--primary-soft); color: var(--primary);">
               <span class="material-symbols-outlined text-[15px]">verified_user</span>
-              <span>${auth.isAdmin() ? 'Quản Trị Viên' : (auth.isLeadership() ? 'Ban Lãnh Đạo' : 'Trưởng Phòng')}</span>
+              <span>${auth.isAdmin() ? 'Qu?n Tr? Vi�n' : (auth.isLeadership() ? 'Ban L�nh �?o' : 'Tru?ng Ph�ng')}</span>
             </div>
           </div>
 
-          <!-- 3 SỐ LIỆU TỔNG QUAN HERO -->
+          <!-- 3 S? LI?U T?NG QUAN HERO -->
           <div class="tq-3so">
-            <div class="tq-o cursor-pointer" data-filter-tab="all" title="Bấm để xem danh sách công việc">
+            <div class="tq-o cursor-pointer" data-filter-tab="all" title="B?m d? xem danh s�ch c�ng vi?c">
               <div class="tq-so" style="color: var(--primary);">${totalCount}</div>
-              <div class="tq-nhan">Tổng công việc</div>
+              <div class="tq-nhan">T?ng c�ng vi?c</div>
             </div>
-            <div class="tq-o cursor-pointer" data-filter-tab="pending_approval" title="Bấm để xem công việc chờ duyệt">
+            <div class="tq-o cursor-pointer" data-filter-tab="pending_approval" title="B?m d? xem c�ng vi?c ch? duy?t">
               <div class="tq-so" style="color: #b45309;">${pendingCount}</div>
-              <div class="tq-nhan">Chờ duyệt khẩn</div>
+              <div class="tq-nhan">Ch? duy?t kh?n</div>
             </div>
-            <div class="tq-o cursor-pointer" data-filter-tab="completed" title="Bấm để xem công việc đã xong">
+            <div class="tq-o cursor-pointer" data-filter-tab="completed" title="B?m d? xem c�ng vi?c d� xong">
               <div class="tq-so" style="color: #16a34a;">${completionRate}%</div>
-              <div class="tq-nhan">Tiến độ đạt</div>
+              <div class="tq-nhan">Ti?n d? d?t</div>
             </div>
           </div>
 
-          <!-- NÚT GIAO VIỆC 1-CHẠM 100% (PRIMARY CTA CAO >= 48PX) -->
+          <!-- N�T GIAO VI?C 1-CH?M 100% (PRIMARY CTA CAO >= 48PX) -->
           <button type="button" class="w-full py-3 px-4 rounded-xl font-bold text-[13.5px] transition-all min-h-[48px] flex items-center justify-center gap-2 shadow-xs cursor-pointer" id="btnHeroCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);">
             <span class="material-symbols-outlined text-[20px]">add_circle</span>
-            <span>＋ Giao Việc Mới / Khởi Tạo Đề Xuất 1-Chạm</span>
+            <span>+ Giao Vi?c M?i / Kh?i T?o �? Xu?t 1-Ch?m</span>
           </button>
         </section>
 
-        <!-- 3. 4 THẺ KPI TOÀN VIỆN CỐT LÕI (CARDS KPI GRID) -->
+        <!-- 3. 4 TH? KPI TO�N VI?N C?T L�I (CARDS KPI GRID) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           
-          <!-- THẺ 1: TỔNG CÔNG VIỆC -->
+          <!-- TH? 1: T?NG C�NG VI?C -->
           <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-2xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer card-kpi" data-filter-tab="all" style="background-color: var(--card); border-color: var(--border);">
             <div class="flex items-center justify-between text-[#795900]" style="color: var(--primary);">
-              <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">Tổng khối lượng</span>
+              <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">T?ng kh?i lu?ng</span>
               <span class="material-symbols-outlined text-[20px]">assignment</span>
             </div>
             <div class="text-[24px] sm:text-[28px] font-extrabold text-[#0d1c2f] mt-1.5" style="color: var(--text);">${totalCount}</div>
-            <span class="text-[11px] text-[#64748b] mt-0.5 truncate block">Đang vận hành toàn viện</span>
+            <span class="text-[11px] text-[#64748b] mt-0.5 truncate block">�ang v?n h�nh to�n vi?n</span>
           </div>
 
-          <!-- THẺ 2: TỶ LỆ HOÀN THÀNH ĐÚNG HẠN -->
+          <!-- TH? 2: T? L? HO�N TH�NH ��NG H?N -->
           <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-2xs hover:border-emerald-300 active:bg-emerald-50/20 transition-all cursor-pointer card-kpi" data-filter-tab="completed" style="background-color: var(--card); border-color: var(--border);">
             <div class="flex items-center justify-between text-[#16a34a]">
-              <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">Tiến độ hoàn tất</span>
+              <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">Ti?n d? ho�n t?t</span>
               <span class="material-symbols-outlined text-[20px]">task_alt</span>
             </div>
             <div class="text-[24px] sm:text-[28px] font-extrabold text-[#16a34a] mt-1.5">${completionRate}%</div>
-            <span class="text-[11px] text-[#64748b] mt-0.5 truncate block">${doneCount}/${totalCount} công việc đã xong</span>
+            <span class="text-[11px] text-[#64748b] mt-0.5 truncate block">${doneCount}/${totalCount} c�ng vi?c d� xong</span>
           </div>
 
-          <!-- THẺ 3: VIỆC CHỜ DUYỆT KHẨN CẤP (HIGHLIGHT VÀNG CAM CẢNH BÁO) -->
+          <!-- TH? 3: VI?C CH? DUY?T KH?N C?P (HIGHLIGHT V�NG CAM C?NH B�O) -->
           <div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-amber-400 bg-amber-50/30 shadow-xs hover:border-amber-500 active:bg-amber-100/40 transition-all cursor-pointer card-kpi" data-filter-tab="pending_approval">
             <div class="flex items-center justify-between text-amber-800">
               <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider flex items-center gap-1">
-                <span>Chờ Duyệt Khẩn</span>
+                <span>Ch? Duy?t Kh?n</span>
                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
               </span>
               <span class="material-symbols-outlined text-[20px] text-amber-600">pending_actions</span>
             </div>
             <div class="text-[24px] sm:text-[28px] font-extrabold text-amber-900 mt-1.5">${pendingCount}</div>
-            <span class="text-[11px] text-amber-800 mt-0.5 font-bold truncate block">Cần lãnh đạo ký 1-chạm</span>
+            <span class="text-[11px] text-amber-800 mt-0.5 font-bold truncate block">C?n l�nh d?o k� 1-ch?m</span>
           </div>
 
-          <!-- THẺ 4: VIỆC QUÁ HẠN (HIGHLIGHT ĐỎ CẦN CAN THIỆP) -->
+          <!-- TH? 4: VI?C QU� H?N (HIGHLIGHT �? C?N CAN THI?P) -->
           <div class="bg-white p-4 sm:p-5 rounded-2xl border border-rose-200 shadow-2xs hover:border-rose-400 active:bg-rose-50/30 transition-all cursor-pointer card-kpi" data-filter-tab="overdue">
             <div class="flex items-center justify-between text-rose-600">
-              <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">Quá hạn</span>
+              <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">Qu� h?n</span>
               <span class="material-symbols-outlined text-[20px]">warning</span>
             </div>
             <div class="text-[24px] sm:text-[28px] font-extrabold text-rose-600 mt-1.5">${overdueCount}</div>
-            <span class="text-[11px] text-rose-600 mt-0.5 font-semibold truncate block">Cần đôn đốc xử lý</span>
+            <span class="text-[11px] text-rose-600 mt-0.5 font-semibold truncate block">C?n d�n d?c x? l�</span>
           </div>
 
         </div>
 
-        <!-- 4. BIỂU ĐỒ SO SÁNH TIẾN ĐỘ CÁC PHÒNG BAN (HORIZONTAL PROGRESS GRID) -->
+        <!-- 4. BI?U �? SO S�NH TI?N �? C�C PH�NG BAN (HORIZONTAL PROGRESS GRID) -->
         <div class="bg-white p-5 sm:p-6 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
             <div>
               <h2 class="text-[15.5px] sm:text-[16.5px] font-extrabold text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
                 <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">bar_chart</span>
-                <span>So Sánh Tiến Độ Giữa Các Phòng Ban Toàn Viện</span>
+                <span>So S�nh Ti?n �? Gi?a C�c Ph�ng Ban To�n Vi?n</span>
               </h2>
-              <p class="text-[12px] text-[#64748b] mt-0.5">Tỷ lệ hoàn thành nhiệm vụ và công việc đang xử lý tại mỗi đơn vị</p>
+              <p class="text-[12px] text-[#64748b] mt-0.5">T? l? ho�n th�nh nhi?m v? v� c�ng vi?c dang x? l� t?i m?i don v?</p>
             </div>
             <span class="text-[11.5px] font-semibold text-[#795900] bg-[#fffbeb] px-3 py-1 rounded-full border border-[#fef3c7] self-start sm:self-auto font-mono-data">
-              ${allDepartments.length} Phòng Ban Trọng Điểm
+              ${allDepartments.length} Ph�ng Ban Tr?ng �i?m
             </span>
           </div>
 
-          <!-- LƯỚI TIẾN ĐỘ TỪNG PHÒNG BAN -->
+          <!-- LU?I TI?N �? T?NG PH�NG BAN -->
           <div class="flex flex-col gap-4 pt-1">
             ${deptStats.map(dept => `
               <div class="flex flex-col gap-1.5 p-3 sm:p-4 rounded-2xl border border-gray-100 hover:border-[#d6a52a] hover:bg-[#fffbeb]/20 transition-all cursor-pointer btn-select-dept-row" data-dept-id="${dept.id}">
@@ -223,15 +223,15 @@ export class DashboardView {
                   <div class="flex items-center gap-3 shrink-0">
                     ${dept.pending > 0 ? `
                       <span class="hidden sm:inline-block text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                        ${dept.pending} chờ duyệt
+                        ${dept.pending} ch? duy?t
                       </span>
                     ` : ''}
-                    <span class="text-[#0d1c2f] font-mono-data" style="color: var(--text);">${dept.done}/${dept.total} việc</span>
+                    <span class="text-[#0d1c2f] font-mono-data" style="color: var(--text);">${dept.done}/${dept.total} vi?c</span>
                     <span class="font-bold min-w-[42px] text-right font-mono-data" style="color: ${dept.color || 'var(--primary)'};">${dept.rate}%</span>
                   </div>
                 </div>
 
-                <!-- THANH TIẾN ĐỘ CO GIÃN TỪ 320PX ĐẾN DESKTOP -->
+                <!-- THANH TI?N �? CO GI�N T? 320PX �?N DESKTOP -->
                 <div class="w-full bg-[#e2e8f0] h-3 rounded-full overflow-hidden p-0.5">
                   <div class="h-full rounded-full transition-all duration-700 ease-out" style="width: ${dept.rate}%; background-color: ${dept.color || '#D6A52A'};"></div>
                 </div>
@@ -240,37 +240,37 @@ export class DashboardView {
           </div>
         </div>
 
-        <!-- 5. HÀNG ĐỢI PHÊ DUYỆT KHẨN CẤP (QUICK APPROVAL QUEUE - 1-CHẠM) -->
+        <!-- 5. H�NG �?I PH� DUY?T KH?N C?P (QUICK APPROVAL QUEUE - 1-CH?M) -->
         <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-amber-300 shadow-sm flex flex-col gap-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-amber-100">
             <div>
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-[22px] text-amber-600">verified</span>
                 <h2 class="text-[16px] sm:text-[17px] font-extrabold text-[#0d1c2f]">
-                  Hàng Đợi Phê Duyệt Khẩn Cấp (Quick Approval Queue)
+                  H�ng �?i Ph� Duy?t Kh?n C?p (Quick Approval Queue)
                 </h2>
                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white font-mono-data">
                   ${approvalQueue.length}
                 </span>
               </div>
               <p class="text-[12px] text-[#64748b] mt-0.5">
-                Các nhiệm vụ quan trọng đang chờ Lãnh đạo hoặc Trưởng phòng ký xác nhận 1-chạm
+                C�c nhi?m v? quan tr?ng dang ch? L�nh d?o ho?c Tru?ng ph�ng k� x�c nh?n 1-ch?m
               </p>
             </div>
 
             <button type="button" class="text-[12.5px] font-bold text-[#795900] hover:underline flex items-center gap-1 min-h-[44px] cursor-pointer" id="btnViewAllPendingTasks">
-              <span>Xem toàn bộ hàng chờ</span>
+              <span>Xem to�n b? h�ng ch?</span>
               <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
             </button>
           </div>
 
-          <!-- DANH SÁCH VIỆC CHỜ DUYỆT -->
+          <!-- DANH S�CH VI?C CH? DUY?T -->
           <div class="flex flex-col gap-3">
             ${approvalQueue.length === 0 ? `
               <div class="py-10 text-center flex flex-col items-center justify-center gap-2 text-gray-400">
                 <span class="material-symbols-outlined text-[36px] text-emerald-500">check_circle</span>
-                <span class="text-[13.5px] font-bold text-[#0d1c2f]">Không có công việc nào đang chờ duyệt!</span>
-                <span class="text-[12px] text-gray-400">Tất cả đề xuất đã được giải quyết hoặc chưa phát sinh yêu cầu mới.</span>
+                <span class="text-[13.5px] font-bold text-[#0d1c2f]">Kh�ng c� c�ng vi?c n�o dang ch? duy?t!</span>
+                <span class="text-[12px] text-gray-400">T?t c? d? xu?t d� du?c gi?i quy?t ho?c chua ph�t sinh y�u c?u m?i.</span>
               </div>
             ` : approvalQueue.map(task => {
               const assignee = store.getUserById(task.assigneeId);
@@ -285,7 +285,7 @@ export class DashboardView {
                         ${esc(task.id)}
                       </span>
                       <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${task.priority === 'P1' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}">
-                        ${task.priority === 'P1' ? 'P1 • Khẩn' : 'P2 • Quan trọng'}
+                        ${task.priority === 'P1' ? 'P1 � Kh?n' : 'P2 � Quan tr?ng'}
                       </span>
                       ${dept ? `
                         <span class="text-[10.5px] font-semibold text-gray-600 bg-white px-2 py-0.5 rounded border border-gray-200">
@@ -299,13 +299,13 @@ export class DashboardView {
                     </h4>
 
                     <div class="flex items-center gap-3 mt-2 text-[11.5px] text-[#64748b]">
-                      <span>Thực hiện: <strong>${assignee ? esc(assignee.name) : 'Chưa rõ'}</strong></span>
-                      <span>•</span>
-                      <span>Hạn: <strong class="font-mono-data text-amber-900">${task.dueDate}</strong></span>
+                      <span>Th?c hi?n: <strong>${assignee ? esc(assignee.name) : 'Chua r�'}</strong></span>
+                      <span>�</span>
+                      <span>H?n: <strong class="font-mono-data text-amber-900">${task.dueDate}</strong></span>
                     </div>
                   </div>
 
-                  <!-- NÚT PHÊ DUYỆT 1-CHẠM TRÊN DASHBOARD CHUẨN TOUCH TARGET >= 44PX -->
+                  <!-- N�T PH� DUY?T 1-CH?M TR�N DASHBOARD CHU?N TOUCH TARGET >= 44PX -->
                   <div class="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-amber-200">
                     <button type="button" class="px-4 py-2.5 rounded-xl border border-amber-300 text-[#795900] bg-white hover:bg-amber-50 font-bold text-[12.5px] min-h-[44px] flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs btn-open-task-from-queue" data-task-id="${task.id}">
                       <span class="material-symbols-outlined text-[17px]">visibility</span>
@@ -314,7 +314,7 @@ export class DashboardView {
 
                     <button type="button" class="px-5 py-2.5 rounded-xl font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer btn-quick-approve-task" data-task-id="${task.id}" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                       <span class="material-symbols-outlined text-[18px]">verified</span>
-                      <span>Duyệt 1-Chạm</span>
+                      <span>Duy?t 1-Ch?m</span>
                     </button>
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export class DashboardView {
   }
 
   bindEvents() {
-    // 1. Chuyển phạm vi xem (Toàn viện / Từng phòng ban)
+    // 1. Chuy?n ph?m vi xem (To�n vi?n / T?ng ph�ng ban)
     const selectScope = this.container.querySelector('#selectDashboardScope');
     if (selectScope) {
       selectScope.addEventListener('change', (e) => {
@@ -340,7 +340,7 @@ export class DashboardView {
       });
     }
 
-    // 2. Nút tạo việc Hero
+    // 2. N�t t?o vi?c Hero
     const btnHeroCreate = this.container.querySelector('#btnHeroCreateTask');
     if (btnHeroCreate) {
       btnHeroCreate.addEventListener('click', () => {
@@ -349,7 +349,7 @@ export class DashboardView {
       });
     }
 
-    // 3. Click vào 3 ô Hero để lọc danh sách
+    // 3. Click v�o 3 � Hero d? l?c danh s�ch
     this.container.querySelectorAll('.tq-o[data-filter-tab]').forEach(o => {
       o.addEventListener('click', () => {
         rung(10);
@@ -358,7 +358,7 @@ export class DashboardView {
       });
     });
 
-    // 4. Click vào 4 thẻ KPI để lọc
+    // 4. Click v�o 4 th? KPI d? l?c
     this.container.querySelectorAll('.card-kpi').forEach(card => {
       card.addEventListener('click', () => {
         rung(10);
@@ -367,7 +367,7 @@ export class DashboardView {
       });
     });
 
-    // 5. Nút xem toàn bộ hàng chờ duyệt
+    // 5. N�t xem to�n b? h�ng ch? duy?t
     const btnViewPending = this.container.querySelector('#btnViewAllPendingTasks');
     if (btnViewPending) {
       btnViewPending.addEventListener('click', () => {
@@ -376,7 +376,7 @@ export class DashboardView {
       });
     }
 
-    // 6. Click vào dòng phòng ban trong biểu đồ để chuyển sang xem phòng đó
+    // 6. Click v�o d�ng ph�ng ban trong bi?u d? d? chuy?n sang xem ph�ng d�
     this.container.querySelectorAll('.btn-select-dept-row').forEach(row => {
       row.addEventListener('click', () => {
         rung(10);
@@ -388,7 +388,7 @@ export class DashboardView {
       });
     });
 
-    // 7. Click mở xem task từ hàng chờ
+    // 7. Click m? xem task t? h�ng ch?
     this.container.querySelectorAll('.btn-open-task-from-queue').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -400,7 +400,7 @@ export class DashboardView {
       });
     });
 
-    // 8. DUYỆT 1-CHẠM NGAY TRÊN DASHBOARD
+    // 8. DUY?T 1-CH?M NGAY TR�N DASHBOARD
     this.container.querySelectorAll('.btn-quick-approve-task').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -408,7 +408,7 @@ export class DashboardView {
         const taskId = btn.dataset.taskId;
         if (taskId) {
           store.approveTask(taskId);
-          toast(`Đã phê duyệt 1-chạm công việc ${taskId} thành công!`, 'success');
+          toast(`�� ph� duy?t 1-ch?m c�ng vi?c ${taskId} th�nh c�ng!`, 'success');
           this.render();
         }
       });

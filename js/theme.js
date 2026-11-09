@@ -1,7 +1,7 @@
-﻿/**
+/**
  * SHIN AIOS v2.6.4 - THEME & COLOR PALETTE MANAGER
- * Quản lý 8 bảng màu (8 Palettes), 4 chế độ hiển thị (Theme Modes),
- * 3 mức cỡ chữ (Font Scales) và công tắc Bottom Navigation chuẩn SHIN.
+ * Qu?n l� 8 b?ng m�u (8 Palettes), 4 ch? d? hi?n th? (Theme Modes),
+ * 3 m?c c? ch? (Font Scales) v� c�ng t?c Bottom Navigation chu?n SHIN.
  */
 
 import { rung } from './helpers.js';
@@ -9,48 +9,48 @@ import { rung } from './helpers.js';
 export const PALETTES = [
   {
     id: 'gold',
-    name: 'Vàng Hoàng Kim',
+    name: 'V�ng Ho�ng Kim',
     codeName: 'Gold Executive',
     primary: '#d6a52a',
     accent: '#795900',
-    desc: 'Hành chính, Quản trị tổng thể, PTKH (Mặc định)',
-    tag: 'Mặc định'
+    desc: 'H�nh ch�nh, Qu?n tr? t?ng th?, PTKH (M?c d?nh)',
+    tag: 'M?c d?nh'
   },
   {
     id: 'executive',
-    name: 'Xanh Lãnh Đạo',
+    name: 'Xanh L�nh �?o',
     codeName: 'Executive Navy',
     primary: '#0284c7',
     accent: '#38bdf8',
-    desc: 'Bàn làm việc Lãnh đạo, Điều hành Hub',
-    tag: 'Lãnh đạo'
+    desc: 'B�n l�m vi?c L�nh d?o, �i?u h�nh Hub',
+    tag: 'L�nh d?o'
   },
   {
     id: 'clinical',
-    name: 'Xanh Ngọc Y Tế',
+    name: 'Xanh Ng?c Y T?',
     codeName: 'Clinical Teal',
     primary: '#0f766e',
     accent: '#2dd4bf',
-    desc: 'Y tế, Khám chữa bệnh ngoại trú, Tiêu chuẩn ACHSI',
-    tag: 'Y tế CS3'
+    desc: 'Y t?, Kh�m ch?a b?nh ngo?i tr�, Ti�u chu?n ACHSI',
+    tag: 'Y t? CS3'
   },
   {
     id: 'growth',
-    name: 'Tím Tăng Trưởng',
+    name: 'T�m Tang Tru?ng',
     codeName: 'Growth Purple',
     primary: '#7c3aed',
     accent: '#f97316',
-    desc: 'Tuyển sinh, Chăm sóc Khách hàng, Phát triển thị phần',
-    tag: 'Tăng trưởng'
+    desc: 'Tuy?n sinh, Cham s�c Kh�ch h�ng, Ph�t tri?n th? ph?n',
+    tag: 'Tang tru?ng'
   },
   {
     id: 'nordic',
-    name: 'Bắc Âu Tối Giản',
+    name: 'B?c �u T?i Gi?n',
     codeName: 'Nordic Slate',
     primary: '#475569',
     accent: '#0ea5e9',
-    desc: 'Thư viện Tri thức, Second Brain, Quy trình SOP',
-    tag: 'Tối giản'
+    desc: 'Thu vi?n Tri th?c, Second Brain, Quy tr�nh SOP',
+    tag: 'T?i gi?n'
   },
   {
     id: 'cyber',
@@ -58,40 +58,40 @@ export const PALETTES = [
     codeName: 'Cyber Neon',
     primary: '#10b981',
     accent: '#06b6d4',
-    desc: 'Giám sát kỹ thuật, Automation, Terminal AI (Chuyên Tối)',
+    desc: 'Gi�m s�t k? thu?t, Automation, Terminal AI (Chuy�n T?i)',
     tag: 'AI / Tech'
   },
   {
     id: 'crimson',
-    name: 'Đỏ Thẩm Quyền',
+    name: '�? Th?m Quy?n',
     codeName: 'Crimson Control',
     primary: '#991b1b',
     accent: '#ea580c',
-    desc: 'Ban Kiểm soát, Kỷ luật, Quản trị rủi ro',
-    tag: 'Kiểm soát'
+    desc: 'Ban Ki?m so�t, K? lu?t, Qu?n tr? r?i ro',
+    tag: 'Ki?m so�t'
   },
   {
     id: 'mocha',
-    name: 'Nâu Ấm Áp',
+    name: 'N�u ?m �p',
     codeName: 'Mocha Coffee',
     primary: '#854d0e',
     accent: '#ca8a04',
-    desc: 'Nhân sự, Xếp lịch trực tuần, Đời sống nội bộ',
-    tag: 'Nội bộ'
+    desc: 'Nh�n s?, X?p l?ch tr?c tu?n, �?i s?ng n?i b?',
+    tag: 'N?i b?'
   }
 ];
 
 export const THEME_MODES = [
-  { id: 'light', name: 'Sáng', icon: 'light_mode', desc: 'Cố định nền sáng sắc nét' },
-  { id: 'dark', name: 'Tối', icon: 'dark_mode', desc: 'Nền tối dịu mắt, chống mỏi' },
-  { id: 'auto', name: 'Theo máy', icon: 'devices', desc: 'Đồng bộ hệ điều hành' },
-  { id: 'time', name: 'Theo giờ', icon: 'schedule', desc: '06h-18h Sáng, 18h-06h Tối' }
+  { id: 'light', name: 'S�ng', icon: 'light_mode', desc: 'C? d?nh n?n s�ng s?c n�t' },
+  { id: 'dark', name: 'T?i', icon: 'dark_mode', desc: 'N?n t?i d?u m?t, ch?ng m?i' },
+  { id: 'auto', name: 'Theo m�y', icon: 'devices', desc: '�?ng b? h? di?u h�nh' },
+  { id: 'time', name: 'Theo gi?', icon: 'schedule', desc: '06h-18h S�ng, 18h-06h T?i' }
 ];
 
 export const FONT_SCALES = [
-  { id: 'vua', name: 'Vừa (1.0x)', desc: 'Chuẩn sắc nét' },
-  { id: 'lon', name: 'Lớn (1.1x)', desc: 'Tăng 10% dễ đọc' },
-  { id: 'rat_lon', name: 'Rất lớn (1.2x)', desc: 'Tăng 20% rõ ràng' }
+  { id: 'vua', name: 'V?a (1.0x)', desc: 'Chu?n s?c n�t' },
+  { id: 'lon', name: 'L?n (1.1x)', desc: 'Tang 10% d? d?c' },
+  { id: 'rat_lon', name: 'R?t l?n (1.2x)', desc: 'Tang 20% r� r�ng' }
 ];
 
 class ThemeService {
@@ -128,7 +128,7 @@ class ThemeService {
   }
 
   setupListeners() {
-    // 1. Đồng bộ hệ điều hành khi ở chế độ auto
+    // 1. �?ng b? h? di?u h�nh khi ? ch? d? auto
     if (window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       mediaQuery.addEventListener('change', () => {
@@ -138,14 +138,14 @@ class ThemeService {
       });
     }
 
-    // 2. Kiểm tra chu kỳ ngày/đêm mỗi 5 phút nếu ở chế độ time
+    // 2. Ki?m tra chu k? ng�y/d�m m?i 5 ph�t n?u ? ch? d? time
     setInterval(() => {
       if (this.themeMode === 'time') {
         this.apply();
       }
     }, 5 * 60 * 1000);
 
-    // 3. Quy tắc bắt buộc: Tự động ẩn bottom navigation khi người dùng chạm gõ ô input
+    // 3. Quy t?c b?t bu?c: T? d?ng ?n bottom navigation khi ngu?i d�ng ch?m g� � input
     window.addEventListener('focusin', (e) => {
       const tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
@@ -179,7 +179,7 @@ class ThemeService {
     const docEl = document.documentElement;
     const body = document.body;
 
-    // Thiết lập thuộc tính lên root
+    // Thi?t l?p thu?c t�nh l�n root
     docEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
     docEl.setAttribute('data-theme-mode', this.themeMode);
     docEl.setAttribute('data-palette', this.palette);
@@ -193,7 +193,7 @@ class ThemeService {
     }
     docEl.classList.toggle('an-navbar', !this.isNavBarEnabled);
 
-    // Cập nhật thẻ meta theme-color trên thiết bị di động
+    // C?p nh?t th? meta theme-color tr�n thi?t b? di d?ng
     const currentPal = PALETTES.find(p => p.id === this.palette) || PALETTES[0];
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
@@ -232,7 +232,7 @@ class ThemeService {
   }
 
   toggleThemeQuick() {
-    // Chuyển đổi nhanh Sáng <-> Tối từ Topbar
+    // Chuy?n d?i nhanh S�ng <-> T?i t? Topbar
     const isDark = this.resolveIsDark();
     this.setThemeMode(isDark ? 'light' : 'dark');
   }
@@ -242,18 +242,18 @@ class ThemeService {
     const isDark = this.resolveIsDark();
 
     return `
-      <!-- KHỐI QUẢN TRỊ GIAO DIỆN SHIN AIOS (CHẾ ĐỘ HIỂN THỊ, 8 PALETTES, CỠ CHỮ, BOTTOM NAV) -->
+      <!-- KH?I QU?N TR? GIAO DI?N SHIN AIOS (CH? �? HI?N TH?, 8 PALETTES, C? CH?, BOTTOM NAV) -->
       <div class="flex flex-col gap-5 p-4 sm:p-5 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm theme-settings-wrapper">
         
-        <!-- TIÊU ĐỀ SECTION -->
+        <!-- TI�U �? SECTION -->
         <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9]">
           <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold" style="background-color: var(--primary-soft); color: var(--primary);">
               <span class="material-symbols-outlined text-[20px]">palette</span>
             </div>
             <div>
-              <h4 class="font-bold text-[15px] text-[#0d1c2f] leading-tight">Màu Sắc &amp; Giao Diện SHIN</h4>
-              <p class="text-[11.5px] text-[#64748b]">Tùy biến 8 bảng màu công thái học, chế độ Dark Mode &amp; cỡ chữ</p>
+              <h4 class="font-bold text-[15px] text-[#0d1c2f] leading-tight">M�u S?c &amp; Giao Di?n SHIN</h4>
+              <p class="text-[11.5px] text-[#64748b]">T�y bi?n 8 b?ng m�u c�ng th�i h?c, ch? d? Dark Mode &amp; c? ch?</p>
             </div>
           </div>
           <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold" style="background-color: var(--primary-soft); color: var(--primary);">
@@ -261,10 +261,10 @@ class ThemeService {
           </span>
         </div>
 
-        <!-- 1. CHỌN CHẾ ĐỘ HIỂN THỊ (4 MODES) -->
+        <!-- 1. CH?N CH? �? HI?N TH? (4 MODES) -->
         <div>
           <label class="block text-[12px] font-bold text-[#64748b] mb-2 uppercase tracking-wider">
-            1. Chế Độ Hiển Thị (Display Theme)
+            1. Ch? �? Hi?n Th? (Display Theme)
           </label>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             ${THEME_MODES.map(m => {
@@ -287,13 +287,13 @@ class ThemeService {
           </div>
         </div>
 
-        <!-- 2. MA TRẬN 8 BẢNG MÀU CHUẨN SHIN AIOS (8 PALETTES) -->
+        <!-- 2. MA TR?N 8 B?NG M�U CHU?N SHIN AIOS (8 PALETTES) -->
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="block text-[12px] font-bold text-[#64748b] uppercase tracking-wider">
-              2. Bảng Màu Ngành Nghề (8 Palettes Chuẩn)
+              2. B?ng M�u Ng�nh Ngh? (8 Palettes Chu?n)
             </label>
-            <span class="text-[11px] text-[#64748b]">Chạm 1-chạm đổi toàn bộ màu</span>
+            <span class="text-[11px] text-[#64748b]">Ch?m 1-ch?m d?i to�n b? m�u</span>
           </div>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -314,7 +314,7 @@ class ThemeService {
                     <div class="min-w-0">
                       <div class="text-[13px] text-[#0d1c2f] flex items-center gap-1.5">
                         <span class="truncate">${p.name}</span>
-                        ${isSelected ? `<span class="text-[11px]" style="color: ${p.primary};">✓</span>` : ''}
+                        ${isSelected ? `<span class="text-[11px]" style="color: ${p.primary};">?</span>` : ''}
                       </div>
                       <div class="text-[11px] text-[#64748b] truncate">${p.desc}</div>
                     </div>
@@ -328,10 +328,10 @@ class ThemeService {
           </div>
         </div>
 
-        <!-- 3. CỠ CHỮ TOÀN ỨNG DỤNG (3 MỨC CÔNG THÁI HỌC) -->
+        <!-- 3. C? CH? TO�N ?NG D?NG (3 M?C C�NG TH�I H?C) -->
         <div>
           <label class="block text-[12px] font-bold text-[#64748b] mb-2 uppercase tracking-wider">
-            3. Cỡ Chữ Hiển Thị (Font Scaling)
+            3. C? Ch? Hi?n Th? (Font Scaling)
           </label>
           <div class="grid grid-cols-3 gap-2">
             ${FONT_SCALES.map(f => {
@@ -351,13 +351,13 @@ class ThemeService {
           </div>
         </div>
 
-        <!-- 4. CÔNG TẮC BẬT/TẮT BOTTOM NAVIGATION TRÊN DI ĐỘNG -->
+        <!-- 4. C�NG T?C B?T/T?T BOTTOM NAVIGATION TR�N DI �?NG -->
         <div class="pt-3 border-t border-[#f1f5f9] flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <span class="material-symbols-outlined text-[20px] text-[#64748b]">dock_to_bottom</span>
             <div>
-              <div class="text-[13px] font-bold text-[#0d1c2f]">Thanh Điều Hướng Chân Trang (Bottom Nav)</div>
-              <div class="text-[11px] text-[#64748b]">Bật để truy cập nhanh 4 menu; tắt để xem toàn màn hình</div>
+              <div class="text-[13px] font-bold text-[#0d1c2f]">Thanh �i?u Hu?ng Ch�n Trang (Bottom Nav)</div>
+              <div class="text-[11px] text-[#64748b]">B?t d? truy c?p nhanh 4 menu; t?t d? xem to�n m�n h�nh</div>
             </div>
           </div>
           

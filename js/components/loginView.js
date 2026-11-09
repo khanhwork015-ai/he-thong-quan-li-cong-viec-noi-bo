@@ -1,12 +1,12 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - LOGIN VIEW COMPONENT (SHIN AIOS v2.6.4)
- * Màn hình Đăng Nhập Mobile-First & Quản Lý Phiên Bảo Mật
- * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y Tế (#0D1C2F)
+/**
+ * THANH VU MEDIC CS3 - LOGIN VIEW COMPONENT (SHIN AIOS v2.6.4)
+ * M�n h�nh �ang Nh?p Mobile-First & Qu?n L� Phi�n B?o M?t
+ * Chu?n m�u V�ng Ho�ng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y T? (#0D1C2F)
  */
 
-import { auth } from '../auth.js?v=5.1';
-import { store } from '../store.js?v=5.1';
-import { toast, rung } from '../helpers.js?v=5.1';
+import { auth } from '../auth.js?v=5.2';
+import { store } from '../store.js?v=5.2';
+import { toast, rung } from '../helpers.js?v=5.2';
 
 export class LoginView {
   constructor(containerId, onLoginSuccess) {
@@ -18,7 +18,7 @@ export class LoginView {
   render() {
     if (!this.container) return;
 
-    // Tự động đồng bộ ngầm dữ liệu từ Google Sheets để cập nhật danh sách tài khoản mới nhất
+    // T? d?ng d?ng b? ng?m d? li?u t? Google Sheets d? c?p nh?t danh s�ch t�i kho?n m?i nh?t
     try {
       store.syncFromCloudIfAvailable().catch(() => {});
     } catch (_) {}
@@ -34,13 +34,13 @@ export class LoginView {
             </div>
             <div>
               <span class="text-[11px] font-bold tracking-widest uppercase font-mono-data px-2.5 py-0.5 rounded-full" style="background-color: var(--primary-soft); color: var(--primary);">
-                THANH VŨ MEDIC • CS3
+                THANH VU MEDIC � CS3
               </span>
               <h1 class="text-[22px] sm:text-[24px] font-black text-[#0d1c2f] mt-1 tracking-tight" style="color: var(--text);">
-                Hệ Thống Quản Lý &amp; Điều Hành
+                H? Th?ng Qu?n L� &amp; �i?u H�nh
               </h1>
               <p class="text-[12.5px] text-[#64748b] mt-0.5" style="color: var(--text-muted);">
-                Đăng nhập để truy cập không gian làm việc
+                �ang nh?p d? truy c?p kh�ng gian l�m vi?c
               </p>
             </div>
           </div>
@@ -49,7 +49,7 @@ export class LoginView {
           <form id="formLogin" class="flex flex-col gap-4">
             <div>
               <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">
-                Tên đăng nhập hoặc Email *
+                T�n dang nh?p ho?c Email *
               </label>
               <div class="relative flex items-center">
                 <span class="material-symbols-outlined absolute left-3.5 text-[20px] text-[#817663]">person</span>
@@ -58,7 +58,7 @@ export class LoginView {
                   id="loginUsername" 
                   required 
                   autocomplete="username"
-                  placeholder="Nhập tên đăng nhập hoặc email..."
+                  placeholder="Nh?p t�n dang nh?p ho?c email..."
                   class="w-full h-12 pl-11 pr-4 rounded-xl border border-[#e2e8f0] text-[14px] outline-none transition-all bg-[#f8f9ff] focus:bg-white focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20"
                   style="background-color: var(--card); border-color: var(--border); color: var(--text);"
                 />
@@ -67,7 +67,7 @@ export class LoginView {
 
             <div>
               <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">
-                Mật khẩu *
+                M?t kh?u *
               </label>
               <div class="relative flex items-center">
                 <span class="material-symbols-outlined absolute left-3.5 text-[20px] text-[#817663]">lock</span>
@@ -76,7 +76,7 @@ export class LoginView {
                   id="loginPassword" 
                   required 
                   autocomplete="current-password"
-                  placeholder="Nhập mật khẩu..."
+                  placeholder="Nh?p m?t kh?u..."
                   class="w-full h-12 pl-11 pr-12 rounded-xl border border-[#e2e8f0] text-[14px] outline-none transition-all bg-[#f8f9ff] focus:bg-white focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20"
                   style="background-color: var(--card); border-color: var(--border); color: var(--text);"
                 />
@@ -84,14 +84,14 @@ export class LoginView {
                   type="button" 
                   id="btnTogglePassword" 
                   class="absolute right-2.5 p-2 text-gray-400 hover:text-gray-700 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg transition-colors"
-                  aria-label="Ẩn / Hiện mật khẩu"
+                  aria-label="?n / Hi?n m?t kh?u"
                 >
                   <span class="material-symbols-outlined text-[20px]" id="iconEye">visibility</span>
                 </button>
               </div>
             </div>
 
-            <!-- NÚT ĐĂNG NHẬP (MIN-HEIGHT 48PX SHIN CHUẨN) -->
+            <!-- N�T �ANG NH?P (MIN-HEIGHT 48PX SHIN CHU?N) -->
             <button 
               type="submit" 
               id="btnLoginSubmit"
@@ -99,13 +99,13 @@ export class LoginView {
               style="background-color: var(--primary-container); color: var(--on-primary-container);"
             >
               <span class="material-symbols-outlined text-[20px]">login</span>
-              <span>Đăng Nhập Vào Hệ Thống</span>
+              <span>�ang Nh?p V�o H? Th?ng</span>
             </button>
           </form>
 
           <!-- FOOTER INFO -->
           <div class="text-center text-[11px] text-[#817663] border-t border-[#f1f5f9] pt-3" style="border-color: var(--border);">
-            Bệnh viện Đa Khoa Thanh Vũ Medic Bạc Liêu • Cơ Sở 3 (Cà Mau)
+            B?nh vi?n �a Khoa Thanh Vu Medic B?c Li�u � Co S? 3 (C� Mau)
           </div>
 
         </div>
@@ -140,19 +140,19 @@ export class LoginView {
         const password = inputPass.value.trim();
 
         if (!username || !password) {
-          toast('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!', 'warning');
+          toast('Vui l�ng nh?p d?y d? t�n dang nh?p v� m?t kh?u!', 'warning');
           return;
         }
 
         btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Đang kiểm tra tài khoản...</span>';
+        btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>�ang ki?m tra t�i kho?n...</span>';
 
         try {
           let res = await auth.login(username, password);
 
-          // Nếu chưa tìm thấy cục bộ, kích hoạt sync từ Google Sheets và thử lại
+          // N?u chua t�m th?y c?c b?, k�ch ho?t sync t? Google Sheets v� th? l?i
           if (!res.success && res.code === 'USER_NOT_FOUND') {
-            btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">cloud_sync</span><span>Đang đồng bộ từ Google Sheets...</span>';
+            btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">cloud_sync</span><span>�ang d?ng b? t? Google Sheets...</span>';
             try {
               await store.syncFromCloudIfAvailable();
               res = await auth.login(username, password);
@@ -160,7 +160,7 @@ export class LoginView {
           }
 
           if (res.success) {
-            toast(`Đăng nhập thành công! Chào mừng ${res.user.name}`, 'success');
+            toast(`�ang nh?p th�nh c�ng! Ch�o m?ng ${res.user.name}`, 'success');
             if (this.onLoginSuccess) this.onLoginSuccess(res.user);
           } else {
             toast(res.message, 'warning');
@@ -168,10 +168,10 @@ export class LoginView {
           }
         } catch (err) {
           console.error('[LOGIN ERROR]', err);
-          toast('Đã xảy ra lỗi khi xác thực tài khoản. Vui lòng thử lại!', 'error');
+          toast('�� x?y ra l?i khi x�c th?c t�i kho?n. Vui l�ng th? l?i!', 'error');
         } finally {
           btnSubmit.disabled = false;
-          btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px]">login</span><span>Đăng Nhập Vào Hệ Thống</span>';
+          btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px]">login</span><span>�ang Nh?p V�o H? Th?ng</span>';
         }
       });
     }

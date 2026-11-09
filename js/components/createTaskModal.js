@@ -1,15 +1,15 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - CREATE / EDIT TASK MODAL COMPONENT (SHIN AIOS v2.7)
- * Giao diện form chuẩn Google Stitch Gold:
- * Nút Gold #D6A52A, Border #E2E8F0, Text #0D1C2F
- * Thân thiện với thiết bị di động: Vùng chạm >= 44px, nút xếp hàng dọc trên mobile
- * Hỗ trợ Tạo Mới & Chỉnh Sửa Công Việc Cha (Edit Parent Task)
- * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
+/**
+ * THANH VU MEDIC CS3 - CREATE / EDIT TASK MODAL COMPONENT (SHIN AIOS v2.7)
+ * Giao di?n form chu?n Google Stitch Gold:
+ * N�t Gold #D6A52A, Border #E2E8F0, Text #0D1C2F
+ * Th�n thi?n v?i thi?t b? di d?ng: V�ng ch?m >= 44px, n�t x?p h�ng d?c tr�n mobile
+ * H? tr? T?o M?i & Ch?nh S?a C�ng Vi?c Cha (Edit Parent Task)
+ * H? tr? ch?n B? Ph?n Con (Teams) & Switch Ph� Duy?t 1-Ch?m (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=5.1';
-import { store } from '../store.js?v=5.1';
-import { toast, rung, esc } from '../helpers.js?v=5.1';
+import { auth } from '../auth.js?v=5.2';
+import { store } from '../store.js?v=5.2';
+import { toast, rung, esc } from '../helpers.js?v=5.2';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -30,15 +30,15 @@ export class CreateTaskModal {
     const currentUser = auth.getCurrentUser();
     const depts = store.getAllDepartments();
     
-    // Nếu đang sửa task của phòng ban khác, lấy phòng ban của task đó
+    // N?u dang s?a task c?a ph�ng ban kh�c, l?y ph�ng ban c?a task d�
     const taskDept = isEdit && taskToEdit.departmentId 
       ? (store.getDepartmentById(taskToEdit.departmentId) || currentDept) 
       : currentDept;
     const currentTeams = taskDept.teams || [];
 
-    // Danh sách người có thẩm quyền phê duyệt (Admin, Leadership, Manager)
+    // Danh s�ch ngu?i c� th?m quy?n ph� duy?t (Admin, Leadership, Manager)
     const approvers = allUsers.filter(u => u.role === 'ADMIN' || u.role === 'LEADERSHIP' || u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER');
-    // Mặc định người duyệt: Trưởng phòng hiện tại hoặc Ban Lãnh Đạo
+    // M?c d?nh ngu?i duy?t: Tru?ng ph�ng hi?n t?i ho?c Ban L�nh �?o
     const defaultApproverId = isEdit && taskToEdit.approverId
       ? taskToEdit.approverId
       : (taskDept.managerId || (approvers.find(u => u.role === 'LEADERSHIP')?.id || approvers[0]?.id || currentUser.id));
@@ -49,7 +49,7 @@ export class CreateTaskModal {
     const requiresApproval = isEdit ? Boolean(taskToEdit.requiresApproval) : false;
     const currentPriority = isEdit && taskToEdit.priority ? taskToEdit.priority : 'P2';
     const currentDueDate = isEdit && taskToEdit.dueDate ? taskToEdit.dueDate : new Date().toISOString().split('T')[0];
-    const currentCategory = isEdit && taskToEdit.category ? taskToEdit.category : 'Chuyên môn';
+    const currentCategory = isEdit && taskToEdit.category ? taskToEdit.category : 'Chuy�n m�n';
     const currentCost = isEdit && taskToEdit.cost !== undefined ? taskToEdit.cost : 0;
     const currentTeamId = isEdit && taskToEdit.teamId ? taskToEdit.teamId : '';
 
@@ -65,73 +65,73 @@ export class CreateTaskModal {
               </div>
               <div class="min-w-0">
                 <h3 class="font-bold text-[16.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
-                  ${isEdit ? `Chỉnh Sửa Công Việc • ${esc(taskToEdit.id)}` : 'Giao Việc &amp; Đề Xuất Mới'}
+                  ${isEdit ? `Ch?nh S?a C�ng Vi?c � ${esc(taskToEdit.id)}` : 'Giao Vi?c &amp; �? Xu?t M?i'}
                 </h3>
                 <span class="text-[11.5px] font-semibold truncate block" style="color: var(--primary);">
-                  ${esc(taskDept.name)} • ${isEdit ? esc(taskToEdit.id) : esc(taskDept.code)}
+                  ${esc(taskDept.name)} � ${isEdit ? esc(taskToEdit.id) : esc(taskDept.code)}
                 </span>
               </div>
             </div>
-            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer shrink-0" id="btnCloseCreateModal" aria-label="Đóng">&times;</button>
+            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer shrink-0" id="btnCloseCreateModal" aria-label="��ng">&times;</button>
           </div>
 
           <!-- FORM -->
           <form id="formCreateTask" class="flex flex-col gap-3.5 sm:gap-4">
             
-            <!-- TÊN CÔNG VIỆC -->
+            <!-- T�N C�NG VI?C -->
             <div>
-              <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Tên công việc / Nhiệm vụ *</label>
-              <input type="text" id="newTaskTitle" required value="${isEdit ? esc(taskToEdit.title) : ''}" placeholder="Ví dụ: Đàm phán hợp đồng khám đoàn Minh Phú (1.200 CBCNV)" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[14px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
+              <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">T�n c�ng vi?c / Nhi?m v? *</label>
+              <input type="text" id="newTaskTitle" required value="${isEdit ? esc(taskToEdit.title) : ''}" placeholder="V� d?: ��m ph�n h?p d?ng kh�m do�n Minh Ph� (1.200 CBCNV)" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[14px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
             </div>
 
-            <!-- BỘ PHẬN CON (TEAMS) TRONG PHÒNG BAN -->
+            <!-- B? PH?N CON (TEAMS) TRONG PH�NG BAN -->
             <div>
-              <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Bộ phận con trực thuộc (Team)</label>
+              <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">B? ph?n con tr?c thu?c (Team)</label>
               <select id="newTaskTeam" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f] cursor-pointer">
-                <option value="">-- Toàn phòng ban / Chưa phân tổ --</option>
+                <option value="">-- To�n ph�ng ban / Chua ph�n t? --</option>
                 ${currentTeams.map(t => `
                   <option value="${t.id}" ${t.id === currentTeamId ? 'selected' : ''}>${esc(t.name)} (${esc(t.code)})</option>
                 `).join('')}
               </select>
             </div>
 
-            <!-- MÔ TẢ CHI TIẾT -->
+            <!-- M� T? CHI TI?T -->
             <div>
-              <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mô tả chi tiết &amp; Tiêu chuẩn nghiệm thu</label>
-              <textarea id="newTaskDesc" rows="3" placeholder="Ghi chú yêu cầu kỹ thuật, mốc hoàn thành, phạm vi phối hợp..." class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]">${isEdit ? esc(taskToEdit.description || '') : ''}</textarea>
+              <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">M� t? chi ti?t &amp; Ti�u chu?n nghi?m thu</label>
+              <textarea id="newTaskDesc" rows="3" placeholder="Ghi ch� y�u c?u k? thu?t, m?c ho�n th�nh, ph?m vi ph?i h?p..." class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]">${isEdit ? esc(taskToEdit.description || '') : ''}</textarea>
             </div>
 
-            <!-- DANH SÁCH VIỆC CON (SUBTASKS) -->
+            <!-- DANH S�CH VI?C CON (SUBTASKS) -->
             <div class="p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#fffbeb]/40 flex flex-col gap-2.5 shadow-2xs">
               <div class="flex items-center justify-between">
                 <label class="block text-[12.5px] font-bold text-[#795900] flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[18px]">account_tree</span>
-                  <span>Danh sách việc con (Subtasks)</span>
+                  <span>Danh s�ch vi?c con (Subtasks)</span>
                 </label>
-                <span class="text-[11px] font-bold text-[#92400e] bg-[#fef3c7] px-2 py-0.5 rounded-full" id="modalSubtaskCountBadge">0 việc con</span>
+                <span class="text-[11px] font-bold text-[#92400e] bg-[#fef3c7] px-2 py-0.5 rounded-full" id="modalSubtaskCountBadge">0 vi?c con</span>
               </div>
 
-              <!-- Ô NHẬP VIỆC CON NHANH -->
+              <!-- � NH?P VI?C CON NHANH -->
               <div class="flex gap-2">
-                <input type="text" id="inputModalSubtaskTitle" placeholder="Thêm việc con (VD: Đối soát tài liệu, kiểm kê lô hàng...) rồi bấm ＋" class="flex-1 h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
+                <input type="text" id="inputModalSubtaskTitle" placeholder="Th�m vi?c con (VD: �?i so�t t�i li?u, ki?m k� l� h�ng...) r?i b?m +" class="flex-1 h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
                 <button type="button" id="btnAddModalSubtask" class="px-4 h-10 rounded-xl bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[12.5px] flex items-center gap-1 shrink-0 cursor-pointer transition-colors shadow-2xs min-h-[40px]">
                   <span class="material-symbols-outlined text-[18px]">add</span>
-                  <span>Thêm</span>
+                  <span>Th�m</span>
                 </button>
               </div>
 
-              <!-- DANH SÁCH CÁC VIỆC CON ĐÃ THÊM -->
+              <!-- DANH S�CH C�C VI?C CON �� TH�M -->
               <div id="modalSubtasksContainer" class="flex flex-col gap-1.5 empty:hidden pt-0.5 max-h-48 overflow-y-auto"></div>
             </div>
 
-            <!-- PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE) -->
+            <!-- PH�N C�NG NGU?I TH?C HI?N (ASSIGNEE) -->
             <div class="p-3.5 rounded-2xl border border-[#e2e8f0] flex flex-col gap-2.5" style="background-color: var(--primary-soft); border-color: var(--border);">
               <div class="flex items-center justify-between">
                 <label class="block text-[12.5px] font-bold flex items-center gap-1.5" style="color: var(--primary);">
                   <span class="material-symbols-outlined text-[18px]">person_add</span>
-                  <span>Phân công người thực hiện (Assignee) *</span>
+                  <span>Ph�n c�ng ngu?i th?c hi?n (Assignee) *</span>
                 </label>
-                <span class="text-[10.5px] font-semibold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-full">Tự động báo chuông</span>
+                <span class="text-[10.5px] font-semibold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-full">T? d?ng b�o chu�ng</span>
               </div>
 
               <div class="flex items-center gap-3">
@@ -155,62 +155,62 @@ export class CreateTaskModal {
                 </div>
               </div>
               <span class="text-[11px] text-[#817663]">
-                * Bất kỳ ai cũng có thể phân công nhiệm vụ cho nhân sự trên toàn hệ thống viện.
+                * B?t k? ai cung c� th? ph�n c�ng nhi?m v? cho nh�n s? tr�n to�n h? th?ng vi?n.
               </span>
             </div>
 
-            <!-- SWITCH YÊU CẦU PHÊ DUYỆT 1-CHẠM (APPROVAL WORKFLOW) -->
+            <!-- SWITCH Y�U C?U PH� DUY?T 1-CH?M (APPROVAL WORKFLOW) -->
             <div class="p-3.5 rounded-2xl border border-amber-200 bg-amber-50/60 flex flex-col gap-2.5">
               <div class="flex items-center justify-between">
                 <label for="newTaskRequireApproval" class="flex items-center gap-2.5 cursor-pointer select-none">
                   <input type="checkbox" id="newTaskRequireApproval" ${requiresApproval ? 'checked' : ''} class="w-5 h-5 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer" />
-                  <span class="text-[13px] font-bold text-[#0d1c2f]">Yêu cầu phê duyệt (One-Tap Approval)</span>
+                  <span class="text-[13px] font-bold text-[#0d1c2f]">Y�u c?u ph� duy?t (One-Tap Approval)</span>
                 </label>
-                <span class="text-[11px] font-bold text-amber-800 bg-amber-200/70 px-2 py-0.5 rounded-full">Trình ký</span>
+                <span class="text-[11px] font-bold text-amber-800 bg-amber-200/70 px-2 py-0.5 rounded-full">Tr�nh k�</span>
               </div>
-              <p class="text-[11.5px] text-[#64748b]">Bật tùy chọn này nếu công việc cần Trưởng phòng hoặc Ban Lãnh Đạo ký duyệt trước khi nghiệm thu.</p>
+              <p class="text-[11.5px] text-[#64748b]">B?t t�y ch?n n�y n?u c�ng vi?c c?n Tru?ng ph�ng ho?c Ban L�nh �?o k� duy?t tru?c khi nghi?m thu.</p>
 
-              <!-- KHỐI CHỌN NGƯỜI DUYỆT (ẨN/HIỆN KHI BẬT SWITCH) -->
+              <!-- KH?I CH?N NGU?I DUY?T (?N/HI?N KHI B?T SWITCH) -->
               <div id="approverSelectionBox" class="${requiresApproval ? '' : 'hidden'} flex flex-col gap-1.5 pt-2 border-t border-amber-200/70">
-                <label class="block text-[12px] font-bold text-[#0d1c2f]">Chỉ định Người phê duyệt *</label>
+                <label class="block text-[12px] font-bold text-[#0d1c2f]">Ch? d?nh Ngu?i ph� duy?t *</label>
                 <select id="newTaskApprover" class="w-full h-11 px-3 rounded-xl border border-amber-300 text-[13.5px] font-bold text-[#0d1c2f] outline-none focus:border-[#d6a52a] bg-white cursor-pointer shadow-2xs">
                   ${approvers.map(u => {
-                    const rText = u.role === 'ADMIN' ? 'Admin' : (u.role === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Trưởng phòng');
+                    const rText = u.role === 'ADMIN' ? 'Admin' : (u.role === 'LEADERSHIP' ? 'Ban L�nh �?o' : 'Tru?ng ph�ng');
                     return `<option value="${u.id}" ${u.id === defaultApproverId ? 'selected' : ''}>[${rText}] ${esc(u.name)} (${esc(u.title)})</option>`;
                   }).join('')}
                 </select>
                 <span class="text-[10.5px] text-amber-800">
-                  Người duyệt sẽ nhận chuông thông báo ngay khi công việc được tạo hoặc gửi trình duyệt.
+                  Ngu?i duy?t s? nh?n chu�ng th�ng b�o ngay khi c�ng vi?c du?c t?o ho?c g?i tr�nh duy?t.
                 </span>
               </div>
             </div>
 
-            <!-- ƯU TIÊN & HẠN HOÀN THÀNH -->
+            <!-- UU TI�N & H?N HO�N TH�NH -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mức độ ưu tiên *</label>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">M?c d? uu ti�n *</label>
                 <select id="newTaskPriority" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f] cursor-pointer">
-                  <option value="P1" ${currentPriority === 'P1' ? 'selected' : ''}>P1 - Khẩn cấp (Cần xử lý ngay)</option>
-                  <option value="P2" ${currentPriority === 'P2' ? 'selected' : ''}>P2 - Quan trọng</option>
-                  <option value="P3" ${currentPriority === 'P3' ? 'selected' : ''}>P3 - Tiêu chuẩn</option>
+                  <option value="P1" ${currentPriority === 'P1' ? 'selected' : ''}>P1 - Kh?n c?p (C?n x? l� ngay)</option>
+                  <option value="P2" ${currentPriority === 'P2' ? 'selected' : ''}>P2 - Quan tr?ng</option>
+                  <option value="P3" ${currentPriority === 'P3' ? 'selected' : ''}>P3 - Ti�u chu?n</option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Hạn hoàn thành *</label>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">H?n ho�n th�nh *</label>
                 <input type="date" id="newTaskDueDate" required value="${currentDueDate}" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
               </div>
             </div>
 
-            <!-- CHUYÊN MÔN & DỰ TOÁN KINH PHÍ -->
+            <!-- CHUY�N M�N & D? TO�N KINH PH� -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Chuyên môn / Danh mục</label>
-                <input type="text" id="newTaskCategory" placeholder="Ví dụ: Khám Đoàn, BHYT, CSKH" value="${esc(currentCategory)}" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Chuy�n m�n / Danh m?c</label>
+                <input type="text" id="newTaskCategory" placeholder="V� d?: Kh�m �o�n, BHYT, CSKH" value="${esc(currentCategory)}" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Dự toán kinh phí (VNĐ)</label>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">D? to�n kinh ph� (VN�)</label>
                 <input type="number" id="newTaskCost" value="${currentCost}" step="500000" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
               </div>
             </div>
@@ -218,15 +218,15 @@ export class CreateTaskModal {
             <!-- ACTIONS (MOBILE COMPACT & ERGONOMIC) -->
             <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-2" style="border-color: var(--border);">
               <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50 min-h-[44px] cursor-pointer" id="btnCancelCreateTask">
-                Hủy bỏ
+                H?y b?
               </button>
               <button type="submit" class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-[13px] font-bold shadow-xs transition-all min-h-[44px] flex items-center justify-center gap-1.5 cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                 ${isEdit ? `
                   <span class="material-symbols-outlined text-[18px]">save</span>
-                  <span>Lưu Thay Đổi Nhiệm Vụ</span>
+                  <span>Luu Thay �?i Nhi?m V?</span>
                 ` : `
                   <span class="material-symbols-outlined text-[18px]">send</span>
-                  <span>Tạo &amp; Giao Việc</span>
+                  <span>T?o &amp; Giao Vi?c</span>
                 `}
               </button>
             </div>
@@ -248,7 +248,7 @@ export class CreateTaskModal {
     const chkRequireApproval = this.container.querySelector('#newTaskRequireApproval');
     const approverBox = this.container.querySelector('#approverSelectionBox');
 
-    // Chuyển avatar khi đổi assignee
+    // Chuy?n avatar khi d?i assignee
     if (selectAssignee && avatarImg) {
       selectAssignee.addEventListener('change', () => {
         const u = store.getUserById(selectAssignee.value);
@@ -256,7 +256,7 @@ export class CreateTaskModal {
       });
     }
 
-    // Toggle hộp chọn người duyệt khi bật/tắt switch
+    // Toggle h?p ch?n ngu?i duy?t khi b?t/t?t switch
     if (chkRequireApproval && approverBox) {
       chkRequireApproval.addEventListener('change', () => {
         rung(10);
@@ -268,13 +268,13 @@ export class CreateTaskModal {
       });
     }
 
-    // QUẢN LÝ VIỆC CON TRONG FORM (INITIALIZE TỪ TASK ĐANG SỬA HOẶC MỚI)
+    // QU?N L� VI?C CON TRONG FORM (INITIALIZE T? TASK �ANG S?A HO?C M?I)
     const inputModalSubtaskTitle = this.container.querySelector('#inputModalSubtaskTitle');
     const btnAddModalSubtask = this.container.querySelector('#btnAddModalSubtask');
     const modalSubtasksContainer = this.container.querySelector('#modalSubtasksContainer');
     const modalSubtaskCountBadge = this.container.querySelector('#modalSubtaskCountBadge');
     
-    // Nạp việc con từ task hiện tại nếu đang ở chế độ chỉnh sửa
+    // N?p vi?c con t? task hi?n t?i n?u dang ? ch? d? ch?nh s?a
     const initialSubtasks = (isEdit && this.taskToEdit && Array.isArray(this.taskToEdit.subtasks))
       ? JSON.parse(JSON.stringify(this.taskToEdit.subtasks))
       : [];
@@ -284,11 +284,11 @@ export class CreateTaskModal {
       if (!modalSubtasksContainer) return;
       if (tempSubtasks.length === 0) {
         modalSubtasksContainer.innerHTML = '';
-        if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = '0 việc con';
+        if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = '0 vi?c con';
         return;
       }
 
-      if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = `${tempSubtasks.length} việc con`;
+      if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = `${tempSubtasks.length} vi?c con`;
       modalSubtasksContainer.innerHTML = tempSubtasks.map((st, idx) => {
         const isCompleted = st.completed || st.status === 'done';
         return `
@@ -298,7 +298,7 @@ export class CreateTaskModal {
               <span class="text-[12px] font-bold text-[#795900] font-mono-data">#${idx + 1}</span>
               <span class="text-[12.5px] font-semibold text-[#0d1c2f] truncate ${isCompleted ? 'line-through text-gray-400' : ''}">${esc(st.title || st.text)}</span>
             </div>
-            <button type="button" class="btn-remove-temp-subtask text-rose-500 hover:text-rose-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-50 cursor-pointer shrink-0" data-index="${idx}" title="Xóa việc con này">
+            <button type="button" class="btn-remove-temp-subtask text-rose-500 hover:text-rose-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-50 cursor-pointer shrink-0" data-index="${idx}" title="X�a vi?c con n�y">
               <span class="material-symbols-outlined text-[17px]">close</span>
             </button>
           </div>
@@ -316,14 +316,14 @@ export class CreateTaskModal {
       });
     };
 
-    // Render danh sách ban đầu nếu có
+    // Render danh s�ch ban d?u n?u c�
     renderTempSubtasks();
 
     const addTempSubtask = () => {
       if (!inputModalSubtaskTitle) return;
       const title = inputModalSubtaskTitle.value.trim();
       if (!title) {
-        toast('Vui lòng nhập tên việc con', 'warning');
+        toast('Vui l�ng nh?p t�n vi?c con', 'warning');
         return;
       }
       rung(10);
@@ -377,18 +377,18 @@ export class CreateTaskModal {
         const assigneeId = this.container.querySelector('#newTaskAssignee').value;
         const priority = this.container.querySelector('#newTaskPriority').value;
         const dueDate = this.container.querySelector('#newTaskDueDate').value;
-        const category = this.container.querySelector('#newTaskCategory').value.trim() || 'Chuyên môn';
+        const category = this.container.querySelector('#newTaskCategory').value.trim() || 'Chuy�n m�n';
         const cost = parseFloat(this.container.querySelector('#newTaskCost').value) || 0;
         const requiresApproval = chkRequireApproval ? chkRequireApproval.checked : false;
         const approverId = requiresApproval ? (this.container.querySelector('#newTaskApprover')?.value || '') : '';
 
         if (!title) {
-          toast('Vui lòng nhập tên công việc!', 'warning');
+          toast('Vui l�ng nh?p t�n c�ng vi?c!', 'warning');
           return;
         }
 
         if (isEdit && this.taskToEdit) {
-          // CHẾ ĐỘ CẬP NHẬT CÔNG VIỆC HIỆN TẠI
+          // CH? �? C?P NH?T C�NG VI?C HI?N T?I
           const updatedTask = store.updateTask(this.taskToEdit.id, {
             title,
             description,
@@ -403,11 +403,11 @@ export class CreateTaskModal {
             subtasks: tempSubtasks
           });
 
-          toast(`Đã lưu thay đổi nhiệm vụ: ${this.taskToEdit.id}`, 'success');
+          toast(`�� luu thay d?i nhi?m v?: ${this.taskToEdit.id}`, 'success');
           closeModal();
           if (this.onTaskCreated) this.onTaskCreated(updatedTask);
         } else {
-          // CHẾ ĐỘ TẠO MỚI CÔNG VIỆC
+          // CH? �? T?O M?I C�NG VI?C
           const newTask = store.createTask({
             title,
             description,
@@ -424,7 +424,7 @@ export class CreateTaskModal {
             subtasks: tempSubtasks
           });
 
-          toast(`Đã giao việc thành công: ${newTask.id}`, 'success');
+          toast(`�� giao vi?c th�nh c�ng: ${newTask.id}`, 'success');
           closeModal();
           if (this.onTaskCreated) this.onTaskCreated(newTask);
         }

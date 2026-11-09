@@ -1,13 +1,13 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - MOBILE BOTTOM NAVIGATION COMPONENT (SHIN AIOS v2.6.4)
- * Thanh điều hướng đáy dành riêng cho thiết bị di động (Mobile First)
- * Chuẩn công thái học: Vùng bấm >= 44x44px, phản hồi xúc giác rung(10)
- * Đổi màu đồng bộ theo 8 Palettes của SHIN AIOS
+/**
+ * THANH VU MEDIC CS3 - MOBILE BOTTOM NAVIGATION COMPONENT (SHIN AIOS v2.6.4)
+ * Thanh di?u hu?ng d�y d�nh ri�ng cho thi?t b? di d?ng (Mobile First)
+ * Chu?n c�ng th�i h?c: V�ng b?m >= 44x44px, ph?n h?i x�c gi�c rung(10)
+ * �?i m�u d?ng b? theo 8 Palettes c?a SHIN AIOS
  */
 
-import { rung } from '../helpers.js?v=5.1';
-import { auth } from '../auth.js?v=5.1';
-import { store } from '../store.js?v=5.1';
+import { rung } from '../helpers.js?v=5.2';
+import { auth } from '../auth.js?v=5.2';
+import { store } from '../store.js?v=5.2';
 
 export class BottomNav {
   constructor(containerId, onNavChange) {
@@ -29,11 +29,11 @@ export class BottomNav {
     const isAdmin = auth.isAdmin();
 
     const navItems = [
-      { id: 'tong-quan', label: 'Tổng quan', icon: 'grid_view' },
-      { id: 'cong-viec', label: 'Công việc', icon: 'task_alt', badge: pendingApproval > 0 ? pendingApproval : null },
-      { id: 'nhan-vien', label: 'Nhân sự', icon: 'group' },
-      ...(isAdmin ? [{ id: 'phong-ban', label: 'Phòng ban', icon: 'domain' }] : []),
-      { id: 'cai-dat', label: 'Cài đặt', icon: 'settings' }
+      { id: 'tong-quan', label: 'T?ng quan', icon: 'grid_view' },
+      { id: 'cong-viec', label: 'C�ng vi?c', icon: 'task_alt', badge: pendingApproval > 0 ? pendingApproval : null },
+      { id: 'nhan-vien', label: 'Nh�n s?', icon: 'group' },
+      ...(isAdmin ? [{ id: 'phong-ban', label: 'Ph�ng ban', icon: 'domain' }] : []),
+      { id: 'cai-dat', label: 'C�i d?t', icon: 'settings' }
     ];
 
     this.container.innerHTML = `

@@ -1,13 +1,13 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - SUBTASK DETAIL MODAL COMPONENT (SHIN AIOS v2.7)
- * Hiển thị đầy đủ thông tin chi tiết của Việc Con:
- * Mã việc con, Tiêu đề, Tên nhiệm vụ cha, Trạng thái, Checkbox hoàn thành,
- * Mô tả chi tiết & Tiêu chuẩn bàn giao, Người phụ trách (Avatar), Hạn chót, Nút Sửa & Đóng.
- * Hỗ trợ Stacked Modal độc lập (z-[120]), không ghi đè SubtasksModal hay TaskDrawer bên dưới.
+/**
+ * THANH VU MEDIC CS3 - SUBTASK DETAIL MODAL COMPONENT (SHIN AIOS v2.7)
+ * Hi?n th? d?y d? th�ng tin chi ti?t c?a Vi?c Con:
+ * M� vi?c con, Ti�u d?, T�n nhi?m v? cha, Tr?ng th�i, Checkbox ho�n th�nh,
+ * M� t? chi ti?t & Ti�u chu?n b�n giao, Ngu?i ph? tr�ch (Avatar), H?n ch�t, N�t S?a & ��ng.
+ * H? tr? Stacked Modal d?c l?p (z-[120]), kh�ng ghi d� SubtasksModal hay TaskDrawer b�n du?i.
  */
 
-import { store } from '../store.js?v=5.1';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=5.1';
+import { store } from '../store.js?v=5.2';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=5.2';
 
 export class SubtaskDetailModal {
   constructor(containerId, onUpdated) {
@@ -55,27 +55,27 @@ export class SubtaskDetailModal {
               ${esc(subtask.id)}
             </span>
             <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : subtask.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
-              ${isDone ? 'Đã hoàn thành' : subtask.status === 'in_progress' ? 'Đang thực hiện' : 'Chưa bắt đầu'}
+              ${isDone ? '�� ho�n th�nh' : subtask.status === 'in_progress' ? '�ang th?c hi?n' : 'Chua b?t d?u'}
             </span>
           </div>
-          <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer" id="btnCloseSubtaskDetail" aria-label="Đóng">&times;</button>
+          <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer" id="btnCloseSubtaskDetail" aria-label="��ng">&times;</button>
         </div>
 
-        <!-- THÔNG TIN NHIỆM VỤ CHA -->
+        <!-- TH�NG TIN NHI?M V? CHA -->
         <div class="p-2.5 px-3 rounded-xl bg-[#fffbeb]/60 border border-[#fef3c7] flex items-center gap-2 text-[12px] text-[#795900]">
           <span class="material-symbols-outlined text-[17px] text-[#d6a52a] shrink-0">subdirectory_arrow_right</span>
           <div class="min-w-0 truncate">
-            <span>Nhiệm vụ cha: </span>
+            <span>Nhi?m v? cha: </span>
             <strong class="font-bold text-[#0d1c2f]">${esc(task.title)}</strong>
             <span class="font-mono-data text-[11px] text-[#795900] ml-1">(${esc(task.id)})</span>
           </div>
         </div>
 
         ${!this.isEditing ? `
-          <!-- CHẾ ĐỘ XEM CHI TIẾT -->
+          <!-- CH? �? XEM CHI TI?T -->
           <div class="flex flex-col gap-4">
             
-            <!-- TIÊU ĐỀ & CHECKBOX HOÀN THÀNH -->
+            <!-- TI�U �? & CHECKBOX HO�N TH�NH -->
             <div class="p-3.5 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-start gap-3">
               <input type="checkbox" id="chkSubtaskDetailComplete" class="w-5 h-5 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0 mt-0.5" ${isDone ? 'checked' : ''} />
               <div class="flex-1 min-w-0">
@@ -83,40 +83,40 @@ export class SubtaskDetailModal {
                   ${esc(subtask.title || subtask.text)}
                 </h3>
                 <span class="text-[11px] text-[#817663] block mt-1">
-                  ${isDone ? 'Đã đánh dấu hoàn thành' : 'Bấm checkbox bên cạnh để đánh dấu xong'}
+                  ${isDone ? '�� d�nh d?u ho�n th�nh' : 'B?m checkbox b�n c?nh d? d�nh d?u xong'}
                 </span>
               </div>
             </div>
 
-            <!-- MÔ TẢ CHI TIẾT & TIÊU CHUẨN BÀN GIAO -->
+            <!-- M� T? CHI TI?T & TI�U CHU?N B�N GIAO -->
             <div>
               <label class="block text-[12px] font-bold text-[#64748b] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[16px] text-[#795900]">description</span>
-                <span>Mô tả &amp; Tiêu chuẩn bàn giao</span>
+                <span>M� t? &amp; Ti�u chu?n b�n giao</span>
               </label>
               <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0] text-[13px] text-[#0d1c2f] leading-relaxed whitespace-pre-wrap">
-                ${subtask.description ? esc(subtask.description) : '<span class="text-gray-400 italic">Chưa có mô tả chi tiết cho việc con này.</span>'}
+                ${subtask.description ? esc(subtask.description) : '<span class="text-gray-400 italic">Chua c� m� t? chi ti?t cho vi?c con n�y.</span>'}
               </div>
             </div>
 
-            <!-- GRID: NGƯỜI PHỤ TRÁCH & HẠN HOÀN THÀNH -->
+            <!-- GRID: NGU?I PH? TR�CH & H?N HO�N TH�NH -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0]">
-                <span class="text-[11px] font-bold text-[#64748b] uppercase tracking-wider block mb-2">Người phụ trách</span>
+                <span class="text-[11px] font-bold text-[#64748b] uppercase tracking-wider block mb-2">Ngu?i ph? tr�ch</span>
                 <div class="flex items-center gap-2.5">
                   <img src="${assignee ? assignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-amber-100" />
                   <div class="min-w-0">
-                    <div class="text-[13px] font-bold text-[#0d1c2f] truncate">${assignee ? esc(assignee.name) : 'Chưa phân công'}</div>
-                    <div class="text-[11px] text-[#64748b] truncate">${assignee ? esc(assignee.title) : 'Chưa giao'}</div>
+                    <div class="text-[13px] font-bold text-[#0d1c2f] truncate">${assignee ? esc(assignee.name) : 'Chua ph�n c�ng'}</div>
+                    <div class="text-[11px] text-[#64748b] truncate">${assignee ? esc(assignee.title) : 'Chua giao'}</div>
                   </div>
                 </div>
               </div>
 
               <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0]">
-                <span class="text-[11px] font-bold text-[#64748b] uppercase tracking-wider block mb-2">Hạn hoàn thành</span>
+                <span class="text-[11px] font-bold text-[#64748b] uppercase tracking-wider block mb-2">H?n ho�n th�nh</span>
                 <div class="flex items-center gap-2 text-[#0d1c2f]">
                   <span class="material-symbols-outlined text-[20px] text-[#795900]">calendar_month</span>
-                  <span class="font-mono-data text-[13px] font-bold">${subtask.dueDate ? ngayVN(subtask.dueDate) : 'Chưa đặt hạn'}</span>
+                  <span class="font-mono-data text-[13px] font-bold">${subtask.dueDate ? ngayVN(subtask.dueDate) : 'Chua d?t h?n'}</span>
                 </div>
               </div>
             </div>
@@ -125,31 +125,31 @@ export class SubtaskDetailModal {
             <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-1">
               <button type="button" id="btnStartEditSubtask" class="px-4 py-2.5 rounded-xl border border-[#d6a52a] text-[#795900] bg-[#fffbeb] hover:bg-[#fde68a] font-bold text-[12.5px] min-h-[42px] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs">
                 <span class="material-symbols-outlined text-[17px]">edit</span>
-                <span>Chỉnh sửa việc con</span>
+                <span>Ch?nh s?a vi?c con</span>
               </button>
               <button type="button" id="btnOkCloseSubtask" class="px-5 py-2.5 rounded-xl bg-[#0d1c2f] text-white font-bold text-[12.5px] min-h-[42px] flex items-center justify-center cursor-pointer hover:bg-black transition-colors">
-                <span>Đóng</span>
+                <span>��ng</span>
               </button>
             </div>
           </div>
         ` : `
-          <!-- CHẾ ĐỘ CHỈNH SỬA VIỆC CON TRỰC TIẾP -->
+          <!-- CH? �? CH?NH S?A VI?C CON TR?C TI?P -->
           <form id="formEditSubtaskModal" class="flex flex-col gap-3.5">
             <div>
-              <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1">Tiêu đề việc con *</label>
+              <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1">Ti�u d? vi?c con *</label>
               <input type="text" id="editModalSubtaskTitle" required value="${esc(subtask.title || subtask.text)}" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
             </div>
 
             <div>
-              <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1">Mô tả &amp; Tiêu chuẩn bàn giao</label>
-              <textarea id="editModalSubtaskDesc" rows="3" placeholder="Ghi chú yêu cầu kỹ thuật, mốc hoàn thành..." class="w-full p-2.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]">${esc(subtask.description || '')}</textarea>
+              <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1">M� t? &amp; Ti�u chu?n b�n giao</label>
+              <textarea id="editModalSubtaskDesc" rows="3" placeholder="Ghi ch� y�u c?u k? thu?t, m?c ho�n th�nh..." class="w-full p-2.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]">${esc(subtask.description || '')}</textarea>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Người phụ trách</label>
+                <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Ngu?i ph? tr�ch</label>
                 <select id="editModalSubtaskAssignee" class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-white cursor-pointer">
-                  <option value="">-- Chưa giao --</option>
+                  <option value="">-- Chua giao --</option>
                   ${allUsers.map(u => `
                     <option value="${u.id}" ${u.id === subtask.assigneeId ? 'selected' : ''}>${esc(u.name)} (${esc(u.title)})</option>
                   `).join('')}
@@ -157,27 +157,27 @@ export class SubtaskDetailModal {
               </div>
 
               <div>
-                <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Hạn hoàn thành</label>
+                <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">H?n ho�n th�nh</label>
                 <input type="date" id="editModalSubtaskDueDate" value="${subtask.dueDate ? subtask.dueDate.slice(0, 10) : ''}" class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12.5px] font-mono-data outline-none focus:border-[#d6a52a] bg-white" />
               </div>
             </div>
 
             <div>
-              <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Trạng thái</label>
+              <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Tr?ng th�i</label>
               <select id="editModalSubtaskStatus" class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12.5px] font-bold outline-none focus:border-[#d6a52a] bg-white cursor-pointer">
-                <option value="todo" ${subtask.status === 'todo' ? 'selected' : ''}>Chưa bắt đầu</option>
-                <option value="in_progress" ${subtask.status === 'in_progress' ? 'selected' : ''}>Đang thực hiện</option>
-                <option value="done" ${isDone ? 'selected' : ''}>Đã hoàn thành</option>
+                <option value="todo" ${subtask.status === 'todo' ? 'selected' : ''}>Chua b?t d?u</option>
+                <option value="in_progress" ${subtask.status === 'in_progress' ? 'selected' : ''}>�ang th?c hi?n</option>
+                <option value="done" ${isDone ? 'selected' : ''}>�� ho�n th�nh</option>
               </select>
             </div>
 
             <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-1">
               <button type="button" id="btnCancelEditSubtaskModal" class="px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] font-semibold text-[12.5px] min-h-[42px] cursor-pointer hover:bg-gray-50">
-                Hủy bỏ
+                H?y b?
               </button>
               <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[12.5px] min-h-[42px] flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors">
                 <span class="material-symbols-outlined text-[17px]">save</span>
-                <span>Lưu thay đổi</span>
+                <span>Luu thay d?i</span>
               </button>
             </div>
           </form>
@@ -204,19 +204,19 @@ export class SubtaskDetailModal {
       if (e.target === overlay) closeModal();
     });
 
-    // TOGGLE CHECKBOX HOÀN THÀNH
+    // TOGGLE CHECKBOX HO�N TH�NH
     const chkComplete = overlay.querySelector('#chkSubtaskDetailComplete');
     if (chkComplete) {
       chkComplete.addEventListener('change', () => {
         rung(10);
         store.toggleSubtask(task.id, subtask.id);
-        toast('Đã cập nhật tiến độ việc con!', 'success');
+        toast('�� c?p nh?t ti?n d? vi?c con!', 'success');
         if (this.onUpdated) this.onUpdated();
         this.render();
       });
     }
 
-    // CHUYỂN SANG CHẾ ĐỘ SỬA
+    // CHUY?N SANG CH? �? S?A
     const btnStartEdit = overlay.querySelector('#btnStartEditSubtask');
     if (btnStartEdit) {
       btnStartEdit.addEventListener('click', () => {
@@ -226,7 +226,7 @@ export class SubtaskDetailModal {
       });
     }
 
-    // HỦY SỬA
+    // H?Y S?A
     const btnCancelEdit = overlay.querySelector('#btnCancelEditSubtaskModal');
     if (btnCancelEdit) {
       btnCancelEdit.addEventListener('click', () => {
@@ -236,7 +236,7 @@ export class SubtaskDetailModal {
       });
     }
 
-    // SUBMIT FORM SỬA
+    // SUBMIT FORM S?A
     const formEdit = overlay.querySelector('#formEditSubtaskModal');
     if (formEdit) {
       formEdit.addEventListener('submit', (e) => {
@@ -245,7 +245,7 @@ export class SubtaskDetailModal {
 
         const title = overlay.querySelector('#editModalSubtaskTitle')?.value.trim();
         if (!title) {
-          toast('Vui lòng nhập tiêu đề việc con!', 'warning');
+          toast('Vui l�ng nh?p ti�u d? vi?c con!', 'warning');
           return;
         }
 
@@ -262,7 +262,7 @@ export class SubtaskDetailModal {
           status
         });
 
-        toast('Đã cập nhật việc con thành công!', 'success');
+        toast('�� c?p nh?t vi?c con th�nh c�ng!', 'success');
         this.isEditing = false;
         if (this.onUpdated) this.onUpdated();
         this.render();

@@ -1,7 +1,7 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - GOOGLE APPS SCRIPT & SHIN AIOS BRIDGE
- * Dịch vụ đồng bộ dữ liệu thật 2 chiều với Google Sheets / SHIN AIOS
- * Khắc phục 100% lỗi CORS: Không dùng header tùy biến trong GET, dùng text/plain trong POST
+/**
+ * THANH VU MEDIC CS3 - GOOGLE APPS SCRIPT & SHIN AIOS BRIDGE
+ * D?ch v? d?ng b? d? li?u th?t 2 chi?u v?i Google Sheets / SHIN AIOS
+ * Kh?c ph?c 100% l?i CORS: Kh�ng d�ng header t�y bi?n trong GET, d�ng text/plain trong POST
  */
 
 import { toast } from '../helpers.js';
@@ -33,17 +33,17 @@ export class AppScriptBridge {
     return Boolean(this.endpoint && this.endpoint.includes('script.google.com/macros/s/'));
   }
 
-  // Tải dữ liệu thật từ Google Sheet về Web App (GET Request - Không Preflight CORS)
+  // T?i d? li?u th?t t? Google Sheet v? Web App (GET Request - Kh�ng Preflight CORS)
   async fetchCloudData() {
     if (!this.isConnected()) {
-      return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
+      return { success: false, message: 'Chua c?u h�nh URL Google Apps Script Endpoint' };
     }
 
     try {
       const sep = this.endpoint.includes('?') ? '&' : '?';
       const url = `${this.endpoint}${sep}action=getData&_t=${Date.now()}`;
 
-      // GET request không kèm headers tùy biến để tránh CORS preflight OPTIONS
+      // GET request kh�ng k�m headers t�y bi?n d? tr�nh CORS preflight OPTIONS
       const response = await fetch(url, {
         method: 'GET',
         redirect: 'follow'
@@ -65,19 +65,19 @@ export class AppScriptBridge {
           timestamp: this.lastSyncTime
         };
       } else {
-        return { success: false, message: data.message || 'Lỗi xử lý trên Apps Script' };
+        return { success: false, message: data.message || 'L?i x? l� tr�n Apps Script' };
       }
     } catch (err) {
-      console.warn('[AppsScript Bridge] Lỗi tải dữ liệu từ Google Sheet:', err);
+      console.warn('[AppsScript Bridge] L?i t?i d? li?u t? Google Sheet:', err);
       return {
         success: false,
         error: err.toString(),
-        message: 'Không thể kết nối. Hãy đảm bảo Apps Script đã Deploy as Web App với quyền "Anyone (Bất kỳ ai)"!'
+        message: 'Kh�ng th? k?t n?i. H�y d?m b?o Apps Script d� Deploy as Web App v?i quy?n "Anyone (B?t k? ai)"!'
       };
     }
   }
 
-  // Khởi tạo bảng dữ liệu mẫu trực tiếp trên Google Sheet qua GET
+  // Kh?i t?o b?ng d? li?u m?u tr?c ti?p tr�n Google Sheet qua GET
   async seedCloudData() {
     if (!this.isConnected()) return false;
     try {
@@ -91,16 +91,16 @@ export class AppScriptBridge {
         return data;
       }
     } catch (err) {
-      console.warn('[AppsScript Bridge] Lỗi seed dữ liệu lên Google Sheet:', err);
+      console.warn('[AppsScript Bridge] L?i seed d? li?u l�n Google Sheet:', err);
     }
     return null;
   }
 
-  // Đẩy toàn bộ dữ liệu từ LocalStorage lên Google Sheet (Batch Sync qua POST text/plain)
+  // �?y to�n b? d? li?u t? LocalStorage l�n Google Sheet (Batch Sync qua POST text/plain)
   async pushAllToCloud(tasks, users, notifications = [], departments = []) {
     if (!this.isConnected()) return false;
     try {
-      // Dùng text/plain để không bị CORS preflight OPTIONS
+      // D�ng text/plain d? kh�ng b? CORS preflight OPTIONS
       await fetch(this.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -119,13 +119,13 @@ export class AppScriptBridge {
       localStorage.setItem(LAST_SYNC_KEY, this.lastSyncTime);
       return true;
     } catch (err) {
-      console.warn('[AppsScript Bridge] Lỗi push dữ liệu lên Google Sheet:', err);
+      console.warn('[AppsScript Bridge] L?i push d? li?u l�n Google Sheet:', err);
       return false;
     }
   }
 
 
-  // Gửi danh sách phòng ban & bộ phận con lên Google Sheet
+  // G?i danh s�ch ph�ng ban & b? ph?n con l�n Google Sheet
   async pushDepartments(departments) {
     if (!this.isConnected()) return false;
     try {
@@ -144,7 +144,7 @@ export class AppScriptBridge {
     }
   }
 
-  // Gửi 1 công việc đơn lẻ lên Google Sheet
+  // G?i 1 c�ng vi?c don l? l�n Google Sheet
   async pushTask(task) {
     if (!this.isConnected()) return false;
     try {
@@ -160,7 +160,7 @@ export class AppScriptBridge {
     }
   }
 
-  // Xóa 1 công việc khỏi Google Sheet
+  // X�a 1 c�ng vi?c kh?i Google Sheet
   async deleteTask(taskId) {
     if (!this.isConnected()) return false;
     try {
@@ -176,7 +176,7 @@ export class AppScriptBridge {
     }
   }
 
-  // Gửi 1 nhân viên lên Google Sheet
+  // G?i 1 nh�n vi�n l�n Google Sheet
   async pushUser(user) {
     if (!this.isConnected()) return false;
     try {
@@ -192,7 +192,7 @@ export class AppScriptBridge {
     }
   }
 
-  // Xóa 1 nhân viên khỏi Google Sheet
+  // X�a 1 nh�n vi�n kh?i Google Sheet
   async deleteUser(userId) {
     if (!this.isConnected()) return false;
     try {
@@ -208,7 +208,7 @@ export class AppScriptBridge {
     }
   }
 
-  // Gửi 1 thông báo lên Google Sheet
+  // G?i 1 th�ng b�o l�n Google Sheet
   async pushNotification(notification) {
     if (!this.isConnected()) return false;
     try {
@@ -224,7 +224,7 @@ export class AppScriptBridge {
     }
   }
 
-  // Đánh dấu thông báo đã đọc trên Google Sheet
+  // ��nh d?u th�ng b�o d� d?c tr�n Google Sheet
   async markNotificationRead(notifId) {
     if (!this.isConnected()) return false;
     try {

@@ -1,22 +1,22 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - STRICT RBAC & DATA ISOLATION ENGINE
- * Phân quyền 4 cấp độ (SHIN AIOS v2.6.4):
- * 1. ADMIN (Quản trị viên): Toàn quyền toàn viện, CRUD phòng ban & bộ phận con, cấp mọi tài khoản.
- * 2. LEADERSHIP (Ban lãnh đạo): Toàn quyền xem và giám sát tất cả các phòng ban, bộ phận.
- * 3. MANAGER / DEPUTY_MANAGER (Trưởng / Phó phòng): Quản lý toàn bộ nhân viên và các bộ phận con của phòng mình,
- *    chỉ được cấp tài khoản cho Nhân viên thuộc phòng mình (Không thể cấp cho Admin / Ban lãnh đạo).
- * 4. MEMBER (Nhân viên): Không được phép cấp tài khoản, thực hiện và cập nhật tiến độ công việc.
+/**
+ * THANH VU MEDIC CS3 - STRICT RBAC & DATA ISOLATION ENGINE
+ * Ph�n quy?n 4 c?p d? (SHIN AIOS v2.6.4):
+ * 1. ADMIN (Qu?n tr? vi�n): To�n quy?n to�n vi?n, CRUD ph�ng ban & b? ph?n con, c?p m?i t�i kho?n.
+ * 2. LEADERSHIP (Ban l�nh d?o): To�n quy?n xem v� gi�m s�t t?t c? c�c ph�ng ban, b? ph?n.
+ * 3. MANAGER / DEPUTY_MANAGER (Tru?ng / Ph� ph�ng): Qu?n l� to�n b? nh�n vi�n v� c�c b? ph?n con c?a ph�ng m�nh,
+ *    ch? du?c c?p t�i kho?n cho Nh�n vi�n thu?c ph�ng m�nh (Kh�ng th? c?p cho Admin / Ban l�nh d?o).
+ * 4. MEMBER (Nh�n vi�n): Kh�ng du?c ph�p c?p t�i kho?n, th?c hi?n v� c?p nh?t ti?n d? c�ng vi?c.
  * 
- * Quy tắc giao việc: Bất cứ ai cũng có quyền tạo và assign task cho bất kỳ nhân viên nào.
+ * Quy t?c giao vi?c: B?t c? ai cung c� quy?n t?o v� assign task cho b?t k? nh�n vi�n n�o.
  */
 
 import { USERS, DEPARTMENTS, ROLES } from './models.js';
 import { toast, rung } from './helpers.js';
 
 /**
- * Băm mật khẩu SHA-256 an toàn bằng Web Cryptography API
+ * Bam m?t kh?u SHA-256 an to�n b?ng Web Cryptography API
  * @param {string} plainText
- * @returns {Promise<string>} Chuỗi hex 64 ký tự
+ * @returns {Promise<string>} Chu?i hex 64 k� t?
  */
 export async function hashPassword(plainText) {
   if (plainText === null || plainText === undefined || String(plainText).trim() === '') return '';
@@ -27,7 +27,7 @@ export async function hashPassword(plainText) {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   } catch (err) {
-    console.warn('[AUTH] crypto.subtle không khả dụng, dùng fallback:', err);
+    console.warn('[AUTH] crypto.subtle kh�ng kh? d?ng, d�ng fallback:', err);
     return String(plainText).trim();
   }
 }
@@ -57,7 +57,7 @@ export class AuthManager {
     } catch (e) {}
 
     if (users.length === 0) {
-      // Tự động nâng cấp và hợp nhất danh sách USERS mặc định kèm dữ liệu cũ
+      // T? d?ng n�ng c?p v� h?p nh?t danh s�ch USERS m?c d?nh k�m d? li?u cu
       let merged = [...USERS];
       try {
         const oldSaved = localStorage.getItem('tvm_users_v3');
@@ -85,7 +85,7 @@ export class AuthManager {
       } catch (_) {}
     }
 
-    // Chuẩn hóa an toàn cho toàn bộ user: password luôn là chuỗi string, username lowercase trimmed
+    // Chu?n h�a an to�n cho to�n b? user: password lu�n l� chu?i string, username lowercase trimmed
     return users.map(u => ({
       ...u,
       username: String(u.username || (u.id ? u.id.replace('user_', '') : '')).trim().toLowerCase(),
@@ -110,7 +110,7 @@ export class AuthManager {
       if (!raw) return null;
       const sess = JSON.parse(raw);
       if (sess && sess.expiresAt && sess.expiresAt > Date.now() && sess.user) {
-        // Đồng bộ lại thông tin mới nhất của user từ tvm_user_profile_ hoặc tvm_users_v4
+        // �?ng b? l?i th�ng tin m?i nh?t c?a user t? tvm_user_profile_ ho?c tvm_users_v4
         const users = this.getStoredUsers();
         let latestUser = users.find(u => u.id === sess.user.id) || sess.user;
         const custom = localStorage.getItem('tvm_user_profile_' + latestUser.id);
@@ -123,7 +123,7 @@ export class AuthManager {
         return sess;
       }
     } catch (e) {
-      console.warn('Lỗi đọc session:', e);
+      console.warn('L?i d?c session:', e);
     }
     return null;
   }
@@ -134,9 +134,9 @@ export class AuthManager {
     if (!this.currentUser) return depts[0]?.id || 'dept_ptkh';
 
     if ((this.isAdmin() || this.isLeadership()) && savedDept) {
-      return savedDept; // Admin & Lãnh đạo có thể chọn bất kỳ phòng ban nào
+      return savedDept; // Admin & L�nh d?o c� th? ch?n b?t k? ph�ng ban n�o
     }
-    // Trưởng phòng & Nhân viên gắn với phòng ban của mình
+    // Tru?ng ph�ng & Nh�n vi�n g?n v?i ph�ng ban c?a m�nh
     if (this.currentUser.departmentId && this.currentUser.departmentId !== 'all') {
       return this.currentUser.departmentId;
     }
@@ -149,14 +149,14 @@ export class AuthManager {
 
   async login(usernameOrEmail, password) {
     if (!usernameOrEmail || !password) {
-      return { success: false, message: 'Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu!' };
+      return { success: false, message: 'Vui l�ng nh?p d?y d? T�n dang nh?p v� M?t kh?u!' };
     }
 
     const trimmedUser = String(usernameOrEmail).trim().toLowerCase();
     const trimmedPass = String(password).trim();
     let users = this.getStoredUsers();
 
-    // Hàm so khớp tài khoản thông minh & linh hoạt
+    // H�m so kh?p t�i kho?n th�ng minh & linh ho?t
     const findMatch = (list) => {
       return list.find(u => {
         const uName = String(u.username || '').trim().toLowerCase();
@@ -173,21 +173,21 @@ export class AuthManager {
           uId.replace('user_', '') === trimmedUser ||
           fullName === trimmedUser ||
           (trimmedUser === 'admin' && (roleLower === 'admin' || uName === 'admin')) ||
-          (trimmedUser.includes('tam') && (uName.includes('tam') || fullName.includes('tâm')))
+          (trimmedUser.includes('tam') && (uName.includes('tam') || fullName.includes('t�m')))
         );
       });
     };
 
     let matched = findMatch(users);
 
-    // NẾU CHƯA TÌM THẤY TRONG BỘ NHỚ LOCAL: Tự động sync tức thời từ Google Sheet
+    // N?U CHUA T�M TH?Y TRONG B? NH? LOCAL: T? d?ng sync t?c th?i t? Google Sheet
     if (!matched) {
       try {
         const { appScriptBridge } = await import('./services/appScriptBridge.js');
         if (appScriptBridge && appScriptBridge.isConnected()) {
           const cloudData = await appScriptBridge.fetchCloudData();
           if (cloudData && cloudData.success && Array.isArray(cloudData.users) && cloudData.users.length > 0) {
-            // Hợp nhất dữ liệu mới từ Sheet vào bộ nhớ
+            // H?p nh?t d? li?u m?i t? Sheet v�o b? nh?
             const userMap = new Map();
             users.forEach(u => userMap.set(u.id, u));
             cloudData.users.forEach(su => {
@@ -207,7 +207,7 @@ export class AuthManager {
           }
         }
       } catch (syncErr) {
-        console.warn('[AUTH] Lỗi tự động sync người dùng từ Cloud:', syncErr);
+        console.warn('[AUTH] L?i t? d?ng sync ngu?i d�ng t? Cloud:', syncErr);
       }
     }
 
@@ -215,11 +215,11 @@ export class AuthManager {
       return { 
         success: false, 
         code: 'USER_NOT_FOUND',
-        message: 'Tên đăng nhập hoặc email không tồn tại trong hệ thống!' 
+        message: 'T�n dang nh?p ho?c email kh�ng t?n t?i trong h? th?ng!' 
       };
     }
 
-    // Kiểm tra mật khẩu (So sánh String chuẩn & băm SHA-256 bảo mật)
+    // Ki?m tra m?t kh?u (So s�nh String chu?n & bam SHA-256 b?o m?t)
     const validPassword = String(matched.password !== undefined && matched.password !== null && String(matched.password).trim() !== '' ? matched.password : '123').trim();
     let isPasswordCorrect = (trimmedPass === validPassword);
     if (!isPasswordCorrect && typeof crypto !== 'undefined' && crypto.subtle) {
@@ -233,18 +233,18 @@ export class AuthManager {
       return { 
         success: false, 
         code: 'WRONG_PASSWORD',
-        message: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!' 
+        message: 'M?t kh?u kh�ng ch�nh x�c. Vui l�ng ki?m tra l?i!' 
       };
     }
 
-    // Đọc thêm profile cá nhân lưu riêng nếu có
+    // �?c th�m profile c� nh�n luu ri�ng n?u c�
     let fullUser = { ...matched };
     try {
       const custom = localStorage.getItem('tvm_user_profile_' + matched.id);
       if (custom) fullUser = { ...fullUser, ...JSON.parse(custom) };
     } catch (_) {}
 
-    // Tạo phiên làm việc (Session) 7 ngày
+    // T?o phi�n l�m vi?c (Session) 7 ng�y
     const session = {
       token: 'sess_' + Math.random().toString(36).slice(2) + Date.now().toString(36),
       userId: fullUser.id,
@@ -287,10 +287,10 @@ export class AuthManager {
     if (this.activeDepartmentId === 'all') {
       return {
         id: 'all',
-        name: 'Toàn Bệnh Viện (Tất cả PB)',
-        code: 'TOÀN VIỆN',
-        badge: 'TOÀN VIỆN',
-        unit: 'Cơ Sở 3 (Cà Mau)',
+        name: 'To�n B?nh Vi?n (T?t c? PB)',
+        code: 'TO�N VI?N',
+        badge: 'TO�N VI?N',
+        unit: 'Co S? 3 (C� Mau)',
         color: '#D6A52A'
       };
     }
@@ -299,7 +299,7 @@ export class AuthManager {
     return dept || depts[0] || DEPARTMENTS[0];
   }
 
-  // --- PHÂN QUYỀN VAI TRÒ (RBAC) ---
+  // --- PH�N QUY?N VAI TR� (RBAC) ---
   isAdmin() {
     return this.currentUser?.role === 'ADMIN';
   }
@@ -317,44 +317,44 @@ export class AuthManager {
     return this.currentUser?.role === 'MEMBER';
   }
 
-  // Quyền chuyển đổi phòng ban (Admin và Ban lãnh đạo)
+  // Quy?n chuy?n d?i ph�ng ban (Admin v� Ban l�nh d?o)
   canSwitchDepartment() {
     return this.isAdmin() || this.isLeadership();
   }
 
-  // Quyền CRUD phòng ban & bộ phận con (CHỈ ADMIN)
+  // Quy?n CRUD ph�ng ban & b? ph?n con (CH? ADMIN)
   canCRUDDepartments() {
     return this.isAdmin();
   }
 
-  // Quyền cấp tài khoản nhân sự mới (Phân quyền bảo mật chặt chẽ):
-  // - Admin: Toàn quyền cấp mọi role cho mọi phòng ban
-  // - Ban lãnh đạo: Giám sát toàn viện, có thể phê duyệt
-  // - Trưởng/Phó phòng: CHỈ cấp được tài khoản cho Nhân viên thuộc phòng ban mình quản lý. KHÔNG THỂ cấp cho Admin/Ban Lãnh Đạo!
-  // - Nhân viên: Tuyệt đối KHÔNG được cấp tài khoản!
+  // Quy?n c?p t�i kho?n nh�n s? m?i (Ph�n quy?n b?o m?t ch?t ch?):
+  // - Admin: To�n quy?n c?p m?i role cho m?i ph�ng ban
+  // - Ban l�nh d?o: Gi�m s�t to�n vi?n, c� th? ph� duy?t
+  // - Tru?ng/Ph� ph�ng: CH? c?p du?c t�i kho?n cho Nh�n vi�n thu?c ph�ng ban m�nh qu?n l�. KH�NG TH? c?p cho Admin/Ban L�nh �?o!
+  // - Nh�n vi�n: Tuy?t d?i KH�NG du?c c?p t�i kho?n!
   canProvisionAccount(targetRole = 'MEMBER', targetDeptId = null) {
     if (!this.isAuthenticated()) return false;
-    // DUY NHẤT ADMIN CÓ QUYỀN CẤP TÀI KHOẢN VÀ PHÂN QUYỀN (SET ROLE)
+    // DUY NH?T ADMIN C� QUY?N C?P T�I KHO?N V� PH�N QUY?N (SET ROLE)
     return this.isAdmin();
   }
 
-  // Quyền tạo & giao việc: "Bất cứ ai cũng có quyền tạo và assign task cho bất kì nhân viên nào"
+  // Quy?n t?o & giao vi?c: "B?t c? ai cung c� quy?n t?o v� assign task cho b?t k� nh�n vi�n n�o"
   canCreateTask() {
     return this.isAuthenticated();
   }
 
-  // Quyền phê duyệt nhiệm vụ (Admin, Ban lãnh đạo hoặc Trưởng/Phó phòng)
+  // Quy?n ph� duy?t nhi?m v? (Admin, Ban l�nh d?o ho?c Tru?ng/Ph� ph�ng)
   canApproveTask() {
     return this.isAdmin() || this.isLeadership() || this.isManager();
   }
 
-  // Quyền quản lý nhân sự & phân bổ bộ phận con
+  // Quy?n qu?n l� nh�n s? & ph�n b? b? ph?n con
   canManageMembers() {
-    // DUY NHẤT ADMIN CÓ QUYỀN THÊM / SỬA / XÓA TÀI KHOẢN NHÂN VIÊN
+    // DUY NH?T ADMIN C� QUY?N TH�M / S?A / X�A T�I KHO?N NH�N VI�N
     return this.isAdmin();
   }
 
-  // Cập nhật thông tin hồ sơ cá nhân
+  // C?p nh?t th�ng tin h? so c� nh�n
   updateProfile(data) {
     if (!this.currentUser) return null;
     this.currentUser = { ...this.currentUser, ...data };
@@ -369,10 +369,10 @@ export class AuthManager {
     try {
       localStorage.setItem('tvm_user_profile_' + this.currentUser.id, JSON.stringify(this.currentUser));
     } catch (e) {
-      console.warn('Không thể lưu profile:', e);
+      console.warn('Kh�ng th? luu profile:', e);
     }
 
-    // Đồng bộ vào danh sách users trong localStorage nếu có
+    // �?ng b? v�o danh s�ch users trong localStorage n?u c�
     try {
       const saved = localStorage.getItem('tvm_users_v4');
       if (saved) {
@@ -391,7 +391,7 @@ export class AuthManager {
     return this.currentUser;
   }
 
-  // Đăng nhập nhanh dạng Switch User (Dành cho kiểm thử RBAC)
+  // �ang nh?p nhanh d?ng Switch User (D�nh cho ki?m th? RBAC)
   loginAs(userId) {
     const users = this.getStoredUsers();
     const user = users.find(u => u.id === userId);
@@ -399,10 +399,10 @@ export class AuthManager {
     return this.login(user.username || user.id, user.password || '123');
   }
 
-  // Chuyển phòng ban đang xem (Dành cho Admin & Ban Lãnh Đạo)
+  // Chuy?n ph�ng ban dang xem (D�nh cho Admin & Ban L�nh �?o)
   switchDepartment(deptId) {
     if (!this.canSwitchDepartment()) {
-      toast('Chỉ Ban Lãnh Đạo & Quản Trị Viên mới có quyền chuyển phòng ban!', 'warning');
+      toast('Ch? Ban L�nh �?o & Qu?n Tr? Vi�n m?i c� quy?n chuy?n ph�ng ban!', 'warning');
       return false;
     }
     if (deptId === 'all') {

@@ -1,13 +1,13 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - TASK DETAIL SLIDE-OVER DRAWER COMPONENT
  * Ngăn trượt chi tiết công việc từ bên phải phong cách Linear / Notion chuẩn Google Stitch
  * Chuẩn màu Vàng Hoàng Kim Gold #D6A52A / #795900, Badges theo quy chuẩn 6 màu
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=5.1';
-import { store } from '../store.js?v=5.1';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=5.1';
+import { auth } from '../auth.js?v=5.2';
+import { store } from '../store.js?v=5.2';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=5.2';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
@@ -300,22 +300,18 @@ export class TaskDrawer {
                   const sAssignee = store.getUserById(s.assigneeId);
                   const isDone = s.completed || s.status === 'done';
                   return `
-                    <div class="subtask-card p-3 sm:p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff] flex flex-col gap-2.5 hover:border-[#d6a52a] transition-all shadow-2xs" data-subtask-id="${s.id}">
-                      <!-- Hàng 1: Checkbox, Mã việc con, Tiêu đề, Huy hiệu trạng thái & Nút thao tác -->
-                      <div class="flex items-start justify-between gap-2">
-                        <div class="flex items-center gap-2.5 flex-1 min-w-0 subtask-clickable-area cursor-pointer" data-subtask-id="${s.id}" title="Bấm để xem đầy đủ chi tiết việc con này">
-                          <input type="checkbox" class="chk-subtask w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0 mt-0.5" data-subtask-id="${s.id}" ${isDone ? 'checked' : ''} />
+                    <div class="subtask-card p-3 sm:p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff] flex flex-col gap-2.5 hover:border-[#d6a52a] hover:shadow-xs transition-all cursor-pointer" data-subtask-id="${s.id}">
+                      <!-- Hàng 1: Checkbox, Mã việc con, Trạng thái & Nút thao tác (Sửa, Xóa) -->
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <input type="checkbox" class="chk-subtask w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0" data-subtask-id="${s.id}" ${isDone ? 'checked' : ''} />
                           <span class="font-mono-data text-[10.5px] font-bold px-2 py-0.5 rounded bg-[#fffbeb] text-[#795900] border border-[#fef3c7] shrink-0">${esc(s.id)}</span>
-                          <span class="text-[13px] sm:text-[13.5px] font-bold text-[#0d1c2f] ${isDone ? 'line-through text-gray-400' : ''} truncate hover:text-[#795900] transition-colors">${esc(s.title || s.text)}</span>
+                          <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
+                            ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
+                          </span>
                         </div>
 
                         <div class="flex items-center gap-1 shrink-0">
-                          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
-                            ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
-                          </span>
-                          <button type="button" class="btn-detail-subtask p-1.5 text-[#817663] hover:text-[#0d1c2f] hover:bg-gray-100 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer transition-colors" data-subtask-id="${s.id}" title="Xem chi tiết việc con">
-                            <span class="material-symbols-outlined text-[17px]">open_in_new</span>
-                          </button>
                           <button type="button" class="btn-toggle-edit-subtask p-1.5 text-[#817663] hover:text-[#795900] hover:bg-amber-100/60 rounded-lg min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer transition-colors" data-subtask-id="${s.id}" title="Sửa việc con này">
                             <span class="material-symbols-outlined text-[17px]">edit</span>
                           </button>
@@ -325,14 +321,19 @@ export class TaskDrawer {
                         </div>
                       </div>
 
-                      <!-- Hàng 2: Mô tả việc con (nếu có) -->
+                      <!-- Hàng 2: Tiêu đề việc con chiếm toàn bộ chiều rộng, không bị cắt chữ (break-words) -->
+                      <div class="text-[13.5px] sm:text-[14px] font-bold text-[#0d1c2f] leading-snug break-words ${isDone ? 'line-through text-gray-400' : 'hover:text-[#795900]'} transition-colors">
+                        ${esc(s.title || s.text)}
+                      </div>
+
+                      <!-- Hàng 3: Mô tả việc con (nếu có) -->
                       ${s.description ? `
-                        <div class="text-[12px] text-[#4f4635] bg-white p-2.5 rounded-xl border border-[#e2e8f0] leading-relaxed">
+                        <div class="text-[12px] text-[#4f4635] bg-white p-2.5 rounded-xl border border-[#e2e8f0] leading-relaxed break-words">
                           ${esc(s.description)}
                         </div>
                       ` : ''}
 
-                      <!-- Hàng 3: Người phụ trách & Hạn chót -->
+                      <!-- Hàng 4: Người phụ trách & Hạn chót -->
                       <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#e2e8f0] text-[11.5px] text-[#64748b]">
                         <div class="flex items-center gap-1.5 min-w-0">
                           <img src="${sAssignee ? sAssignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-4 h-4 rounded-full object-cover shrink-0 ring-1 ring-[#e2e8f0]" />
@@ -623,13 +624,15 @@ export class TaskDrawer {
       });
     }
 
-    // XEM ĐẦY ĐỦ CHI TIẾT VIỆC CON (SUBTASK DETAIL MODAL)
-    this.container.querySelectorAll('.btn-detail-subtask, .subtask-clickable-area').forEach(el => {
-      el.addEventListener('click', (e) => {
-        if (e.target && e.target.classList.contains('chk-subtask')) return;
-        e.stopPropagation();
+    // XEM ĐẦY ĐỦ CHI TIẾT VIỆC CON BẰNG CÁCH BẤM VÀO THẺ (BỎ ICON OPEN_IN_NEW)
+    this.container.querySelectorAll('.subtask-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Không kích hoạt khi bấm vào checkbox, nút bấm hoặc trong form sửa
+        if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select') || e.target.closest('textarea') || e.target.closest('.edit-subtask-form-box')) {
+          return;
+        }
         rung(10);
-        const sid = el.dataset.subtaskId;
+        const sid = card.dataset.subtaskId;
         if (this.onOpenSubtaskDetail) {
           this.onOpenSubtaskDetail(task.id, sid);
         }

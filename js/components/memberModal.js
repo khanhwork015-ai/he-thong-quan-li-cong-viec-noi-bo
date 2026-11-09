@@ -1,17 +1,17 @@
-﻿/**
- * THANH VŨ MEDIC CS3 - MEMBER MANAGEMENT MODAL COMPONENT (SHIN AIOS v2.6.4)
- * Cấp tài khoản nhân viên mới & phân bổ vào đúng Phòng Ban & Bộ Phận Con
+/**
+ * THANH VU MEDIC CS3 - MEMBER MANAGEMENT MODAL COMPONENT (SHIN AIOS v2.6.4)
+ * C?p t�i kho?n nh�n vi�n m?i & ph�n b? v�o d�ng Ph�ng Ban & B? Ph?n Con
  * 
- * PHÂN QUYỀN BẢO MẬT:
- * - Admin: Toàn quyền cấp mọi role (Admin, Lãnh đạo, Trưởng phòng, Nhân viên), mọi phòng ban & bộ phận.
- * - Trưởng/Phó phòng: CHỈ cấp được tài khoản cho Nhân viên thuộc phòng ban mình đang quản lý.
- *   Không thể cấp tài khoản cho Ban Lãnh Đạo hoặc Admin!
- * - Nhân viên: Không được phép cấp tài khoản.
+ * PH�N QUY?N B?O M?T:
+ * - Admin: To�n quy?n c?p m?i role (Admin, L�nh d?o, Tru?ng ph�ng, Nh�n vi�n), m?i ph�ng ban & b? ph?n.
+ * - Tru?ng/Ph� ph�ng: CH? c?p du?c t�i kho?n cho Nh�n vi�n thu?c ph�ng ban m�nh dang qu?n l�.
+ *   Kh�ng th? c?p t�i kho?n cho Ban L�nh �?o ho?c Admin!
+ * - Nh�n vi�n: Kh�ng du?c ph�p c?p t�i kho?n.
  */
 
-import { auth } from '../auth.js?v=5.1';
-import { store } from '../store.js?v=5.1';
-import { esc, toast, rung } from '../helpers.js?v=5.1';
+import { auth } from '../auth.js?v=5.2';
+import { store } from '../store.js?v=5.2';
+import { esc, toast, rung } from '../helpers.js?v=5.2';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -35,7 +35,7 @@ export class MemberModal {
     if (!this.container) return;
 
     if (!auth.canManageMembers()) {
-      toast('Chỉ Quản Trị Viên (Admin) mới có quyền cấp và quản lý tài khoản nhân sự!', 'warning');
+      toast('Ch? Qu?n Tr? Vi�n (Admin) m?i c� quy?n c?p v� qu?n l� t�i kho?n nh�n s?!', 'warning');
       return;
     }
 
@@ -47,7 +47,7 @@ export class MemberModal {
     const isLeadership = auth.isLeadership();
     const isManager = auth.isManager();
 
-    // Xác định phòng ban ban đầu (ưu tiên defaultDeptId nếu đang xem phòng ban cụ thể)
+    // X�c d?nh ph�ng ban ban d?u (uu ti�n defaultDeptId n?u dang xem ph�ng ban c? th?)
     const initialDeptId = this.editingUser 
       ? this.editingUser.departmentId 
       : (defaultDeptId || (isAdmin ? allDepts[0]?.id : currentDept.id));
@@ -65,14 +65,14 @@ export class MemberModal {
               </div>
               <div class="min-w-0">
                 <h3 class="font-bold text-[16.5px] sm:text-[17.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
-                  ${this.editingUser ? 'Cập Nhật Nhân Sự' : 'Cấp Tài Khoản Nhân Viên Mới'}
+                  ${this.editingUser ? 'C?p Nh?t Nh�n S?' : 'C?p T�i Kho?n Nh�n Vi�n M?i'}
                 </h3>
                 <span class="text-[11.5px] font-semibold truncate block" style="color: var(--primary);">
-                  ${isAdmin ? 'Toàn viện' : currentDept.name} • ${auth.getCurrentUser().name} (${auth.getCurrentUser().role})
+                  ${isAdmin ? 'To�n vi?n' : currentDept.name} � ${auth.getCurrentUser().name} (${auth.getCurrentUser().role})
                 </span>
               </div>
             </div>
-            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors" id="btnCloseMemberModal" aria-label="Đóng">&times;</button>
+            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors" id="btnCloseMemberModal" aria-label="��ng">&times;</button>
           </div>
 
           <!-- FORM -->
@@ -82,87 +82,87 @@ export class MemberModal {
             <div class="flex items-center gap-3 p-3 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff]" style="background-color: var(--background); border-color: var(--border);">
               <div class="relative group cursor-pointer shrink-0">
                 <img id="memberAvatarPreview" src="${this.editingUser ? this.editingUser.avatar : PRESET_AVATARS[0]}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white shadow-xs" />
-                <button type="button" class="absolute inset-0 rounded-full bg-black/35 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" id="btnMemberAvatarOverlay" title="Đổi ảnh đại diện">
+                <button type="button" class="absolute inset-0 rounded-full bg-black/35 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" id="btnMemberAvatarOverlay" title="�?i ?nh d?i di?n">
                   <span class="material-symbols-outlined text-[18px]">photo_camera</span>
                 </button>
               </div>
 
-              <!-- INPUT FILE ẨN CHỌN ẢNH TỪ THIẾT BỊ -->
+              <!-- INPUT FILE ?N CH?N ?NH T? THI?T B? -->
               <input type="file" id="memberFileInput" accept="image/*" class="hidden" />
 
               <div class="flex-1 min-w-0 flex flex-col gap-1.5">
                 <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
-                  <button type="button" class="px-2.5 py-1.5 rounded-lg bg-[#d6a52a] text-[#533d00] font-bold text-[11.5px] hover:bg-[#795900] hover:text-white transition-all flex items-center gap-1 shadow-xs shrink-0 min-h-[32px] cursor-pointer" id="btnMemberUploadAvatar" title="Chọn file ảnh từ thiết bị">
+                  <button type="button" class="px-2.5 py-1.5 rounded-lg bg-[#d6a52a] text-[#533d00] font-bold text-[11.5px] hover:bg-[#795900] hover:text-white transition-all flex items-center gap-1 shadow-xs shrink-0 min-h-[32px] cursor-pointer" id="btnMemberUploadAvatar" title="Ch?n file ?nh t? thi?t b?">
                     <span class="material-symbols-outlined text-[16px]">upload</span>
-                    <span>Tải ảnh từ máy</span>
+                    <span>T?i ?nh t? m�y</span>
                   </button>
-                  <input type="url" id="memberAvatarUrl" value="${this.editingUser ? esc(this.editingUser.avatar) : PRESET_AVATARS[0]}" placeholder="Hoặc dán URL ảnh đại diện" class="flex-1 min-w-[140px] h-8 px-2.5 rounded-lg border border-[#e2e8f0] text-[12px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                  <input type="url" id="memberAvatarUrl" value="${this.editingUser ? esc(this.editingUser.avatar) : PRESET_AVATARS[0]}" placeholder="Ho?c d�n URL ?nh d?i di?n" class="flex-1 min-w-[140px] h-8 px-2.5 rounded-lg border border-[#e2e8f0] text-[12px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                 </div>
                 <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                  <span class="text-[10px] font-semibold text-[#817663] shrink-0">Mẫu:</span>
+                  <span class="text-[10px] font-semibold text-[#817663] shrink-0">M?u:</span>
                   ${PRESET_AVATARS.map(url => `
-                    <img src="${url}" class="w-6 h-6 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform ring-1 ring-gray-300 select-avatar-item shrink-0" data-avatar="${url}" title="Bấm để chọn" />
+                    <img src="${url}" class="w-6 h-6 rounded-full object-cover cursor-pointer hover:scale-110 transition-transform ring-1 ring-gray-300 select-avatar-item shrink-0" data-avatar="${url}" title="B?m d? ch?n" />
                   `).join('')}
                 </div>
               </div>
             </div>
 
-            <!-- TÀI KHOẢN ĐĂNG NHẬP (USERNAME & PASSWORD) -->
+            <!-- T�I KHO?N �ANG NH?P (USERNAME & PASSWORD) -->
             <div class="p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff]/70 flex flex-col gap-2.5" style="background-color: var(--primary-soft); border-color: var(--border);">
               <div class="flex items-center justify-between">
                 <span class="text-[12px] font-bold text-[#0d1c2f] flex items-center gap-1.5" style="color: var(--text);">
                   <span class="material-symbols-outlined text-[17px]" style="color: var(--primary);">vpn_key</span>
-                  Thông tin đăng nhập &amp; bảo mật
+                  Th�ng tin dang nh?p &amp; b?o m?t
                 </span>
-                <span class="text-[10.5px] text-[#817663]">Phiên làm việc bảo mật</span>
+                <span class="text-[10.5px] text-[#817663]">Phi�n l�m vi?c b?o m?t</span>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Tên đăng nhập (Username) *</label>
+                  <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">T�n dang nh?p (Username) *</label>
                   <input type="text" id="memberUsername" required value="${this.editingUser ? esc(this.editingUser.username || '') : ''}" placeholder="VD: tuyetmai, hoangnam..." class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                 </div>
                 <div>
-                  <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mật khẩu khởi tạo *</label>
-                  <input type="text" id="memberPassword" required value="${this.editingUser ? esc(this.editingUser.password || '123') : '123'}" placeholder="Mặc định: 123" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                  <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">M?t kh?u kh?i t?o *</label>
+                  <input type="text" id="memberPassword" required value="${this.editingUser ? esc(this.editingUser.password || '123') : '123'}" placeholder="M?c d?nh: 123" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                 </div>
               </div>
             </div>
 
-            <!-- HỌ TÊN & CHỨC DANH -->
+            <!-- H? T�N & CH?C DANH -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Họ và tên *</label>
-                <input type="text" id="memberName" required value="${this.editingUser ? esc(this.editingUser.name) : ''}" placeholder="Ví dụ: Huỳnh Trường Thanh Tâm" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">H? v� t�n *</label>
+                <input type="text" id="memberName" required value="${this.editingUser ? esc(this.editingUser.name) : ''}" placeholder="V� d?: Hu?nh Tru?ng Thanh T�m" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
               </div>
 
               <div>
-                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Chức danh công tác *</label>
-                <input type="text" id="memberTitle" required value="${this.editingUser ? esc(this.editingUser.title) : 'Chuyên viên'}" placeholder="Chuyên viên CSKH, Marketing..." class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Ch?c danh c�ng t�c *</label>
+                <input type="text" id="memberTitle" required value="${this.editingUser ? esc(this.editingUser.title) : 'Chuy�n vi�n'}" placeholder="Chuy�n vi�n CSKH, Marketing..." class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
               </div>
             </div>
 
-            <!-- VAI TRÒ PHÂN QUYỀN (STRICT RBAC) & PHÒNG BAN -->
+            <!-- VAI TR� PH�N QUY?N (STRICT RBAC) & PH�NG BAN -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
-                  Vai trò phân quyền (Role) *
+                  Vai tr� ph�n quy?n (Role) *
                 </label>
                 <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
-                  <option value="MEMBER" ${this.editingUser && this.editingUser.role === 'MEMBER' ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
-                  <option value="DEPUTY_MANAGER" ${this.editingUser && this.editingUser.role === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Trưởng Phòng (DEPUTY_MANAGER)</option>
-                  <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng (MANAGER)</option>
-                  <option value="LEADERSHIP" ${this.editingUser && this.editingUser.role === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo (LEADERSHIP)</option>
-                  <option value="ADMIN" ${this.editingUser && this.editingUser.role === 'ADMIN' ? 'selected' : ''}>👑 Quản Trị Viên (ADMIN)</option>
+                  <option value="MEMBER" ${this.editingUser && this.editingUser.role === 'MEMBER' ? 'selected' : ''}>?? Nh�n vi�n / Chuy�n vi�n (MEMBER)</option>
+                  <option value="DEPUTY_MANAGER" ${this.editingUser && this.editingUser.role === 'DEPUTY_MANAGER' ? 'selected' : ''}>? Ph� Tru?ng Ph�ng (DEPUTY_MANAGER)</option>
+                  <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>?? Tru?ng Ph�ng (MANAGER)</option>
+                  <option value="LEADERSHIP" ${this.editingUser && this.editingUser.role === 'LEADERSHIP' ? 'selected' : ''}>??? Ban L�nh �?o (LEADERSHIP)</option>
+                  <option value="ADMIN" ${this.editingUser && this.editingUser.role === 'ADMIN' ? 'selected' : ''}>?? Qu?n Tr? Vi�n (ADMIN)</option>
                 </select>
                 ${isManager ? `
                   <span class="text-[10px] text-amber-600 block mt-1">
-                    * Bạn là Trưởng phòng: Chỉ có thẩm quyền cấp tài khoản cho Nhân viên.
+                    * B?n l� Tru?ng ph�ng: Ch? c� th?m quy?n c?p t�i kho?n cho Nh�n vi�n.
                   </span>
                 ` : ''}
               </div>
 
               <div>
-                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Phòng ban trực thuộc *</label>
+                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Ph�ng ban tr?c thu?c *</label>
                 <select id="memberDept" ${!isAdmin ? 'disabled' : ''} class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] disabled:bg-gray-100">
                   ${allDepts.map(d => `
                     <option value="${d.id}" ${(initialDeptId === d.id) ? 'selected' : ''}>
@@ -173,13 +173,13 @@ export class MemberModal {
               </div>
             </div>
 
-            <!-- BỘ PHẬN CON (TEAMS) BÊN TRONG PHÒNG BAN -->
+            <!-- B? PH?N CON (TEAMS) B�N TRONG PH�NG BAN -->
             <div>
               <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
-                Bộ phận con trực thuộc (Team) *
+                B? ph?n con tr?c thu?c (Team) *
               </label>
               <select id="memberTeam" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
-                <option value="">-- Toàn phòng ban / Chưa phân tổ --</option>
+                <option value="">-- To�n ph�ng ban / Chua ph�n t? --</option>
                 ${(initialDept?.teams || []).map(t => `
                   <option value="${t.id}" ${this.editingUser && this.editingUser.teamId === t.id ? 'selected' : ''}>
                     ${t.name} (${t.code})
@@ -187,19 +187,19 @@ export class MemberModal {
                 `).join('')}
               </select>
               <span class="text-[10.5px] text-[#64748b] block mt-1">
-                Ví dụ: Phòng PTKH gồm Marketing, CSKH, Hỗ trợ... Trưởng phòng quản lý toàn bộ.
+                V� d?: Ph�ng PTKH g?m Marketing, CSKH, H? tr?... Tru?ng ph�ng qu?n l� to�n b?.
               </span>
             </div>
 
-            <!-- EMAIL & SĐT -->
+            <!-- EMAIL & S�T -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Email liên hệ</label>
+                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Email li�n h?</label>
                 <input type="email" id="memberEmail" value="${this.editingUser ? esc(this.editingUser.email || '') : ''}" placeholder="nhanvien@thanhvumedic.vn" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f]" />
               </div>
 
               <div>
-                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Số điện thoại</label>
+                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">S? di?n tho?i</label>
                 <input type="text" id="memberPhone" value="${this.editingUser ? esc(this.editingUser.phone || '') : ''}" placeholder="09xx xxx xxx" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f]" />
               </div>
             </div>
@@ -207,11 +207,11 @@ export class MemberModal {
             <!-- BUTTONS -->
             <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-[#f1f5f9] mt-1" style="border-color: var(--border);">
               <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50 min-h-[44px]" id="btnCancelMember">
-                Hủy bỏ
+                H?y b?
               </button>
               <button type="submit" class="w-full sm:w-auto px-5 py-2.5 rounded-xl text-[13px] font-bold shadow-xs transition-all min-h-[44px] flex items-center justify-center gap-1.5" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                 <span class="material-symbols-outlined text-[18px]">check</span>
-                <span>${this.editingUser ? 'Lưu Thông Tin' : 'Cấp Tài Khoản'}</span>
+                <span>${this.editingUser ? 'Luu Th�ng Tin' : 'C?p T�i Kho?n'}</span>
               </button>
             </div>
 
@@ -250,12 +250,12 @@ export class MemberModal {
       });
     }
 
-    // Khi chọn phòng ban khác -> cập nhật danh sách Teams
+    // Khi ch?n ph�ng ban kh�c -> c?p nh?t danh s�ch Teams
     if (selectDept && selectTeam) {
       selectDept.addEventListener('change', () => {
         const dId = selectDept.value;
         const d = allDepts.find(item => item.id === dId);
-        selectTeam.innerHTML = '<option value="">-- Toàn phòng ban / Chưa phân tổ --</option>';
+        selectTeam.innerHTML = '<option value="">-- To�n ph�ng ban / Chua ph�n t? --</option>';
         if (d && d.teams) {
           d.teams.forEach(t => {
             selectTeam.innerHTML += `<option value="${t.id}">${t.name} (${t.code})</option>`;
@@ -264,7 +264,7 @@ export class MemberModal {
       });
     }
 
-    // Kích hoạt input file ẩn khi bấm nút tải ảnh hoặc overlay trên preview
+    // K�ch ho?t input file ?n khi b?m n�t t?i ?nh ho?c overlay tr�n preview
     if (btnUpload && fileInput) {
       btnUpload.addEventListener('click', () => fileInput.click());
     }
@@ -272,20 +272,20 @@ export class MemberModal {
       btnOverlay.addEventListener('click', () => fileInput.click());
     }
 
-    // Tự động resize và nén ảnh bằng HTML5 Canvas khi chọn file từ máy
+    // T? d?ng resize v� n�n ?nh b?ng HTML5 Canvas khi ch?n file t? m�y
     if (fileInput && avatarPreview) {
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-          toast('Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP)!', 'warning');
+          toast('Vui l�ng ch?n t?p d?nh d?ng h�nh ?nh (PNG, JPG, WEBP)!', 'warning');
           fileInput.value = '';
           return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-          toast('Dung lượng ảnh vượt quá 5MB. Vui lòng chọn ảnh nhỏ hơn!', 'warning');
+          toast('Dung lu?ng ?nh vu?t qu� 5MB. Vui l�ng ch?n ?nh nh? hon!', 'warning');
           fileInput.value = '';
           return;
         }
@@ -318,24 +318,24 @@ export class MemberModal {
 
               avatarPreview.src = compressedBase64;
               if (inputAvatar) inputAvatar.value = compressedBase64;
-              toast('Đã tải và tối ưu ảnh đại diện thành công!', 'success');
+              toast('�� t?i v� t?i uu ?nh d?i di?n th�nh c�ng!', 'success');
             } catch (err) {
-              console.error('Lỗi khi nén ảnh đại diện:', err);
+              console.error('L?i khi n�n ?nh d?i di?n:', err);
               avatarPreview.src = event.target.result;
               if (inputAvatar) inputAvatar.value = event.target.result;
-              toast('Đã tải ảnh đại diện!', 'success');
+              toast('�� t?i ?nh d?i di?n!', 'success');
             } finally {
               fileInput.value = '';
             }
           };
           img.onerror = () => {
-            toast('Tệp ảnh bị lỗi cấu trúc hoặc không thể hiển thị!', 'warning');
+            toast('T?p ?nh b? l?i c?u tr�c ho?c kh�ng th? hi?n th?!', 'warning');
             fileInput.value = '';
           };
           img.src = event.target.result;
         };
         reader.onerror = () => {
-          toast('Không thể đọc file ảnh. Vui lòng thử lại!', 'warning');
+          toast('Kh�ng th? d?c file ?nh. Vui l�ng th? l?i!', 'warning');
           fileInput.value = '';
         };
         reader.readAsDataURL(file);
@@ -376,23 +376,23 @@ export class MemberModal {
           : ((avatarPreview && avatarPreview.src) ? avatarPreview.src : PRESET_AVATARS[0]);
 
         if (!name || !username || !password) {
-          toast('Vui lòng nhập đầy đủ Họ tên, Username và Password!', 'warning');
+          toast('Vui l�ng nh?p d?y d? H? t�n, Username v� Password!', 'warning');
           return;
         }
 
-        // Kiểm tra thẩm quyền cấp tài khoản (Zero-Bug Security)
+        // Ki?m tra th?m quy?n c?p t�i kho?n (Zero-Bug Security)
         if (!auth.canProvisionAccount(role, departmentId)) {
-          toast('Bạn không có quyền cấp tài khoản với vai trò hoặc phòng ban này!', 'warning');
+          toast('B?n kh�ng c� quy?n c?p t�i kho?n v?i vai tr� ho?c ph�ng ban n�y!', 'warning');
           return;
         }
 
         const dept = allDepts.find(d => d.id === departmentId);
-        const deptName = dept ? dept.name : 'Thanh Vũ Medic';
-        let badge = 'Chuyên viên';
-        if (role === 'ADMIN') badge = 'Admin Hệ Thống';
-        else if (role === 'LEADERSHIP') badge = 'Ban Lãnh Đạo';
-        else if (role === 'MANAGER') badge = 'Trưởng phòng';
-        else if (role === 'DEPUTY_MANAGER') badge = 'Phó phòng';
+        const deptName = dept ? dept.name : 'Thanh Vu Medic';
+        let badge = 'Chuy�n vi�n';
+        if (role === 'ADMIN') badge = 'Admin H? Th?ng';
+        else if (role === 'LEADERSHIP') badge = 'Ban L�nh �?o';
+        else if (role === 'MANAGER') badge = 'Tru?ng ph�ng';
+        else if (role === 'DEPUTY_MANAGER') badge = 'Ph� ph�ng';
 
         if (this.editingUser) {
           store.updateUser(this.editingUser.id, {
@@ -412,7 +412,7 @@ export class MemberModal {
           if (role === 'MANAGER' && dept && (!dept.managerId || dept.managerId === this.editingUser.id)) {
             store.updateDepartment(departmentId, { managerId: this.editingUser.id });
           }
-          toast(`Đã cập nhật thông tin nhân viên: ${name}`, 'success');
+          toast(`�� c?p nh?t th�ng tin nh�n vi�n: ${name}`, 'success');
         } else {
           const newUser = store.createUser({
             name,
@@ -430,13 +430,13 @@ export class MemberModal {
           });
 
           if (!newUser) {
-            toast('Lỗi khi cấp tài khoản. Vui lòng thử lại!', 'warning');
+            toast('L?i khi c?p t�i kho?n. Vui l�ng th? l?i!', 'warning');
             return;
           }
           if (role === 'MANAGER' && dept && !dept.managerId) {
             store.updateDepartment(departmentId, { managerId: newUser.id });
           }
-          toast(`Đã cấp tài khoản thành công cho: ${newUser.name} (${newUser.username})`, 'success');
+          toast(`�� c?p t�i kho?n th�nh c�ng cho: ${newUser.name} (${newUser.username})`, 'success');
         }
 
         closeModal();

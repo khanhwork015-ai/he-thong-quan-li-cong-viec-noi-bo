@@ -89,15 +89,21 @@
   - **Đồng bộ khi chọn phòng ban trong Quản lý cơ cấu:** Bấm chọn phòng ban ở `DepartmentView` tự động đồng bộ `activeDepartment` sang phòng ban đó cho toàn bộ ứng dụng.
 - [x] **11. Nâng Cấp Quản Lý Việc Con (Subtasks), Thông Tin Người Tạo, Custom Status Dropdown & Bỏ Ca Trực (`taskDrawer.js`, `workspaceView.js`, `topHeader.js`, `store.js`)**:
   - **Lưu vết và hiển thị Người tạo & Thời gian tạo:** Lưu trữ đầy đủ `creatorId`, `creatorName`, `createdAt` trong `store.js`; hiển thị rõ ràng trên thẻ công việc (Mobile Cards, Table View, Kanban) và trong Task Drawer.
-  - **Quản lý danh sách việc con (Subtasks Checklist) & Chi tiết như một Task hoàn chỉnh:**
-    + Mỗi việc con là một task hoàn chỉnh mang đầy đủ: Mã việc con (`${taskId}.${index}`), Tiêu đề, Mô tả chi tiết & Tiêu chuẩn bàn giao, Người được phân công (`assigneeId`), Hạn chót (`dueDate`), Trạng thái (`status`: Chưa làm / Đang làm / Hoàn thành).
-    + Cho phép chỉnh sửa trực tiếp (Inline Edit Form) từng việc con hoặc xóa bỏ.
-    + Form thêm việc con mới mở rộng đầy đủ các trường nhập chuyên nghiệp.
-    + Tự động tính % tiến độ công việc cha dựa trên tỷ lệ việc con hoàn thành.
-  - **Xem việc con ở bên ngoài danh sách (Dropdown Accordion - Chuẩn Mobile & Tablet):**
-    + Trên Bảng Table View (Desktop & Tablet): Nút `[ x/y việc con ▾ ]` xổ ra hàng phụ hiển thị lưới thẻ các việc con với thông tin ngắn gọn, bấm vào xem chi tiết ngay.
-    + Trên Mobile Cards: Thanh bấm mở rộng `Việc con (x/y)` xổ dropdown các thẻ việc con thụt lề mượt mà, hỗ trợ thao tác chạm mượt trên mobile 320px - 414px, không tràn ngang.
-  - **Custom Status Dropdown (Không dùng OS default):** Thay thế `<select>` mặc định của hệ điều hành bằng menu popup tùy biến cao cấp phong cách Google Stitch Gold.
+  - **Xóa bỏ hiển thị Ca hành chính:** Đã loại bỏ hoàn toàn thẻ giờ ca làm việc theo yêu cầu người dùng.
+- [x] **12. Nâng Cấp Toàn Diện Quản Lý Việc Con Độc Lập & Tối Ưu Mobile/Tablet (`subtasksModal.js`, `subtaskDetailModal.js`, `workspaceView.js`, `taskDrawer.js`, `store.js`)**:
+  - **Tách riêng cột VIỆC CON trên Table View:** Cột Việc con đứng riêng rẽ, hiển thị nút `x/y việc con` viền vàng kim, bấm mở modal danh sách việc con `SubtasksModal` riêng biệt thay vì dropdown chật chội.
+  - **Loại bỏ hoàn toàn icon `open_in_new` trùng lặp:** 
+    + Trên Bảng Table View: Bỏ nút `open_in_new`, chỉ giữ lại nút Chỉnh sửa. Bấm trực tiếp vào bất kỳ điểm nào trên dòng nhiệm vụ (`tr.row-task-item`) đều mở ngay Task Drawer.
+    + Trên Thẻ Việc Con (cả ở `subtasksModal.js` và `taskDrawer.js`): Bỏ nút `open_in_new`. Bấm vào bất kỳ điểm nào trên thẻ việc con đều mở ngay cửa sổ chi tiết đầy đủ `SubtaskDetailModal`.
+  - **Tối ưu hiển thị tiêu đề và nội dung trên Mobile & Tablet (Chống cắt chữ Truncate):**
+    + Loại bỏ `truncate` khỏi tiêu đề nhiệm vụ cha và tiêu đề việc con, dùng `break-words` và dàn layout nhiều hàng (Multi-line responsive layout):
+      * Dòng 1: Checkbox + Mã ID + Badge Trạng thái, bên phải là nút Sửa & Xóa.
+      * Dòng 2: Tiêu đề việc con chiếm trọn 100% chiều rộng, chữ to rõ ràng, không bị co giật thành 3 chữ `Thi...`, `In...`.
+      * Dòng 3: Mô tả & tiêu chuẩn nghiệm thu (nếu có).
+      * Dòng 4: Avatar / Người phụ trách & Hạn chót.
+    + Xóa bỏ icon `+` lặp đôi trên nút `Thêm việc con mới`.
+  - **Bảo toàn dữ liệu 2 chiều (Zero Data Loss):** Cơ chế Safe Merge trong `store.js` giữ nguyên toàn bộ việc con và bình luận cục bộ khi đồng bộ hóa từ Cloud.
+  - **Nâng cấp Cache Buster toàn hệ thống:** Đồng bộ tiền tố `?v=5.2` trên toàn bộ index.html và 22 module ES import.
   - **Mở rộng khung nhập bình luận & chỉ đạo:** Tăng chiều cao lên `min-h-[90px]` với thẻ `<textarea>` rộng rãi.
   - **Loại bỏ huy hiệu Ca trực:** Đã xóa bỏ hoàn toàn badge `Ca hành chính: 07:00 - 17:00` khỏi Top Header theo yêu cầu.
 - [x] **12. Loại Bỏ Biểu Tượng Trùng Lặp Trên Nút Phê Duyệt & Từ Chối (`taskDrawer.js`)**:
