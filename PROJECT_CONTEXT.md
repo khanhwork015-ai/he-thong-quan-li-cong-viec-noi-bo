@@ -71,6 +71,11 @@
   - Fix triệt để lỗi F5 bị mất bộ phận: Đồng bộ hóa cấu trúc teams 2 chiều giữa LocalStorage và Google Sheets (`Code.gs` + `appScriptBridge.js`), hợp nhất dữ liệu không ghi đè mất mát.
   - Fix lỗi placeholder đè lên icon tìm kiếm phòng ban (`pl-10`).
   - Fix lỗi giật layout khi bấm "Thêm bộ phận": Xóa vòng lặp re-render kép, tự động dọn sạch input và hỗ trợ phím Enter.
+- [x] **8. Phân Tách Trưởng Phòng Quản Trị Toàn Phòng & Khắc Phục Lỗi Mở/Thao Tác Task Drawer (`departmentView.js`, `store.js`, `taskDrawer.js`, `workspaceView.js`, `Code.gs`)**:
+  - **Trưởng phòng độc lập Quản trị Toàn phòng:** Hiển thị thẻ VIP Card riêng biệt có viền vàng kim, huy hiệu Vương Miện `👑 Trưởng Phòng`, khóa cố định "Toàn phòng", không gán vào bộ phận con, loại trừ khỏi danh sách thêm vào bộ phận con để bảo toàn thẩm quyền bao quát toàn phòng.
+  - **Khắc phục lỗi mở Task Drawer:** Chuẩn hóa kiểu dữ liệu mảng phòng thủ (defensive array sanitization) cho `subtasks` và `comments` từ Google Sheets/LocalStorage, triệt tiêu lỗi `TypeError: map is not a function` làm sập Drawer.
+  - **Đồng bộ hóa trạng thái công việc:** Hỗ trợ đầy đủ ánh xạ giữa `pending_approval` / `review` và `completed` / `done` trên toàn bộ Kanban, Table View và bộ lọc tab.
+  - **Chống lưu cache trình duyệt:** Thêm tiền tố versioning `?v=4.2` cho toàn bộ các module ES import giúp GitHub Pages cập nhật ngay lập tức.
 
 ---
 
