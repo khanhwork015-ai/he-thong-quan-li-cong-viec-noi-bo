@@ -1,6 +1,6 @@
 # PROJECT CONTEXT MEMORY: THANH VŨ MEDIC CS3
 > **Tài liệu duy trì bộ nhớ ngữ cảnh dự án (Context Hygiene)**  
-> **Cập nhật lần cuối:** 09/11/2026 15:45 (Hoàn thành triển khai toàn diện Phase 1)
+> **Cập nhật lần cuối:** 09/11/2026 15:30 (Hoàn thành tinh chỉnh nút duyệt & đồng bộ git)
 
 ---
 
@@ -100,6 +100,9 @@
   - **Custom Status Dropdown (Không dùng OS default):** Thay thế `<select>` mặc định của hệ điều hành bằng menu popup tùy biến cao cấp phong cách Google Stitch Gold.
   - **Mở rộng khung nhập bình luận & chỉ đạo:** Tăng chiều cao lên `min-h-[90px]` với thẻ `<textarea>` rộng rãi.
   - **Loại bỏ huy hiệu Ca trực:** Đã xóa bỏ hoàn toàn badge `Ca hành chính: 07:00 - 17:00` khỏi Top Header theo yêu cầu.
+- [x] **12. Loại Bỏ Biểu Tượng Trùng Lặp Trên Nút Phê Duyệt & Từ Chối (`taskDrawer.js`)**:
+  - Loại bỏ ký tự `✕` và `✓` trong nhãn văn bản, giữ lại đúng 1 Material Symbol (`close` cho "Từ Chối", `verified` cho "Phê Duyệt 1-Chạm") tạo giao diện sạch sẽ, chuyên nghiệp chuẩn Touch Target ≥ 44px.
+  - Đẩy cache buster toàn diện `?v=4.8` và đồng bộ git `origin/main`.
 
 ---
 
