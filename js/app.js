@@ -4,31 +4,31 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=8.5';
-import { store } from './store.js?v=8.5';
-import { Sidebar } from './components/sidebar.js?v=8.5';
-import { TopHeader } from './components/topHeader.js?v=8.5';
-import { BottomNav } from './components/bottomNav.js?v=8.5';
-import { DashboardView } from './components/dashboardView.js?v=8.5';
-import { WorkspaceView } from './components/workspaceView.js?v=8.5';
-import { TaskDrawer } from './components/taskDrawer.js?v=8.5';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=8.5';
-import { CreateTaskModal } from './components/createTaskModal.js?v=8.5'
-import { SubtasksModal } from './components/subtasksModal.js?v=8.5';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.5';;
-import { ProfileModal } from './components/profileModal.js?v=8.5';
-import { MemberModal } from './components/memberModal.js?v=8.5';
-import { SettingsModal } from './components/settingsModal.js?v=8.5';
-import { LoginView } from './components/loginView.js?v=8.5';
-import { DepartmentModal } from './components/departmentModal.js?v=8.5';
-import { DepartmentView } from './components/departmentView.js?v=8.5';
-import { PlansView } from './components/plansView.js?v=8.5';
-import { PlanDrawer } from './components/planDrawer.js?v=8.5';
-import { PlanModal } from './components/planModal.js?v=8.5';
-import { ApprovalView } from './components/approvalView.js?v=8.5';
-import { appScriptBridge } from './services/appScriptBridge.js?v=8.5';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=8.5';
-import { shinTheme } from './theme.js?v=8.5';
+import { auth } from './auth.js?v=8.6';
+import { store } from './store.js?v=8.6';
+import { Sidebar } from './components/sidebar.js?v=8.6';
+import { TopHeader } from './components/topHeader.js?v=8.6';
+import { BottomNav } from './components/bottomNav.js?v=8.6';
+import { DashboardView } from './components/dashboardView.js?v=8.6';
+import { WorkspaceView } from './components/workspaceView.js?v=8.6';
+import { TaskDrawer } from './components/taskDrawer.js?v=8.6';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=8.6';
+import { CreateTaskModal } from './components/createTaskModal.js?v=8.6'
+import { SubtasksModal } from './components/subtasksModal.js?v=8.6';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.6';;
+import { ProfileModal } from './components/profileModal.js?v=8.6';
+import { MemberModal } from './components/memberModal.js?v=8.6';
+import { SettingsModal } from './components/settingsModal.js?v=8.6';
+import { LoginView } from './components/loginView.js?v=8.6';
+import { DepartmentModal } from './components/departmentModal.js?v=8.6';
+import { DepartmentView } from './components/departmentView.js?v=8.6';
+import { PlansView } from './components/plansView.js?v=8.6';
+import { PlanDrawer } from './components/planDrawer.js?v=8.6';
+import { PlanModal } from './components/planModal.js?v=8.6';
+import { ApprovalView } from './components/approvalView.js?v=8.6';
+import { appScriptBridge } from './services/appScriptBridge.js?v=8.6';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=8.6';
+import { shinTheme } from './theme.js?v=8.6';
 
 class App {
   constructor() {
@@ -176,10 +176,51 @@ class App {
 
     this.bindGlobalEvents();
     this.render();
+
+    // TỰ ĐỘNG ĐỒNG BỘ MƯỢT MÀ TỪ GOOGLE SHEETS KHI MỞ TRANG (ZERO CLICK NEEDED)
+    this.initAutoSync();
+  }
+
+  initAutoSync() {
+    let isSyncing = false;
+    const runSync = async () => {
+      if (isSyncing || !navigator.onLine) return;
+      isSyncing = true;
+      try {
+        const res = await store.syncFromCloudIfAvailable();
+        if (res && res.success) {
+          if (auth.isAuthenticated()) {
+            this.refreshCurrentView();
+          }
+        }
+      } catch (err) {
+        console.warn('[AUTO-SYNC] Lỗi đồng bộ ngầm:', err);
+      } finally {
+        isSyncing = false;
+      }
+    };
+
+    // 1. Tự động đồng bộ ngầm ngay lập tức khi mở trang (0s trễ)
+    runSync();
+
+    // 2. Tự động đồng bộ khi chuyển tab quay lại web (Visibility change)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        runSync();
+      }
+    });
+
+    // 3. Tự động đồng bộ ngầm định kỳ mỗi 30 giây trong nền
+    setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        runSync();
+      }
+    }, 30000);
   }
 
   onLoginSuccess(user) {
     this.render();
+    store.syncFromCloudIfAvailable().then(() => this.refreshCurrentView()).catch(() => {});
   }
 
   onLogout() {
@@ -365,6 +406,13 @@ class App {
 
     window.addEventListener('tvm:data_changed', () => {
       this.refreshCurrentView();
+    });
+
+    window.addEventListener('tvm:users_changed', () => {
+      if (this.currentNav === 'nhan-vien') {
+        this.renderEmployeesView();
+      }
+      if (this.sidebar) this.sidebar.render();
     });
 
     window.addEventListener('tvm:plans_changed', () => {
@@ -714,10 +762,12 @@ class App {
             </div>
           </div>
 
+          ${isAdmin ? `
           <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white flex items-center justify-center gap-2 shadow-xs transition-all shrink-0 min-h-[44px]" id="btnTriggerModalSettings">
             <span class="material-symbols-outlined text-[18px]">open_in_new</span>
             <span>Mở Cửa Sổ Popup</span>
           </button>
+          ` : ''}
         </div>
 
         ${isAdmin ? `

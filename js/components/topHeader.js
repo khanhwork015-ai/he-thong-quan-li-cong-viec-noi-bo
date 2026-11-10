@@ -4,11 +4,11 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=8.5';
-import { store } from '../store.js?v=8.5';
-import { USERS } from '../models.js?v=8.5';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=8.5';
-import { shinTheme } from '../theme.js?v=8.5';
+import { auth } from '../auth.js?v=8.6';
+import { store } from '../store.js?v=8.6';
+import { USERS } from '../models.js?v=8.6';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=8.6';
+import { shinTheme } from '../theme.js?v=8.6';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
@@ -79,6 +79,12 @@ export class TopHeader {
 
         <!-- 2. RIGHT ACTIONS & USER PROFILE -->
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+
+          <!-- BADGE TỰ ĐỘNG ĐỒNG BỘ CLOUD (ZERO CLICK) -->
+          <div id="headerSyncBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all select-none bg-emerald-50 text-emerald-700 border border-emerald-200" title="Google Sheets Auto-Sync: Dữ liệu tự động đồng bộ theo thời gian thực">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span class="sync-text">Google Sheets</span>
+          </div>
           
           <!-- NÚT TÌM KIẾM CHO MOBILE (CHỈ HIỂN THỊ DƯỚI SM - 1 CHẠM MỞ FULL OVERLAY) -->
           <button 
@@ -531,6 +537,20 @@ export class TopHeader {
         }
       });
     });
+
+    // Lắng nghe trạng thái tự động đồng bộ ngầm Google Sheets để cập nhật badge
+    window.addEventListener('tvm:sync_status', (e) => {
+      const badge = this.container.querySelector('#headerSyncBadge');
+      if (!badge) return;
+      const detail = e.detail || {};
+      if (detail.syncing) {
+        badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all select-none bg-amber-50 text-amber-700 border border-amber-200';
+        badge.innerHTML = `<span class="material-symbols-outlined text-[13px] animate-spin">sync</span><span class="sync-text">Đang đồng bộ...</span>`;
+      } else {
+        badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all select-none bg-emerald-50 text-emerald-700 border border-emerald-200';
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="sync-text">Google Sheets</span>`;
+      }
+    });
   }
 
   showRoleSwitcherModal() {
@@ -594,6 +614,20 @@ export class TopHeader {
         modal.remove();
         toast(`Đã đăng nhập: ${auth.getCurrentUser().name} (${auth.getCurrentUser().role})`, 'success');
       });
+    });
+
+    // Lắng nghe trạng thái tự động đồng bộ ngầm Google Sheets để cập nhật badge
+    window.addEventListener('tvm:sync_status', (e) => {
+      const badge = this.container.querySelector('#headerSyncBadge');
+      if (!badge) return;
+      const detail = e.detail || {};
+      if (detail.syncing) {
+        badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all select-none bg-amber-50 text-amber-700 border border-amber-200';
+        badge.innerHTML = `<span class="material-symbols-outlined text-[13px] animate-spin">sync</span><span class="sync-text">Đang đồng bộ...</span>`;
+      } else {
+        badge.className = 'hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all select-none bg-emerald-50 text-emerald-700 border border-emerald-200';
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="sync-text">Google Sheets</span>`;
+      }
     });
   }
 }

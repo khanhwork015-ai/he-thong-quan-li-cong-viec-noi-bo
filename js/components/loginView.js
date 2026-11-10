@@ -4,10 +4,10 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y Tế (#0D1C2F)
  */
 
-import { auth } from '../auth.js?v=8.5';
-import { store } from '../store.js?v=8.5';
-import { appScriptBridge } from '../services/appScriptBridge.js?v=8.5';
-import { toast, rung } from '../helpers.js?v=8.5';
+import { auth } from '../auth.js?v=8.6';
+import { store } from '../store.js?v=8.6';
+import { appScriptBridge } from '../services/appScriptBridge.js?v=8.6';
+import { toast, rung } from '../helpers.js?v=8.6';
 
 export class LoginView {
   constructor(containerId, onLoginSuccess) {

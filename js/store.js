@@ -3,10 +3,10 @@
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
 
-import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.5';
-import { auth } from './auth.js?v=8.5';
-import { appScriptBridge } from './services/appScriptBridge.js?v=8.5';
-import { toast } from './helpers.js?v=8.5';
+import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.6';
+import { auth } from './auth.js?v=8.6';
+import { appScriptBridge } from './services/appScriptBridge.js?v=8.6';
+import { toast } from './helpers.js?v=8.6';
 
 const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
 const USERS_STORAGE_KEY = 'tvm_users_v4';
@@ -52,40 +52,41 @@ export class Store {
     }
   }
 
-  // Tải dữ liệu từ Google Sheet về
+  // Tải dữ liệu từ Google Sheet về (Google Sheets là Source of Truth trung tâm)
   async syncFromCloudIfAvailable() {
     if (!appScriptBridge.isConnected()) {
       return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
     }
 
-    const cloudData = await appScriptBridge.fetchCloudData();
-    if (cloudData && cloudData.success) {
+    try {
+      window.dispatchEvent(new CustomEvent('tvm:sync_status', { detail: { syncing: true } }));
+      const cloudData = await appScriptBridge.fetchCloudData();
+      if (!cloudData || !cloudData.success) {
+        window.dispatchEvent(new CustomEvent('tvm:sync_status', { detail: { syncing: false, success: false } }));
+        return { success: false, message: cloudData?.message || 'Lỗi kết nối tới Apps Script' };
+      }
+
       let taskCount = 0;
       let userCount = 0;
+      let planCount = 0;
+      const deletedIds = this.getDeletedIds();
 
-      if (cloudData.tasks && cloudData.tasks.length > 0) {
-        // HỢP NHẤT DỮ LIỆU CÔNG VIỆC & VIỆC CON 2 CHIỀU (ZERO DATA LOSS)
-        const localTasks = this.getAllTasksRaw();
-        const taskMap = new Map();
-        localTasks.forEach(lt => { if (lt && lt.id) taskMap.set(lt.id, lt); });
-
-        const deletedIds = this.getDeletedIds();
-        cloudData.tasks.forEach(ct => {
-          if (!ct || !ct.id || deletedIds.has(String(ct.id))) return;
-          const local = taskMap.get(ct.id) || {};
-
-          // Chuẩn hóa subtasks từ cloud (hỗ trợ cả trường subtasks và checklist)
-          let ctSubtasks = ct.subtasks;
-          if (typeof ctSubtasks === 'string' && ctSubtasks.trim().startsWith('[')) {
-            try { ctSubtasks = JSON.parse(ctSubtasks); } catch (_) { ctSubtasks = []; }
+      // 1. TASKS: Google Sheets là nguồn dữ liệu chuẩn tuyệt đối
+      if (Array.isArray(cloudData.tasks)) {
+        const validCloudTasks = cloudData.tasks.filter(ct => ct && ct.id && !deletedIds.has(String(ct.id)));
+        
+        const sanitizedTasks = validCloudTasks.map(ct => {
+          let subtasks = ct.subtasks;
+          if (typeof subtasks === 'string' && subtasks.trim().startsWith('[')) {
+            try { subtasks = JSON.parse(subtasks); } catch (_) { subtasks = []; }
           }
-          if (!Array.isArray(ctSubtasks) || ctSubtasks.length === 0) {
-            let ctChecklist = ct.checklist;
-            if (typeof ctChecklist === 'string' && ctChecklist.trim().startsWith('[')) {
-              try { ctChecklist = JSON.parse(ctChecklist); } catch (_) { ctChecklist = []; }
+          if (!Array.isArray(subtasks) || subtasks.length === 0) {
+            let checklist = ct.checklist;
+            if (typeof checklist === 'string' && checklist.trim().startsWith('[')) {
+              try { checklist = JSON.parse(checklist); } catch (_) { checklist = []; }
             }
-            if (Array.isArray(ctChecklist) && ctChecklist.length > 0) {
-              ctSubtasks = ctChecklist.map((c, i) => ({
+            if (Array.isArray(checklist) && checklist.length > 0) {
+              subtasks = checklist.map((c, i) => ({
                 id: c.id || `${ct.id}.${i + 1}`,
                 title: c.text || c.title || '',
                 description: c.description || '',
@@ -97,163 +98,113 @@ export class Store {
               }));
             }
           }
-          if (!Array.isArray(ctSubtasks)) ctSubtasks = [];
+          if (!Array.isArray(subtasks)) subtasks = [];
 
-          // Hợp nhất việc con: Ưu tiên giữ lại toàn bộ việc con cục bộ đã tạo mà cloud chưa kịp nhận
-          const localSubtasks = Array.isArray(local.subtasks) ? local.subtasks : [];
-          const subMap = new Map();
-          ctSubtasks.forEach(s => { if (s && s.id) subMap.set(s.id, s); });
-          localSubtasks.forEach(ls => {
-            if (!ls || !ls.id) return;
-            if (!subMap.has(ls.id)) {
-              subMap.set(ls.id, ls);
-            } else {
-              const existing = subMap.get(ls.id);
-              subMap.set(ls.id, { ...existing, ...ls });
-            }
-          });
-          const mergedSubtasks = Array.from(subMap.values());
-
-          // Hợp nhất bình luận & trao đổi
-          let ctComments = ct.comments;
-          if (typeof ctComments === 'string' && ctComments.trim().startsWith('[')) {
-            try { ctComments = JSON.parse(ctComments); } catch (_) { ctComments = []; }
+          let comments = ct.comments;
+          if (typeof comments === 'string' && comments.trim().startsWith('[')) {
+            try { comments = JSON.parse(comments); } catch (_) { comments = []; }
           }
-          if (!Array.isArray(ctComments)) ctComments = [];
-          const localComments = Array.isArray(local.comments) ? local.comments : [];
-          const commentMap = new Map();
-          ctComments.forEach(c => { if (c && c.id) commentMap.set(c.id, c); });
-          localComments.forEach(lc => { if (lc && lc.id) commentMap.set(lc.id, lc); });
-          const mergedComments = Array.from(commentMap.values());
+          if (!Array.isArray(comments)) comments = [];
 
-          const completedCount = mergedSubtasks.filter(s => s.completed || s.status === 'done').length;
-          const progress = mergedSubtasks.length > 0 ? Math.round((completedCount / mergedSubtasks.length) * 100) : (ct.progress || local.progress || 0);
+          const completedCount = subtasks.filter(s => s.completed || s.status === 'done').length;
+          const progress = subtasks.length > 0 ? Math.round((completedCount / subtasks.length) * 100) : (ct.progress || 0);
 
-          const mergedTask = {
-            ...local,
+          return {
             ...ct,
-            subtasks: mergedSubtasks,
-            checklist: mergedSubtasks.map(s => ({
+            subtasks,
+            checklist: subtasks.map(s => ({
               id: s.id,
               text: s.title,
               done: Boolean(s.completed || s.status === 'done')
             })),
-            comments: mergedComments,
+            comments,
             progress
           };
-          taskMap.set(ct.id, mergedTask);
         });
 
-        const mergedList = Array.from(taskMap.values());
-        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(mergedList));
-        taskCount = mergedList.length;
+        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(sanitizedTasks));
+        taskCount = sanitizedTasks.length;
       }
-      if (cloudData.users && cloudData.users.length > 0) {
-        // Chuẩn hóa và hợp nhất người dùng an toàn (Zero Data Loss & Type Safety)
-        const currentUsers = this.getAllUsers();
+
+      // 2. USERS: Google Sheets là nguồn dữ liệu chuẩn tuyệt đối (14 nhân sự)
+      if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
         const userMap = new Map();
-        currentUsers.forEach(u => { if (u && u.id) userMap.set(u.id, u); });
-
         cloudData.users.forEach(su => {
-          if (!su || !su.id) return;
-          const existing = userMap.get(su.id) || {};
-          const merged = {
-            ...existing,
-            ...su,
-            username: String(su.username || existing.username || su.id.replace('user_', '')).trim().toLowerCase(),
-            password: String(su.password !== undefined && su.password !== null && String(su.password).trim() !== '' ? su.password : (existing.password || '123')).trim(),
-            role: (su.role || existing.role || 'MEMBER').toUpperCase(),
-            isAdmin: Boolean(su.isAdmin !== undefined ? (su.isAdmin === true || su.isAdmin === 'true' || su.isAdmin === 1) : (existing.isAdmin || su.role === 'ADMIN' || existing.role === 'ADMIN')),
-            departmentId: su.departmentId || existing.departmentId || 'dept_ptkh',
-            teamId: su.teamId || existing.teamId || null
-          };
-          userMap.set(su.id, merged);
+          if (!su || !su.id || deletedIds.has(String(su.id))) return;
+          // Loại bỏ bản ghi test rác
+          if (String(su.name).includes('BÃ¡c') || String(su.id).includes('test') || String(su.username).includes('testuser')) return;
+
+          userMap.set(su.id, {
+            id: su.id,
+            username: String(su.username || su.id.replace('user_', '')).trim().toLowerCase(),
+            password: String(su.password !== undefined && su.password !== null && String(su.password).trim() !== '' ? su.password : '123').trim(),
+            name: String(su.name || '').trim(),
+            role: (su.role || 'MEMBER').toUpperCase(),
+            isAdmin: Boolean(su.isAdmin === true || su.isAdmin === 'true' || su.isAdmin === 1 || su.role === 'ADMIN'),
+            departmentId: su.departmentId || 'dept_ptkh',
+            teamId: su.teamId || '',
+            title: su.title || '',
+            unit: su.unit || '',
+            avatar: su.avatar || '',
+            badge: su.badge || '',
+            phone: su.phone || '',
+            email: su.email || '',
+            dob: su.dob || '',
+            hometown: su.hometown || '',
+            createdAt: su.createdAt || '',
+            updatedAt: su.updatedAt || ''
+          });
         });
 
-        const mergedList = Array.from(userMap.values());
-        const deletedIds = this.getDeletedIds();
-        const cleanUsers = mergedList.filter(u => {
-          if (!u || !u.id || deletedIds.has(String(u.id))) return false;
-          // Loại bỏ các bản ghi test bị lỗi font mojibake
-          if (String(u.name).includes('BÃ¡c') || String(u.id).includes('test') || String(u.username).includes('testuser')) return false;
-          return true;
-        });
+        const cleanUsers = Array.from(userMap.values());
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cleanUsers));
         userCount = cleanUsers.length;
       }
 
-      if (cloudData.depts && cloudData.depts.length > 0) {
-        const localDepts = this.getAllDepartments();
+      // 3. DEPARTMENTS: Google Sheets là nguồn dữ liệu chuẩn tuyệt đối (3 phòng ban chuẩn)
+      if (Array.isArray(cloudData.depts) && cloudData.depts.length > 0) {
         const deptMap = new Map();
-
-        // Nạp local depts trước (chống trùng lặp id)
-        localDepts.forEach(ld => { if (ld && ld.id) deptMap.set(ld.id, ld); });
-
-        // Hợp nhất dữ liệu mới nhất từ cloud theo id (triệt tiêu 100% duplicate)
         cloudData.depts.forEach(cd => {
           if (!cd || !cd.id) return;
-          const ld = deptMap.get(cd.id);
-          let cdTeams = cd.teams;
-          if (typeof cdTeams === 'string') {
-            try { cdTeams = JSON.parse(cdTeams); } catch (_) { cdTeams = []; }
+          if (String(cd.id).includes('test') || String(cd.name).includes('Khá»­') || String(cd.id).includes('391328')) return;
+
+          let teams = cd.teams;
+          if (typeof teams === 'string') {
+            try { teams = JSON.parse(teams); } catch (_) { teams = []; }
           }
-          if (!Array.isArray(cdTeams)) cdTeams = [];
-          
-          const ldTeams = (ld && Array.isArray(ld.teams)) ? ld.teams : [];
-          const teamMap = new Map();
-          ldTeams.forEach(t => { if (t && t.id) teamMap.set(t.id, t); });
-          cdTeams.forEach(t => { if (t && t.id) teamMap.set(t.id, { ...(teamMap.get(t.id) || {}), ...t }); });
+          if (!Array.isArray(teams)) teams = [];
 
           deptMap.set(cd.id, {
-            ...(ld || {}),
             ...cd,
-            teams: Array.from(teamMap.values())
+            teams
           });
         });
-
-        const cleanDepts = Array.from(deptMap.values()).filter(d => {
-          if (!d || !d.id) return false;
-          if (String(d.id).includes('test') || String(d.name).includes('Khá»­') || String(d.id).includes('391328')) return false;
-          return true;
-        });
-
+        const cleanDepts = Array.from(deptMap.values());
         localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(cleanDepts));
       }
 
-      // Thông báo: Sheet là nguồn chuẩn (xóa/đã đọc đã được đồng bộ ngược lên Sheet)
+      // 4. PLANS: Google Sheets là nguồn dữ liệu chuẩn tuyệt đối
+      if (Array.isArray(cloudData.plans)) {
+        const deletedPlanIds = this.getDeletedIds();
+        const cleanPlans = cloudData.plans.filter(cp => cp && cp.id && !deletedPlanIds.has(String(cp.id)));
+        localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(cleanPlans));
+        planCount = cleanPlans.length;
+      }
+
+      // 5. NOTIFICATIONS
       if (Array.isArray(cloudData.notifications)) {
-        const deletedIds = this.getDeletedIds();
         const cloudNotifs = cloudData.notifications.filter(n => n && n.id && !deletedIds.has(String(n.id))).map(n => ({
           ...n,
           isRead: n.isRead === true || n.isRead === 'true' || n.isRead === 'TRUE'
         }));
-        const cloudIds = new Set(cloudNotifs.map(n => n.id));
-        const localOnly = this.getAllNotifications().filter(n => n && n.id && !cloudIds.has(n.id));
-        localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify([...cloudNotifs, ...localOnly]));
+        localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(cloudNotifs));
         window.dispatchEvent(new CustomEvent('tvm:notifications_changed', { detail: { count: cloudNotifs.length } }));
-      }
-
-      // Kế hoạch: hợp nhất theo id (ưu tiên bản mới hơn theo updatedAt)
-      let planCount = 0;
-      if (Array.isArray(cloudData.plans) && cloudData.plans.length > 0) {
-        const planMap = new Map();
-        this.getAllPlansRaw().forEach(lp => { if (lp && lp.id) planMap.set(lp.id, lp); });
-        const deletedPlanIds = this.getDeletedIds();
-        cloudData.plans.forEach(cp => {
-          if (!cp || !cp.id || deletedPlanIds.has(String(cp.id))) return;
-          const lp = planMap.get(cp.id);
-          const cloudTime = Date.parse(cp.updatedAt || '') || 0;
-          const localTime = lp ? (Date.parse(lp.updatedAt || '') || 0) : 0;
-          planMap.set(cp.id, (lp && localTime > cloudTime) ? lp : { ...(lp || {}), ...cp });
-        });
-        const mergedPlans = Array.from(planMap.values());
-        localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(mergedPlans));
-        planCount = mergedPlans.length;
-        window.dispatchEvent(new CustomEvent('tvm:plans_changed'));
       }
 
       window.dispatchEvent(new CustomEvent('tvm:data_changed'));
       window.dispatchEvent(new CustomEvent('tvm:users_changed'));
+      window.dispatchEvent(new CustomEvent('tvm:plans_changed'));
+      window.dispatchEvent(new CustomEvent('tvm:sync_status', { detail: { syncing: false, success: true } }));
 
       return {
         success: true,
@@ -262,11 +213,10 @@ export class Store {
         planCount,
         message: `Đồng bộ thành công! Đã nạp ${taskCount} công việc, ${planCount} kế hoạch và ${userCount} nhân sự từ Google Sheet.`
       };
-    } else {
-      return {
-        success: false,
-        message: cloudData ? (cloudData.message || cloudData.error) : 'Lỗi kết nối tới Apps Script'
-      };
+    } catch (err) {
+      console.warn('[STORE] Lỗi sync từ cloud:', err);
+      window.dispatchEvent(new CustomEvent('tvm:sync_status', { detail: { syncing: false, success: false } }));
+      return { success: false, message: err.message };
     }
   }
 

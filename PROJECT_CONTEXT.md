@@ -330,7 +330,12 @@
     + Chuẩn hóa và làm sạch danh sách 14 nhân sự thực tế, đưa danh sách Tasks và Plans về trạng thái sẵn sàng 100% (0 task mẫu, 0 plan mẫu).
     + Bổ sung cơ chế Deduplication Map lọc theo `id` trong `store.js` để tuyệt đối không bao giờ bị nhân bản phòng ban hay nhân sự khi đồng bộ 2 chiều.
     + Cách ly hoàn toàn môi trường Unit Test (`test_all_crud.mjs`), cấm gửi dữ liệu kiểm thử lên Google Sheet thật.
-  - **Nâng cấp Cache Buster toàn diện `?v=8.5`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
+  - **Tự Động Đồng Bộ Ngầm Mượt Mà Không Cần Bấm Nút (Zero Click) & Khóa Quyền Tuyệt Đối Cài Đặt (v8.6):**
+    + **Tự động đồng bộ ngầm:** Hệ thống tự động kích hoạt `store.syncFromCloudIfAvailable()` ở 3 thời điểm: (1) Ngay lập tức khi mở trang (0s trễ), (2) Khi người dùng chuyển tab và quay lại trang web (`visibilitychange`), (3) Định kỳ mỗi 30 giây trong nền. Đồng thời tự động sync ngay sau khi đăng nhập thành công.
+    + **Google Sheets là Source of Truth duy nhất:** Khi Sheet trả về mảng `tasks` rỗng hoặc có dữ liệu, Store sẽ ghi đè hoàn toàn vào LocalStorage thay vì kiểm tra `length > 0`, loại bỏ 100% tình trạng dữ liệu cũ/rác còn kẹt ở domain này mà không có ở domain kia (đồng nhất tức thì giữa GitHub Pages và Cloudflare Workers).
+    + **Khóa bảo mật trang Cài Đặt triệt để:** Trừ tài khoản Admin, các tài khoản khác khi vào trang Cài Đặt hoặc mở Popup Settings CHỈ NHÌN THẤY duy nhất giao diện Tùy chỉnh Themes & Màu sắc; ẩn toàn bộ các khối Cổng kết nối Google Sheets, Hướng dẫn 3 bước, Nút popup và Quản trị dữ liệu.
+    + **Badge trạng thái đồng bộ:** Bổ sung `#headerSyncBadge` trên TopHeader hiển thị trực quan trạng thái đồng bộ ngầm qua sự kiện `tvm:sync_status`.
+    + **Nâng cấp Cache Buster toàn diện `?v=8.6`:** Đồng bộ trên 27 files và đẩy Git `origin/main`.
 
 ---
 
