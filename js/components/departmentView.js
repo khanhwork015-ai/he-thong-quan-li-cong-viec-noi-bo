@@ -8,9 +8,9 @@
  * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
-import { auth } from '../auth.js?v=6.4';
-import { store } from '../store.js?v=6.4';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.4';
+import { auth } from '../auth.js?v=6.5';
+import { store } from '../store.js?v=6.5';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.5';
 
 export class DepartmentView {
   constructor(containerId, onUpdated, onOpenMemberModal) {
@@ -27,6 +27,8 @@ export class DepartmentView {
 
   render(deptIdToSelect = null) {
     if (!this.container) return;
+
+    const prevScrollY = window.scrollY || document.documentElement.scrollTop;
 
     if (!auth.canCRUDDepartments()) {
       this.container.innerHTML = `
@@ -599,6 +601,13 @@ export class DepartmentView {
     `;
 
     this.bindEvents(selectedDept);
+
+    if (prevScrollY > 0) {
+      window.scrollTo({ top: prevScrollY, behavior: 'instant' });
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: prevScrollY, behavior: 'instant' });
+      });
+    }
   }
 
   // Mở popup gán nhân sự nhanh vào bộ phận con

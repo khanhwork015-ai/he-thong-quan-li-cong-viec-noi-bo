@@ -8,8 +8,8 @@
  * - Hỗ trợ mở chi tiết đầy đủ từng việc con (SubtaskDetailModal)
  */
 
-import { store } from '../store.js?v=6.4';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.4';
+import { store } from '../store.js?v=6.5';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.5';
 
 export class SubtasksModal {
   constructor(containerId, onTaskUpdated, onOpenTaskDetail = null, onOpenSubtaskDetail = null) {
@@ -41,6 +41,9 @@ export class SubtasksModal {
     const allUsers = store.getAllUsers();
 
     let overlay = document.getElementById('subtasksModalOverlay');
+    const existingCard = overlay ? overlay.querySelector('.modal-card') : null;
+    const prevScrollTop = existingCard ? existingCard.scrollTop : 0;
+
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'subtasksModalOverlay';
@@ -76,16 +79,16 @@ export class SubtasksModal {
           </div>
 
           <!-- THANH TIẾN ĐỘ HOÀN THÀNH VIỆC CON -->
-          <div class="p-3.5 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col gap-2">
+          <div class="p-3.5 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col gap-2">
             <div class="flex items-center justify-between text-[12.5px]">
               <span class="font-bold text-[#0d1c2f] flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[17px] text-[#795900]">fact_check</span>
-                <span>Tiến độ hoàn thành: <strong>${completedCount}/${subtasks.length}</strong> việc con</span>
+                <span>Tiến độ hoàn thành: <strong id="modalSubtasksCountText">${completedCount}/${subtasks.length}</strong> việc con</span>
               </span>
-              <span class="font-mono-data font-bold text-[#795900] text-[13.5px]">${progress}%</span>
+              <span class="font-mono-data font-bold text-[#795900] text-[13.5px]" id="modalSubtasksPctText">${progress}%</span>
             </div>
             <div class="w-full bg-[#e2e8f0] h-2.5 rounded-full overflow-hidden">
-              <div class="bg-[#d6a52a] h-2.5 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+              <div class="bg-[#d6a52a] h-2.5 rounded-full transition-all duration-300" id="modalSubtasksProgressBar" style="width: ${progress}%"></div>
             </div>
           </div>
 
@@ -172,7 +175,7 @@ export class SubtasksModal {
                       <span class="font-mono-data text-[10.5px] font-bold px-2 py-0.5 rounded bg-[#fffbeb] text-[#795900] border border-[#fef3c7] shrink-0">
                         ${esc(s.id)}
                       </span>
-                      <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
+                      <span class="subtask-status-badge text-[10px] font-bold px-2.5 py-0.5 rounded-md shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
                         ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
                       </span>
                     </div>
@@ -188,7 +191,7 @@ export class SubtasksModal {
                   </div>
 
                   <!-- Hàng 2: Tiêu đề việc con chiếm toàn bộ chiều rộng, không bị cắt chữ (break-words) -->
-                  <div class="text-[13.5px] sm:text-[14px] font-bold text-[#0d1c2f] leading-snug break-words ${isDone ? 'line-through text-gray-400' : 'hover:text-[#795900]'} transition-colors">
+                  <div class="subtask-title-text text-[13.5px] sm:text-[14px] font-bold text-[#0d1c2f] leading-snug break-words ${isDone ? 'line-through text-gray-400' : 'hover:text-[#795900]'} transition-colors">
                     ${esc(s.title || s.text)}
                   </div>
 
@@ -281,6 +284,14 @@ export class SubtasksModal {
     `;
 
     this.bindEvents(task, overlay);
+
+    const newCard = overlay.querySelector('.modal-card');
+    if (newCard && prevScrollTop > 0) {
+      newCard.scrollTop = prevScrollTop;
+      requestAnimationFrame(() => {
+        if (newCard) newCard.scrollTop = prevScrollTop;
+      });
+    }
   }
 
   bindEvents(task, overlay) {
@@ -363,14 +374,47 @@ export class SubtasksModal {
       });
     }
 
-    // CHECKBOX VIỆC CON (TỨC THÌ)
+    // CHECKBOX VIỆC CON (CẬP NHẬT TRỰC TIẾP TẠI CHỖ, TUYỆT ĐỐI KHÔNG NHẢY SCROLL)
     overlay.querySelectorAll('.chk-modal-subtask').forEach(chk => {
       chk.addEventListener('change', () => {
         rung(10);
         const sid = chk.dataset.subtaskId;
+        const isChecked = chk.checked;
         store.toggleSubtask(task.id, sid);
+
+        // 1. Cập nhật DOM trực tiếp trên thẻ việc con
+        const card = chk.closest('.subtask-modal-card');
+        if (card) {
+          const badge = card.querySelector('.subtask-status-badge');
+          if (badge) {
+            badge.textContent = isChecked ? 'Đã xong' : 'Chưa làm';
+            badge.className = `subtask-status-badge text-[10px] font-bold px-2.5 py-0.5 rounded-md shrink-0 ${isChecked ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700'}`;
+          }
+          const title = card.querySelector('.subtask-title-text');
+          if (title) {
+            if (isChecked) {
+              title.classList.add('line-through', 'text-gray-400');
+            } else {
+              title.classList.remove('line-through', 'text-gray-400');
+            }
+          }
+        }
+
+        // 2. Cập nhật thanh tiến độ trên Header
+        const allChecks = overlay.querySelectorAll('.chk-modal-subtask');
+        const doneCount = Array.from(allChecks).filter(c => c.checked).length;
+        const totalCount = allChecks.length;
+        const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+        
+        const countText = overlay.querySelector('#modalSubtasksCountText');
+        if (countText) countText.textContent = `${doneCount}/${totalCount}`;
+        const pctText = overlay.querySelector('#modalSubtasksPctText');
+        if (pctText) pctText.textContent = `${pct}%`;
+        const progressBar = overlay.querySelector('#modalSubtasksProgressBar');
+        if (progressBar) progressBar.style.width = `${pct}%`;
+
+        // 3. Thông báo cho background cập nhật ngầm
         if (this.onTaskUpdated) this.onTaskUpdated();
-        this.render();
       });
     });
 

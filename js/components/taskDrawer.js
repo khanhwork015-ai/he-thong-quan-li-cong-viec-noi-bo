@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=6.4';
-import { store } from '../store.js?v=6.4';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=6.4';
+import { auth } from '../auth.js?v=6.5';
+import { store } from '../store.js?v=6.5';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=6.5';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
@@ -45,6 +45,9 @@ export class TaskDrawer {
       this.close();
       return;
     }
+
+    const prevBody = this.container.querySelector('#taskDrawerScrollBody');
+    const prevScrollTop = prevBody ? prevBody.scrollTop : 0;
 
     // Đảm bảo subtasks và comments luôn là Mảng chuẩn an toàn
     if (!Array.isArray(task.subtasks)) {
@@ -130,7 +133,7 @@ export class TaskDrawer {
           </div>
 
           <!-- DRAWER SCROLLABLE BODY -->
-          <div class="p-5 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4 sm:gap-5">
+          <div class="p-5 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4 sm:gap-5" id="taskDrawerScrollBody">
             
             <!-- 1. BANNER CẢNH BÁO PHÊ DUYỆT 1-CHẠM -->
             ${isPendingApproval ? `
@@ -280,20 +283,20 @@ export class TaskDrawer {
                   </div>
                   <div>
                     <h3 class="text-[13.5px] font-bold text-[#0d1c2f] flex items-center gap-1.5" style="color: var(--text);">
-                      <span>Danh sách việc con (${task.subtasks ? task.subtasks.filter(s => s.completed || s.status === 'done').length : 0}/${task.subtasks ? task.subtasks.length : 0})</span>
+                      <span id="drawerSubtaskCountText">Danh sách việc con (${task.subtasks ? task.subtasks.filter(s => s.completed || s.status === 'done').length : 0}/${task.subtasks ? task.subtasks.length : 0})</span>
                     </h3>
                     <p class="text-[11px] text-[#64748b]">Các đầu việc con cụ thể bên trong nhiệm vụ này</p>
                   </div>
                 </div>
                 <div class="text-right">
-                  <span class="text-[13px] font-bold font-mono-data text-[#795900]">${task.progress || 0}%</span>
+                  <span class="text-[13px] font-bold font-mono-data text-[#795900]" id="drawerSubtaskPctText">${task.progress || 0}%</span>
                   <span class="block text-[10px] text-[#817663] font-medium">Tiến độ</span>
                 </div>
               </div>
 
               <!-- PROGRESS BAR -->
               <div class="w-full bg-[#e2e8f0] h-2 rounded-full overflow-hidden">
-                <div class="bg-[#d6a52a] h-2 rounded-full transition-all duration-300" style="width: ${task.progress || 0}%"></div>
+                <div class="bg-[#d6a52a] h-2 rounded-full transition-all duration-300" id="drawerSubtaskProgressBar" style="width: ${task.progress || 0}%"></div>
               </div>
 
               <!-- SUBTASK ITEMS LIST -->
@@ -312,7 +315,7 @@ export class TaskDrawer {
                         <div class="flex items-center gap-2 flex-wrap">
                           <input type="checkbox" class="chk-subtask w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0" data-subtask-id="${s.id}" ${isDone ? 'checked' : ''} />
                           <span class="font-mono-data text-[10.5px] font-bold px-2 py-0.5 rounded bg-[#fffbeb] text-[#795900] border border-[#fef3c7] shrink-0">${esc(s.id)}</span>
-                          <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
+                          <span class="subtask-status-badge text-[10px] font-bold px-2.5 py-0.5 rounded-md shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
                             ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
                           </span>
                         </div>
@@ -328,7 +331,7 @@ export class TaskDrawer {
                       </div>
 
                       <!-- Hàng 2: Tiêu đề việc con chiếm toàn bộ chiều rộng, không bị cắt chữ (break-words) -->
-                      <div class="text-[13.5px] sm:text-[14px] font-bold text-[#0d1c2f] leading-snug break-words ${isDone ? 'line-through text-gray-400' : 'hover:text-[#795900]'} transition-colors">
+                      <div class="subtask-title-text text-[13.5px] sm:text-[14px] font-bold text-[#0d1c2f] leading-snug break-words ${isDone ? 'line-through text-gray-400' : 'hover:text-[#795900]'} transition-colors">
                         ${esc(s.title || s.text)}
                       </div>
 
@@ -536,6 +539,14 @@ export class TaskDrawer {
     `;
 
     this.bindEvents(task, isPendingApproval, canUserApproveThisTask);
+
+    const newBody = this.container.querySelector('#taskDrawerScrollBody');
+    if (newBody && prevScrollTop > 0) {
+      newBody.scrollTop = prevScrollTop;
+      requestAnimationFrame(() => {
+        if (newBody) newBody.scrollTop = prevScrollTop;
+      });
+    }
   }
 
   getStatusMeta(status) {
@@ -608,14 +619,48 @@ export class TaskDrawer {
       }, { once: true });
     }
 
-    // CHECKBOX VIỆC CON (SUBTASKS)
+    // CHECKBOX VIỆC CON (SUBTASKS) - In-place DOM update để không giật nhảy scroll
     this.container.querySelectorAll('.chk-subtask').forEach(chk => {
-      chk.addEventListener('change', () => {
+      chk.addEventListener('change', (e) => {
+        e.stopPropagation();
         rung(10);
         const sid = chk.dataset.subtaskId;
         store.toggleSubtask(task.id, sid);
+
+        const freshTask = store.getTaskById(task.id) || task;
+        const sub = (freshTask.subtasks || []).find(x => x.id === sid);
+        const isCompleted = sub ? (sub.completed || sub.status === 'done') : chk.checked;
+
+        const card = chk.closest('.subtask-card');
+        if (card) {
+          const badge = card.querySelector('.subtask-status-badge');
+          if (badge) {
+            badge.className = `subtask-status-badge text-[10px] font-bold px-2.5 py-0.5 rounded-md shrink-0 ${isCompleted ? 'bg-teal-100 text-teal-800' : 'bg-gray-100 text-gray-700'}`;
+            badge.textContent = isCompleted ? 'Đã xong' : 'Chưa làm';
+          }
+          const title = card.querySelector('.subtask-title-text');
+          if (title) {
+            if (isCompleted) {
+              title.classList.add('line-through', 'text-gray-400');
+              title.classList.remove('hover:text-[#795900]');
+            } else {
+              title.classList.remove('line-through', 'text-gray-400');
+              title.classList.add('hover:text-[#795900]');
+            }
+          }
+        }
+
+        // Cập nhật progress bar & count ở header
+        const totalSubs = (freshTask.subtasks || []).length;
+        const doneSubs = (freshTask.subtasks || []).filter(s => s.completed || s.status === 'done').length;
+        const countEl = this.container.querySelector('#drawerSubtaskCountText');
+        if (countEl) countEl.textContent = `Danh sách việc con (${doneSubs}/${totalSubs})`;
+        const pctEl = this.container.querySelector('#drawerSubtaskPctText');
+        if (pctEl) pctEl.textContent = `${freshTask.progress || 0}%`;
+        const barEl = this.container.querySelector('#drawerSubtaskProgressBar');
+        if (barEl) barEl.style.width = `${freshTask.progress || 0}%`;
+
         if (this.onTaskUpdated) this.onTaskUpdated();
-        this.render();
       });
     });
 

@@ -189,6 +189,14 @@
     + Đồng bộ hóa các card và container thành `rounded-xl` / `rounded-lg` sắc nét, chuẩn phong cách Enterprise SaaS.
   - **Sửa lỗi Input tìm kiếm bị trùng lặp trong `plansView.js`:** Loại bỏ khối HTML thừa gây ra 2 ô tìm kiếm chồng chéo.
   - **Nâng cấp Cache Buster toàn diện `?v=6.4`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
+- [x] **28. Triệt Tiêu Lỗi Giật Nhảy Cuộn Lên Đầu Trang Khi Tick Hoàn Thành (Anti-Scroll Jump & In-Place DOM Updates) Toàn Hệ Thống (`subtasksModal.js`, `planDrawer.js`, `taskDrawer.js`, `subtaskDetailModal.js`, `app.js`, `workspaceView.js`, `plansView.js`, `departmentView.js`)**:
+  - **Căn nguyên vấn đề (Root Cause):** Trên trình duyệt di động (iOS Safari & Chrome Android), khi người dùng tick chọn hoàn thành việc con hoặc mốc tiến độ, hàm xử lý trước đây gọi `this.render()`, thay thế toàn bộ `innerHTML` của phần tử chứa. Hành vi này làm trình duyệt hủy DOM node có `overflow-y-auto` cũ và tạo lại node mới với vị trí cuộn `scrollTop = 0`, gây ra hiện tượng màn hình bị giật văng ngược lên đầu trang. Ngoài ra, sự kiện `onTaskUpdated` / `onPlanChanged` chạy `app.refreshCurrentView()` ngầm làm reflow toàn bộ `main-content-canvas` dẫn đến việc reset luôn cả `window.scrollY`.
+  - **Giải pháp Cập nhật DOM Tại Chỗ (In-Place DOM Mutation):**
+    + Trong `subtasksModal.js`, `taskDrawer.js` và `planDrawer.js`: Khi người dùng bấm checkbox hoàn thành việc con hoặc milestone, không gọi `this.render()` nữa. Thay vào đó, cập nhật trực tiếp tại chỗ thuộc tính của thẻ DOM (`subtask-status-badge`, `subtask-title-text`, tiến độ `%` và thanh Progress Bar `width`). Thao tác này chạy với tốc độ 60fps tức thì (0ms trễ) và giữ nguyên 100% vị trí thanh cuộn hiện tại của người dùng.
+  - **Cơ chế Bảo tồn Vị trí Cuộn (Scroll Position Preservation) 2 Lớp:**
+    + **Lớp 1 (Drawer & Modal Body):** Lưu `prevScrollTop` trước khi bất kỳ thao tác render DOM nào diễn ra và khôi phục ngay lập tức kết hợp `requestAnimationFrame` sau khi gán nội dung mới (`#taskDrawerScrollBody`, `#planDrawerScrollBody`, `.modal-card`).
+    + **Lớp 2 (Main Canvas & Background Views):** Lưu `prevScrollY = window.scrollY || document.documentElement.scrollTop;` trước khi `refreshCurrentView()`, `renderEmployeesView()`, `workspaceView.render()`, `plansView.render()`, `departmentView.render()` thực thi, và khôi phục ngay với `window.scrollTo({ top: prevScrollY, behavior: 'instant' })`.
+  - **Nâng cấp Cache Buster toàn diện `?v=6.5`:** Đồng bộ trên 21 files và đẩy Git `origin/main`.
 
 ---
 

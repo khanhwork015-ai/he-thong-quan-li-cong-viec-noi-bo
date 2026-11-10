@@ -7,10 +7,10 @@
  * - Ghi chú, Tài liệu đính kèm & Bình luận thảo luận
  */
 
-import { auth } from '../auth.js?v=6.4';
-import { store } from '../store.js?v=6.4';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.4';
-import { PLAN_STATUSES } from '../models.js?v=6.4';
+import { auth } from '../auth.js?v=6.5';
+import { store } from '../store.js?v=6.5';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.5';
+import { PLAN_STATUSES } from '../models.js?v=6.5';
 
 export class PlanDrawer {
   constructor(containerId, onPlanChanged, onEditPlan, onOpenTask) {
@@ -67,6 +67,9 @@ export class PlanDrawer {
     const comments = Array.isArray(plan.comments) ? plan.comments : [];
     const currentStatusMeta = PLAN_STATUSES[plan.status] || PLAN_STATUSES.planning;
 
+    const prevBody = this.container.querySelector('#planDrawerScrollBody');
+    const prevScrollTop = prevBody ? prevBody.scrollTop : 0;
+
     this.container.innerHTML = `
       <div class="drawer-backdrop fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end active" id="planDrawerBackdrop">
         <div class="drawer-panel w-full max-w-2xl h-full bg-white shadow-2xl flex flex-col justify-between overflow-hidden border-l border-[#e2e8f0]" style="background-color: var(--card); border-color: var(--border);">
@@ -99,7 +102,7 @@ export class PlanDrawer {
           </div>
 
           <!-- 2. DRAWER SCROLLABLE BODY -->
-          <div class="p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4">
+          <div class="p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4" id="planDrawerScrollBody">
             
             <!-- THÔNG TIN TIÊU ĐỀ & NGƯỜI TẠO -->
             <div class="flex flex-col gap-2.5">
@@ -179,14 +182,14 @@ export class PlanDrawer {
                     Lộ Trình Cột Mốc (Milestones)
                   </h3>
                 </div>
-                <span class="font-mono-data text-[11.5px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200 shrink-0 whitespace-nowrap">
+                <span class="font-mono-data text-[11.5px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200 shrink-0 whitespace-nowrap" id="planMilestonesProgressBadge">
                   ${completedMilestones}/${milestones.length} mốc • ${milestoneProgress}%
                 </span>
               </div>
 
               <!-- PROGRESS BAR -->
               <div class="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-300" style="width: ${milestoneProgress}%;"></div>
+                <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-300" id="planMilestonesProgressBar" style="width: ${milestoneProgress}%;"></div>
               </div>
 
               <!-- DANH SÁCH MILESTONES (CHỐNG TRÀN VÀ CẮT CHỮ TRÊN MOBILE) -->
@@ -197,7 +200,7 @@ export class PlanDrawer {
                   <div class="flex items-start justify-between gap-2.5 p-2.5 rounded-xl border ${m.completed ? 'bg-emerald-50/40 border-emerald-200' : 'bg-gray-50/60 border-gray-200'} transition-all">
                     <label class="flex items-start gap-2.5 min-w-0 cursor-pointer flex-1">
                       <input type="checkbox" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer chk-milestone shrink-0 mt-0.5" data-milestone-id="${m.id}" ${m.completed ? 'checked' : ''} />
-                      <span class="text-[12.5px] leading-snug break-words flex-1 ${m.completed ? 'line-through text-gray-500' : 'font-semibold text-[#0d1c2f]'}">
+                      <span class="milestone-title-text text-[12.5px] leading-snug break-words flex-1 ${m.completed ? 'line-through text-gray-500' : 'font-semibold text-[#0d1c2f]'}">
                         ${esc(m.title)}
                       </span>
                     </label>
@@ -432,6 +435,14 @@ export class PlanDrawer {
     `;
 
     this.bindEvents();
+
+    const newBody = this.container.querySelector('#planDrawerScrollBody');
+    if (newBody && prevScrollTop > 0) {
+      newBody.scrollTop = prevScrollTop;
+      requestAnimationFrame(() => {
+        if (newBody) newBody.scrollTop = prevScrollTop;
+      });
+    }
   }
 
   bindEvents() {
@@ -490,13 +501,51 @@ export class PlanDrawer {
       });
     }
 
-    // Checkbox toggle milestone
+    // Checkbox toggle milestone (Cập nhật trực tiếp tại chỗ, tuyệt đối không nhảy scroll)
     this.container.querySelectorAll('.chk-milestone').forEach(chk => {
       chk.addEventListener('change', () => {
         const mId = chk.dataset.milestoneId;
+        const isChecked = chk.checked;
         store.togglePlanMilestone(this.currentPlanId, mId);
         rung(10);
-        this.render();
+
+        // Cập nhật DOM trực tiếp trên mốc
+        const row = chk.closest('div.p-2.5');
+        if (row) {
+          const title = row.querySelector('.milestone-title-text');
+          if (title) {
+            if (isChecked) {
+              title.classList.add('line-through', 'text-gray-500');
+              title.classList.remove('font-semibold', 'text-[#0d1c2f]');
+            } else {
+              title.classList.remove('line-through', 'text-gray-500');
+              title.classList.add('font-semibold', 'text-[#0d1c2f]');
+            }
+          }
+          if (isChecked) {
+            row.classList.remove('bg-gray-50/60', 'border-gray-200');
+            row.classList.add('bg-emerald-50/40', 'border-emerald-200');
+          } else {
+            row.classList.remove('bg-emerald-50/40', 'border-emerald-200');
+            row.classList.add('bg-gray-50/60', 'border-gray-200');
+          }
+        }
+
+        // Cập nhật thanh tiến độ cột mốc
+        const allChecks = this.container.querySelectorAll('.chk-milestone');
+        const doneCount = Array.from(allChecks).filter(c => c.checked).length;
+        const totalCount = allChecks.length;
+        const pct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+
+        const badge = this.container.querySelector('#planMilestonesProgressBadge');
+        if (badge) {
+          badge.textContent = `${doneCount}/${totalCount} mốc • ${pct}%`;
+        }
+        const bar = this.container.querySelector('#planMilestonesProgressBar');
+        if (bar) {
+          bar.style.width = `${pct}%`;
+        }
+
         if (this.onPlanChanged) this.onPlanChanged();
       });
     });

@@ -6,10 +6,10 @@
  * - Bộ lọc trạng thái trực quan & Tìm kiếm nhanh
  */
 
-import { auth } from '../auth.js?v=6.4';
-import { store } from '../store.js?v=6.4';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.4';
-import { PLAN_STATUSES } from '../models.js?v=6.4';
+import { auth } from '../auth.js?v=6.5';
+import { store } from '../store.js?v=6.5';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.5';
+import { PLAN_STATUSES } from '../models.js?v=6.5';
 
 export class PlansView {
   constructor(containerId, onSelectPlan, onOpenCreatePlanModal, onEditPlan) {
@@ -23,6 +23,8 @@ export class PlansView {
 
   render() {
     if (!this.container) return;
+
+    const prevScrollY = window.scrollY || document.documentElement.scrollTop;
 
     const currentDept = auth.getActiveDepartment() || { id: 'all', name: 'Toàn Phòng Khám CS3 (Tất Cả)' };
     const allPlans = store.getDepartmentPlans(currentDept.id);
@@ -281,6 +283,13 @@ export class PlansView {
     `;
 
     this.bindEvents();
+
+    if (prevScrollY > 0) {
+      window.scrollTo({ top: prevScrollY, behavior: 'instant' });
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: prevScrollY, behavior: 'instant' });
+      });
+    }
   }
 
   bindEvents() {

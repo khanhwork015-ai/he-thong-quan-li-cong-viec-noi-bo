@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=6.4';
-import { store } from '../store.js?v=6.4';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=6.4';
+import { auth } from '../auth.js?v=6.5';
+import { store } from '../store.js?v=6.5';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=6.5';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
@@ -37,6 +37,8 @@ export class WorkspaceView {
 
   render() {
     if (!this.container) return;
+
+    const prevScrollY = window.scrollY || document.documentElement.scrollTop;
 
     const currentDept = auth.getActiveDepartment();
     const canCreate = auth.canCreateTask();
@@ -174,6 +176,13 @@ export class WorkspaceView {
     `;
 
     this.bindEvents();
+
+    if (prevScrollY > 0) {
+      window.scrollTo({ top: prevScrollY, behavior: 'instant' });
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: prevScrollY, behavior: 'instant' });
+      });
+    }
   }
 
   // DẠNG DANH SÁCH (HỖ TRỢ THẺ TRÊN MOBILE & BẢNG TRÊN DESKTOP)

@@ -6,8 +6,8 @@
  * Hỗ trợ Stacked Modal độc lập (z-[120]), không ghi đè SubtasksModal hay TaskDrawer bên dưới.
  */
 
-import { store } from '../store.js?v=6.4';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.4';
+import { store } from '../store.js?v=6.5';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.5';
 
 export class SubtaskDetailModal {
   constructor(containerId, onUpdated) {
@@ -38,6 +38,9 @@ export class SubtaskDetailModal {
     const allUsers = store.getAllUsers();
 
     let overlay = document.getElementById('subtaskDetailOverlay');
+    const prevCard = overlay ? overlay.querySelector('.modal-card') : null;
+    const prevScrollTop = prevCard ? prevCard.scrollTop : 0;
+
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'subtaskDetailOverlay';
@@ -187,6 +190,14 @@ export class SubtaskDetailModal {
     `;
 
     this.bindEvents(task, subtask, overlay);
+
+    const newCard = overlay.querySelector('.modal-card');
+    if (newCard && prevScrollTop > 0) {
+      newCard.scrollTop = prevScrollTop;
+      requestAnimationFrame(() => {
+        if (newCard) newCard.scrollTop = prevScrollTop;
+      });
+    }
   }
 
   bindEvents(task, subtask, overlay) {
