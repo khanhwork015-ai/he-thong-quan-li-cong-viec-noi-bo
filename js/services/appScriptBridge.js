@@ -13,16 +13,25 @@ export const DEFAULT_GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwM
 
 export class AppScriptBridge {
   constructor() {
-    const saved = localStorage.getItem(GAS_ENDPOINT_KEY);
+    let saved = null;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        saved = localStorage.getItem(GAS_ENDPOINT_KEY);
+      }
+    } catch (_) {}
+
     this.endpoint = (saved && saved.trim().startsWith('https://script.google.com/')) ? saved.trim() : DEFAULT_GAS_ENDPOINT;
-    if (!saved) {
+    if (!saved && typeof localStorage !== 'undefined') {
       try { localStorage.setItem(GAS_ENDPOINT_KEY, this.endpoint); } catch (_) {}
     }
-    this.isOnline = navigator.onLine;
-    this.lastSyncTime = localStorage.getItem(LAST_SYNC_KEY) || null;
 
-    window.addEventListener('online', () => { this.isOnline = true; });
-    window.addEventListener('offline', () => { this.isOnline = false; });
+    this.isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    this.lastSyncTime = (typeof localStorage !== 'undefined') ? localStorage.getItem(LAST_SYNC_KEY) : null;
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => { this.isOnline = true; });
+      window.addEventListener('offline', () => { this.isOnline = false; });
+    }
   }
 
   getEndpoint() {
