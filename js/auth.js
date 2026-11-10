@@ -10,8 +10,8 @@
  * Quy tắc giao việc: Bất cứ ai cũng có quyền tạo và assign task cho bất kỳ nhân viên nào.
  */
 
-import { USERS, DEPARTMENTS, ROLES } from './models.js?v=7.9';
-import { toast, rung } from './helpers.js?v=7.9';
+import { USERS, DEPARTMENTS, ROLES } from './models.js?v=8.0';
+import { toast, rung } from './helpers.js?v=8.0';
 
 /**
  * Băm mật khẩu SHA-256 an toàn bằng Web Cryptography API

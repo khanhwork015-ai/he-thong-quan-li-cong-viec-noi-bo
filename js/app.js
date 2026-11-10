@@ -4,31 +4,31 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=7.9';
-import { store } from './store.js?v=7.9';
-import { Sidebar } from './components/sidebar.js?v=7.9';
-import { TopHeader } from './components/topHeader.js?v=7.9';
-import { BottomNav } from './components/bottomNav.js?v=7.9';
-import { DashboardView } from './components/dashboardView.js?v=7.9';
-import { WorkspaceView } from './components/workspaceView.js?v=7.9';
-import { TaskDrawer } from './components/taskDrawer.js?v=7.9';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=7.9';
-import { CreateTaskModal } from './components/createTaskModal.js?v=7.9'
-import { SubtasksModal } from './components/subtasksModal.js?v=7.9';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=7.9';;
-import { ProfileModal } from './components/profileModal.js?v=7.9';
-import { MemberModal } from './components/memberModal.js?v=7.9';
-import { SettingsModal } from './components/settingsModal.js?v=7.9';
-import { LoginView } from './components/loginView.js?v=7.9';
-import { DepartmentModal } from './components/departmentModal.js?v=7.9';
-import { DepartmentView } from './components/departmentView.js?v=7.9';
-import { PlansView } from './components/plansView.js?v=7.9';
-import { PlanDrawer } from './components/planDrawer.js?v=7.9';
-import { PlanModal } from './components/planModal.js?v=7.9';
-import { ApprovalView } from './components/approvalView.js?v=7.9';
-import { appScriptBridge } from './services/appScriptBridge.js?v=7.9';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=7.9';
-import { shinTheme } from './theme.js?v=7.9';
+import { auth } from './auth.js?v=8.0';
+import { store } from './store.js?v=8.0';
+import { Sidebar } from './components/sidebar.js?v=8.0';
+import { TopHeader } from './components/topHeader.js?v=8.0';
+import { BottomNav } from './components/bottomNav.js?v=8.0';
+import { DashboardView } from './components/dashboardView.js?v=8.0';
+import { WorkspaceView } from './components/workspaceView.js?v=8.0';
+import { TaskDrawer } from './components/taskDrawer.js?v=8.0';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=8.0';
+import { CreateTaskModal } from './components/createTaskModal.js?v=8.0'
+import { SubtasksModal } from './components/subtasksModal.js?v=8.0';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.0';;
+import { ProfileModal } from './components/profileModal.js?v=8.0';
+import { MemberModal } from './components/memberModal.js?v=8.0';
+import { SettingsModal } from './components/settingsModal.js?v=8.0';
+import { LoginView } from './components/loginView.js?v=8.0';
+import { DepartmentModal } from './components/departmentModal.js?v=8.0';
+import { DepartmentView } from './components/departmentView.js?v=8.0';
+import { PlansView } from './components/plansView.js?v=8.0';
+import { PlanDrawer } from './components/planDrawer.js?v=8.0';
+import { PlanModal } from './components/planModal.js?v=8.0';
+import { ApprovalView } from './components/approvalView.js?v=8.0';
+import { appScriptBridge } from './services/appScriptBridge.js?v=8.0';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=8.0';
+import { shinTheme } from './theme.js?v=8.0';
 
 class App {
   constructor() {
@@ -331,6 +331,7 @@ class App {
 
   refreshCurrentView() {
     const prevScrollY = window.scrollY || document.documentElement.scrollTop;
+    if (this.sidebar) this.sidebar.render();
     this.header.render();
     this.bottomNav.render();
     this.renderCurrentView();
@@ -360,6 +361,10 @@ class App {
         if (this.planDrawer) this.planDrawer.close();
         if (this.planModal) this.planModal.close();
       }
+    });
+
+    window.addEventListener('tvm:data_changed', () => {
+      this.refreshCurrentView();
     });
 
     window.addEventListener('tvm:plans_changed', () => {
@@ -963,9 +968,8 @@ class App {
           'Toàn bộ công việc, kế hoạch và thông báo (trên máy và trên Google Sheet) sẽ bị xóa để bắt đầu dữ liệu thật. Nhân sự và phòng ban được giữ nguyên. Hãy tải bản sao lưu trước. Không thể hoàn tác.',
           async () => {
             await store.clearOperationalData();
-            toast('Đã xóa dữ liệu mẫu. Hệ thống sẵn sàng nhập dữ liệu thật!', 'success');
-            this.refreshCurrentView();
-            this.renderSettingsView();
+            toast('Đã xóa sạch toàn bộ công việc, kế hoạch & thông báo mẫu! Đang chuyển về Tổng quan...', 'success');
+            this.switchNav('tong-quan');
           },
           { btnConfirmText: 'Xóa Dữ Liệu Mẫu' }
         );

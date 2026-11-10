@@ -3,20 +3,34 @@
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
 
-import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=7.9';
-import { auth } from './auth.js?v=7.9';
-import { appScriptBridge } from './services/appScriptBridge.js?v=7.9';
+import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.0';
+import { auth } from './auth.js?v=8.0';
+import { appScriptBridge } from './services/appScriptBridge.js?v=8.0';
+import { toast } from './helpers.js?v=8.0';
 
 const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
 const USERS_STORAGE_KEY = 'tvm_users_v4';
 const DEPTS_STORAGE_KEY = 'tvm_departments_v4';
 const NOTIF_STORAGE_KEY = 'tvm_notifications_v2';
 const PLANS_STORAGE_KEY = 'tvm_plans_v1';
+const DELETED_IDS_KEY = 'tvm_deleted_ids_v1';
+const DEMO_SEED_IDS = ['PTKH-101', 'PTKH-102', 'PTKH-103', 'PTKH-104', 'DUOC-201', 'QLDA-301', 'PLAN-PTKH-01', 'PLAN-PTKH-02', 'PLAN-DUOC-01', 'notif_init_1', 'notif_init_2', 'notif_init_3', 'notif_init_4', 'notif_init_5', 'notif_init_6'];
 
 export class Store {
   constructor() {
     this.init();
     this.syncFromCloudIfAvailable();
+  }
+
+  getDeletedIds() {
+    try { return new Set(JSON.parse(localStorage.getItem(DELETED_IDS_KEY)) || []); }
+    catch (_) { return new Set(); }
+  }
+
+  markDeletedIds(ids = []) {
+    const set = this.getDeletedIds();
+    ids.forEach(id => { if (id) set.add(String(id)); });
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(set)));
   }
 
   init() {
@@ -55,8 +69,9 @@ export class Store {
         const taskMap = new Map();
         localTasks.forEach(lt => { if (lt && lt.id) taskMap.set(lt.id, lt); });
 
+        const deletedIds = this.getDeletedIds();
         cloudData.tasks.forEach(ct => {
-          if (!ct || !ct.id) return;
+          if (!ct || !ct.id || deletedIds.has(String(ct.id))) return;
           const local = taskMap.get(ct.id) || {};
 
           // Chuẩn hóa subtasks từ cloud (hỗ trợ cả trường subtasks và checklist)
@@ -195,7 +210,8 @@ export class Store {
 
       // Thông báo: Sheet là nguồn chuẩn (xóa/đã đọc đã được đồng bộ ngược lên Sheet)
       if (Array.isArray(cloudData.notifications)) {
-        const cloudNotifs = cloudData.notifications.map(n => ({
+        const deletedIds = this.getDeletedIds();
+        const cloudNotifs = cloudData.notifications.filter(n => n && n.id && !deletedIds.has(String(n.id))).map(n => ({
           ...n,
           isRead: n.isRead === true || n.isRead === 'true' || n.isRead === 'TRUE'
         }));
@@ -210,8 +226,9 @@ export class Store {
       if (Array.isArray(cloudData.plans) && cloudData.plans.length > 0) {
         const planMap = new Map();
         this.getAllPlansRaw().forEach(lp => { if (lp && lp.id) planMap.set(lp.id, lp); });
+        const deletedPlanIds = this.getDeletedIds();
         cloudData.plans.forEach(cp => {
-          if (!cp || !cp.id) return;
+          if (!cp || !cp.id || deletedPlanIds.has(String(cp.id))) return;
           const lp = planMap.get(cp.id);
           const cloudTime = Date.parse(cp.updatedAt || '') || 0;
           const localTime = lp ? (Date.parse(lp.updatedAt || '') || 0) : 0;
@@ -555,7 +572,8 @@ export class Store {
   // --- QUẢN LÝ CÔNG VIỆC (CRUD TASKS) ---
   getAllTasksRaw() {
     try {
-      const raw = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || INITIAL_TASKS;
+      const savedStr = localStorage.getItem(TASKS_STORAGE_KEY);
+      const raw = savedStr ? JSON.parse(savedStr) : [];
       if (Array.isArray(raw)) {
         return raw.map(t => {
           if (!t) return t;
@@ -592,9 +610,9 @@ export class Store {
           };
         });
       }
-      return INITIAL_TASKS;
+      return [];
     } catch (_) {
-      return INITIAL_TASKS;
+      return [];
     }
   }
 
@@ -1040,6 +1058,7 @@ export class Store {
   }
 
   deleteTask(taskId) {
+    this.markDeletedIds([taskId]);
     const tasks = this.getAllTasksRaw();
     const filtered = tasks.filter(t => t.id !== taskId);
     this.saveAllTasks(filtered);
@@ -1329,6 +1348,11 @@ export class Store {
 
   // XÓA DỮ LIỆU MẪU - BẮT ĐẦU DỮ LIỆU THẬT: dọn công việc, kế hoạch, thông báo (giữ nguyên nhân sự & phòng ban)
   async clearOperationalData() {
+    const existingTaskIds = this.getAllTasksRaw().map(t => t.id);
+    const existingPlanIds = this.getAllPlansRaw().map(p => p.id);
+    const existingNotifIds = this.getAllNotifications().map(n => n.id);
+    this.markDeletedIds([...DEMO_SEED_IDS, ...existingTaskIds, ...existingPlanIds, ...existingNotifIds]);
+
     localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify([]));
     localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify([]));
     localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify([]));
@@ -1474,6 +1498,7 @@ export class Store {
   }
 
   deletePlan(id) {
+    this.markDeletedIds([id]);
     let all = this.getAllPlansRaw();
     all = all.filter(p => p.id !== id);
     this.saveAllPlans(all);

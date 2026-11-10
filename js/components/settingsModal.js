@@ -5,11 +5,11 @@
  * Bảo mật: Chỉ ADMIN mới được xem, cấu hình và đồng bộ Google Apps Script Web App
  */
 
-import { auth } from '../auth.js?v=7.9';
-import { store } from '../store.js?v=7.9';
-import { appScriptBridge } from '../services/appScriptBridge.js?v=7.9';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=7.9';
-import { shinTheme } from '../theme.js?v=7.9';
+import { auth } from '../auth.js?v=8.0';
+import { store } from '../store.js?v=8.0';
+import { appScriptBridge } from '../services/appScriptBridge.js?v=8.0';
+import { esc, toast, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=8.0';
+import { shinTheme } from '../theme.js?v=8.0';
 
 export class SettingsModal {
   constructor(containerId, onSettingsUpdated) {
@@ -278,8 +278,9 @@ export class SettingsModal {
           'Toàn bộ công việc, kế hoạch và thông báo (trên máy và trên Google Sheet) sẽ bị xóa để bắt đầu dữ liệu thật. Nhân sự và phòng ban được giữ nguyên. Không thể hoàn tác.',
           async () => {
             await store.clearOperationalData();
-            toast('Đã xóa dữ liệu mẫu. Hệ thống sẵn sàng nhập dữ liệu thật!', 'success');
-            this.show();
+            toast('Đã xóa sạch toàn bộ công việc, kế hoạch & thông báo mẫu!', 'success');
+            const overlay = document.getElementById('settingsModalOverlay');
+            if (overlay) overlay.remove();
             if (this.onSettingsUpdated) this.onSettingsUpdated();
           },
           { btnConfirmText: 'Xóa Dữ Liệu Mẫu' }
