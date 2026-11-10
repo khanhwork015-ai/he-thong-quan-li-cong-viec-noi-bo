@@ -5,9 +5,9 @@
  * Đổi màu đồng bộ theo 8 Palettes của SHIN AIOS
  */
 
-import { rung } from '../helpers.js?v=6.2';
-import { auth } from '../auth.js?v=6.2';
-import { store } from '../store.js?v=6.2';
+import { rung } from '../helpers.js?v=6.3';
+import { auth } from '../auth.js?v=6.3';
+import { store } from '../store.js?v=6.3';
 
 export class BottomNav {
   constructor(containerId, onNavChange) {
@@ -33,7 +33,6 @@ export class BottomNav {
       { id: 'ke-hoach', label: 'Kế hoạch', icon: 'topic' },
       { id: 'cong-viec', label: 'Công việc', icon: 'task_alt', badge: pendingApproval > 0 ? pendingApproval : null },
       { id: 'nhan-vien', label: 'Nhân sự', icon: 'group' },
-      ...(isAdmin ? [{ id: 'phong-ban', label: 'Phòng ban', icon: 'domain' }] : []),
       { id: 'cai-dat', label: 'Cài đặt', icon: 'settings' }
     ];
 

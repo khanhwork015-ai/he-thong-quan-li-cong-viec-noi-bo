@@ -7,10 +7,10 @@
  * - Ghi chú, Tài liệu đính kèm & Bình luận thảo luận
  */
 
-import { auth } from '../auth.js?v=6.2';
-import { store } from '../store.js?v=6.2';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.2';
-import { PLAN_STATUSES } from '../models.js?v=6.2';
+import { auth } from '../auth.js?v=6.3';
+import { store } from '../store.js?v=6.3';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.3';
+import { PLAN_STATUSES } from '../models.js?v=6.3';
 
 export class PlanDrawer {
   constructor(containerId, onPlanChanged, onEditPlan, onOpenTask) {
@@ -71,28 +71,20 @@ export class PlanDrawer {
       <div class="drawer-backdrop fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end active" id="planDrawerBackdrop">
         <div class="drawer-panel w-full max-w-2xl h-full bg-white shadow-2xl flex flex-col justify-between overflow-hidden border-l border-[#e2e8f0]" style="background-color: var(--card); border-color: var(--border);">
           
-          <!-- 1. DRAWER TOP BAR -->
+          <!-- 1. DRAWER TOP BAR (CHỐNG TRÀN VÀ ĐÈ NÚT TRÊN MOBILE) -->
           <div class="h-16 px-4 sm:px-6 border-b border-[#e2e8f0] flex items-center justify-between shrink-0 bg-[#f8f9ff]" style="background-color: var(--primary-soft); border-color: var(--border);">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="font-mono-data text-[12px] sm:text-[13px] font-bold px-2.5 py-1 rounded-lg bg-[#fffbeb] border border-[#fef3c7] text-[#795900] shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="font-mono-data text-[12.5px] font-bold px-2.5 py-1 rounded-lg bg-[#fffbeb] border border-[#fef3c7] text-[#795900] shrink-0 shadow-2xs">
                 ${esc(plan.code)}
               </span>
-              
-              <!-- DROPDOWN ĐỔI NHANH TRẠNG THÁI -->
-              <select id="selectDrawerPlanStatus" class="h-8 px-2 rounded-xl text-[11.5px] font-bold outline-none cursor-pointer border shadow-2xs ${currentStatusMeta.color}">
-                ${Object.values(PLAN_STATUSES).map(st => `
-                  <option value="${st.key}" ${st.key === plan.status ? 'selected' : ''}>${st.label}</option>
-                `).join('')}
-              </select>
-
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${plan.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 shadow-2xs ${plan.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">
                 ${plan.priority}
               </span>
             </div>
 
             <div class="flex items-center gap-1.5 shrink-0">
               ${canManagePlan ? `
-                <button type="button" id="btnDrawerEditPlan" class="px-3 py-1.5 rounded-xl border border-[#d6a52a] text-[#795900] bg-[#fffbeb] hover:bg-[#fde68a] font-bold text-[12px] min-h-[38px] flex items-center gap-1 transition-all cursor-pointer shadow-2xs" title="Sửa kế hoạch">
+                <button type="button" id="btnDrawerEditPlan" class="px-2.5 sm:px-3 py-1.5 rounded-xl border border-[#d6a52a] text-[#795900] bg-[#fffbeb] hover:bg-[#fde68a] font-bold text-[12px] min-h-[38px] flex items-center gap-1 transition-all cursor-pointer shadow-2xs" title="Sửa kế hoạch">
                   <span class="material-symbols-outlined text-[17px]">edit</span>
                   <span class="hidden sm:inline">Sửa</span>
                 </button>
@@ -107,23 +99,36 @@ export class PlanDrawer {
           </div>
 
           <!-- 2. DRAWER SCROLLABLE BODY -->
-          <div class="p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-5">
+          <div class="p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4">
             
             <!-- THÔNG TIN TIÊU ĐỀ & NGƯỜI TẠO -->
             <div class="flex flex-col gap-2.5">
-              <h1 class="text-[19px] sm:text-[21px] font-extrabold text-[#0d1c2f] leading-snug tracking-tight" style="color: var(--text);">
+              <h1 class="text-[18px] sm:text-[21px] font-extrabold text-[#0d1c2f] leading-snug tracking-tight break-words" style="color: var(--text);">
                 ${esc(plan.title)}
               </h1>
 
+              <!-- DẢI TRẠNG THÁI CHUYÊN BIỆT (DỄ BẤM VÀ KHÔNG ĐÈ NÚT HEADER) -->
+              <div class="flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0]" style="background-color: var(--background); border-color: var(--border);">
+                <div class="flex items-center gap-1.5 text-[12px] font-bold text-[#64748b]">
+                  <span class="material-symbols-outlined text-[17px] text-[#795900]">sync</span>
+                  <span>Trạng thái dự án:</span>
+                </div>
+                <select id="selectDrawerPlanStatus" class="h-9 px-3 rounded-xl text-[12px] font-bold outline-none cursor-pointer border shadow-2xs ${currentStatusMeta.color}">
+                  ${Object.values(PLAN_STATUSES).map(st => `
+                    <option value="${st.key}" ${st.key === plan.status ? 'selected' : ''}>${st.label}</option>
+                  `).join('')}
+                </select>
+              </div>
+
               <!-- DÒNG ĐÓNG DẤU NGƯỜI TẠO VÀ THỜI GIAN TẠO -->
-              <div class="flex items-center gap-2 flex-wrap text-[12px] text-[#64748b] p-3 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0]" style="background-color: var(--background); border-color: var(--border);">
+              <div class="flex items-center gap-2 flex-wrap text-[11.5px] text-[#64748b] p-2.5 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0]" style="background-color: var(--background); border-color: var(--border);">
                 <div class="flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[16px] text-amber-600">person</span>
+                  <span class="material-symbols-outlined text-[15px] text-amber-600">person</span>
                   <span>Tạo bởi: <strong>${creator ? esc(creator.name) : 'Thành viên'}</strong></span>
                 </div>
                 <span>•</span>
                 <div class="flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[16px] text-amber-600">schedule</span>
+                  <span class="material-symbols-outlined text-[15px] text-amber-600">schedule</span>
                   <span>Khởi tạo: <strong class="font-mono-data">${ngayVN(plan.createdAt)}</strong> (${timeAgo(plan.createdAt)})</span>
                 </div>
               </div>
@@ -184,27 +189,27 @@ export class PlanDrawer {
                 <div class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-300" style="width: ${milestoneProgress}%;"></div>
               </div>
 
-              <!-- DANH SÁCH MILESTONES -->
+              <!-- DANH SÁCH MILESTONES (CHỐNG TRÀN VÀ CẮT CHỮ TRÊN MOBILE) -->
               <div class="flex flex-col gap-2 pt-1" id="milestonesListContainer">
                 ${milestones.length === 0 ? `
                   <span class="text-[12px] text-gray-400 italic py-1">Chưa có cột mốc nào. Thêm mốc bên dưới để theo dõi tiến độ.</span>
                 ` : milestones.map(m => `
-                  <div class="flex items-center justify-between gap-2.5 p-2.5 rounded-xl border ${m.completed ? 'bg-emerald-50/40 border-emerald-200' : 'bg-gray-50/60 border-gray-200'} transition-all">
-                    <label class="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1">
-                      <input type="checkbox" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer chk-milestone" data-milestone-id="${m.id}" ${m.completed ? 'checked' : ''} />
-                      <span class="text-[12.5px] ${m.completed ? 'line-through text-gray-500' : 'font-semibold text-[#0d1c2f]'} truncate">
+                  <div class="flex items-start justify-between gap-2.5 p-2.5 rounded-xl border ${m.completed ? 'bg-emerald-50/40 border-emerald-200' : 'bg-gray-50/60 border-gray-200'} transition-all">
+                    <label class="flex items-start gap-2.5 min-w-0 cursor-pointer flex-1">
+                      <input type="checkbox" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer chk-milestone shrink-0 mt-0.5" data-milestone-id="${m.id}" ${m.completed ? 'checked' : ''} />
+                      <span class="text-[12.5px] leading-snug break-words flex-1 ${m.completed ? 'line-through text-gray-500' : 'font-semibold text-[#0d1c2f]'}">
                         ${esc(m.title)}
                       </span>
                     </label>
 
-                    <div class="flex items-center gap-2 shrink-0">
+                    <div class="flex items-center gap-1.5 shrink-0 pt-0.5">
                       ${m.dueDate ? `
-                        <span class="text-[10.5px] font-mono-data font-semibold text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">
+                        <span class="text-[10px] font-mono-data font-semibold text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">
                           ${ngayVN(m.dueDate)}
                         </span>
                       ` : ''}
                       ${canManagePlan ? `
-                        <button type="button" class="text-gray-400 hover:text-red-500 p-1 btn-delete-milestone" data-milestone-id="${m.id}" title="Xóa mốc">
+                        <button type="button" class="text-gray-400 hover:text-red-500 p-1 btn-delete-milestone min-w-[28px] min-h-[28px] flex items-center justify-center cursor-pointer" data-milestone-id="${m.id}" title="Xóa mốc">
                           <span class="material-symbols-outlined text-[16px]">close</span>
                         </button>
                       ` : ''}
@@ -213,14 +218,16 @@ export class PlanDrawer {
                 `).join('')}
               </div>
 
-              <!-- FORM THÊM MỐC TIẾN ĐỘ NHANH -->
+              <!-- FORM THÊM MỐC TIẾN ĐỘ NHANH (RESPONSIVE TRÊN MOBILE) -->
               ${canManagePlan ? `
-                <form id="formAddMilestone" class="flex items-center gap-2 pt-2 border-t border-[#f1f5f9] mt-1" style="border-color: var(--border);">
+                <form id="formAddMilestone" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 border-t border-[#f1f5f9] mt-1" style="border-color: var(--border);">
                   <input type="text" id="inputNewMilestoneTitle" placeholder="+ Thêm cột mốc mới..." class="flex-1 h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none focus:border-indigo-400 bg-[#f8f9ff]" required />
-                  <input type="date" id="inputNewMilestoneDate" class="w-32 h-9 px-2 rounded-xl border border-[#e2e8f0] text-[11.5px] font-mono-data outline-none bg-[#f8f9ff]" />
-                  <button type="submit" class="h-9 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[12px] flex items-center justify-center shrink-0 cursor-pointer">
-                    Thêm
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <input type="date" id="inputNewMilestoneDate" class="flex-1 sm:w-32 h-9 px-2 rounded-xl border border-[#e2e8f0] text-[11.5px] font-mono-data outline-none bg-[#f8f9ff]" />
+                    <button type="submit" class="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[12px] flex items-center justify-center shrink-0 cursor-pointer">
+                      Thêm
+                    </button>
+                  </div>
                 </form>
               ` : ''}
             </div>
@@ -289,22 +296,24 @@ export class PlanDrawer {
                 }).join('')}
               </div>
 
-              <!-- FORM THÊM ĐẦU VIỆC DỰ KIẾN -->
+              <!-- FORM THÊM ĐẦU VIỆC DỰ KIẾN (RESPONSIVE TRÊN MOBILE) -->
               ${canManagePlan ? `
-                <form id="formAddPlanTask" class="p-3 rounded-xl bg-[#f8f9ff] border border-dashed border-[#e2e8f0] flex flex-col sm:flex-row items-center gap-2 mt-1">
-                  <input type="text" id="inputNewTaskTitle" placeholder="Tên việc cần làm..." class="flex-1 w-full sm:w-auto h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none bg-white focus:border-[#d6a52a]" required />
+                <form id="formAddPlanTask" class="p-3 rounded-xl bg-[#f8f9ff] border border-dashed border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-1">
+                  <input type="text" id="inputNewTaskTitle" placeholder="Tên việc cần làm..." class="flex-1 w-full h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none bg-white focus:border-[#d6a52a]" required />
                   
-                  <select id="selectNewTaskAssignee" class="w-full sm:w-40 h-9 px-2 rounded-xl border border-[#e2e8f0] text-[11.5px] font-semibold outline-none bg-white">
-                    ${deptMembers.map(u => `
-                      <option value="${u.id}">${esc(u.name)}</option>
-                    `).join('')}
-                  </select>
+                  <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <select id="selectNewTaskAssignee" class="flex-1 sm:w-40 h-9 px-2 rounded-xl border border-[#e2e8f0] text-[11.5px] font-semibold outline-none bg-white">
+                      ${deptMembers.map(u => `
+                        <option value="${u.id}">${esc(u.name)}</option>
+                      `).join('')}
+                    </select>
 
-                  <input type="date" id="inputNewTaskDueDate" value="${plan.dueDate || ''}" class="w-full sm:w-32 h-9 px-2 rounded-xl border border-[#e2e8f0] text-[11.5px] font-mono-data outline-none bg-white" />
+                    <input type="date" id="inputNewTaskDueDate" value="${plan.dueDate || ''}" class="flex-1 sm:w-32 h-9 px-2 rounded-xl border border-[#e2e8f0] text-[11.5px] font-mono-data outline-none bg-white" />
 
-                  <button type="submit" class="w-full sm:w-auto h-9 px-3.5 rounded-xl font-bold text-[12px] flex items-center justify-center shrink-0 cursor-pointer shadow-2xs" style="background-color: var(--primary); color: white;">
-                    Thêm việc
-                  </button>
+                    <button type="submit" class="h-9 px-3.5 rounded-xl font-bold text-[12px] flex items-center justify-center shrink-0 cursor-pointer shadow-2xs" style="background-color: var(--primary); color: white;">
+                      Thêm
+                    </button>
+                  </div>
                 </form>
               ` : ''}
             </div>
@@ -352,12 +361,16 @@ export class PlanDrawer {
                   `).join('')}
                 </div>
 
-                <!-- FORM THÊM LINK NHANH -->
+                <!-- FORM THÊM LINK NHANH (RESPONSIVE TRÊN MOBILE) -->
                 ${canManagePlan ? `
-                  <form id="formAddLink" class="flex items-center gap-1.5 pt-2 border-t border-[#f1f5f9]">
-                    <input type="text" id="inputLinkTitle" placeholder="Tên tài liệu..." class="flex-1 h-7 px-2 rounded-lg border border-[#e2e8f0] text-[11px] outline-none" required />
-                    <input type="url" id="inputLinkUrl" placeholder="https://..." class="flex-1 h-7 px-2 rounded-lg border border-[#e2e8f0] text-[11px] outline-none" required />
-                    <button type="submit" class="h-7 px-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px]">Lưu</button>
+                  <form id="formAddLink" class="flex flex-col gap-1.5 pt-2 border-t border-[#f1f5f9] mt-1">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5">
+                      <input type="text" id="inputLinkTitle" placeholder="Tên tài liệu..." class="flex-1 h-8 px-2.5 rounded-lg border border-[#e2e8f0] text-[11.5px] outline-none" required />
+                      <div class="flex items-center gap-1.5 flex-1">
+                        <input type="url" id="inputLinkUrl" placeholder="https://..." class="flex-1 h-8 px-2.5 rounded-lg border border-[#e2e8f0] text-[11.5px] outline-none" required />
+                        <button type="submit" class="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11.5px] shrink-0 cursor-pointer">Lưu</button>
+                      </div>
+                    </div>
                   </form>
                 ` : ''}
               </div>

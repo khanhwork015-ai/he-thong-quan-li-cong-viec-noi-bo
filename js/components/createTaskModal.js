@@ -7,9 +7,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=6.2';
-import { store } from '../store.js?v=6.2';
-import { toast, rung, esc } from '../helpers.js?v=6.2';
+import { auth } from '../auth.js?v=6.3';
+import { store } from '../store.js?v=6.3';
+import { toast, rung, esc } from '../helpers.js?v=6.3';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -54,17 +54,17 @@ export class CreateTaskModal {
     const currentTeamId = isEdit && taskToEdit.teamId ? taskToEdit.teamId : '';
 
     this.container.innerHTML = `
-      <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="createModalOverlay">
-        <div class="modal-card bg-white rounded-3xl p-4 sm:p-6 max-w-lg w-full shadow-2xl border border-[#e2e8f0] max-h-[92vh] overflow-y-auto overflow-x-hidden" style="background-color: var(--card); border-color: var(--border);">
+      <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 active" id="createModalOverlay">
+        <div class="modal-card bg-white rounded-t-2xl sm:rounded-2xl rounded-b-none sm:rounded-b-2xl max-w-lg w-full flex flex-col max-h-[90vh] sm:max-h-[85vh] shadow-2xl border border-[#e2e8f0] overflow-hidden" style="background-color: var(--card); border-color: var(--border);">
           
           <!-- HEADER -->
-          <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] mb-4" style="border-color: var(--border);">
+          <div class="flex items-center justify-between p-4 sm:p-5 border-b border-[#f1f5f9] shrink-0" style="border-color: var(--border);">
             <div class="flex items-center gap-2.5 min-w-0">
               <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
                 <span class="material-symbols-outlined text-[22px]">${isEdit ? 'edit_note' : 'add_task'}</span>
               </div>
               <div class="min-w-0">
-                <h3 class="font-bold text-[16.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
+                <h3 class="font-bold text-[16px] sm:text-[17px] text-[#0d1c2f] truncate" style="color: var(--text);">
                   ${isEdit ? `Chỉnh Sửa Công Việc • ${esc(taskToEdit.id)}` : 'Giao Việc &amp; Đề Xuất Mới'}
                 </h3>
                 <span class="text-[11.5px] font-semibold truncate block" style="color: var(--primary);">
@@ -75,8 +75,9 @@ export class CreateTaskModal {
             <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer shrink-0" id="btnCloseCreateModal" aria-label="Đóng">&times;</button>
           </div>
 
-          <!-- FORM -->
-          <form id="formCreateTask" class="flex flex-col gap-3.5 sm:gap-4">
+          <!-- FORM VỚI BODY CUỘN VÀ FOOTER CỐ ĐỊNH -->
+          <form id="formCreateTask" class="flex flex-col flex-1 overflow-hidden">
+            <div class="p-4 sm:p-5 flex-1 overflow-y-auto flex flex-col gap-3.5 sm:gap-4 text-left">
             
             <!-- TÊN CÔNG VIỆC -->
             <div>
@@ -217,8 +218,10 @@ export class CreateTaskModal {
               </div>
             </div>
 
-            <!-- ACTIONS (MOBILE COMPACT & ERGONOMIC) -->
-            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-2" style="border-color: var(--border);">
+            </div>
+
+            <!-- ACTIONS (STICKY ACTION BAR ON MOBILE) -->
+            <div class="p-3.5 sm:p-4 border-t border-[#f1f5f9] bg-[#f8f9ff]/70 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 shrink-0" style="border-color: var(--border);">
               <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50 min-h-[44px] cursor-pointer" id="btnCancelCreateTask">
                 Hủy bỏ
               </button>

@@ -8,8 +8,8 @@
  * - Hỗ trợ mở chi tiết đầy đủ từng việc con (SubtaskDetailModal)
  */
 
-import { store } from '../store.js?v=6.2';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.2';
+import { store } from '../store.js?v=6.3';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.3';
 
 export class SubtasksModal {
   constructor(containerId, onTaskUpdated, onOpenTaskDetail = null, onOpenSubtaskDetail = null) {
@@ -44,12 +44,12 @@ export class SubtasksModal {
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'subtasksModalOverlay';
-      overlay.className = 'modal-overlay fixed inset-0 z-[105] bg-black/45 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active animate-fade-in';
+      overlay.className = 'modal-overlay fixed inset-0 z-[105] bg-black/45 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 active animate-fade-in';
       document.body.appendChild(overlay);
     }
 
     overlay.innerHTML = `
-        <div class="modal-card bg-white rounded-3xl p-4 sm:p-6 max-w-2xl w-full shadow-2xl border border-[#e2e8f0] max-h-[92vh] overflow-y-auto overflow-x-hidden flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
+        <div class="modal-card bg-white rounded-t-2xl sm:rounded-2xl rounded-b-none sm:rounded-b-2xl p-4 sm:p-6 max-w-2xl w-full shadow-2xl border border-[#e2e8f0] max-h-[90vh] sm:max-h-[88vh] overflow-y-auto overflow-x-hidden flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
           
           <!-- HEADER -->
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]" style="border-color: var(--border);">

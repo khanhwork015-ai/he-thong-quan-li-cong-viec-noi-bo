@@ -171,6 +171,14 @@
   - **Bổ sung chức năng Xóa đầu việc dự kiến & Xóa bình luận (`planDrawer.js`, `store.js`):** Hỗ trợ `deletePlanTaskItem` và `deletePlanComment` giúp quản lý nội dung linh hoạt.
   - **Bổ sung nút Xóa công việc trên Task Drawer (`taskDrawer.js`):** Bổ sung nút Xóa nhiệm vụ kèm xác nhận 2 lần ngay trên thanh Header của Task Drawer.
   - **Nâng cấp Cache Buster toàn diện `?v=6.2`:** Đẩy Git `origin/main`.
+- [x] **26. Tối Ưu Toàn Diện Giao Diện Mobile: Chống Tràn Content, Chuẩn Hóa Bo Góc & Đổi Modal Thành Bottom-Sheet (`planDrawer.js`, `planModal.js`, `createTaskModal.js`, `plansView.js`, `bottomNav.js`, `memberModal.js`, `subtasksModal.js`, `subtaskDetailModal.js`)**:
+  - **Chuyển đổi Modal sang Bottom-Sheet trên Mobile:** Tất cả modal (`CreateTaskModal`, `PlanModal`, `MemberModal`, `SubtasksModal`) hiển thị dưới dạng Bottom-Sheet trượt từ đáy màn hình (`items-end sm:items-center`, `rounded-t-2xl sm:rounded-2xl`), Header cố định (`shrink-0`), Body cuộn linh hoạt (`overflow-y-auto`) và Action Bar cố định ở đáy, không còn hiện tượng modal capsule lơ lửng lộ nền ứng dụng và che mất nút bấm.
+  - **Khắc phục va chạm đè nút trên Header Plan Drawer (`planDrawer.js`):** Tách dropdown đổi trạng thái xuống dải riêng biệt trong Drawer Body. Thanh Header chỉ giữ mã `PLN-xx` và mức ưu tiên `P1` bên trái, cụm nút Sửa, Xóa và Đóng bên phải, loại bỏ hoàn toàn hiện tượng icon thùng rác đè lên huy hiệu trên màn hình hẹp 360px.
+  - **Triệt tiêu lỗi cắt chữ (Anti-truncation) danh sách Milestones:** Dùng `leading-snug break-words flex-1` giúp hiển thị trọn vẹn toàn bộ câu chữ của mốc tiến độ trên nhiều dòng, không bị cắt ngắn `...`.
+  - **Tối ưu form nhập liệu thích ứng (Responsive Form Layouts):** Các form Thêm cột mốc, Thêm đầu việc dự kiến và Thêm tài liệu đính kèm tự động xếp chồng (stacked) trên Mobile và dàn ngang trên Desktop, không bị co ép hẹp URL hoặc nút lưu.
+  - **Sửa lỗi bo góc quá sâu (`rounded-3xl`):** Thay thế toàn bộ bo góc bong bóng `rounded-3xl` thành `rounded-2xl` và `rounded-xl` sắc nét, tinh tế và đồng bộ chuẩn SHIN AIOS v2.7.
+  - **Tối ưu Bottom Nav Mobile 5 mục:** Giữ đúng 5 mục cốt lõi (`Tổng quan`, `Kế hoạch`, `Công việc`, `Nhân sự`, `Cài đặt`) đảm bảo vùng chạm thoải mái > 64px, loại bỏ tràn ngang thanh tab.
+  - **Nâng cấp Cache Buster toàn diện `?v=6.3`:** Đẩy Git `origin/main`.
 
 ---
 

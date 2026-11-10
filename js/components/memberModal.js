@@ -9,9 +9,9 @@
  * - Nhân viên: Không được phép cấp tài khoản.
  */
 
-import { auth } from '../auth.js?v=6.2';
-import { store } from '../store.js?v=6.2';
-import { esc, toast, rung } from '../helpers.js?v=6.2';
+import { auth } from '../auth.js?v=6.3';
+import { store } from '../store.js?v=6.3';
+import { esc, toast, rung } from '../helpers.js?v=6.3';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -56,8 +56,8 @@ export class MemberModal {
     const initialDept = allDepts.find(d => d.id === initialDeptId) || allDepts[0];
 
     this.container.innerHTML = `
-      <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="memberOverlay">
-        <div class="modal-card bg-white rounded-3xl p-4 sm:p-6 max-w-xl w-full shadow-2xl border border-[#e2e8f0] max-h-[92vh] overflow-y-auto flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
+      <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 active" id="memberOverlay">
+        <div class="modal-card bg-white rounded-t-2xl sm:rounded-2xl rounded-b-none sm:rounded-b-2xl p-4 sm:p-6 max-w-xl w-full shadow-2xl border border-[#e2e8f0] max-h-[90vh] sm:max-h-[88vh] overflow-y-auto flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
           
           <!-- HEADER -->
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]" style="border-color: var(--border);">
