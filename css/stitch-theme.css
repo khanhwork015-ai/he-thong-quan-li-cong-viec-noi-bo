@@ -400,10 +400,9 @@ html {
   padding: 0;
   width: 100%;
   min-height: 100%;
-  overflow-x: hidden;
+  overflow-x: clip !important;
   overflow-y: scroll !important; /* Luôn giữ chỗ cho thanh cuộn dọc trên desktop, triệt tiêu co giật layout ngang */
   scrollbar-gutter: stable;      /* Cố định bề rộng viewport bất kể nội dung trang dài hay ngắn */
-  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -418,7 +417,7 @@ body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  overflow-x: hidden;
+  overflow-x: clip !important;
 }
 
 /* CHỐNG PHÓNG TO IOS SAFARI: Ô NHẬP LIỆU MOBILE PHẢI CÓ FONT-SIZE >= 16PX */

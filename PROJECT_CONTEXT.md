@@ -254,6 +254,11 @@
     + Điều hướng tự động toàn bộ lệnh gọi `xacNhan2Lan` sang `xacNhanXoa`, đồng bộ 100% tất cả vị trí xóa (Nhiệm vụ, Kế hoạch, Phòng ban, Bộ phận, Cột mốc, Đầu việc dự kiến, Việc con, Reset dữ liệu, Xóa thông báo).
     + Thay thế toàn bộ `window.confirm` còn sót lại bằng `xacNhanXoa`.
   - **Nâng cấp Cache Buster toàn diện `?v=7.2`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
+- [x] **32. Khắc Phục Lệch Navbar Desktop, Triệt Tiêu Bounce Cuộn Ngang & Nâng Cấp Popup Từ Chối Phê Duyệt (v7.3)**:
+  - **Sửa lỗi Navbar mất bên phải & dư khoảng trống bên trái:** Loại bỏ thuộc tính `relative` thừa trên `<header>` trong `topHeader.js` (vốn ghi đè `position: fixed` và làm header bị offset 256px sang phải do nằm trong `main-app-shell` có `pl-64`). Đưa `#header-container` ra cấp viewport ngoài shell chính để căn chuẩn 100% từ mép sidebar (256px) đến mép phải màn hình, hiển thị trọn vẹn nút "+ Giao việc" và ô tìm kiếm.
+  - **Triệt tiêu hiện tượng click nút màn hình giật sang trái rồi trở ngược lại:** Thiết lập `overflow-x: clip !important;` trên cả `html` và `body` để cấm hoàn toàn hành vi cuộn ngang của trình duyệt khi focus nút; loại bỏ `scroll-behavior: smooth` trên root để chặn hiệu ứng bounce/rung giật.
+  - **Popup Modal Từ Chối Phê Duyệt (`popupTuChoiPheDuyet`):** Thay thế toàn bộ hộp thoại `prompt()` / `alert()` mặc định của trình duyệt bằng Popup Modal chuyên nghiệp chuẩn SHIN AIOS v2.7 (đồng bộ với `xacNhanXoa`), có icon chuyển trả, textarea nhập góp ý (linh hoạt tùy chọn) và các nút bấm $\ge 44 \times 44$px.
+  - **Nâng cấp Cache Buster toàn diện `?v=7.3`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
 
 ---
 

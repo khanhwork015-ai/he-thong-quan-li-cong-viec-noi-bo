@@ -243,4 +243,147 @@ export function xacNhan2Lan(khoa, msg, viec) {
   xacNhanXoa('Xác Nhận Xóa', msg, viec);
 }
 
+/**
+ * Modal Popup Yêu Cầu Làm Lại / Từ Chối Phê Duyệt Chuẩn SHIN AIOS v2.7
+ * Thay thế hoàn toàn alert/prompt bằng giao diện modal popup cao cấp đồng bộ với xacNhanXoa.
+ * Cho phép để trống lý do hoặc nhập nội dung góp ý gửi cho người thực hiện.
+ * 
+ * @param {Object} params
+ * @param {string} [params.tieuDe] - Tiêu đề popup (mặc định: 'Yêu Cầu Làm Lại / Từ Chối Phê Duyệt')
+ * @param {string} [params.tenDoiTuong] - Tên hoặc mã của công việc / kế hoạch
+ * @param {string} [params.defaultReason] - Lý do mặc định
+ * @param {Function} params.onConfirm - Callback (reason) => { ... }
+ */
+export function popupTuChoiPheDuyet({
+  tieuDe = 'Yêu Cầu Làm Lại / Từ Chối Phê Duyệt',
+  tenDoiTuong = '',
+  defaultReason = '',
+  onConfirm
+} = {}) {
+  rung(20);
+  const existing = document.getElementById('shinRejectModalOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'shinRejectModalOverlay';
+  overlay.className = 'fixed inset-0 z-[10000] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 opacity-0 transition-opacity duration-200';
+
+  overlay.innerHTML = `
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-rose-100 transform scale-95 transition-transform duration-200 flex flex-col gap-4 select-none" style="background-color: var(--card, #ffffff); border-color: var(--border, #e2e8f0);">
+      
+      <!-- HEADER -->
+      <div class="flex items-start gap-3.5 pb-3 border-b border-gray-100" style="border-color: var(--border, #f1f5f9);">
+        <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[24px]">assignment_return</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-bold text-[16px] text-gray-900 leading-snug" style="color: var(--text, #0d1c2f);">
+            ${esc(tieuDe)}
+          </h3>
+          ${tenDoiTuong ? `
+            <p class="text-[12.5px] text-gray-500 mt-1 truncate" style="color: var(--text-muted, #64748b);">
+              Hạng mục: <strong class="text-gray-800" style="color: var(--text, #0d1c2f);">${esc(tenDoiTuong)}</strong>
+            </p>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- BODY: TEXTAREA -->
+      <div class="flex flex-col gap-1.5">
+        <label for="txtShinRejectReason" class="text-[12.5px] font-bold text-gray-700 flex items-center justify-between" style="color: var(--text, #334155);">
+          <span>Ghi chú lý do / Góp ý cho người thực hiện:</span>
+          <span class="text-[11px] text-gray-400 font-normal">(không bắt buộc)</span>
+        </label>
+        <textarea 
+          id="txtShinRejectReason" 
+          rows="3" 
+          class="w-full p-3 rounded-xl border border-gray-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 text-[13px] text-gray-800 outline-none resize-none transition-all" 
+          style="background-color: var(--bg, #f8f9ff); border-color: var(--border, #cbd5e1); color: var(--text, #0d1c2f);"
+          placeholder="Nhập nội dung cần điều chỉnh (có thể để trống, hệ thống sẽ tự động dùng lý do chuẩn)..."
+        >${esc(defaultReason)}</textarea>
+        <p class="text-[11px] text-gray-400 leading-normal" style="color: var(--text-muted, #94a3b8);">
+          * Khi gửi yêu cầu, hệ thống sẽ thông báo trực tiếp đến người nhận việc và người tạo để tiến hành hoàn thiện lại.
+        </p>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100" style="border-color: var(--border, #f1f5f9);">
+        <button 
+          type="button" 
+          id="btnShinRejectCancel"
+          class="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-[13px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer"
+          style="background-color: var(--bg-sub, #f8fafc); border-color: var(--border, #cbd5e1); color: var(--text, #334155);"
+        >
+          Hủy Bỏ
+        </button>
+
+        <button 
+          type="button" 
+          id="btnShinRejectConfirm"
+          class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-[18px]">send</span>
+          <span>Chuyển Yêu Cầu Làm Lại</span>
+        </button>
+      </div>
+
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  requestAnimationFrame(() => {
+    overlay.classList.remove('opacity-0');
+    const card = overlay.firstElementChild;
+    if (card) {
+      card.classList.remove('scale-95');
+      card.classList.add('scale-100');
+    }
+    const txtArea = overlay.querySelector('#txtShinRejectReason');
+    if (txtArea) txtArea.focus();
+  });
+
+  const closeModal = () => {
+    overlay.classList.add('opacity-0');
+    const card = overlay.firstElementChild;
+    if (card) card.classList.add('scale-95');
+    setTimeout(() => overlay.remove(), 200);
+  };
+
+  const btnCancel = overlay.querySelector('#btnShinRejectCancel');
+  const btnConfirm = overlay.querySelector('#btnShinRejectConfirm');
+  const txtArea = overlay.querySelector('#txtShinRejectReason');
+
+  if (btnCancel) {
+    btnCancel.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeModal();
+    });
+  }
+
+  if (btnConfirm) {
+    btnConfirm.addEventListener('click', (e) => {
+      e.preventDefault();
+      rung(35);
+      const reason = txtArea ? txtArea.value.trim() : '';
+      closeModal();
+      if (typeof onConfirm === 'function') {
+        onConfirm(reason);
+      }
+    });
+  }
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      window.removeEventListener('keydown', onKeyDown);
+      closeModal();
+    }
+  };
+  window.addEventListener('keydown', onKeyDown);
+}
+
 

@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=7.2';
-import { store } from '../store.js?v=7.2';
-import { esc, soVN, ngayVN, toast, timeAgo, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=7.2';
+import { auth } from '../auth.js?v=7.3';
+import { store } from '../store.js?v=7.3';
+import { esc, soVN, ngayVN, toast, timeAgo, rung, xacNhan2Lan, xacNhanXoa, popupTuChoiPheDuyet } from '../helpers.js?v=7.3';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
@@ -1004,18 +1004,21 @@ export class TaskDrawer {
       });
     }
 
-    // NÚT TỪ CHỐI KÈM LÝ DO
+    // NÚT TỪ CHỐI KÈM LÝ DO (POPUP XÁC NHẬN CHUẨN SHIN AIOS)
     const btnReject = this.container.querySelector('#btnRejectTask');
     if (btnReject) {
       btnReject.addEventListener('click', () => {
-        rung(15);
-        const reason = prompt('Vui lòng nhập lý do từ chối phê duyệt:', 'Cần rà soát lại các mốc nghiệm thu kỹ thuật');
-        if (reason !== null && reason.trim()) {
-          store.rejectTask(task.id, reason.trim());
-          toast('Đã từ chối phê duyệt và chuyển trả công việc về người thực hiện!', 'warning');
-          if (this.onTaskUpdated) this.onTaskUpdated();
-          this.render();
-        }
+        popupTuChoiPheDuyet({
+          tieuDe: 'Yêu Cầu Làm Lại Nhiệm Vụ',
+          tenDoiTuong: `${task.id} - ${task.title}`,
+          defaultReason: '',
+          onConfirm: (reason) => {
+            store.rejectTask(task.id, reason);
+            toast('Đã gửi yêu cầu làm lại và chuyển trả công việc về người thực hiện!', 'warning');
+            if (this.onTaskUpdated) this.onTaskUpdated();
+            this.render();
+          }
+        });
       });
     }
 

@@ -70,7 +70,7 @@
   </script>
 
   <!-- SHIN AIOS MASTER UX/UI STYLESHEET -->
-  <link rel="stylesheet" href="css/stitch-theme.css?v=7.2" />
+  <link rel="stylesheet" href="css/stitch-theme.css?v=7.3" />
 </head>
 <body class="antialiased min-h-screen transition-colors duration-200">
 
@@ -80,13 +80,13 @@
   <!-- 1. SIDEBAR CONTAINER (OFF-CANVAS MOBILE DRAWER & CỐ ĐỊNH TRÊN DESKTOP LG) -->
   <div id="sidebar-container"></div>
 
+  <!-- TOP HEADER CONTAINER (CỐ ĐỊNH PHÍA TRÊN VIEWPORT) -->
+  <div id="header-container"></div>
+
   <!-- 2. MAIN APP SHELL (lg:pl-64 CHO DESKTOP, pl-0 CHO MOBILE) -->
   <div id="main-app-shell" class="lg:pl-64 pl-0 min-h-screen flex flex-col transition-[padding] duration-200">
-    <!-- TOP HEADER CONTAINER (h-16 CỐ ĐỊNH PHÍA TRÊN) -->
-    <div id="header-container"></div>
-
     <!-- MAIN SCROLLABLE CANVAS - CÔNG THÁI HỌC MOBILE FIRST VỚI pt-20 lg:pt-24 VÀ pb-24 lg:pb-12 -->
-    <main class="pt-20 lg:pt-24 px-3.5 sm:px-6 lg:px-8 pb-24 lg:pb-12 flex-1 w-full max-w-[1600px] mx-auto">
+    <main class="pt-20 lg:pt-24 px-3.5 sm:px-6 lg:px-8 pb-24 lg:pb-12 flex-1 w-full max-w-[1600px] mx-auto overflow-x-hidden">
       <div id="main-content-canvas" class="view-transition"></div>
     </main>
   </div>
@@ -107,7 +107,7 @@
   <div id="toast-container"></div>
 
   <!-- CORE APPLICATION LOGIC (ES MODULE) -->
-  <script type="module" src="js/app.js?v=7.2"></script>
+  <script type="module" src="js/app.js?v=7.3"></script>
 </body>
 </html>
 

@@ -4,11 +4,11 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=7.2';
-import { store } from '../store.js?v=7.2';
-import { USERS } from '../models.js?v=7.2';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=7.2';
-import { shinTheme } from '../theme.js?v=7.2';
+import { auth } from '../auth.js?v=7.3';
+import { store } from '../store.js?v=7.3';
+import { USERS } from '../models.js?v=7.3';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=7.3';
+import { shinTheme } from '../theme.js?v=7.3';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
@@ -48,7 +48,7 @@ export class TopHeader {
     }
 
     this.container.innerHTML = `
-      <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6 relative" style="background-color: var(--card); border-color: var(--border);">
+      <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6" style="background-color: var(--card); border-color: var(--border);">
         
         <!-- 1. LEFT: HAMBURGER & SEARCH BAR -->
         <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-xl">

@@ -8,9 +8,9 @@
  * - Phân quyền thông minh: Lãnh đạo thấy toàn viện, Trưởng phòng thấy khoa mình, Nhân viên theo dõi hồ sơ đã gửi
  */
 
-import { store } from '../store.js?v=7.2';
-import { auth } from '../auth.js?v=7.2';
-import { esc, ngayVN, soVN, toast, rung } from '../helpers.js?v=7.2';
+import { store } from '../store.js?v=7.3';
+import { auth } from '../auth.js?v=7.3';
+import { esc, ngayVN, soVN, toast, rung, popupTuChoiPheDuyet } from '../helpers.js?v=7.3';
 
 export class ApprovalView {
   constructor(containerId, onOpenTask, onOpenPlan, onUpdated) {
@@ -600,80 +600,13 @@ export class ApprovalView {
     `;
   }
 
-  // --- MODAL POPUP YÊU CẦU LÀM LẠI (CHO PHÉP ĐỂ TRỐNG VẪN GỬI ĐƯỢC) ---
+  // --- MODAL POPUP YÊU CẦU LÀM LẠI (POPUP CHUẨN SHIN AIOS v2.7) ---
   openRejectModal(type, id, title) {
-    const container = this.container.querySelector('#approvalRejectModalContainer');
-    if (!container) return;
-
-    rung(15);
-    container.innerHTML = `
-      <div class="modal-overlay fixed inset-0 z-[120] bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 active animate-fade-in" id="rejectOverlay">
-        <div class="modal-card bg-white rounded-t-2xl sm:rounded-2xl rounded-b-none sm:rounded-b-2xl p-5 sm:p-6 max-w-lg w-full shadow-2xl border border-[#e2e8f0] flex flex-col gap-4">
-          
-          <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9]">
-            <div class="flex items-center gap-2 text-rose-700">
-              <span class="material-symbols-outlined text-[24px]">restart_alt</span>
-              <h3 class="font-extrabold text-[16px]">Yêu Cầu Làm Lại</h3>
-            </div>
-            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl hover:bg-gray-100 cursor-pointer" id="btnCloseRejectModal">&times;</button>
-          </div>
-
-          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[12.5px] text-amber-900">
-            <span>Hạng mục: </span>
-            <strong class="text-[#0d1c2f]">${esc(title)}</strong>
-            <span class="font-mono-data text-[11px] ml-1">(${esc(id)})</span>
-          </div>
-
-          <div>
-            <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1.5">
-              Ghi chú lý do / Yêu cầu bổ sung cho người thực hiện:
-            </label>
-            <textarea 
-              id="txtRejectReason" 
-              rows="3" 
-              class="w-full p-3 rounded-xl border border-[#cbd5e1] text-[13px] outline-none focus:border-rose-500 bg-white" 
-              placeholder="Nhập nội dung cần điều chỉnh (có thể để trống, hệ thống sẽ tự động dùng lý do mặc định chuẩn)..."
-            ></textarea>
-            <span class="text-[11px] text-[#64748b] mt-1 block">
-              * Khi bấm xác nhận, hệ thống sẽ tự động gửi thông báo trực tiếp đến người nhận việc và người tạo.
-            </span>
-          </div>
-
-          <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9]">
-            <button type="button" id="btnCancelRejectModal" class="px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-gray-600 font-bold text-[12.5px] min-h-[42px] cursor-pointer hover:bg-gray-50">
-              Hủy
-            </button>
-            <button type="button" id="btnConfirmReject" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[12.5px] min-h-[42px] flex items-center gap-1.5 shadow-sm cursor-pointer transition-colors">
-              <span class="material-symbols-outlined text-[17px]">send</span>
-              <span>Chuyển Yêu Cầu Làm Lại</span>
-            </button>
-          </div>
-
-        </div>
-      </div>
-    `;
-
-    const overlay = container.querySelector('#rejectOverlay');
-    const btnClose = container.querySelector('#btnCloseRejectModal');
-    const btnCancel = container.querySelector('#btnCancelRejectModal');
-    const btnConfirm = container.querySelector('#btnConfirmReject');
-    const txtReason = container.querySelector('#txtRejectReason');
-
-    const closeModal = () => {
-      rung(10);
-      container.innerHTML = '';
-    };
-
-    if (btnClose) btnClose.addEventListener('click', closeModal);
-    if (btnCancel) btnCancel.addEventListener('click', closeModal);
-    if (overlay) overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeModal();
-    });
-
-    if (btnConfirm) {
-      btnConfirm.addEventListener('click', () => {
-        rung(20);
-        const reason = txtReason ? txtReason.value.trim() : '';
+    popupTuChoiPheDuyet({
+      tieuDe: type === 'task' ? 'Yêu Cầu Làm Lại Nhiệm Vụ' : 'Yêu Cầu Hoàn Thiện Kế Hoạch',
+      tenDoiTuong: `${id} - ${title}`,
+      defaultReason: '',
+      onConfirm: (reason) => {
         if (type === 'task') {
           store.rejectTask(id, reason);
           toast('Đã gửi yêu cầu làm lại nhiệm vụ và thông báo đến nhân sự!', 'warning');
@@ -681,11 +614,10 @@ export class ApprovalView {
           store.rejectPlan(id, reason);
           toast('Đã gửi yêu cầu hoàn thiện lại kế hoạch và thông báo đến người lập!', 'warning');
         }
-        closeModal();
         if (this.onUpdated) this.onUpdated();
         this.render();
-      });
-    }
+      }
+    });
   }
 
   // --- BINDING EVENTS ---
