@@ -4,27 +4,30 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=6.0';
-import { store } from './store.js?v=6.0';
-import { Sidebar } from './components/sidebar.js?v=6.0';
-import { TopHeader } from './components/topHeader.js?v=6.0';
-import { BottomNav } from './components/bottomNav.js?v=6.0';
-import { DashboardView } from './components/dashboardView.js?v=6.0';
-import { WorkspaceView } from './components/workspaceView.js?v=6.0';
-import { TaskDrawer } from './components/taskDrawer.js?v=6.0';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=6.0';
-import { CreateTaskModal } from './components/createTaskModal.js?v=6.0'
-import { SubtasksModal } from './components/subtasksModal.js?v=6.0';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.0';;
-import { ProfileModal } from './components/profileModal.js?v=6.0';
-import { MemberModal } from './components/memberModal.js?v=6.0';
-import { SettingsModal } from './components/settingsModal.js?v=6.0';
-import { LoginView } from './components/loginView.js?v=6.0';
-import { DepartmentModal } from './components/departmentModal.js?v=6.0';
-import { DepartmentView } from './components/departmentView.js?v=6.0';
-import { appScriptBridge } from './services/appScriptBridge.js?v=6.0';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.0';
-import { shinTheme } from './theme.js?v=6.0';
+import { auth } from './auth.js?v=6.1';
+import { store } from './store.js?v=6.1';
+import { Sidebar } from './components/sidebar.js?v=6.1';
+import { TopHeader } from './components/topHeader.js?v=6.1';
+import { BottomNav } from './components/bottomNav.js?v=6.1';
+import { DashboardView } from './components/dashboardView.js?v=6.1';
+import { WorkspaceView } from './components/workspaceView.js?v=6.1';
+import { TaskDrawer } from './components/taskDrawer.js?v=6.1';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=6.1';
+import { CreateTaskModal } from './components/createTaskModal.js?v=6.1'
+import { SubtasksModal } from './components/subtasksModal.js?v=6.1';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.1';;
+import { ProfileModal } from './components/profileModal.js?v=6.1';
+import { MemberModal } from './components/memberModal.js?v=6.1';
+import { SettingsModal } from './components/settingsModal.js?v=6.1';
+import { LoginView } from './components/loginView.js?v=6.1';
+import { DepartmentModal } from './components/departmentModal.js?v=6.1';
+import { DepartmentView } from './components/departmentView.js?v=6.1';
+import { PlansView } from './components/plansView.js?v=6.1';
+import { PlanDrawer } from './components/planDrawer.js?v=6.1';
+import { PlanModal } from './components/planModal.js?v=6.1';
+import { appScriptBridge } from './services/appScriptBridge.js?v=6.1';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.1';
+import { shinTheme } from './theme.js?v=6.1';
 
 class App {
   constructor() {
@@ -45,6 +48,9 @@ class App {
     this.loginView = null;
     this.departmentModal = null;
     this.departmentView = null;
+    this.plansView = null;
+    this.planDrawer = null;
+    this.planModal = null;
   }
 
   init() {
@@ -127,6 +133,24 @@ class App {
       }
     );
 
+    this.planDrawer = new PlanDrawer(
+      'drawer-container',
+      () => this.refreshCurrentView(),
+      (plan) => this.planModal.show(plan),
+      (taskId) => this.taskDrawer.open(taskId)
+    );
+
+    this.planModal = new PlanModal(
+      'modal-container',
+      () => this.refreshCurrentView()
+    );
+
+    this.plansView = new PlansView(
+      'main-content-canvas',
+      (planId) => this.planDrawer.open(planId),
+      () => this.planModal.show()
+    );
+
     this.bindGlobalEvents();
     this.render();
   }
@@ -182,6 +206,8 @@ class App {
   renderCurrentView() {
     if (this.currentNav === 'tong-quan') {
       this.dashboardView.render();
+    } else if (this.currentNav === 'ke-hoach') {
+      this.plansView.render();
     } else if (this.currentNav === 'cong-viec') {
       this.workspaceView.render();
     } else if (this.currentNav === 'nhan-vien') {
@@ -260,6 +286,14 @@ class App {
       }
       if (e.key === 'Escape') {
         if (this.taskDrawer) this.taskDrawer.close();
+        if (this.planDrawer) this.planDrawer.close();
+        if (this.planModal) this.planModal.close();
+      }
+    });
+
+    window.addEventListener('tvm:plans_changed', () => {
+      if (this.currentNav === 'ke-hoach' && this.plansView) {
+        this.plansView.render();
       }
     });
 

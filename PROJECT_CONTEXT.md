@@ -157,6 +157,14 @@
   - **Cố định hàng Avatar & Họ tên ở đỉnh thẻ:** Đưa Avatar, Họ tên, Chức danh chuyên môn và Email lên vị trí đầu tiên của thẻ nhân sự với khoảng trống `pr-20` an toàn cho cụm nút thao tác (Sửa/Xóa).
   - **Chuyển toàn bộ Badges xuống dưới Email:** Các nhãn Phòng ban, Chức vụ, Admin Hệ Thống, Bộ phận con đặt ngay bên dưới email. Khi một nhân sự có nhiều role/bộ phận khiến badge rớt dòng, chiều cao toàn bộ thẻ trong hàng sẽ tự co giãn đều nhau mà không làm lệch vị trí Avatar và Họ tên so với các thẻ bên cạnh.
   - **Nâng cấp Cache Buster toàn diện `?v=6.0`:** Đẩy Git `origin/main` để toàn bộ người dùng nhận phiên bản mới nhất.
+- [x] **24. Xây Dựng Hoàn Chỉnh Module "Dự Án & Kế Hoạch" (Project Canvas & Incubator) (`plansView.js`, `planDrawer.js`, `planModal.js`, `models.js`, `store.js`, `sidebar.js`, `bottomNav.js`, `app.js`)**:
+  - **Khởi tạo dữ liệu & mô hình kế hoạch (`models.js`, `store.js`):** Schema `PLANS` với trạng thái 5 bước (`draft`, `planning`, `pending_approval`, `in_progress`, `completed`), người tạo (`creatorId`), thời gian tạo (`createdAt`), mốc tiến độ (`milestones`), đầu việc dự kiến (`tasksList`), tài liệu đính kèm (`links`) và trao đổi (`comments`).
+  - **Ai cũng có thể tạo kế hoạch:** Phân quyền mở, tự động lưu thông tin Người tạo và Thời gian tạo chính xác từng phút.
+  - **Giao diện Thẻ Kế Hoạch tinh gọn (Project Cards Grid - `plansView.js`):** Bố cục không ảnh bìa/icon rườm rà, tập trung hiển thị mã plan, tên dự án, mục tiêu tóm tắt, tiến độ cột mốc (Milestones progress bar), người phụ trách (Lead), người tạo và thời hạn.
+  - **Ngăn kéo chi tiết toàn diện (Plan Detail Drawer - `planDrawer.js`):** Quản lý mục tiêu cốt lõi, tương tác tick mốc tiến độ, thảo luận bình luận, đính kèm tài liệu Google Docs/Drive/Sheets và đặc biệt tính năng **1-Chạm chuyển đầu việc dự kiến thành Task thực tế trong Workspace**.
+  - **Modal soạn thảo / chỉnh sửa kế hoạch (`planModal.js`):** Form trực quan hỗ trợ cả lập mới và cập nhật.
+  - **Tích hợp thanh điều hướng:** Thêm mục `📂 Dự án và kế hoạch` trên Sidebar và `Kế hoạch` trên Bottom Nav Mobile.
+  - **Nâng cấp Cache Buster toàn diện `?v=6.1`:** Đẩy Git `origin/main`.
 
 ---
 

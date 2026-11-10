@@ -4,9 +4,9 @@
  * Hỗ trợ giao diện ngăn kéo trượt mượt mà cho Mobile/Tablet và cố định trên Desktop (lg)
  */
 
-import { auth } from '../auth.js?v=6.0';
-import { store } from '../store.js?v=6.0';
-import { toast, rung } from '../helpers.js?v=6.0';
+import { auth } from '../auth.js?v=6.1';
+import { store } from '../store.js?v=6.1';
+import { toast, rung } from '../helpers.js?v=6.1';
 
 export class Sidebar {
   constructor(containerId, onNavChange, onModeChange, onLogout) {
@@ -116,6 +116,11 @@ export class Sidebar {
             <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'tong-quan' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="tong-quan">
               <span class="material-symbols-outlined text-[20px]">grid_view</span>
               <span class="text-[14px]">Tổng quan</span>
+            </button>
+
+            <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'ke-hoach' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="ke-hoach">
+              <span class="material-symbols-outlined text-[20px]">topic</span>
+              <span class="text-[14px]">Dự án và kế hoạch</span>
             </button>
 
             <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'cong-viec' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="cong-viec">

@@ -3,7 +3,7 @@
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
 
-import { INITIAL_TASKS, DEPARTMENTS, USERS } from './models.js';
+import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS } from './models.js';
 import { auth } from './auth.js';
 import { appScriptBridge } from './services/appScriptBridge.js';
 
@@ -11,6 +11,7 @@ const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
 const USERS_STORAGE_KEY = 'tvm_users_v4';
 const DEPTS_STORAGE_KEY = 'tvm_departments_v4';
 const NOTIF_STORAGE_KEY = 'tvm_notifications_v2';
+const PLANS_STORAGE_KEY = 'tvm_plans_v1';
 
 export class Store {
   constructor() {
@@ -27,6 +28,9 @@ export class Store {
     }
     if (!localStorage.getItem(DEPTS_STORAGE_KEY)) {
       localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(DEPARTMENTS));
+    }
+    if (!localStorage.getItem(PLANS_STORAGE_KEY)) {
+      localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(INITIAL_PLANS));
     }
     if (!localStorage.getItem(NOTIF_STORAGE_KEY)) {
       const initialNotifs = [
@@ -1331,6 +1335,229 @@ export class Store {
       overdue,
       completionRate
     };
+  }
+
+  // =========================================================================
+  // MODULE QUẢN LÝ DỰ ÁN & KẾ HOẠCH (PLANS - SHIN AIOS v2.7)
+  // Ai cũng có thể tạo kế hoạch; Lưu người tạo và thời gian tạo tự động
+  // =========================================================================
+
+  getAllPlansRaw() {
+    try {
+      const data = localStorage.getItem(PLANS_STORAGE_KEY);
+      return data ? JSON.parse(data) : INITIAL_PLANS;
+    } catch (_) {
+      return INITIAL_PLANS;
+    }
+  }
+
+  saveAllPlans(plans) {
+    localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(plans));
+    window.dispatchEvent(new CustomEvent('tvm:plans_changed'));
+    window.dispatchEvent(new CustomEvent('tvm:data_changed'));
+  }
+
+  getDepartmentPlans(departmentId = null) {
+    const all = this.getAllPlansRaw();
+    const activeDept = auth.getActiveDepartment() || { id: 'all' };
+    const deptId = departmentId || activeDept.id;
+
+    if (deptId === 'all' || auth.isAdmin() || auth.isLeadership()) {
+      if (deptId === 'all') return all;
+      return all.filter(p => p.departmentId === deptId);
+    }
+    return all.filter(p => p.departmentId === deptId);
+  }
+
+  getPlanById(id) {
+    const all = this.getAllPlansRaw();
+    return all.find(p => p.id === id) || null;
+  }
+
+  addPlan(planData) {
+    const all = this.getAllPlansRaw();
+    const currentUser = auth.getCurrentUser() || { id: 'user_admin', name: 'Quản trị viên' };
+    const activeDept = auth.getActiveDepartment() || { id: 'dept_ptkh', code: 'PTKH-CS3' };
+    const targetDeptId = (planData.departmentId && planData.departmentId !== 'all') ? planData.departmentId : (activeDept.id === 'all' ? 'dept_ptkh' : activeDept.id);
+    const dept = this.getDepartmentById(targetDeptId) || activeDept;
+    const deptCode = dept?.code ? dept.code.split('-')[0] : 'PLN';
+
+    const num = all.length + 1;
+    const planId = `PLAN-${deptCode}-${String(num).padStart(2, '0')}`;
+    const code = `PLN-${String(num).padStart(2, '0')}`;
+
+    const newPlan = {
+      id: planId,
+      code,
+      title: (planData.title || 'Kế hoạch mới').trim(),
+      departmentId: targetDeptId,
+      creatorId: currentUser.id,
+      leadId: planData.leadId || currentUser.id,
+      status: planData.status || 'planning',
+      priority: planData.priority || 'P2',
+      startDate: planData.startDate || new Date().toISOString().slice(0, 10),
+      dueDate: planData.dueDate || new Date(Date.now() + 86400000 * 30).toISOString().slice(0, 10),
+      target: (planData.target || '').trim(),
+      notes: (planData.notes || '').trim(),
+      links: Array.isArray(planData.links) ? planData.links : [],
+      milestones: Array.isArray(planData.milestones) ? planData.milestones : [],
+      tasksList: Array.isArray(planData.tasksList) ? planData.tasksList : [],
+      comments: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    all.unshift(newPlan);
+    this.saveAllPlans(all);
+    return newPlan;
+  }
+
+  updatePlan(id, updates) {
+    const all = this.getAllPlansRaw();
+    const idx = all.findIndex(p => p.id === id);
+    if (idx === -1) return null;
+
+    all[idx] = {
+      ...all[idx],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    this.saveAllPlans(all);
+    return all[idx];
+  }
+
+  deletePlan(id) {
+    let all = this.getAllPlansRaw();
+    all = all.filter(p => p.id !== id);
+    this.saveAllPlans(all);
+    return true;
+  }
+
+  addPlanComment(planId, text) {
+    if (!text || !text.trim()) return null;
+    const plan = this.getPlanById(planId);
+    if (!plan) return null;
+
+    const user = auth.getCurrentUser() || { id: 'user_admin', name: 'Thành viên' };
+    const newComment = {
+      id: `cmt_${Date.now()}`,
+      userId: user.id,
+      userName: user.name,
+      userAvatar: user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80',
+      text: text.trim(),
+      createdAt: new Date().toISOString()
+    };
+
+    const comments = Array.isArray(plan.comments) ? [...plan.comments, newComment] : [newComment];
+    return this.updatePlan(planId, { comments });
+  }
+
+  togglePlanMilestone(planId, milestoneId) {
+    const plan = this.getPlanById(planId);
+    if (!plan || !Array.isArray(plan.milestones)) return null;
+
+    const milestones = plan.milestones.map(m => {
+      if (m.id === milestoneId) {
+        return { ...m, completed: !m.completed };
+      }
+      return m;
+    });
+
+    return this.updatePlan(planId, { milestones });
+  }
+
+  addPlanMilestone(planId, milestoneData) {
+    const plan = this.getPlanById(planId);
+    if (!plan) return null;
+
+    const milestones = Array.isArray(plan.milestones) ? [...plan.milestones] : [];
+    milestones.push({
+      id: `ms_${Date.now()}`,
+      title: (milestoneData.title || '').trim(),
+      dueDate: milestoneData.dueDate || '',
+      completed: false
+    });
+
+    return this.updatePlan(planId, { milestones });
+  }
+
+  deletePlanMilestone(planId, milestoneId) {
+    const plan = this.getPlanById(planId);
+    if (!plan || !Array.isArray(plan.milestones)) return null;
+
+    const milestones = plan.milestones.filter(m => m.id !== milestoneId);
+    return this.updatePlan(planId, { milestones });
+  }
+
+  addPlanTaskItem(planId, taskItem) {
+    const plan = this.getPlanById(planId);
+    if (!plan) return null;
+
+    const tasksList = Array.isArray(plan.tasksList) ? [...plan.tasksList] : [];
+    tasksList.push({
+      title: (taskItem.title || '').trim(),
+      assigneeId: taskItem.assigneeId || plan.leadId,
+      dueDate: taskItem.dueDate || plan.dueDate,
+      priority: taskItem.priority || 'P2',
+      converted: false,
+      taskId: null
+    });
+
+    return this.updatePlan(planId, { tasksList });
+  }
+
+  convertPlanTaskToWorkspaceTask(planId, taskIndex) {
+    const plan = this.getPlanById(planId);
+    if (!plan || !Array.isArray(plan.tasksList) || !plan.tasksList[taskIndex]) return null;
+
+    const item = plan.tasksList[taskIndex];
+    if (item.converted && item.taskId) return item.taskId;
+
+    const creator = this.getUserById(plan.creatorId);
+
+    // Tạo Task thật trong Workspace thông qua this.createTask
+    const newTask = this.createTask({
+      title: `[${plan.code}] ${item.title}`,
+      description: `Đầu việc bóc tách từ Kế hoạch: "${plan.title}"\n- Mục tiêu: ${plan.target || 'N/A'}\n- Người lập kế hoạch: ${creator?.name || 'N/A'}`,
+      departmentId: plan.departmentId,
+      assigneeId: item.assigneeId || plan.leadId,
+      dueDate: item.dueDate || plan.dueDate,
+      priority: item.priority || 'P2',
+      category: 'Kế Hoạch & Dự Án',
+      status: 'in_progress',
+      subtasks: []
+    });
+
+    const updatedTasksList = [...plan.tasksList];
+    updatedTasksList[taskIndex] = {
+      ...item,
+      converted: true,
+      taskId: newTask.id
+    };
+
+    this.updatePlan(planId, { tasksList: updatedTasksList });
+    return newTask.id;
+  }
+
+  addPlanLink(planId, linkItem) {
+    const plan = this.getPlanById(planId);
+    if (!plan) return null;
+
+    const links = Array.isArray(plan.links) ? [...plan.links] : [];
+    links.push({
+      title: (linkItem.title || 'Tài liệu liên kết').trim(),
+      url: (linkItem.url || '').trim()
+    });
+
+    return this.updatePlan(planId, { links });
+  }
+
+  deletePlanLink(planId, linkIndex) {
+    const plan = this.getPlanById(planId);
+    if (!plan || !Array.isArray(plan.links)) return null;
+
+    const links = plan.links.filter((_, idx) => idx !== linkIndex);
+    return this.updatePlan(planId, { links });
   }
 }
 

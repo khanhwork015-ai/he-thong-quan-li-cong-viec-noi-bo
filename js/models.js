@@ -410,4 +410,104 @@ export const INITIAL_NOTIFICATIONS = [
   }
 ];
 
+export const PLAN_STATUSES = {
+  draft: { key: 'draft', label: 'Ý Tưởng / Nháp', color: 'bg-slate-100 text-slate-700 border-slate-300', icon: 'lightbulb' },
+  planning: { key: 'planning', label: 'Đang Lập Kế Hoạch', color: 'bg-blue-100 text-blue-800 border-blue-300 font-semibold', icon: 'edit_note' },
+  pending_approval: { key: 'pending_approval', label: 'Chờ Duyệt', color: 'bg-amber-100 text-amber-900 border-amber-300 font-extrabold', icon: 'hourglass_top' },
+  in_progress: { key: 'in_progress', label: 'Đang Triển Khai', color: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-extrabold', icon: 'rocket_launch' },
+  completed: { key: 'completed', label: 'Hoàn Tất', color: 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold', icon: 'task_alt' }
+};
+
+export const INITIAL_PLANS = [
+  {
+    id: 'PLAN-PTKH-01',
+    code: 'PLN-01',
+    title: 'Chiến Dịch Khám Sức Khỏe Định Kỳ Doanh Nghiệp Quý 1/2027',
+    departmentId: 'dept_ptkh',
+    creatorId: 'user_khanh_ptkh',
+    leadId: 'user_tam_ptkh',
+    status: 'in_progress',
+    priority: 'P1',
+    startDate: '2026-11-15',
+    dueDate: '2027-01-31',
+    target: 'Tiếp cận tối thiểu 25 doanh nghiệp, ký hợp đồng khám lưu động cho 1.500 cán bộ nhân viên tại khu vực Cà Mau và Bạc Liêu.',
+    notes: 'Phối hợp với Tổ Lưu động Khoa Khám bệnh chuẩn bị 2 máy siêu âm xách tay và 1 xe X-Quang kỹ thuật số. Kiểm tra danh mục vật tư lấy máu từ Kho Dược trước ngày triển khai 3 ngày.',
+    links: [
+      { title: 'Kế hoạch chi tiết & Phân bổ nhân sự (Google Docs)', url: 'https://docs.google.com' },
+      { title: 'Danh sách doanh nghiệp mục tiêu (Google Sheets)', url: 'https://sheets.google.com' }
+    ],
+    milestones: [
+      { id: 'ms_1', title: 'Hoàn thiện hồ sơ năng lực & bảng giá ưu đãi', dueDate: '2026-11-30', completed: true },
+      { id: 'ms_2', title: 'Gửi thư ngỏ & tiếp cận 25 doanh nghiệp', dueDate: '2026-12-15', completed: true },
+      { id: 'ms_3', title: 'Khảo sát thực địa địa điểm khám lưu động', dueDate: '2026-12-30', completed: false },
+      { id: 'ms_4', title: 'Tiến hành khám thực tế & trả hồ sơ bệnh án', dueDate: '2027-01-25', completed: false }
+    ],
+    tasksList: [
+      { title: 'Soạn thảo bảng báo giá gói khám VIP và phổ thông', assigneeId: 'user_khanh_ptkh', dueDate: '2026-11-20', priority: 'P1', converted: true, taskId: 'TSK-PTKH-01' },
+      { title: 'In ấn 500 tập hồ sơ năng lực phòng khám Cơ Sở 3', assigneeId: 'user_nguyen_mkt', dueDate: '2026-11-28', priority: 'P2', converted: false },
+      { title: 'Lập danh sách điều dưỡng lấy máu lưu động', assigneeId: 'user_mai_ptkh', dueDate: '2026-12-10', priority: 'P2', converted: false }
+    ],
+    comments: [
+      { id: 'cmt_1', userId: 'user_khanh_ptkh', userName: 'Lê Duy Khánh', userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80', text: 'Em đã lên khung kế hoạch ban đầu, anh Tâm xem qua phần phân bổ mốc thời gian nhé.', createdAt: '2026-11-08T09:00:00.000Z' },
+      { id: 'cmt_2', userId: 'user_tam_ptkh', userName: 'Huỳnh Trường Thanh Tâm', userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80', text: 'Đồng ý với các mốc tiến độ. Anh duyệt để triển khai tiếp cận các doanh nghiệp ngay trong tuần này.', createdAt: '2026-11-09T14:15:00.000Z' }
+    ],
+    createdAt: '2026-11-08T08:30:00.000Z',
+    updatedAt: '2026-11-09T14:15:00.000Z'
+  },
+  {
+    id: 'PLAN-PTKH-02',
+    code: 'PLN-02',
+    title: 'Xây Dựng Cổng Tiếp Nhận & Khảo Sát Hài Lòng Bệnh Nhân Điện Tử',
+    departmentId: 'dept_ptkh',
+    creatorId: 'user_tam_ptkh',
+    leadId: 'user_khanh_ptkh',
+    status: 'planning',
+    priority: 'P2',
+    startDate: '2026-11-20',
+    dueDate: '2026-12-31',
+    target: 'Chuyển đổi 100% phiếu khảo sát giấy sang mã QR tại sảnh chờ và phòng khám chuyên khoa, tự động tổng hợp báo cáo hài lòng hàng tuần.',
+    notes: 'Thiết kế standee đặt tại quầy tiếp đón CS3. Có tặng voucher giảm giá 10% gói tầm soát cho bệnh nhân hoàn thành khảo sát.',
+    links: [
+      { title: 'Mẫu câu hỏi khảo sát ý kiến (Google Forms)', url: 'https://forms.google.com' }
+    ],
+    milestones: [
+      { id: 'ms_2_1', title: 'Xây dựng bộ câu hỏi chuẩn theo tiêu chí Bộ Y Tế', dueDate: '2026-11-25', completed: true },
+      { id: 'ms_2_2', title: 'Tạo mã QR và in ấn 10 standee để bàn', dueDate: '2026-12-05', completed: false },
+      { id: 'ms_2_3', title: 'Tập huấn nhân viên tiếp đón hướng dẫn người bệnh', dueDate: '2026-12-15', completed: false }
+    ],
+    tasksList: [
+      { title: 'Thiết kế mẫu standee QR Code khảo sát hài lòng', assigneeId: 'user_nguyen_mkt', dueDate: '2026-12-01', priority: 'P2', converted: false },
+      { title: 'Tạo biểu mẫu Google Forms & kết nối Google Sheets', assigneeId: 'user_khanh_ptkh', dueDate: '2026-11-28', priority: 'P2', converted: false }
+    ],
+    comments: [
+      { id: 'cmt_3', userId: 'user_tam_ptkh', userName: 'Huỳnh Trường Thanh Tâm', userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80', text: 'Kế hoạch này rất thiết thực để cải thiện dịch vụ chăm sóc khách hàng.', createdAt: '2026-11-10T07:45:00.000Z' }
+    ],
+    createdAt: '2026-11-10T07:30:00.000Z',
+    updatedAt: '2026-11-10T07:45:00.000Z'
+  },
+  {
+    id: 'PLAN-DUOC-01',
+    code: 'PLN-03',
+    title: 'Nâng Cấp Hệ Thống Giám Sát Nhiệt Độ Tự Động Kho Lạnh Vaccine',
+    departmentId: 'dept_duoc',
+    creatorId: 'user_minh_duoc',
+    leadId: 'user_minh_duoc',
+    status: 'pending_approval',
+    priority: 'P1',
+    startDate: '2026-11-25',
+    dueDate: '2026-12-25',
+    target: 'Lắp đặt cảm biến IoT cảnh báo nhiệt độ tức thì qua SMS/Zalo khi kho lạnh vaccine vượt ngưỡng 2°C - 8°C.',
+    notes: 'Trình Ban Giám Đốc phê duyệt chủ trương và chọn nhà thầu cung cấp thiết bị cảm biến đạt chuẩn GSP.',
+    links: [],
+    milestones: [
+      { id: 'ms_3_1', title: 'Thu thập báo giá 3 nhà cung cấp thiết bị IoT', dueDate: '2026-11-30', completed: true },
+      { id: 'ms_3_2', title: 'Trình ký Ban Lãnh Đạo duyệt phương án', dueDate: '2026-12-05', completed: false }
+    ],
+    tasksList: [],
+    comments: [],
+    createdAt: '2026-11-09T16:00:00.000Z',
+    updatedAt: '2026-11-09T16:00:00.000Z'
+  }
+];
+
 
