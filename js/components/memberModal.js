@@ -9,9 +9,9 @@
  * - Nhân viên: Không được phép cấp tài khoản.
  */
 
-import { auth } from '../auth.js?v=5.6';
-import { store } from '../store.js?v=5.6';
-import { esc, toast, rung } from '../helpers.js?v=5.6';
+import { auth } from '../auth.js?v=5.7';
+import { store } from '../store.js?v=5.7';
+import { esc, toast, rung } from '../helpers.js?v=5.7';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -47,7 +47,7 @@ export class MemberModal {
     const isLeadership = auth.isLeadership();
     const isManager = auth.isManager();
     const isUserAdmin = Boolean(this.editingUser?.isAdmin || this.editingUser?.role === 'ADMIN');
-    const currentRole = this.editingUser?.role || 'MEMBER';
+    const currentRole = (this.editingUser?.role && this.editingUser.role !== 'ADMIN') ? this.editingUser.role : (this.editingUser?.role === 'ADMIN' ? 'MANAGER' : 'MEMBER');
 
     // Xác định phòng ban ban đầu (ưu tiên defaultDeptId nếu đang xem phòng ban cụ thể)
     const initialDeptId = this.editingUser 
@@ -150,11 +150,10 @@ export class MemberModal {
                   Chức vụ / Vị trí công tác (Role) *
                 </label>
                 <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
-                  <option value="MEMBER" ${currentRole === 'MEMBER' || (!this.editingUser && true) ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
+                  <option value="MEMBER" ${currentRole === 'MEMBER' ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
                   <option value="DEPUTY_MANAGER" ${currentRole === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Phòng (DEPUTY_MANAGER)</option>
                   <option value="MANAGER" ${currentRole === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng (MANAGER)</option>
                   <option value="LEADERSHIP" ${currentRole === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo (LEADERSHIP)</option>
-                  ${currentRole === 'ADMIN' ? '<option value="ADMIN" selected>👑 Quản Trị Viên (ADMIN)</option>' : ''}
                 </select>
                 ${isManager ? `
                   <span class="text-[10px] text-amber-600 block mt-1">
@@ -415,8 +414,7 @@ export class MemberModal {
         const dept = allDepts.find(d => d.id === departmentId);
         const deptName = dept ? dept.name : 'Thanh Vũ Medic';
         let badge = 'Chuyên viên';
-        if (role === 'ADMIN') badge = 'Admin Hệ Thống';
-        else if (role === 'LEADERSHIP') badge = 'Ban Lãnh Đạo';
+        if (role === 'LEADERSHIP') badge = 'Ban Lãnh Đạo';
         else if (role === 'MANAGER') badge = 'Trưởng phòng';
         else if (role === 'DEPUTY_MANAGER') badge = 'Phó phòng';
 

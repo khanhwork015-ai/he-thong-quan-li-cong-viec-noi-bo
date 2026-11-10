@@ -141,6 +141,10 @@
 - [x] **19. Chuẩn Hóa Danh Xưng Chức Vụ: Đổi "Phó Trưởng Phòng" Thành "Phó Phòng" Toàn Hệ Thống (`models.js`, `app.js`, `memberModal.js`, `departmentView.js`, `topHeader.js`)**:
   - **Chuẩn hóa danh xưng ngắn gọn, chính xác:** Thay thế toàn bộ nhãn `Phó Trưởng Phòng` thành `Phó Phòng` trên toàn bộ hệ thống (Danh bạ nhân viên, Header vai trò, Modal phân quyền và Chi tiết khoa phòng).
   - **Nâng cấp Cache Buster toàn diện `?v=5.6`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
+- [x] **20. Xóa Bỏ Hoàn Toàn Tùy Chọn "Quản Trị Viên" Trong Dropdown Role (`memberModal.js`, `models.js`, `app.js`, `topHeader.js`)**:
+  - **Loại bỏ role Admin trong list:** Dropdown chức vụ chỉ giữ đúng 4 vị trí thực tế trong bệnh viện (`MEMBER`, `DEPUTY_MANAGER`, `MANAGER`, `LEADERSHIP`).
+  - **Quản lý Admin độc lập bằng nút bật:** Quyền Admin được kích hoạt/hủy hoàn toàn thông qua nút bật Switch riêng biệt `Đặc Quyền Quản Trị Viên (Admin Hệ Thống)`.
+  - **Nâng cấp Cache Buster toàn diện `?v=5.7`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
 
 ---
 

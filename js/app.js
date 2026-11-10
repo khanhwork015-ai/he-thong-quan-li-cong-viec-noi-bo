@@ -4,27 +4,27 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=5.6';
-import { store } from './store.js?v=5.6';
-import { Sidebar } from './components/sidebar.js?v=5.6';
-import { TopHeader } from './components/topHeader.js?v=5.6';
-import { BottomNav } from './components/bottomNav.js?v=5.6';
-import { DashboardView } from './components/dashboardView.js?v=5.6';
-import { WorkspaceView } from './components/workspaceView.js?v=5.6';
-import { TaskDrawer } from './components/taskDrawer.js?v=5.6';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=5.6';
-import { CreateTaskModal } from './components/createTaskModal.js?v=5.6'
-import { SubtasksModal } from './components/subtasksModal.js?v=5.6';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.6';;
-import { ProfileModal } from './components/profileModal.js?v=5.6';
-import { MemberModal } from './components/memberModal.js?v=5.6';
-import { SettingsModal } from './components/settingsModal.js?v=5.6';
-import { LoginView } from './components/loginView.js?v=5.6';
-import { DepartmentModal } from './components/departmentModal.js?v=5.6';
-import { DepartmentView } from './components/departmentView.js?v=5.6';
-import { appScriptBridge } from './services/appScriptBridge.js?v=5.6';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.6';
-import { shinTheme } from './theme.js?v=5.6';
+import { auth } from './auth.js?v=5.7';
+import { store } from './store.js?v=5.7';
+import { Sidebar } from './components/sidebar.js?v=5.7';
+import { TopHeader } from './components/topHeader.js?v=5.7';
+import { BottomNav } from './components/bottomNav.js?v=5.7';
+import { DashboardView } from './components/dashboardView.js?v=5.7';
+import { WorkspaceView } from './components/workspaceView.js?v=5.7';
+import { TaskDrawer } from './components/taskDrawer.js?v=5.7';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=5.7';
+import { CreateTaskModal } from './components/createTaskModal.js?v=5.7'
+import { SubtasksModal } from './components/subtasksModal.js?v=5.7';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.7';;
+import { ProfileModal } from './components/profileModal.js?v=5.7';
+import { MemberModal } from './components/memberModal.js?v=5.7';
+import { SettingsModal } from './components/settingsModal.js?v=5.7';
+import { LoginView } from './components/loginView.js?v=5.7';
+import { DepartmentModal } from './components/departmentModal.js?v=5.7';
+import { DepartmentView } from './components/departmentView.js?v=5.7';
+import { appScriptBridge } from './services/appScriptBridge.js?v=5.7';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.7';
+import { shinTheme } from './theme.js?v=5.7';
 
 class App {
   constructor() {
@@ -417,8 +417,7 @@ class App {
             const isUserAdmin = Boolean(u.isAdmin || u.role === 'ADMIN');
 
             let roleBadge = { text: 'Chuyên Viên', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: 'person' };
-            if (u.role === 'ADMIN') roleBadge = { text: 'Quản Trị Viên', color: 'bg-amber-100 text-amber-900 border-amber-300', icon: 'shield_person' };
-            else if (u.role === 'LEADERSHIP') roleBadge = { text: 'Ban Lãnh Đạo', color: 'bg-purple-100 text-purple-900 border-purple-300', icon: 'account_balance' };
+            if (u.role === 'LEADERSHIP') roleBadge = { text: 'Ban Lãnh Đạo', color: 'bg-purple-100 text-purple-900 border-purple-300', icon: 'account_balance' };
             else if (u.role === 'MANAGER') roleBadge = { text: 'Trưởng Phòng', color: 'bg-[#fef3c7] text-[#92400e] border-amber-300 font-extrabold', icon: 'verified' };
             else if (u.role === 'DEPUTY_MANAGER') roleBadge = { text: 'Phó Phòng', color: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-extrabold', icon: 'stars' };
 

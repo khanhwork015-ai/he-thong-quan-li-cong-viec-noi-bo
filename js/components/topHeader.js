@@ -4,11 +4,11 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=5.6';
-import { store } from '../store.js?v=5.6';
-import { USERS } from '../models.js?v=5.6';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=5.6';
-import { shinTheme } from '../theme.js?v=5.6';
+import { auth } from '../auth.js?v=5.7';
+import { store } from '../store.js?v=5.7';
+import { USERS } from '../models.js?v=5.7';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=5.7';
+import { shinTheme } from '../theme.js?v=5.7';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications) {
@@ -36,12 +36,11 @@ export class TopHeader {
     const userNotifs = store.getUserNotifications(user.id);
 
     let roleBadgeText = '👤 Nhân Viên';
-    if (user.role === 'ADMIN') roleBadgeText = '👑 Quản Trị Viên';
-    else if (user.role === 'LEADERSHIP') roleBadgeText = '🏛️ Ban Lãnh Đạo';
+    if (user.role === 'LEADERSHIP') roleBadgeText = '🏛️ Ban Lãnh Đạo';
     else if (user.role === 'MANAGER') roleBadgeText = '👔 Trưởng Phòng';
     else if (user.role === 'DEPUTY_MANAGER') roleBadgeText = '⭐ Phó Phòng';
 
-    if (auth.isAdmin() && user.role !== 'ADMIN') {
+    if (auth.isAdmin()) {
       roleBadgeText += ' • 👑 Admin';
     }
 
