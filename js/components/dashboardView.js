@@ -8,9 +8,9 @@
  * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
  */
 
-import { auth } from '../auth.js?v=6.8';
-import { store } from '../store.js?v=6.8';
-import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=6.8';
+import { auth } from '../auth.js?v=6.9';
+import { store } from '../store.js?v=6.9';
+import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=6.9';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
@@ -294,14 +294,20 @@ export class DashboardView {
                       ` : ''}
                     </div>
 
-                    <h4 class="font-bold text-[14px] text-[#0d1c2f] leading-snug hover:text-[#795900] transition-colors">
+                    <h4 class="font-bold text-[14px] text-[#0d1c2f] leading-snug hover:text-[#795900] transition-colors" style="color: var(--text);">
                       ${esc(task.title)}
                     </h4>
 
-                    <div class="flex items-center gap-3 mt-2 text-[11.5px] text-[#64748b]">
-                      <span>Thực hiện: <strong>${assignee ? esc(assignee.name) : 'Chưa rõ'}</strong></span>
-                      <span>•</span>
-                      <span>Hạn: <strong class="font-mono-data text-amber-900">${task.dueDate}</strong></span>
+                    <!-- THÔNG TIN THỰC HIỆN VÀ HẠN TÁCH RIÊNG 2 HÀNG RÕ RÀNG TRÊN MOBILE -->
+                    <div class="flex flex-col gap-1 mt-2.5 text-[12px] text-[#64748b]">
+                      <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="text-[#817663] shrink-0">Thực hiện:</span>
+                        <strong class="text-[#0d1c2f] font-semibold truncate" style="color: var(--text);">${assignee ? esc(assignee.name) : 'Chưa rõ'}</strong>
+                      </div>
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-[#817663] shrink-0">Hạn:</span>
+                        <strong class="font-mono-data text-amber-900 font-bold">${ngayVN(task.dueDate)}</strong>
+                      </div>
                     </div>
                   </div>
 

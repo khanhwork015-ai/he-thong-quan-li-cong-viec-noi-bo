@@ -74,7 +74,11 @@
     - Tài liệu đính kèm (Links): Nút "Lưu" đổi sang style chủ đạo hệ thống, kích thước chuẩn 44px, không lệch màu xanh biển.
     - Modal tạo việc: Bổ sung chọn phòng ban tiếp nhận khi đang xem toàn viện và tự động cập nhật danh sách bộ phận con (teams).
   - **Dữ liệu chuẩn bị triển khai bên thứ ba:** Dữ liệu khởi tạo trong `models.js` được làm sạch, hoàn chỉnh và thực tế cho Thanh Vũ Medic CS3.
-  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=6.8`.
+  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=6.9`.
+- [x] **10. Tách Riêng Hàng Thực Hiện & Hạn Hoàn Thành, Chuẩn Hóa Định Dạng Ngày Tháng (`dashboardView.js`, `planDrawer.js`)**:
+  - Khắc phục triệt để lỗi hiển thị thời gian thô dạng ISO timestamp (`2026-11-06T15:00:00.000Z`) trong hàng đợi phê duyệt của Dashboard. Bỏ hoàn toàn phần giờ/múi giờ, chỉ giữ lại ngày tháng năm dạng `DD/MM/YYYY` qua hàm `ngayVN()`.
+  - Tách riêng thông tin "Thực hiện:" và "Hạn:" thành 2 hàng độc lập trên giao diện Mobile, giúp hiển thị trọn vẹn họ tên nhân viên và hạn chót mà không bị co kéo, ngắt dòng luộm thuộm.
+  - Đồng bộ cấu trúc tách hàng tương tự cho danh sách đầu việc bóc tách trong ngăn kéo kế hoạch ([planDrawer.js](file:///d:/TVM%20Project/H%E1%BB%87%20th%E1%BB%91ng%20qu%E1%BA%A3n%20l%C3%BD%20c%C3%B4ng%20vi%E1%BB%87c/js/components/planDrawer.js)).
 - [x] **9. Tinh Chỉnh Tối Giản Thanh Điều Hướng (Top Navbar) Cho Mobile (`topHeader.js`)**:
   - Khắc phục triệt để hiện tượng ô tìm kiếm đè/chèn lấn lên nút Dark Mode và các nút chức năng trên màn hình hẹp điện thoại.
   - Trên Mobile (< 640px): Tối giản thanh navbar chỉ còn 4 nút hành động gọn gàng bên phải (Kính lúp tìm kiếm, Khiên phê duyệt 1-chạm, Chuông thông báo, Avatar cá nhân).

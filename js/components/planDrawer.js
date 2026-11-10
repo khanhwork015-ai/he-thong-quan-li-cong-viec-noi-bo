@@ -7,10 +7,10 @@
  * - Ghi chú, Tài liệu đính kèm & Bình luận thảo luận
  */
 
-import { auth } from '../auth.js?v=6.8';
-import { store } from '../store.js?v=6.8';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.8';
-import { PLAN_STATUSES } from '../models.js?v=6.8';
+import { auth } from '../auth.js?v=6.9';
+import { store } from '../store.js?v=6.9';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.9';
+import { PLAN_STATUSES } from '../models.js?v=6.9';
 
 export class PlanDrawer {
   constructor(containerId, onPlanChanged, onEditPlan, onOpenTask) {
@@ -270,10 +270,16 @@ export class PlanDrawer {
                             ${esc(t.title)}
                           </span>
                         </div>
-                        <div class="flex items-center gap-3 mt-1.5 text-[11.5px] text-[#64748b]">
-                          <span>Người nhận: <strong>${assigneeUser ? esc(assigneeUser.name) : 'Chưa rõ'}</strong></span>
-                          <span>•</span>
-                          <span>Hạn: <strong class="font-mono-data">${t.dueDate ? ngayVN(t.dueDate) : 'Chưa gán'}</strong></span>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1.5 text-[11.5px] text-[#64748b]">
+                          <div class="flex items-center gap-1">
+                            <span>Người nhận:</span>
+                            <strong class="text-[#0d1c2f] font-semibold" style="color: var(--text);">${assigneeUser ? esc(assigneeUser.name) : 'Chưa rõ'}</strong>
+                          </div>
+                          <span class="hidden sm:inline text-gray-300">•</span>
+                          <div class="flex items-center gap-1">
+                            <span>Hạn:</span>
+                            <strong class="font-mono-data text-[#795900]">${t.dueDate ? ngayVN(t.dueDate) : 'Chưa gán'}</strong>
+                          </div>
                         </div>
                       </div>
 
