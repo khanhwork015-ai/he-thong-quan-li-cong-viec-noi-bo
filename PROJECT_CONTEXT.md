@@ -197,6 +197,22 @@
     + **Lớp 1 (Drawer & Modal Body):** Lưu `prevScrollTop` trước khi bất kỳ thao tác render DOM nào diễn ra và khôi phục ngay lập tức kết hợp `requestAnimationFrame` sau khi gán nội dung mới (`#taskDrawerScrollBody`, `#planDrawerScrollBody`, `.modal-card`).
     + **Lớp 2 (Main Canvas & Background Views):** Lưu `prevScrollY = window.scrollY || document.documentElement.scrollTop;` trước khi `refreshCurrentView()`, `renderEmployeesView()`, `workspaceView.render()`, `plansView.render()`, `departmentView.render()` thực thi, và khôi phục ngay với `window.scrollTo({ top: prevScrollY, behavior: 'instant' })`.
   - **Nâng cấp Cache Buster toàn diện `?v=6.5`:** Đồng bộ trên 21 files và đẩy Git `origin/main`.
+- [x] **29. Khắc Phục Lệch Căn Lề Nội Dung & Xây Dựng Trung Tâm Phê Duyệt 1-Chạm (Executive Approval Hub) Cho Ban Lãnh Đạo (`approvalView.js`, `store.js`, `topHeader.js`, `sidebar.js`, `dashboardView.js`, `app.js`, `plansView.js`, `workspaceView.js`, `departmentView.js`)**:
+  - **Chuẩn hóa khung hiển thị đồng nhất (Uniform Canvas Fit & Centering):**
+    + Loại bỏ thẻ `</div>` đóng sớm tại dòng 144 trong `plansView.js` vốn làm bung lưới thẻ `plansCardsGrid` ra khỏi giới hạn vùng chứa.
+    + Đồng bộ hóa 100% root container của toàn bộ các View (`dashboardView`, `plansView`, `workspaceView`, `departmentView`, `renderEmployeesView`, `renderSettingsView`, `approvalView`) thành `flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto pb-12 overflow-x-hidden`. Triệt tiêu hoàn toàn hiện tượng lệch lề (Tổng quan canh giữa, Kế hoạch lệch trái) và loại bỏ dứt điểm tràn ngang màn hình.
+  - **Xây dựng module Trung Tâm Phê Duyệt 1-Chạm (`approvalView.js`):**
+    + **Tab 1: Công việc chờ duyệt (Tasks):** Hiển thị các nhiệm vụ hoàn tất gửi trình ký nghiệm thu hoặc các việc cần Ban Lãnh Đạo/Trưởng phòng ký duyệt.
+    + **Tab 2: Kế hoạch chờ duyệt (Plans):** Hiển thị các dự án chiến lược mới lập cần Ban Lãnh Đạo thông qua chủ trương.
+    + **Tab 3: Lịch sử đã duyệt (History):** Tra cứu toàn bộ các hạng mục đã được phê duyệt hoặc yêu cầu làm lại trước đó.
+    + **Hành động 1-Chạm (One-Tap Actions):** Nút `[Duyệt 1-Chạm]` tức thì với hiệu ứng rung `rung(15)` và thông báo Toast; Nút `[Cần Sửa / Yêu Cầu Làm Lại]` mở modal góp ý linh hoạt (cho phép để trống nội dung vẫn gửi trả thành công và tự động bắn thông báo chuông đến nhân sự).
+    + **Duyệt hàng loạt (Batch 1-Tap Approval):** Hỗ trợ checkbox chọn từng việc hoặc chọn tất cả để duyệt đồng loạt nhiều hạng mục cùng lúc.
+    + **Phân quyền thông minh (Option 4A):** Ban Lãnh Đạo & Admin kiểm soát toàn viện; Trưởng phòng kiểm soát theo khoa phòng; Nhân viên thông thường theo dõi hồ sơ của chính mình đã gửi trình cấp trên.
+  - **Kết nối điều hướng đa kênh (Cross-Navigation Connections):**
+    + **Sidebar Desktop:** Thêm mục `Phê duyệt` kèm Huy hiệu số lượng việc đang chờ duyệt rung nhịp (pulse badge).
+    + **Top Header (Mobile & Desktop):** Thêm nút lối tắt Phê duyệt nhanh ngay cạnh chuông thông báo.
+    + **Trang Tổng Quan (Dashboard):** Click vào ô Hero "Chờ duyệt khẩn", thẻ KPI "Chờ Duyệt Khẩn" hoặc nút "Xem tất cả" đều chuyển ngay sang Trung Tâm Phê Duyệt.
+  - **Nâng cấp Cache Buster toàn diện `?v=6.6`:** Đồng bộ trên 22 files và đẩy Git `origin/main`.
 
 ---
 

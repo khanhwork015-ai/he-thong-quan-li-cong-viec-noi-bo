@@ -6,10 +6,10 @@
  * - Bộ lọc trạng thái trực quan & Tìm kiếm nhanh
  */
 
-import { auth } from '../auth.js?v=6.5';
-import { store } from '../store.js?v=6.5';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.5';
-import { PLAN_STATUSES } from '../models.js?v=6.5';
+import { auth } from '../auth.js?v=6.6';
+import { store } from '../store.js?v=6.6';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.6';
+import { PLAN_STATUSES } from '../models.js?v=6.6';
 
 export class PlansView {
   constructor(containerId, onSelectPlan, onOpenCreatePlanModal, onEditPlan) {
@@ -59,7 +59,7 @@ export class PlansView {
     const countCompleted = allPlans.filter(p => p.status === 'completed').length;
 
     this.container.innerHTML = `
-      <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl pb-12 overflow-x-hidden">
+      <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl mx-auto pb-12 overflow-x-hidden">
         
         <!-- 1. HEADER BANNER DỰ ÁN & KẾ HOẠCH -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
@@ -138,8 +138,6 @@ export class PlansView {
               value="${esc(this.searchQuery)}"
             />
           </div>
-
-        </div>
 
         </div>
 

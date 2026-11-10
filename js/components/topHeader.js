@@ -4,14 +4,14 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=6.5';
-import { store } from '../store.js?v=6.5';
-import { USERS } from '../models.js?v=6.5';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=6.5';
-import { shinTheme } from '../theme.js?v=6.5';
+import { auth } from '../auth.js?v=6.6';
+import { store } from '../store.js?v=6.6';
+import { USERS } from '../models.js?v=6.6';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=6.6';
+import { shinTheme } from '../theme.js?v=6.6';
 
 export class TopHeader {
-  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications) {
+  constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
     this.container = document.getElementById(containerId);
     this.onSearch = onSearch;
     this.onOpenCreateModal = onOpenCreateModal;
@@ -22,6 +22,7 @@ export class TopHeader {
     this.onLogout = onLogout;
     this.onOpenTask = onOpenTask;
     this.onOpenNotifications = onOpenNotifications;
+    this.onNavigateApproval = onNavigateApproval;
   }
 
   render() {
@@ -34,6 +35,8 @@ export class TopHeader {
     const isDark = shinTheme.resolveIsDark();
     const unreadCount = store.getUnreadNotificationCount(user.id);
     const userNotifs = store.getUserNotifications(user.id);
+    const pendingData = store.getPendingApprovalsForUser(user);
+    const pendingApprovalCount = pendingData.totalCount || 0;
 
     let roleBadgeText = '👤 Nhân Viên';
     if (user.role === 'LEADERSHIP') roleBadgeText = '🏛️ Ban Lãnh Đạo';
@@ -81,6 +84,16 @@ export class TopHeader {
           <!-- NÚT ĐỔI MÀU GIAO DIỆN (8 PALETTES SHIN) -->
           <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="Đổi màu giao diện (8 Palettes SHIN AIOS)" id="btnQuickPalette">
             <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">palette</span>
+          </button>
+
+          <!-- NÚT PHÊ DUYỆT 1-CHẠM NHANH (APPROVAL HUB SHORTCUT) -->
+          <button type="button" class="relative p-2 rounded-xl text-[#4f4635] hover:bg-[#fffbeb] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer" title="Trung tâm phê duyệt 1-chạm (${pendingApprovalCount} đang chờ)" id="btnTopApproval">
+            <span class="material-symbols-outlined text-[22px]" style="${pendingApprovalCount > 0 ? 'color: #b45309;' : 'color: #64748b;'}">verified</span>
+            ${pendingApprovalCount > 0 ? `
+              <span class="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#d97706] px-1 text-[10px] font-bold text-white shadow-xs animate-pulse">
+                ${pendingApprovalCount > 99 ? '99+' : pendingApprovalCount}
+              </span>
+            ` : ''}
           </button>
 
           <!-- NOTIFICATIONS BELL & DROPDOWN -->
@@ -256,6 +269,14 @@ export class TopHeader {
       btnMobileSidebar.addEventListener('click', () => {
         rung(10);
         if (this.onToggleMobileSidebar) this.onToggleMobileSidebar();
+      });
+    }
+
+    const btnTopApproval = this.container.querySelector('#btnTopApproval');
+    if (btnTopApproval) {
+      btnTopApproval.addEventListener('click', () => {
+        rung(10);
+        if (this.onNavigateApproval) this.onNavigateApproval();
       });
     }
 

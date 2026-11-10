@@ -4,9 +4,9 @@
  * Hỗ trợ giao diện ngăn kéo trượt mượt mà cho Mobile/Tablet và cố định trên Desktop (lg)
  */
 
-import { auth } from '../auth.js?v=6.5';
-import { store } from '../store.js?v=6.5';
-import { toast, rung } from '../helpers.js?v=6.5';
+import { auth } from '../auth.js?v=6.6';
+import { store } from '../store.js?v=6.6';
+import { toast, rung } from '../helpers.js?v=6.6';
 
 export class Sidebar {
   constructor(containerId, onNavChange, onModeChange, onLogout) {
@@ -71,6 +71,8 @@ export class Sidebar {
     const currentDept = auth.getActiveDepartment();
     const canSwitchDept = auth.canSwitchDepartment();
     const user = auth.getCurrentUser();
+    const pendingData = store.getPendingApprovalsForUser(user);
+    const pendingApprovalCount = pendingData.totalCount || 0;
 
     this.container.innerHTML = `
       <!-- BACKDROP CHO MOBILE / TABLET -->
@@ -126,6 +128,18 @@ export class Sidebar {
             <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'cong-viec' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="cong-viec">
               <span class="material-symbols-outlined text-[20px]">task_alt</span>
               <span class="text-[14px]">Công việc</span>
+            </button>
+
+            <button type="button" class="flex items-center justify-between px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'phe-duyet' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="phe-duyet">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-[20px]">verified</span>
+                <span class="text-[14px]">Phê duyệt</span>
+              </div>
+              ${pendingApprovalCount > 0 ? `
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500 text-white font-bold animate-pulse">
+                  ${pendingApprovalCount}
+                </span>
+              ` : ''}
             </button>
 
             <button type="button" class="flex items-center justify-between px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'nhan-vien' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="nhan-vien">

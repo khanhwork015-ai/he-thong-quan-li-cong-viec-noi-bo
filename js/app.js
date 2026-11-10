@@ -4,30 +4,31 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=6.5';
-import { store } from './store.js?v=6.5';
-import { Sidebar } from './components/sidebar.js?v=6.5';
-import { TopHeader } from './components/topHeader.js?v=6.5';
-import { BottomNav } from './components/bottomNav.js?v=6.5';
-import { DashboardView } from './components/dashboardView.js?v=6.5';
-import { WorkspaceView } from './components/workspaceView.js?v=6.5';
-import { TaskDrawer } from './components/taskDrawer.js?v=6.5';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=6.5';
-import { CreateTaskModal } from './components/createTaskModal.js?v=6.5'
-import { SubtasksModal } from './components/subtasksModal.js?v=6.5';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.5';;
-import { ProfileModal } from './components/profileModal.js?v=6.5';
-import { MemberModal } from './components/memberModal.js?v=6.5';
-import { SettingsModal } from './components/settingsModal.js?v=6.5';
-import { LoginView } from './components/loginView.js?v=6.5';
-import { DepartmentModal } from './components/departmentModal.js?v=6.5';
-import { DepartmentView } from './components/departmentView.js?v=6.5';
-import { PlansView } from './components/plansView.js?v=6.5';
-import { PlanDrawer } from './components/planDrawer.js?v=6.5';
-import { PlanModal } from './components/planModal.js?v=6.5';
-import { appScriptBridge } from './services/appScriptBridge.js?v=6.5';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.5';
-import { shinTheme } from './theme.js?v=6.5';
+import { auth } from './auth.js?v=6.6';
+import { store } from './store.js?v=6.6';
+import { Sidebar } from './components/sidebar.js?v=6.6';
+import { TopHeader } from './components/topHeader.js?v=6.6';
+import { BottomNav } from './components/bottomNav.js?v=6.6';
+import { DashboardView } from './components/dashboardView.js?v=6.6';
+import { WorkspaceView } from './components/workspaceView.js?v=6.6';
+import { TaskDrawer } from './components/taskDrawer.js?v=6.6';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=6.6';
+import { CreateTaskModal } from './components/createTaskModal.js?v=6.6'
+import { SubtasksModal } from './components/subtasksModal.js?v=6.6';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.6';;
+import { ProfileModal } from './components/profileModal.js?v=6.6';
+import { MemberModal } from './components/memberModal.js?v=6.6';
+import { SettingsModal } from './components/settingsModal.js?v=6.6';
+import { LoginView } from './components/loginView.js?v=6.6';
+import { DepartmentModal } from './components/departmentModal.js?v=6.6';
+import { DepartmentView } from './components/departmentView.js?v=6.6';
+import { PlansView } from './components/plansView.js?v=6.6';
+import { PlanDrawer } from './components/planDrawer.js?v=6.6';
+import { PlanModal } from './components/planModal.js?v=6.6';
+import { ApprovalView } from './components/approvalView.js?v=6.6';
+import { appScriptBridge } from './services/appScriptBridge.js?v=6.6';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.6';
+import { shinTheme } from './theme.js?v=6.6';
 
 class App {
   constructor() {
@@ -90,7 +91,8 @@ class App {
       () => this.switchNav('phong-ban'),
       () => this.onLogout(),
       (taskId) => this.taskDrawer.open(taskId),
-      () => this.notificationDrawer.open()
+      () => this.notificationDrawer.open(),
+      () => this.switchNav('phe-duyet')
     );
 
     this.subtaskDetailModal = new SubtaskDetailModal('modal-container', () => this.refreshCurrentView());
@@ -111,15 +113,25 @@ class App {
 
     this.dashboardView = new DashboardView('main-content-canvas',
       (filterTab) => {
-        this.switchNav('cong-viec');
-        if (filterTab && this.workspaceView) {
-          if (filterTab === 'in_progress') this.workspaceView.setTab('all');
-          else if (filterTab === 'completed') this.workspaceView.setTab('completed');
-          else if (filterTab === 'pending_approval') this.workspaceView.setTab('pending_approval');
+        if (filterTab === 'pending_approval') {
+          this.switchNav('phe-duyet');
+        } else {
+          this.switchNav('cong-viec');
+          if (filterTab && this.workspaceView) {
+            if (filterTab === 'in_progress') this.workspaceView.setTab('all');
+            else if (filterTab === 'completed') this.workspaceView.setTab('completed');
+          }
         }
       },
       () => this.openCreateModal(),
       (taskId) => this.taskDrawer.open(taskId)
+    );
+
+    this.approvalView = new ApprovalView(
+      'main-content-canvas',
+      (taskId) => this.taskDrawer.open(taskId),
+      (planId) => this.planDrawer.open(planId),
+      () => this.refreshCurrentView()
     );
 
     this.workspaceView = new WorkspaceView(
@@ -214,6 +226,8 @@ class App {
       this.dashboardView.render();
     } else if (this.currentNav === 'ke-hoach') {
       this.plansView.render();
+    } else if (this.currentNav === 'phe-duyet') {
+      this.approvalView.render();
     } else if (this.currentNav === 'cong-viec') {
       this.workspaceView.render();
     } else if (this.currentNav === 'nhan-vien') {
@@ -236,6 +250,9 @@ class App {
     if (this.sidebar) this.sidebar.setNav(navId);
     if (this.bottomNav) this.bottomNav.setNav(navId);
 
+    if (navId === 'phe-duyet') {
+      toast('Đang mở Trung tâm phê duyệt 1-chạm...', 'info');
+    }
     if (navId === 'cai-dat') {
       toast('Đang mở Cài đặt hệ thống & Tích hợp Cloud...', 'info');
     }
@@ -370,7 +387,7 @@ class App {
     const filterTitle = (this.employeeDeptFilter === 'all') ? 'Toàn Phòng Khám CS3 (Tất Cả)' : (currentFilterDept?.name || 'Phòng ban');
 
     canvas.innerHTML = `
-      <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl pb-12 overflow-x-hidden">
+      <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl mx-auto pb-12 overflow-x-hidden">
         
         <!-- 1. HEADER BANNER QUẢN LÝ NHÂN SỰ -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white p-5 rounded-3xl border border-[#e2e8f0] shadow-sm" style="background-color: var(--card); border-color: var(--border);">
@@ -633,7 +650,7 @@ class App {
     const currentDept = auth.getActiveDepartment();
 
     canvas.innerHTML = `
-      <div class="flex flex-col gap-5 sm:gap-6 animate-fade-in w-full max-w-7xl">
+      <div class="flex flex-col gap-5 sm:gap-6 animate-fade-in w-full max-w-7xl mx-auto pb-12 overflow-x-hidden">
         <!-- 1. HEADER BANNER CÀI ĐẶT -->
         <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div class="flex items-center gap-3.5">

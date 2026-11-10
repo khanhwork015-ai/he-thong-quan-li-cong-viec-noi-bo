@@ -995,10 +995,11 @@ export class Store {
     if (!task) return false;
 
     const currentUser = auth.getCurrentUser();
+    const finalReason = (reason && reason.trim()) ? reason.trim() : 'Ban Lãnh Đạo yêu cầu rà soát và hoàn thiện lại trước khi nghiệm thu.';
     task.status = 'todo';
     task.approvalStatus = 'REJECTED';
     task.rejectedBy = currentUser.name;
-    task.rejectReason = reason;
+    task.rejectReason = finalReason;
     task.rejectedAt = new Date().toISOString();
     task.updatedAt = new Date().toISOString();
 
@@ -1006,7 +1007,7 @@ export class Store {
     task.comments.push({
       id: `cm-${Date.now()}`,
       userId: currentUser.id,
-      content: `[TỪ CHỐI PHÊ DUYỆT] Người duyệt: ${currentUser.name}. Lý do: "${reason}"`,
+      content: `[TỪ CHỐI / YÊU CẦU LÀM LẠI] Người duyệt: ${currentUser.name}. Lý do: "${finalReason}"`,
       createdAt: new Date().toISOString()
     });
 
@@ -1021,8 +1022,8 @@ export class Store {
           recipientId: userId,
           senderId: currentUser.id,
           type: 'approval_rejected',
-          title: '❌ Nhiệm vụ bị từ chối phê duyệt',
-          content: `${currentUser.name} đã từ chối duyệt nhiệm vụ "${task.title}" (${task.id}). Lý do: "${reason}"`,
+          title: '⚠️ Yêu cầu làm lại công việc',
+          content: `${currentUser.name} yêu cầu hoàn thiện lại nhiệm vụ "${task.title}": ${finalReason}`,
           taskId: task.id
         });
       }
@@ -1574,6 +1575,178 @@ export class Store {
 
     const comments = plan.comments.filter(c => c.id !== commentId);
     return this.updatePlan(planId, { comments });
+  }
+
+  // --- EXECUTIVE APPROVAL HUB METHODS (SHIN AIOS v2.7) ---
+  approvePlan(planId, note = '') {
+    const plan = this.getPlanById(planId);
+    if (!plan) return false;
+
+    const currentUser = auth.getCurrentUser() || { id: 'admin', name: 'Ban Lãnh Đạo' };
+    const updates = {
+      status: 'in_progress',
+      approvalStatus: 'APPROVED',
+      approvedBy: currentUser.name,
+      approvedAt: new Date().toISOString()
+    };
+
+    if (!Array.isArray(plan.comments)) plan.comments = [];
+    const newComments = [
+      ...plan.comments,
+      {
+        id: `cm-${Date.now()}`,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        text: `[ĐÃ DUYỆT CHỦ TRƯƠNG 1-CHẠM] Người duyệt: ${currentUser.name}${note ? ` - Ghi chú: "${note}"` : ''}.`,
+        createdAt: new Date().toISOString()
+      }
+    ];
+    updates.comments = newComments;
+
+    this.updatePlan(planId, updates);
+    const updatedPlan = this.getPlanById(planId);
+    if (updatedPlan) appScriptBridge.pushPlan(updatedPlan);
+
+    // Gửi thông báo cho Creator và Lead của Plan
+    const targets = new Set([plan.creatorId, plan.leadId].filter(Boolean));
+    targets.forEach(userId => {
+      if (userId !== currentUser.id) {
+        this.addNotification({
+          recipientId: userId,
+          senderId: currentUser.id,
+          type: 'approval_approved',
+          title: '✅ Kế hoạch đã được Ban Lãnh Đạo phê duyệt',
+          content: `${currentUser.name} đã thông qua chủ trương kế hoạch "${plan.name}" (${plan.id}).`,
+          taskId: plan.id
+        });
+      }
+    });
+
+    window.dispatchEvent(new CustomEvent('tvm:plans_changed'));
+    return true;
+  }
+
+  rejectPlan(planId, reason = '') {
+    const plan = this.getPlanById(planId);
+    if (!plan) return false;
+
+    const currentUser = auth.getCurrentUser() || { id: 'admin', name: 'Ban Lãnh Đạo' };
+    const finalReason = (reason && reason.trim()) ? reason.trim() : 'Ban Lãnh Đạo yêu cầu rà soát và bổ sung chi tiết lộ trình thực hiện.';
+    const updates = {
+      status: 'planning',
+      approvalStatus: 'REJECTED',
+      rejectedBy: currentUser.name,
+      rejectReason: finalReason,
+      rejectedAt: new Date().toISOString()
+    };
+
+    if (!Array.isArray(plan.comments)) plan.comments = [];
+    const newComments = [
+      ...plan.comments,
+      {
+        id: `cm-${Date.now()}`,
+        userId: currentUser.id,
+        userName: currentUser.name,
+        text: `[YÊU CẦU LÀM LẠI KẾ HOẠCH] Người duyệt: ${currentUser.name}. Lý do: "${finalReason}"`,
+        createdAt: new Date().toISOString()
+      }
+    ];
+    updates.comments = newComments;
+
+    this.updatePlan(planId, updates);
+    const updatedPlan = this.getPlanById(planId);
+    if (updatedPlan) appScriptBridge.pushPlan(updatedPlan);
+
+    const targets = new Set([plan.creatorId, plan.leadId].filter(Boolean));
+    targets.forEach(userId => {
+      if (userId !== currentUser.id) {
+        this.addNotification({
+          recipientId: userId,
+          senderId: currentUser.id,
+          type: 'approval_rejected',
+          title: '⚠️ Kế hoạch cần chỉnh sửa bổ sung',
+          content: `${currentUser.name} yêu cầu hoàn thiện lại kế hoạch "${plan.name}" (${plan.id}): ${finalReason}`,
+          taskId: plan.id
+        });
+      }
+    });
+
+    window.dispatchEvent(new CustomEvent('tvm:plans_changed'));
+    return true;
+  }
+
+  getPendingApprovalsForUser(user = null) {
+    const currentUser = user || auth.getCurrentUser();
+    if (!currentUser) return { tasks: [], plans: [], isApprover: false, totalCount: 0 };
+
+    const isAdmin = auth.isAdmin();
+    const isLeadership = auth.isLeadership();
+    const isManager = auth.isManager();
+    const isApprover = isAdmin || isLeadership || isManager;
+
+    const allTasks = this.getAllTasksRaw();
+    const allPlans = this.getAllPlansRaw();
+
+    let pendingTasks = [];
+    let pendingPlans = [];
+
+    if (isAdmin || isLeadership) {
+      pendingTasks = allTasks.filter(t => t.status === 'pending_approval' || t.status === 'review');
+      pendingPlans = allPlans.filter(p => p.status === 'pending_approval');
+    } else if (isManager) {
+      pendingTasks = allTasks.filter(t => 
+        (t.status === 'pending_approval' || t.status === 'review') &&
+        (t.departmentId === currentUser.departmentId || t.approverId === currentUser.id)
+      );
+      pendingPlans = allPlans.filter(p => 
+        p.status === 'pending_approval' && 
+        (p.departmentId === currentUser.departmentId || p.departmentId === 'all')
+      );
+    } else {
+      pendingTasks = allTasks.filter(t => 
+        (t.status === 'pending_approval' || t.status === 'review') &&
+        (t.creatorId === currentUser.id || t.assigneeId === currentUser.id)
+      );
+      pendingPlans = allPlans.filter(p => 
+        p.status === 'pending_approval' &&
+        (p.creatorId === currentUser.id || p.leadId === currentUser.id)
+      );
+    }
+
+    return {
+      tasks: pendingTasks,
+      plans: pendingPlans,
+      isApprover,
+      totalCount: pendingTasks.length + pendingPlans.length
+    };
+  }
+
+  getApprovedHistoryForUser(user = null) {
+    const currentUser = user || auth.getCurrentUser();
+    if (!currentUser) return { tasks: [], plans: [] };
+
+    const isAdmin = auth.isAdmin();
+    const isLeadership = auth.isLeadership();
+    const isManager = auth.isManager();
+
+    const allTasks = this.getAllTasksRaw();
+    const allPlans = this.getAllPlansRaw();
+
+    let approvedTasks = allTasks.filter(t => t.approvalStatus === 'APPROVED' || t.approvedBy || t.approvalStatus === 'REJECTED');
+    let approvedPlans = allPlans.filter(p => p.approvalStatus === 'APPROVED' || p.approvedBy || p.approvalStatus === 'REJECTED');
+
+    if (!isAdmin && !isLeadership && isManager) {
+      approvedTasks = approvedTasks.filter(t => t.departmentId === currentUser.departmentId || t.approverId === currentUser.id);
+      approvedPlans = approvedPlans.filter(p => p.departmentId === currentUser.departmentId);
+    } else if (!isAdmin && !isLeadership && !isManager) {
+      approvedTasks = approvedTasks.filter(t => t.creatorId === currentUser.id || t.assigneeId === currentUser.id);
+      approvedPlans = approvedPlans.filter(p => p.creatorId === currentUser.id || p.leadId === currentUser.id);
+    }
+
+    return {
+      tasks: approvedTasks,
+      plans: approvedPlans
+    };
   }
 }
 

@@ -8,9 +8,9 @@
  * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
  */
 
-import { auth } from '../auth.js?v=6.5';
-import { store } from '../store.js?v=6.5';
-import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=6.5';
+import { auth } from '../auth.js?v=6.6';
+import { store } from '../store.js?v=6.6';
+import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=6.6';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
@@ -79,7 +79,7 @@ export class DashboardView {
     const activeDeptObj = allDepartments.find(d => d.id === activeDeptId);
 
     this.container.innerHTML = `
-      <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto">
+      <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto pb-12 overflow-x-hidden">
         
         <!-- 1. COMPACT BAR CHUẨN ARCHETYPE B (CAO 40PX) & CHỌN PHẠM VI TOÀN VIỆN -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:px-4 rounded-2xl bg-white border border-[#e2e8f0] shadow-2xs" style="background-color: var(--card); border-color: var(--border);">

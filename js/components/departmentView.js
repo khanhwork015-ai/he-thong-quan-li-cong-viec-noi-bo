@@ -8,9 +8,9 @@
  * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
-import { auth } from '../auth.js?v=6.5';
-import { store } from '../store.js?v=6.5';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.5';
+import { auth } from '../auth.js?v=6.6';
+import { store } from '../store.js?v=6.6';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.6';
 
 export class DepartmentView {
   constructor(containerId, onUpdated, onOpenMemberModal) {
@@ -85,7 +85,7 @@ export class DepartmentView {
     }
 
     this.container.innerHTML = `
-      <div class="flex flex-col w-full gap-5 sm:gap-6 max-w-7xl pb-12 overflow-x-hidden">
+      <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto pb-12 overflow-x-hidden">
         
         <!-- 1. HERO BANNER MỞ MÀN CHUẨN SHIN AIOS -->
         <div class="p-5 sm:p-6 rounded-3xl border border-[#e2e8f0] shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4" style="background: linear-gradient(135deg, var(--card) 0%, var(--primary-soft) 100%); border-color: var(--border);">

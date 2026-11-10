@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=6.5';
-import { store } from '../store.js?v=6.5';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=6.5';
+import { auth } from '../auth.js?v=6.6';
+import { store } from '../store.js?v=6.6';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=6.6';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
@@ -60,7 +60,7 @@ export class WorkspaceView {
     const deptTeams = Array.isArray(currentDept.teams) ? currentDept.teams : [];
 
     this.container.innerHTML = `
-      <div class="flex flex-col w-full gap-4 animate-fade-in max-w-7xl">
+      <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto pb-12 overflow-x-hidden">
         <!-- TOP CONTROLS & LINEAR/NOTION TABS BAR -->
         <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
           <!-- TITLE ROW RESPONSIVE -->
