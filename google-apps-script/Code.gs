@@ -1,7 +1,7 @@
 /**
  * THANH VŨ MEDIC CS3 - GOOGLE APPS SCRIPT WEB APP BACKEND (SHIN AIOS BRIDGE v2.7)
  * Tự động tạo bảng & đồng bộ 2 chiều dữ liệu thực tế với Google Sheets
- * Hỗ trợ 4 Sheets: TASKS, USERS, DEPARTMENTS, NOTIFICATIONS
+ * Hỗ trợ 5 Sheets: TASKS, USERS, DEPARTMENTS, NOTIFICATIONS, PLANS
  * 
  * HƯỚNG DẪN TRIỂN KHAI TRÊN GOOGLE SHEETS:
  * 1. Mở một Google Spreadsheet mới, đặt tên: "TVM_CS3_Task_Database"
@@ -20,6 +20,12 @@ const SHEET_TASKS = 'TASKS';
 const SHEET_USERS = 'USERS';
 const SHEET_DEPTS = 'DEPARTMENTS';
 const SHEET_NOTIFS = 'NOTIFICATIONS';
+const SHEET_PLANS = 'PLANS';
+
+// Các cột ngày/giờ luôn lưu dạng văn bản để Google Sheets không tự đổi thành Date (gây lệch múi giờ)
+const TEXT_COLUMNS = ['dueDate', 'startDate', 'dob', 'createdAt', 'updatedAt'];
+// Các cột lưu JSON (mảng/đối tượng lồng nhau)
+const PLAN_JSON_FIELDS = ['links', 'milestones', 'tasksList', 'comments'];
 
 function doGet(e) {
   try {
@@ -27,10 +33,14 @@ function doGet(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     ensureSheets(ss);
 
-    // Tự động seed dữ liệu mẫu ban đầu nếu sheet TASKS đang trống
-    const taskSheet = ss.getSheetByName(SHEET_TASKS);
-    if (taskSheet.getLastRow() <= 1 || action === 'seed') {
-      seedInitialData(ss);
+    // Cài đặt lần đầu: chỉ khởi tạo CƠ CẤU (phòng ban + tài khoản) khi sheet USERS còn trống.
+    // TUYỆT ĐỐI KHÔNG tự đổ công việc/kế hoạch mẫu vào Sheet thật.
+    // Muốn nạp dữ liệu mẫu để trải nghiệm: gọi thủ công ?action=seed
+    const userSheet = ss.getSheetByName(SHEET_USERS);
+    if (action === 'seed') {
+      seedInitialData(ss, true);
+    } else if (userSheet.getLastRow() <= 1) {
+      seedInitialData(ss, false);
     }
 
     if (action === 'getData' || action === 'seed') {
@@ -68,6 +78,7 @@ function doGet(e) {
         return d;
       });
       const notifs = getSheetData(ss.getSheetByName(SHEET_NOTIFS));
+      const plans = getSheetData(ss.getSheetByName(SHEET_PLANS)).map(parsePlanRow);
 
       return responseJSON({
         success: true,
@@ -76,6 +87,7 @@ function doGet(e) {
         users: users,
         depts: depts,
         notifications: notifs,
+        plans: plans,
         timestamp: new Date().toISOString()
       });
     }
@@ -130,7 +142,12 @@ function doPost(e) {
           saveOrUpdateRow(deptSheet, toSave, 'id');
         });
       }
-      return responseJSON({ success: true, message: 'Đã đồng bộ toàn bộ dữ liệu (Tasks, Users, Departments, Notifications) lên Google Sheets' });
+      if (body.plans && Array.isArray(body.plans)) {
+        const planSheet = ss.getSheetByName(SHEET_PLANS);
+        clearDataRows(planSheet);
+        body.plans.forEach(pl => saveOrUpdateRow(planSheet, pl, 'id'));
+      }
+      return responseJSON({ success: true, message: 'Đã đồng bộ toàn bộ dữ liệu (Tasks, Users, Departments, Notifications, Plans) lên Google Sheets' });
     }
 
     // 2. Thao tác đơn lẻ
@@ -167,6 +184,40 @@ function doPost(e) {
     if (action === 'saveNotification') {
       saveOrUpdateRow(ss.getSheetByName(SHEET_NOTIFS), body.notification, 'id');
       return responseJSON({ success: true, message: 'Notification saved' });
+    }
+
+    if (action === 'savePlan') {
+      saveOrUpdateRow(ss.getSheetByName(SHEET_PLANS), body.plan, 'id');
+      return responseJSON({ success: true, message: 'Plan saved' });
+    }
+
+    if (action === 'deletePlan') {
+      deleteRow(ss.getSheetByName(SHEET_PLANS), body.planId, 'id');
+      return responseJSON({ success: true, message: 'Plan deleted' });
+    }
+
+    if (action === 'clearUserNotifications') {
+      deleteRowsWhere(ss.getSheetByName(SHEET_NOTIFS), function (row) {
+        return String(row.recipientId) === String(body.userId) || String(row.recipientId) === 'all';
+      });
+      return responseJSON({ success: true, message: 'Notifications cleared' });
+    }
+
+    if (action === 'markAllNotificationsRead') {
+      const nSheet = ss.getSheetByName(SHEET_NOTIFS);
+      const nRows = nSheet.getDataRange().getValues();
+      const nHead = nRows[0] || [];
+      const rIdx = nHead.indexOf('recipientId');
+      const readIdx2 = nHead.indexOf('isRead');
+      if (rIdx >= 0 && readIdx2 >= 0) {
+        for (let i = 1; i < nRows.length; i++) {
+          const rid = String(nRows[i][rIdx]);
+          if (rid === String(body.userId) || rid === 'all') {
+            nSheet.getRange(i + 1, readIdx2 + 1).setValue(true);
+          }
+        }
+      }
+      return responseJSON({ success: true, message: 'All notifications marked as read' });
     }
 
     if (action === 'markNotificationRead') {
@@ -219,6 +270,10 @@ function ensureSheets(ss) {
     { 
       name: SHEET_NOTIFS, 
       headers: ['id', 'recipientId', 'senderId', 'title', 'content', 'taskId', 'type', 'isRead', 'createdAt'] 
+    },
+    { 
+      name: SHEET_PLANS, 
+      headers: ['id', 'code', 'title', 'departmentId', 'creatorId', 'leadId', 'status', 'priority', 'startDate', 'dueDate', 'target', 'notes', 'links', 'milestones', 'tasksList', 'comments', 'approvalStatus', 'createdAt', 'updatedAt'] 
     }
   ];
 
@@ -233,7 +288,9 @@ function ensureSheets(ss) {
 }
 
 // Seed dữ liệu thực tế mẫu của Thanh Vũ Medic CS3 lên Google Sheet
-function seedInitialData(ss) {
+// withDemoData = false: chỉ khởi tạo phòng ban + tài khoản (cài đặt lần đầu)
+// withDemoData = true : nạp thêm công việc & thông báo mẫu (chỉ khi gọi ?action=seed)
+function seedInitialData(ss, withDemoData) {
   const deptSheet = ss.getSheetByName(SHEET_DEPTS);
   const userSheet = ss.getSheetByName(SHEET_USERS);
   const taskSheet = ss.getSheetByName(SHEET_TASKS);
@@ -241,8 +298,10 @@ function seedInitialData(ss) {
 
   clearDataRows(deptSheet);
   clearDataRows(userSheet);
-  clearDataRows(taskSheet);
-  clearDataRows(notifSheet);
+  if (withDemoData) {
+    clearDataRows(taskSheet);
+    clearDataRows(notifSheet);
+  }
 
   // 1. Departments
   const depts = [
@@ -273,6 +332,8 @@ function seedInitialData(ss) {
   ];
   users.forEach(u => saveOrUpdateRow(userSheet, u, 'id'));
 
+  if (!withDemoData) return;
+
   // 3. Initial Tasks
   const tasks = [
     { id: 'PTKH-101', departmentId: 'dept_ptkh', teamId: 'team_cskh', title: 'Chuẩn bị tài liệu & báo cáo tiếp đón Đoàn kiểm tra Sở Y Tế Cà Mau', description: 'Tổng hợp số liệu khám chữa bệnh BHYT, quy trình đón tiếp bệnh nhân VIP tại CS3.', priority: 'P1', status: 'in_progress', requiresApproval: false, approvalStatus: 'NONE', approverId: 'user_tam_ptkh', assigneeId: 'user_mai_ptkh', creatorId: 'user_tam_ptkh', dueDate: '2026-11-06', category: 'Báo cáo & Kiểm tra', progress: 50, cost: 2500000, createdAt: new Date().toISOString() },
@@ -288,6 +349,18 @@ function seedInitialData(ss) {
   notifs.forEach(n => saveOrUpdateRow(notifSheet, n, 'id'));
 }
 
+// Chuẩn hóa ô kiểu Date (Google Sheets tự đổi '2026-11-06' thành Date) về chuỗi, KHÔNG lệch múi giờ
+function normalizeCell(val) {
+  if (val instanceof Date) {
+    const tz = Session.getScriptTimeZone();
+    const isMidnight = val.getHours() === 0 && val.getMinutes() === 0 && val.getSeconds() === 0;
+    return isMidnight
+      ? Utilities.formatDate(val, tz, 'yyyy-MM-dd')
+      : Utilities.formatDate(val, tz, "yyyy-MM-dd'T'HH:mm:ssXXX");
+  }
+  return val;
+}
+
 function getSheetData(sheet) {
   if (!sheet) return [];
   const rows = sheet.getDataRange().getValues();
@@ -297,11 +370,36 @@ function getSheetData(sheet) {
   for (let i = 1; i < rows.length; i++) {
     const item = {};
     headers.forEach((h, idx) => {
-      item[h] = rows[i][idx];
+      item[h] = normalizeCell(rows[i][idx]);
     });
     data.push(item);
   }
   return data;
+}
+
+// Giải mã các cột JSON của kế hoạch
+function parsePlanRow(plan) {
+  PLAN_JSON_FIELDS.forEach(function (f) {
+    let v = plan[f];
+    if (typeof v === 'string' && v.trim().charAt(0) === '[') {
+      try { v = JSON.parse(v); } catch (_) { v = []; }
+    }
+    plan[f] = Array.isArray(v) ? v : [];
+  });
+  return plan;
+}
+
+// Xóa mọi dòng thỏa điều kiện (duyệt từ dưới lên để không lệch chỉ số)
+function deleteRowsWhere(sheet, predicate) {
+  if (!sheet) return;
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length <= 1) return;
+  const headers = rows[0];
+  for (let i = rows.length - 1; i >= 1; i--) {
+    const item = {};
+    headers.forEach(function (h, idx) { item[h] = rows[i][idx]; });
+    if (predicate(item)) sheet.deleteRow(i + 1);
+  }
 }
 
 function saveOrUpdateRow(sheet, item, keyField) {
@@ -339,11 +437,14 @@ function saveOrUpdateRow(sheet, item, keyField) {
     return '';
   });
 
-  if (foundRowIdx > 0) {
-    sheet.getRange(foundRowIdx, 1, 1, headers.length).setValues([rowValues]);
-  } else {
-    sheet.appendRow(rowValues);
-  }
+  // Ép các cột ngày/giờ về định dạng văn bản trước khi ghi để Sheets không tự chuyển thành Date
+  const targetRow = foundRowIdx > 0 ? foundRowIdx : sheet.getLastRow() + 1;
+  headers.forEach((h, idx) => {
+    if (TEXT_COLUMNS.indexOf(h) >= 0) {
+      sheet.getRange(targetRow, idx + 1).setNumberFormat('@');
+    }
+  });
+  sheet.getRange(targetRow, 1, 1, headers.length).setValues([rowValues]);
 }
 
 function deleteRow(sheet, idVal, keyField) {

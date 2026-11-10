@@ -4,7 +4,7 @@
  * Khắc phục 100% lỗi CORS: Không dùng header tùy biến trong GET, dùng text/plain trong POST
  */
 
-import { toast } from '../helpers.js';
+import { toast } from '../helpers.js?v=7.9';
 
 const GAS_ENDPOINT_KEY = 'tvm_gas_endpoint';
 const LAST_SYNC_KEY = 'tvm_last_sync_time';
@@ -62,6 +62,8 @@ export class AppScriptBridge {
           tasks: data.tasks || [],
           users: data.users || [],
           depts: data.depts || [],
+          notifications: data.notifications || [],
+          plans: data.plans || [],
           timestamp: this.lastSyncTime
         };
       } else {
@@ -97,7 +99,7 @@ export class AppScriptBridge {
   }
 
   // Đẩy toàn bộ dữ liệu từ LocalStorage lên Google Sheet (Batch Sync qua POST text/plain)
-  async pushAllToCloud(tasks, users, notifications = [], departments = []) {
+  async pushAllToCloud(tasks, users, notifications = [], departments = [], plans = []) {
     if (!this.isConnected()) return false;
     try {
       // Dùng text/plain để không bị CORS preflight OPTIONS
@@ -110,6 +112,7 @@ export class AppScriptBridge {
           users: users,
           notifications: notifications,
           departments: departments,
+          plans: plans,
           timestamp: new Date().toISOString()
         }),
         mode: 'no-cors'
@@ -232,6 +235,31 @@ export class AppScriptBridge {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'markNotificationRead', notifId }),
+        mode: 'no-cors'
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Xóa toàn bộ thông báo của 1 người dùng trên Google Sheet
+  async clearUserNotifications(userId) {
+    return this._post({ action: 'clearUserNotifications', userId });
+  }
+
+  // Đánh dấu đã đọc toàn bộ thông báo của 1 người dùng trên Google Sheet
+  async markAllNotificationsRead(userId) {
+    return this._post({ action: 'markAllNotificationsRead', userId });
+  }
+
+  async _post(payload) {
+    if (!this.isConnected()) return false;
+    try {
+      await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
         mode: 'no-cors'
       });
       return true;

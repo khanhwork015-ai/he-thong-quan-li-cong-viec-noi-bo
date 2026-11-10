@@ -7,9 +7,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=7.8';
-import { store } from '../store.js?v=7.8';
-import { toast, rung, esc } from '../helpers.js?v=7.8';
+import { auth } from '../auth.js?v=7.9';
+import { store } from '../store.js?v=7.9';
+import { toast, rung, esc } from '../helpers.js?v=7.9';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -74,7 +74,7 @@ export class CreateTaskModal {
               </div>
               <div class="min-w-0">
                 <h3 class="font-bold text-[16px] sm:text-[17px] text-[#0d1c2f] truncate" style="color: var(--text);">
-                  ${isEdit ? `Chỉnh Sửa Công Việc • ${esc(taskToEdit.id)}` : 'Giao Việc &amp; Đề Xuất Mới'}
+                  ${isEdit ? `Chỉnh Sửa Công Việc • ${esc(taskToEdit.id)}` : 'Tạo Việc Mới'}
                 </h3>
                 <span class="text-[11.5px] font-semibold truncate block" style="color: var(--primary);">
                   ${esc(taskDept.name)} • ${isEdit ? esc(taskToEdit.id) : esc(taskDept.code)}
@@ -121,29 +121,6 @@ export class CreateTaskModal {
             <div>
               <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mô tả chi tiết &amp; Tiêu chuẩn nghiệm thu</label>
               <textarea id="newTaskDesc" rows="3" placeholder="Ghi chú yêu cầu kỹ thuật, mốc hoàn thành, phạm vi phối hợp..." class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]">${isEdit ? esc(taskToEdit.description || '') : ''}</textarea>
-            </div>
-
-            <!-- DANH SÁCH VIỆC CON (SUBTASKS) -->
-            <div class="p-3.5 rounded-xl border border-[#e2e8f0] bg-[#fffbeb]/40 flex flex-col gap-2.5 shadow-2xs">
-              <div class="flex items-center justify-between">
-                <label class="block text-[12.5px] font-bold text-[#795900] flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[18px]">account_tree</span>
-                  <span>Danh sách việc con (Subtasks)</span>
-                </label>
-                <span class="text-[11px] font-bold text-[#92400e] bg-[#fef3c7] px-2 py-0.5 rounded-md" id="modalSubtaskCountBadge">0 việc con</span>
-              </div>
-
-              <!-- Ô NHẬP VIỆC CON NHANH (INPUT ĐẠT CHUẨN HEIGHT) -->
-              <div class="flex gap-2">
-                <input type="text" id="inputModalSubtaskTitle" placeholder="Nhập tên việc con (VD: Đối soát tài liệu, kiểm kê...)" class="flex-1 h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
-                <button type="button" id="btnAddModalSubtask" class="px-4 h-11 rounded-lg bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[13px] flex items-center gap-1 shrink-0 cursor-pointer transition-colors shadow-2xs min-h-[44px]">
-                  <span class="material-symbols-outlined text-[18px]">add</span>
-                  <span>Thêm</span>
-                </button>
-              </div>
-
-              <!-- DANH SÁCH CÁC VIỆC CON ĐÃ THÊM -->
-              <div id="modalSubtasksContainer" class="flex flex-col gap-1.5 empty:hidden pt-0.5 max-h-48 overflow-y-auto"></div>
             </div>
 
             <!-- PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE) - THIẾT KẾ ĐẲNG CẤP TOÀN HỆ THỐNG -->
@@ -270,7 +247,7 @@ export class CreateTaskModal {
                   <span>Lưu Thay Đổi Nhiệm Vụ</span>
                 ` : `
                   <span class="material-symbols-outlined text-[18px]">send</span>
-                  <span>Tạo &amp; Giao Việc</span>
+                  <span>Tạo Việc</span>
                 `}
               </button>
             </div>
@@ -498,87 +475,6 @@ export class CreateTaskModal {
       });
     }
 
-    // QUẢN LÝ VIỆC CON TRONG FORM (INITIALIZE TỪ TASK ĐANG SỬA HOẶC MỚI)
-    const inputModalSubtaskTitle = this.container.querySelector('#inputModalSubtaskTitle');
-    const btnAddModalSubtask = this.container.querySelector('#btnAddModalSubtask');
-    const modalSubtasksContainer = this.container.querySelector('#modalSubtasksContainer');
-    const modalSubtaskCountBadge = this.container.querySelector('#modalSubtaskCountBadge');
-    
-    // Nạp việc con từ task hiện tại nếu đang ở chế độ chỉnh sửa
-    const initialSubtasks = (isEdit && this.taskToEdit && Array.isArray(this.taskToEdit.subtasks))
-      ? JSON.parse(JSON.stringify(this.taskToEdit.subtasks))
-      : [];
-    const tempSubtasks = [...initialSubtasks];
-
-    const renderTempSubtasks = () => {
-      if (!modalSubtasksContainer) return;
-      if (tempSubtasks.length === 0) {
-        modalSubtasksContainer.innerHTML = '';
-        if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = '0 việc con';
-        return;
-      }
-
-      if (modalSubtaskCountBadge) modalSubtaskCountBadge.textContent = `${tempSubtasks.length} việc con`;
-      modalSubtasksContainer.innerHTML = tempSubtasks.map((st, idx) => {
-        const isCompleted = st.completed || st.status === 'done';
-        return `
-          <div class="p-2 sm:px-3 rounded-xl bg-white border border-[#e2e8f0] flex items-center justify-between gap-2 shadow-2xs">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-[#d6a52a]'} shrink-0"></span>
-              <span class="text-[12px] font-bold text-[#795900] font-mono-data">#${idx + 1}</span>
-              <span class="text-[12.5px] font-semibold text-[#0d1c2f] truncate ${isCompleted ? 'line-through text-gray-400' : ''}">${esc(st.title || st.text)}</span>
-            </div>
-            <button type="button" class="btn-remove-temp-subtask text-rose-500 hover:text-rose-700 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-50 cursor-pointer shrink-0" data-index="${idx}" title="Xóa việc con này">
-              <span class="material-symbols-outlined text-[17px]">close</span>
-            </button>
-          </div>
-        `;
-      }).join('');
-
-      modalSubtasksContainer.querySelectorAll('.btn-remove-temp-subtask').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          rung(10);
-          const idx = parseInt(btn.dataset.index, 10);
-          tempSubtasks.splice(idx, 1);
-          renderTempSubtasks();
-        });
-      });
-    };
-
-    // Render danh sách ban đầu nếu có
-    renderTempSubtasks();
-
-    const addTempSubtask = () => {
-      if (!inputModalSubtaskTitle) return;
-      const title = inputModalSubtaskTitle.value.trim();
-      if (!title) {
-        toast('Vui lòng nhập tên việc con', 'warning');
-        return;
-      }
-      rung(10);
-      tempSubtasks.push({
-        title,
-        description: '',
-        assigneeId: selectAssignee ? selectAssignee.value : '',
-        dueDate: this.container.querySelector('#newTaskDueDate')?.value || new Date().toISOString().split('T')[0],
-        status: 'todo',
-        completed: false
-      });
-      inputModalSubtaskTitle.value = '';
-      renderTempSubtasks();
-    };
-
-    if (btnAddModalSubtask) btnAddModalSubtask.addEventListener('click', addTempSubtask);
-    if (inputModalSubtaskTitle) {
-      inputModalSubtaskTitle.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          addTempSubtask();
-        }
-      });
-    }
-
     const closeModal = () => {
       rung(10);
       this.taskToEdit = null;
@@ -637,8 +533,7 @@ export class CreateTaskModal {
             category,
             cost,
             requiresApproval,
-            approverId,
-            subtasks: tempSubtasks
+            approverId
           });
 
           toast(`Đã lưu thay đổi nhiệm vụ: ${this.taskToEdit.id}`, 'success');
@@ -658,11 +553,10 @@ export class CreateTaskModal {
             category,
             cost,
             requiresApproval,
-            approverId,
-            subtasks: tempSubtasks
+            approverId
           });
 
-          toast(`Đã giao việc thành công: ${newTask.id}`, 'success');
+          toast(`Đã tạo việc thành công: ${newTask.id}`, 'success');
           closeModal();
           if (this.onTaskCreated) this.onTaskCreated(newTask);
         }

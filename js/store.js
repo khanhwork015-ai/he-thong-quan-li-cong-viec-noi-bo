@@ -3,9 +3,9 @@
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
 
-import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js';
-import { auth } from './auth.js';
-import { appScriptBridge } from './services/appScriptBridge.js';
+import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=7.9';
+import { auth } from './auth.js?v=7.9';
+import { appScriptBridge } from './services/appScriptBridge.js?v=7.9';
 
 const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
 const USERS_STORAGE_KEY = 'tvm_users_v4';
@@ -20,8 +20,9 @@ export class Store {
   }
 
   init() {
+    // DỮ LIỆU VẬN HÀNH (công việc / kế hoạch / thông báo) BẮT ĐẦU RỖNG - dữ liệu thật lấy từ Google Sheet
     if (!localStorage.getItem(TASKS_STORAGE_KEY)) {
-      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(INITIAL_TASKS));
+      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify([]));
     }
     if (!localStorage.getItem(USERS_STORAGE_KEY)) {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(USERS));
@@ -30,10 +31,10 @@ export class Store {
       localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(DEPARTMENTS));
     }
     if (!localStorage.getItem(PLANS_STORAGE_KEY)) {
-      localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(INITIAL_PLANS));
+      localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify([]));
     }
     if (!localStorage.getItem(NOTIF_STORAGE_KEY)) {
-      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(INITIAL_NOTIFICATIONS));
+      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify([]));
     }
   }
 
@@ -192,9 +193,34 @@ export class Store {
         localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(mergedDepts));
       }
 
-      if (cloudData.notifications && cloudData.notifications.length > 0) {
-        localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(cloudData.notifications));
-        window.dispatchEvent(new CustomEvent('tvm:notifications_changed', { detail: { count: cloudData.notifications.length } }));
+      // Thông báo: Sheet là nguồn chuẩn (xóa/đã đọc đã được đồng bộ ngược lên Sheet)
+      if (Array.isArray(cloudData.notifications)) {
+        const cloudNotifs = cloudData.notifications.map(n => ({
+          ...n,
+          isRead: n.isRead === true || n.isRead === 'true' || n.isRead === 'TRUE'
+        }));
+        const cloudIds = new Set(cloudNotifs.map(n => n.id));
+        const localOnly = this.getAllNotifications().filter(n => n && n.id && !cloudIds.has(n.id));
+        localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify([...cloudNotifs, ...localOnly]));
+        window.dispatchEvent(new CustomEvent('tvm:notifications_changed', { detail: { count: cloudNotifs.length } }));
+      }
+
+      // Kế hoạch: hợp nhất theo id (ưu tiên bản mới hơn theo updatedAt)
+      let planCount = 0;
+      if (Array.isArray(cloudData.plans) && cloudData.plans.length > 0) {
+        const planMap = new Map();
+        this.getAllPlansRaw().forEach(lp => { if (lp && lp.id) planMap.set(lp.id, lp); });
+        cloudData.plans.forEach(cp => {
+          if (!cp || !cp.id) return;
+          const lp = planMap.get(cp.id);
+          const cloudTime = Date.parse(cp.updatedAt || '') || 0;
+          const localTime = lp ? (Date.parse(lp.updatedAt || '') || 0) : 0;
+          planMap.set(cp.id, (lp && localTime > cloudTime) ? lp : { ...(lp || {}), ...cp });
+        });
+        const mergedPlans = Array.from(planMap.values());
+        localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(mergedPlans));
+        planCount = mergedPlans.length;
+        window.dispatchEvent(new CustomEvent('tvm:plans_changed'));
       }
 
       window.dispatchEvent(new CustomEvent('tvm:data_changed'));
@@ -204,7 +230,8 @@ export class Store {
         success: true,
         taskCount,
         userCount,
-        message: `Đồng bộ thành công! Đã nạp ${taskCount} công việc và ${userCount} nhân sự từ Google Sheet.`
+        planCount,
+        message: `Đồng bộ thành công! Đã nạp ${taskCount} công việc, ${planCount} kế hoạch và ${userCount} nhân sự từ Google Sheet.`
       };
     } else {
       return {
@@ -224,14 +251,15 @@ export class Store {
     const users = this.getAllUsers();
     const notifs = this.getAllNotifications();
     const depts = this.getAllDepartments();
-    const success = await appScriptBridge.pushAllToCloud(tasks, users, notifs, depts);
+    const plans = this.getAllPlansRaw();
+    const success = await appScriptBridge.pushAllToCloud(tasks, users, notifs, depts, plans);
     return {
       success,
       taskCount: tasks.length,
       userCount: users.length,
       deptCount: depts.length,
       message: success 
-        ? `Đã đẩy ${tasks.length} công việc, ${users.length} nhân sự và ${depts.length} phòng ban lên Google Sheet thành công!` 
+        ? `Đã đẩy ${tasks.length} công việc, ${plans.length} kế hoạch, ${users.length} nhân sự và ${depts.length} phòng ban lên Google Sheet thành công!` 
         : 'Gửi dữ liệu lên Google Sheet thất bại'
     };
   }
@@ -640,7 +668,14 @@ export class Store {
       : (activeDept.id === 'all' ? (this.getAllDepartments()[0]?.id || 'dept_ptkh') : activeDept.id);
     const dept = this.getDepartmentById(targetDeptId) || activeDept;
     const prefix = dept?.code ? dept.code.split('-')[0] : 'TASK';
-    const newId = `${prefix}-${Date.now().toString().slice(-4)}`;
+    const existingIds = new Set(tasks.map(t => t.id));
+    let seq = tasks.reduce((m, t) => {
+      const mt = String(t.id || '').match(new RegExp('^' + prefix + '-(\\d+)$'));
+      const n = mt ? parseInt(mt[1], 10) : 0;
+      return n > m ? n : m;
+    }, 0);
+    let newId;
+    do { seq += 1; newId = `${prefix}-${String(seq).padStart(3, '0')}`; } while (existingIds.has(newId));
 
     const requiresApproval = Boolean(taskData.requiresApproval);
     const approverId = requiresApproval ? (taskData.approverId || dept.managerId || 'user_lanhdao') : null;
@@ -1279,13 +1314,31 @@ export class Store {
         updated = true;
       }
     });
-    if (updated) this.saveAllNotifications(notifs);
+    if (updated) {
+      this.saveAllNotifications(notifs);
+      appScriptBridge.markAllNotificationsRead(userId);
+    }
   }
 
   clearUserNotifications(userId) {
     const notifs = this.getAllNotifications();
     const remaining = notifs.filter(n => n.recipientId !== userId && n.recipientId !== 'all');
     this.saveAllNotifications(remaining);
+    appScriptBridge.clearUserNotifications(userId);
+  }
+
+  // XÓA DỮ LIỆU MẪU - BẮT ĐẦU DỮ LIỆU THẬT: dọn công việc, kế hoạch, thông báo (giữ nguyên nhân sự & phòng ban)
+  async clearOperationalData() {
+    localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify([]));
+    localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify([]));
+    localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify([]));
+    window.dispatchEvent(new CustomEvent('tvm:data_changed'));
+    window.dispatchEvent(new CustomEvent('tvm:plans_changed'));
+    window.dispatchEvent(new CustomEvent('tvm:notifications_changed', { detail: { count: 0 } }));
+    if (appScriptBridge.isConnected()) {
+      return appScriptBridge.pushAllToCloud([], this.getAllUsers(), [], this.getAllDepartments(), []);
+    }
+    return true;
   }
 
   getDepartmentMetrics() {
@@ -1318,13 +1371,26 @@ export class Store {
   getAllPlansRaw() {
     try {
       const data = localStorage.getItem(PLANS_STORAGE_KEY);
-      return data ? JSON.parse(data) : INITIAL_PLANS;
+      return data ? JSON.parse(data) : [];
     } catch (_) {
-      return INITIAL_PLANS;
+      return [];
     }
   }
 
   saveAllPlans(plans) {
+    // So sánh với bản đang lưu để chỉ đẩy các kế hoạch thay đổi / xóa lên Google Sheet
+    let previous = [];
+    try { previous = JSON.parse(localStorage.getItem(PLANS_STORAGE_KEY)) || []; } catch (_) { previous = []; }
+    const prevMap = new Map(previous.map(p => [p.id, JSON.stringify(p)]));
+    const nextIds = new Set();
+    plans.forEach(p => {
+      nextIds.add(p.id);
+      if (prevMap.get(p.id) !== JSON.stringify(p)) appScriptBridge.pushPlan(p);
+    });
+    previous.forEach(p => {
+      if (!nextIds.has(p.id)) appScriptBridge.deletePlan(p.id);
+    });
+
     localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(plans));
     window.dispatchEvent(new CustomEvent('tvm:plans_changed'));
     window.dispatchEvent(new CustomEvent('tvm:data_changed'));
@@ -1359,7 +1425,11 @@ export class Store {
     const dept = this.getDepartmentById(targetDeptId) || activeDept;
     const deptCode = dept?.code ? dept.code.split('-')[0] : 'PLN';
 
-    const num = all.length + 1;
+    const maxNum = all.reduce((m, p) => {
+      const n = parseInt(String(p.code || '').replace(/\D/g, ''), 10);
+      return Number.isFinite(n) && n > m ? n : m;
+    }, 0);
+    const num = Math.max(maxNum, all.length) + 1;
     const planId = `PLAN-${deptCode}-${String(num).padStart(2, '0')}`;
     const code = `PLN-${String(num).padStart(2, '0')}`;
 

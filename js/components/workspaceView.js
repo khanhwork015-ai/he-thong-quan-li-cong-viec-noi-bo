@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=7.8';
-import { store } from '../store.js?v=7.8';
-import { esc, soVN, ngayVN, toast, rung, kiemTraTreHan } from '../helpers.js?v=7.8';
+import { auth } from '../auth.js?v=7.9';
+import { store } from '../store.js?v=7.9';
+import { esc, soVN, ngayVN, toast, rung, kiemTraTreHan } from '../helpers.js?v=7.9';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
@@ -95,7 +95,7 @@ export class WorkspaceView {
               ${canCreate ? `
                 <button type="button" class="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] text-[12px] sm:text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all min-h-[40px] shrink-0 cursor-pointer" id="btnWorkspaceCreateTask">
                   <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                  <span>Giao việc</span>
+                  <span>Tạo việc</span>
                 </button>
               ` : ''}
             </div>
@@ -201,7 +201,7 @@ export class WorkspaceView {
             <span class="material-symbols-outlined text-[24px]">inbox</span>
           </div>
           <div class="text-[15px] font-bold text-[#0d1c2f]">Không tìm thấy công việc nào</div>
-          <p class="text-[12.5px] text-[#64748b] mt-1">Hãy thử đổi tab, bộ lọc hoặc bấm "Giao việc".</p>
+          <p class="text-[12.5px] text-[#64748b] mt-1">Hãy thử đổi tab, bộ lọc hoặc bấm "Tạo việc".</p>
         </div>
       `;
     }
@@ -324,7 +324,7 @@ export class WorkspaceView {
                       </div>
                     </td>
                     <td class="py-3.5 px-4">
-                      <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
+                      <div class="font-bold text-[#0d1c2f] break-words whitespace-normal leading-snug hover:text-[#795900] transition-colors">${esc(t.title)}</div>
                       <!-- TÁCH RIÊNG 2 DÒNG: NGƯỜI TẠO & NGÀY TẠO -->
                       <div class="flex flex-col gap-0.5 mt-1 text-[11.5px]">
                         <div class="flex items-center gap-1 text-[#817663] truncate">
@@ -449,7 +449,7 @@ export class WorkspaceView {
                         </div>
                       </div>
 
-                      <div class="font-bold text-[13px] text-[#0d1c2f] line-clamp-2 leading-snug">
+                      <div class="font-bold text-[13px] text-[#0d1c2f] break-words leading-snug">
                         ${esc(t.title)}
                       </div>
 

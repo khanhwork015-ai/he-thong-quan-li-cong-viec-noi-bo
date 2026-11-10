@@ -5,11 +5,11 @@
  * Bảo mật: Chỉ ADMIN mới được xem, cấu hình và đồng bộ Google Apps Script Web App
  */
 
-import { auth } from '../auth.js?v=7.8';
-import { store } from '../store.js?v=7.8';
-import { appScriptBridge } from '../services/appScriptBridge.js';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=7.8';
-import { shinTheme } from '../theme.js?v=7.8';
+import { auth } from '../auth.js?v=7.9';
+import { store } from '../store.js?v=7.9';
+import { appScriptBridge } from '../services/appScriptBridge.js?v=7.9';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=7.9';
+import { shinTheme } from '../theme.js?v=7.9';
 
 export class SettingsModal {
   constructor(containerId, onSettingsUpdated) {
@@ -138,7 +138,7 @@ export class SettingsModal {
               <div class="pt-2 border-t border-[#f1f5f9] mt-1" style="border-color: var(--border);">
                 <button type="button" class="w-full py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-[12.5px] font-bold hover:bg-red-100 transition-colors min-h-[44px] flex items-center justify-center gap-1.5 cursor-pointer" id="btnModalResetData">
                   <span class="material-symbols-outlined text-[18px]">restart_alt</span>
-                  <span>Khôi phục dữ liệu gốc mẫu (Admin xác nhận 2 lần)</span>
+                  <span>Xóa dữ liệu mẫu (bắt đầu dữ liệu thật)</span>
                 </button>
               </div>
               ` : ''}
@@ -273,10 +273,17 @@ export class SettingsModal {
     const btnReset = this.container.querySelector('#btnModalResetData');
     if (btnReset) {
       btnReset.addEventListener('click', () => {
-        xacNhan2Lan('reset_all_data_modal', 'Khôi phục toàn bộ dữ liệu mẫu', () => {
-          localStorage.clear();
-          location.reload();
-        });
+        xacNhanXoa(
+          'Xóa Dữ Liệu Mẫu',
+          'Toàn bộ công việc, kế hoạch và thông báo (trên máy và trên Google Sheet) sẽ bị xóa để bắt đầu dữ liệu thật. Nhân sự và phòng ban được giữ nguyên. Không thể hoàn tác.',
+          async () => {
+            await store.clearOperationalData();
+            toast('Đã xóa dữ liệu mẫu. Hệ thống sẵn sàng nhập dữ liệu thật!', 'success');
+            this.show();
+            if (this.onSettingsUpdated) this.onSettingsUpdated();
+          },
+          { btnConfirmText: 'Xóa Dữ Liệu Mẫu' }
+        );
       });
     }
   }

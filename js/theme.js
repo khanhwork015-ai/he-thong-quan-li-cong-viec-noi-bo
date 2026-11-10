@@ -4,7 +4,7 @@
  * 3 mức cỡ chữ (Font Scales) và công tắc Bottom Navigation chuẩn SHIN.
  */
 
-import { rung } from './helpers.js';
+import { rung } from './helpers.js?v=7.9';
 
 export const PALETTES = [
   {

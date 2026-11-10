@@ -4,11 +4,11 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=7.8';
-import { store } from '../store.js?v=7.8';
-import { USERS } from '../models.js?v=7.8';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=7.8';
-import { shinTheme } from '../theme.js?v=7.8';
+import { auth } from '../auth.js?v=7.9';
+import { store } from '../store.js?v=7.9';
+import { USERS } from '../models.js?v=7.9';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=7.9';
+import { shinTheme } from '../theme.js?v=7.9';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
@@ -223,9 +223,9 @@ export class TopHeader {
 
           <!-- PRIMARY ACTION: TẠO CÔNG VIỆC (CHỈ HIỂN THỊ TỪ SM TRỞ LÊN ĐỂ TRÁNH QUÁ TẢI MOBILE) -->
           ${canCreate ? `
-            <button type="button" class="hidden sm:flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold shadow-xs transition-all min-h-[44px]" id="btnHeaderCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);" title="Giao việc mới">
+            <button type="button" class="hidden sm:flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold shadow-xs transition-all min-h-[44px]" id="btnHeaderCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);" title="Tạo việc mới">
               <span class="material-symbols-outlined text-[18px]">add</span>
-              <span class="hidden sm:inline">Giao việc</span>
+              <span class="hidden sm:inline">Tạo việc</span>
             </button>
           ` : ''}
 

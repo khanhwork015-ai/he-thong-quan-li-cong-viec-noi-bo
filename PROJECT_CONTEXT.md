@@ -301,6 +301,15 @@
     + Chuyển chuỗi nội dung thành cùng dòng và áp dụng `.trim()`, loại bỏ 100% khoảng trắng thừa, văn bản hiển thị sát và ngay ngắn dưới tiêu đề.
   - **Nâng cấp Cache Buster toàn diện `?v=7.8`:** Đồng bộ trên 23 files và đẩy Git `origin/main`.
 
+- [x] **38. Chuẩn Bị Bàn Giao: Dữ Liệu Thật Đồng Bộ Google Sheet, Tạo Việc & Giao Diện (v7.9)**:
+  - **UI:** Tên công việc hiển thị đầy đủ (bỏ cắt `line-clamp`); đổi mọi nhãn "Giao việc" thành "Tạo việc"; bỏ khối "Danh sách việc con" trong form tạo/sửa việc (việc con tạo sau khi đã có việc cha; sửa việc cha không làm mất việc con).
+  - **Nguyên nhân Sheet không có dữ liệu Kế hoạch/Phê duyệt:** (1) `Code.gs` không có sheet PLANS, không xử lý `savePlan/deletePlan`, `getData` không trả plans → kế hoạch chỉ nằm ở LocalStorage; (2) nút "Đẩy lên Sheet" ở trang Cài đặt gọi `appScriptBridge.pushAllToCloud()` KHÔNG truyền dữ liệu → không đẩy gì nhưng báo thành công; nút "Kéo về" chỉ tải mà không hợp nhất vào store; (3) dữ liệu mẫu cứng (`models.js`) được nạp sẵn vào máy; (4) `Code.gs` tự đổ công việc mẫu vào Sheet khi TASKS trống.
+  - **Sửa:** thêm sheet PLANS + `savePlan/deletePlan` + pushAll/getData có plans; `store.saveAllPlans` tự đẩy mọi thay đổi/xóa kế hoạch lên Sheet; pull hợp nhất kế hoạch theo `updatedAt`; thông báo đồng bộ xóa/đã đọc hàng loạt; Settings dùng `store.pushAllToCloud/syncFromCloudIfAvailable`; sao lưu JSON đủ tasks/plans/users/depts/notifications.
+  - **Dữ liệu vận hành bắt đầu RỖNG** (công việc/kế hoạch/thông báo); `Code.gs` chỉ seed cơ cấu (phòng ban + tài khoản) khi USERS trống, chỉ nạp demo khi gọi `?action=seed`. Nút Admin "Xóa dữ liệu mẫu" (`store.clearOperationalData`) dọn tasks/plans/notifs cả máy lẫn Sheet, giữ nhân sự & phòng ban.
+  - **Toàn vẹn dữ liệu:** mã việc tăng dần theo phòng ban (`PTKH-001`, không trùng); mã kế hoạch không trùng sau khi xóa; `Code.gs` ép cột ngày/giờ dạng text và chuẩn hóa Date khi đọc (hết lệch ngày/ISO UTC).
+  - **Hợp nhất module:** mọi import nội bộ dùng cùng `?v=` để chỉ còn 1 instance của auth/store/appScriptBridge (trước đây URL endpoint lưu ở trang Cài đặt không đến được store cho tới khi F5).
+  - **Cache Buster `?v=7.9`.** Cần Deploy lại Code.gs (New version) để dùng sheet PLANS.
+
 ---
 
 ## 4. QUY TẮC PHÁT TRIỂN & TIẾT KIỆM TOKEN

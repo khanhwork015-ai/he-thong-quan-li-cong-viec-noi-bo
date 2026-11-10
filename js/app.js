@@ -4,31 +4,31 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=7.8';
-import { store } from './store.js?v=7.8';
-import { Sidebar } from './components/sidebar.js?v=7.8';
-import { TopHeader } from './components/topHeader.js?v=7.8';
-import { BottomNav } from './components/bottomNav.js?v=7.8';
-import { DashboardView } from './components/dashboardView.js?v=7.8';
-import { WorkspaceView } from './components/workspaceView.js?v=7.8';
-import { TaskDrawer } from './components/taskDrawer.js?v=7.8';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=7.8';
-import { CreateTaskModal } from './components/createTaskModal.js?v=7.8'
-import { SubtasksModal } from './components/subtasksModal.js?v=7.8';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=7.8';;
-import { ProfileModal } from './components/profileModal.js?v=7.8';
-import { MemberModal } from './components/memberModal.js?v=7.8';
-import { SettingsModal } from './components/settingsModal.js?v=7.8';
-import { LoginView } from './components/loginView.js?v=7.8';
-import { DepartmentModal } from './components/departmentModal.js?v=7.8';
-import { DepartmentView } from './components/departmentView.js?v=7.8';
-import { PlansView } from './components/plansView.js?v=7.8';
-import { PlanDrawer } from './components/planDrawer.js?v=7.8';
-import { PlanModal } from './components/planModal.js?v=7.8';
-import { ApprovalView } from './components/approvalView.js?v=7.8';
-import { appScriptBridge } from './services/appScriptBridge.js?v=7.8';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=7.8';
-import { shinTheme } from './theme.js?v=7.8';
+import { auth } from './auth.js?v=7.9';
+import { store } from './store.js?v=7.9';
+import { Sidebar } from './components/sidebar.js?v=7.9';
+import { TopHeader } from './components/topHeader.js?v=7.9';
+import { BottomNav } from './components/bottomNav.js?v=7.9';
+import { DashboardView } from './components/dashboardView.js?v=7.9';
+import { WorkspaceView } from './components/workspaceView.js?v=7.9';
+import { TaskDrawer } from './components/taskDrawer.js?v=7.9';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=7.9';
+import { CreateTaskModal } from './components/createTaskModal.js?v=7.9'
+import { SubtasksModal } from './components/subtasksModal.js?v=7.9';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=7.9';;
+import { ProfileModal } from './components/profileModal.js?v=7.9';
+import { MemberModal } from './components/memberModal.js?v=7.9';
+import { SettingsModal } from './components/settingsModal.js?v=7.9';
+import { LoginView } from './components/loginView.js?v=7.9';
+import { DepartmentModal } from './components/departmentModal.js?v=7.9';
+import { DepartmentView } from './components/departmentView.js?v=7.9';
+import { PlansView } from './components/plansView.js?v=7.9';
+import { PlanDrawer } from './components/planDrawer.js?v=7.9';
+import { PlanModal } from './components/planModal.js?v=7.9';
+import { ApprovalView } from './components/approvalView.js?v=7.9';
+import { appScriptBridge } from './services/appScriptBridge.js?v=7.9';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=7.9';
+import { shinTheme } from './theme.js?v=7.9';
 
 class App {
   constructor() {
@@ -824,7 +824,7 @@ class App {
                 <div class="p-2.5 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between">
                   <div>
                     <strong class="text-[#0d1c2f]">👔 Trưởng Phòng (Manager)</strong>
-                    <div class="text-[#64748b] text-[11px] mt-0.5">Giao việc, duyệt nghiệm thu, quản lý nhân viên phòng</div>
+                    <div class="text-[#64748b] text-[11px] mt-0.5">Tạo việc, duyệt nghiệm thu, quản lý nhân viên phòng</div>
                   </div>
                   <span class="px-2 py-0.5 rounded-md bg-[#dcfce7] text-[#16a34a] font-bold text-[10px]">DEPT LEAD</span>
                 </div>
@@ -854,7 +854,7 @@ class App {
 
                 <button type="button" class="w-full py-2.5 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-[12.5px] font-bold flex items-center justify-center gap-2 transition-all min-h-[44px]" id="btnResetData">
                   <span class="material-symbols-outlined text-[18px]">restart_alt</span>
-                  <span>🔄 Khôi phục dữ liệu gốc mẫu</span>
+                  <span>🗑️ Xóa dữ liệu mẫu (bắt đầu dữ liệu thật)</span>
                 </button>
               </div>
             </div>
@@ -896,12 +896,8 @@ class App {
         btnPush.disabled = true;
         btnPush.innerHTML = `<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang đồng bộ...</span>`;
         try {
-          const res = await appScriptBridge.pushAllToCloud();
-          if (res.success) {
-            toast('Đã đẩy toàn bộ dữ liệu lên Google Sheets thành công!', 'success');
-          } else {
-            toast('Lỗi khi đẩy lên Google Sheets: ' + (res.error || 'CORS hoặc URL không hợp lệ'), 'warning');
-          }
+          const res = await store.pushAllToCloud();
+          toast(res.message, res.success ? 'success' : 'warning');
         } catch (err) {
           toast('Lỗi kết nối: ' + err.message, 'warning');
         } finally {
@@ -918,12 +914,12 @@ class App {
         btnPull.disabled = true;
         btnPull.innerHTML = `<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang tải về...</span>`;
         try {
-          const res = await appScriptBridge.fetchCloudData();
+          const res = await store.syncFromCloudIfAvailable();
           if (res.success) {
-            toast('Đã kéo dữ liệu từ Google Sheets về thành công!', 'success');
+            toast(res.message, 'success');
             this.renderCurrentView();
           } else {
-            toast('Lỗi tải dữ liệu: ' + (res.error || 'Kiểm tra quyền Anyone của Web App'), 'warning');
+            toast('Lỗi tải dữ liệu: ' + (res.message || 'Kiểm tra quyền Anyone của Web App'), 'warning');
           }
         } catch (err) {
           toast('Lỗi: ' + err.message, 'warning');
@@ -939,9 +935,11 @@ class App {
       btnExport.addEventListener('click', () => {
         rung(10);
         const backupData = {
-          tasks: store.tasks,
-          users: store.users,
-          departments: store.departments,
+          tasks: store.getAllTasksRaw(),
+          plans: store.getAllPlansRaw(),
+          users: store.getAllUsers(),
+          departments: store.getAllDepartments(),
+          notifications: store.getAllNotifications(),
           exportedAt: new Date().toISOString(),
           version: '3.8'
         };
@@ -960,11 +958,17 @@ class App {
     if (btnReset) {
       btnReset.addEventListener('click', () => {
         rung(20);
-        xacNhan2Lan('reset_defaults', 'Khôi phục toàn bộ dữ liệu gốc', () => {
-          store.resetDefaults();
-          toast('Đã khôi phục dữ liệu gốc mẫu thành công!', 'info');
-          this.renderSettingsView();
-        });
+        xacNhanXoa(
+          'Xóa Dữ Liệu Mẫu',
+          'Toàn bộ công việc, kế hoạch và thông báo (trên máy và trên Google Sheet) sẽ bị xóa để bắt đầu dữ liệu thật. Nhân sự và phòng ban được giữ nguyên. Hãy tải bản sao lưu trước. Không thể hoàn tác.',
+          async () => {
+            await store.clearOperationalData();
+            toast('Đã xóa dữ liệu mẫu. Hệ thống sẵn sàng nhập dữ liệu thật!', 'success');
+            this.refreshCurrentView();
+            this.renderSettingsView();
+          },
+          { btnConfirmText: 'Xóa Dữ Liệu Mẫu' }
+        );
       });
     }
   }
