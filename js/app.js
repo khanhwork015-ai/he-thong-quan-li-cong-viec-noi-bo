@@ -4,31 +4,31 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=8.1';
-import { store } from './store.js?v=8.1';
-import { Sidebar } from './components/sidebar.js?v=8.1';
-import { TopHeader } from './components/topHeader.js?v=8.1';
-import { BottomNav } from './components/bottomNav.js?v=8.1';
-import { DashboardView } from './components/dashboardView.js?v=8.1';
-import { WorkspaceView } from './components/workspaceView.js?v=8.1';
-import { TaskDrawer } from './components/taskDrawer.js?v=8.1';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=8.1';
-import { CreateTaskModal } from './components/createTaskModal.js?v=8.1'
-import { SubtasksModal } from './components/subtasksModal.js?v=8.1';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.1';;
-import { ProfileModal } from './components/profileModal.js?v=8.1';
-import { MemberModal } from './components/memberModal.js?v=8.1';
-import { SettingsModal } from './components/settingsModal.js?v=8.1';
-import { LoginView } from './components/loginView.js?v=8.1';
-import { DepartmentModal } from './components/departmentModal.js?v=8.1';
-import { DepartmentView } from './components/departmentView.js?v=8.1';
-import { PlansView } from './components/plansView.js?v=8.1';
-import { PlanDrawer } from './components/planDrawer.js?v=8.1';
-import { PlanModal } from './components/planModal.js?v=8.1';
-import { ApprovalView } from './components/approvalView.js?v=8.1';
-import { appScriptBridge } from './services/appScriptBridge.js?v=8.1';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=8.1';
-import { shinTheme } from './theme.js?v=8.1';
+import { auth } from './auth.js?v=8.2';
+import { store } from './store.js?v=8.2';
+import { Sidebar } from './components/sidebar.js?v=8.2';
+import { TopHeader } from './components/topHeader.js?v=8.2';
+import { BottomNav } from './components/bottomNav.js?v=8.2';
+import { DashboardView } from './components/dashboardView.js?v=8.2';
+import { WorkspaceView } from './components/workspaceView.js?v=8.2';
+import { TaskDrawer } from './components/taskDrawer.js?v=8.2';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=8.2';
+import { CreateTaskModal } from './components/createTaskModal.js?v=8.2'
+import { SubtasksModal } from './components/subtasksModal.js?v=8.2';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.2';;
+import { ProfileModal } from './components/profileModal.js?v=8.2';
+import { MemberModal } from './components/memberModal.js?v=8.2';
+import { SettingsModal } from './components/settingsModal.js?v=8.2';
+import { LoginView } from './components/loginView.js?v=8.2';
+import { DepartmentModal } from './components/departmentModal.js?v=8.2';
+import { DepartmentView } from './components/departmentView.js?v=8.2';
+import { PlansView } from './components/plansView.js?v=8.2';
+import { PlanDrawer } from './components/planDrawer.js?v=8.2';
+import { PlanModal } from './components/planModal.js?v=8.2';
+import { ApprovalView } from './components/approvalView.js?v=8.2';
+import { appScriptBridge } from './services/appScriptBridge.js?v=8.2';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=8.2';
+import { shinTheme } from './theme.js?v=8.2';
 
 class App {
   constructor() {
@@ -688,12 +688,13 @@ class App {
     }
   }
 
-  // --- MÀN HÌNH CÀI ĐẶT 2 CỘT CÂN XỨNG (GRID LAYOUT RESPONSIVE) ---
+  // --- MÀN HÌNH CÀI ĐẶT 2 CỘT CÂN XỨNG (GRID LAYOUT RESPONSIVE - PHÂN QUYỀN ADMIN) ---
   renderSettingsView() {
     const canvas = document.getElementById('main-content-canvas');
     const endpoint = appScriptBridge.getEndpoint();
     const isConnected = appScriptBridge.isConnected();
     const currentDept = auth.getActiveDepartment();
+    const isAdmin = auth.isAdmin();
 
     canvas.innerHTML = `
       <div class="flex flex-col gap-5 sm:gap-6 animate-fade-in w-full max-w-7xl mx-auto pb-12 overflow-x-hidden">
@@ -706,10 +707,10 @@ class App {
             <div>
               <div class="flex items-center gap-2 mb-0.5">
                 <span class="font-mono-data text-[11px] text-[#795900] font-bold bg-[#fffbeb] px-2 py-0.5 rounded border border-[#fef3c7]">${currentDept.code}</span>
-                <span class="text-[11.5px] sm:text-[12px] text-[#64748b]">• Trung tâm điều phối hệ thống</span>
+                <span class="text-[11.5px] sm:text-[12px] text-[#64748b]">• ${isAdmin ? 'Trung tâm điều phối hệ thống' : 'Cá nhân hóa giao diện'}</span>
               </div>
-              <h1 class="text-[18px] sm:text-[22px] font-extrabold text-[#0d1c2f] tracking-tight">Cài Đặt Hệ Thống &amp; Tích Hợp Nền Tảng</h1>
-              <p class="text-[12px] sm:text-[13px] text-[#64748b]">Quản lý kết nối Google Sheets / SHIN AIOS, bảo mật phân quyền và sao lưu cơ sở dữ liệu</p>
+              <h1 class="text-[18px] sm:text-[22px] font-extrabold text-[#0d1c2f] tracking-tight">${isAdmin ? 'Cài Đặt Hệ Thống &amp; Tích Hợp Nền Tảng' : 'Tùy Chỉnh Giao Diện Làm Việc'}</h1>
+              <p class="text-[12px] sm:text-[13px] text-[#64748b]">${isAdmin ? 'Quản lý kết nối Google Sheets / SHIN AIOS, bảo mật phân quyền và sao lưu cơ sở dữ liệu' : 'Tùy chỉnh chế độ sáng/tối, bảng màu chủ đạo và cỡ chữ hiển thị theo sở thích cá nhân'}</p>
             </div>
           </div>
 
@@ -719,7 +720,8 @@ class App {
           </button>
         </div>
 
-        <!-- 2. BỐ CỤC 2 CỘT CÂN ĐỐI (GRID 12 CỘT: 7 CỘT TRÁI & 5 CỘT PHẢI) -->
+        ${isAdmin ? `
+        <!-- 2. BỐ CỤC 2 CỘT DÀNH RIÊNG CHO ADMIN (GRID 12 CỘT: 7 CỘT TRÁI & 5 CỘT PHẢI) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
           
           <!-- CỘT TRÁI (COL-SPAN-7): TÍCH HỢP CLOUD GOOGLE APPS SCRIPT -->
@@ -807,7 +809,7 @@ class App {
           <!-- CỘT PHẢI (COL-SPAN-5): THƯƠNG HIỆU, PHÂN QUYỀN & SAO LƯU -->
           <div class="lg:col-span-5 flex flex-col gap-5 sm:gap-6">
             
-            <!-- MỤC ĐỔI MÀU GIAO DIỆN SHIN AIOS (CHỦ ĐẠO YÊU CẦU: 8 PALETTES, DARK/LIGHT, CỠ CHỮ, BOTTOM NAV) -->
+            <!-- MỤC ĐỔI MÀU GIAO DIỆN SHIN AIOS -->
             ${shinTheme.renderSettingsUI()}
 
             <!-- THẺ PHÂN QUYỀN RBAC 3 CẤP -->
@@ -866,6 +868,12 @@ class App {
 
           </div>
         </div>
+        ` : `
+        <!-- 2. BỐ CỤC GỌN GÀNG CHO TÀI KHOẢN THƯỜNG (CHỈ HIỂN THỊ ĐỔI THEMES GIAO DIỆN) -->
+        <div class="w-full max-w-2xl mx-auto">
+          ${shinTheme.renderSettingsUI()}
+        </div>
+        `}
       </div>
     `;
 
@@ -886,6 +894,7 @@ class App {
     const inputGas = canvas.querySelector('#inputGasUrl');
     if (btnSaveGas && inputGas) {
       btnSaveGas.addEventListener('click', () => {
+        if (!auth.isAdmin()) return;
         rung(10);
         const url = inputGas.value.trim();
         appScriptBridge.setEndpoint(url);
@@ -897,6 +906,7 @@ class App {
     const btnPush = canvas.querySelector('#btnPushToSheet');
     if (btnPush) {
       btnPush.addEventListener('click', async () => {
+        if (!auth.isAdmin()) return;
         rung(15);
         btnPush.disabled = true;
         btnPush.innerHTML = `<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang đồng bộ...</span>`;
@@ -915,6 +925,7 @@ class App {
     const btnPull = canvas.querySelector('#btnPullFromSheet');
     if (btnPull) {
       btnPull.addEventListener('click', async () => {
+        if (!auth.isAdmin()) return;
         rung(15);
         btnPull.disabled = true;
         btnPull.innerHTML = `<span class="material-symbols-outlined text-[17px] animate-spin">sync</span><span>Đang tải về...</span>`;
@@ -938,6 +949,7 @@ class App {
     const btnExport = canvas.querySelector('#btnExportBackup');
     if (btnExport) {
       btnExport.addEventListener('click', () => {
+        if (!auth.isAdmin()) return;
         rung(10);
         const backupData = {
           tasks: store.getAllTasksRaw(),
@@ -962,6 +974,7 @@ class App {
     const btnReset = canvas.querySelector('#btnResetData');
     if (btnReset) {
       btnReset.addEventListener('click', () => {
+        if (!auth.isAdmin()) return;
         rung(20);
         xacNhanXoa(
           'Xóa Dữ Liệu Mẫu',

@@ -1,15 +1,15 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - SETTINGS MODAL COMPONENT (SHIN AIOS v2.7)
  * Hộp thoại cài đặt hệ thống & Cấu hình Google Apps Script / SHIN AIOS
  * Đổi màu giao diện (8 Palettes, 4 Theme Modes, 3 Cỡ chữ, Bottom Nav)
  * Bảo mật: Chỉ ADMIN mới được xem, cấu hình và đồng bộ Google Apps Script Web App
  */
 
-import { auth } from '../auth.js?v=8.1';
-import { store } from '../store.js?v=8.1';
-import { appScriptBridge } from '../services/appScriptBridge.js?v=8.1';
-import { esc, toast, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=8.1';
-import { shinTheme } from '../theme.js?v=8.1';
+import { auth } from '../auth.js?v=8.2';
+import { store } from '../store.js?v=8.2';
+import { appScriptBridge } from '../services/appScriptBridge.js?v=8.2';
+import { esc, toast, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=8.2';
+import { shinTheme } from '../theme.js?v=8.2';
 
 export class SettingsModal {
   constructor(containerId, onSettingsUpdated) {
@@ -115,34 +115,30 @@ export class SettingsModal {
             </div>
             ` : ''}
 
-            <!-- 3. HỆ THỐNG VÀ THÔNG TIN PHIÊN BẢN -->
+            ${isAdmin ? `
+            <!-- 3. HỆ THỐNG VÀ THÔNG TIN PHIÊN BẢN (CHỈ ADMIN) -->
             <div class="p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col gap-2.5 shadow-xs" style="background-color: var(--card); border-color: var(--border);">
               <span class="text-[13.5px] font-bold text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
                 <span class="material-symbols-outlined text-[#64748b] text-[20px]">info</span>
-                Thông Tin Phiên Bản
+                Thông Tin Hệ Thống &amp; Quản Trị Dữ Liệu
               </span>
               <div class="text-[12px] text-[#64748b] flex justify-between">
                 <span>Hệ điều hành:</span>
                 <span class="font-mono-data text-[#0d1c2f] font-semibold" style="color: var(--text);">SHIN AIOS Master UX/UI v2.7</span>
               </div>
               <div class="text-[12px] text-[#64748b] flex justify-between">
-                <span>Đơn vị:</span>
-                <span class="text-[#0d1c2f] font-semibold" style="color: var(--text);">Thanh Vũ Medic Cơ Sở 3 (Cà Mau)</span>
-              </div>
-              <div class="text-[12px] text-[#64748b] flex justify-between">
                 <span>Tài khoản hiện tại:</span>
                 <span class="font-semibold" style="color: var(--primary);">${esc(currentUser.name)} (${esc(currentUser.role)})</span>
               </div>
 
-              ${isAdmin ? `
               <div class="pt-2 border-t border-[#f1f5f9] mt-1" style="border-color: var(--border);">
                 <button type="button" class="w-full py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-[12.5px] font-bold hover:bg-red-100 transition-colors min-h-[44px] flex items-center justify-center gap-1.5 cursor-pointer" id="btnModalResetData">
                   <span class="material-symbols-outlined text-[18px]">restart_alt</span>
                   <span>Xóa dữ liệu mẫu (bắt đầu dữ liệu thật)</span>
                 </button>
               </div>
-              ` : ''}
             </div>
+            ` : ''}
           </div>
         </div>
       </div>

@@ -310,12 +310,15 @@
   - **Hợp nhất module:** mọi import nội bộ dùng cùng `?v=` để chỉ còn 1 instance của auth/store/appScriptBridge (trước đây URL endpoint lưu ở trang Cài đặt không đến được store cho tới khi F5).
   - **Cache Buster `?v=7.9`.** Cần Deploy lại Code.gs (New version) để dùng sheet PLANS.
 
-- [x] **39. Sửa Lỗi Nút Xóa Dữ Liệu Mẫu & Tinh Chỉnh Màn Hình Đăng Nhập (v8.0 - v8.1)**:
+- [x] **39. Sửa Lỗi Nút Xóa Dữ Liệu Mẫu, Tinh Chỉnh Màn Hình Đăng Nhập & Phân Quyền Trang Cài Đặt (v8.0 - v8.2)**:
   - **Sửa lỗi nút "Xóa dữ liệu mẫu" không mở popup (v8.0):** Bổ sung import `xacNhanXoa` trong `settingsModal.js` và `toast` trong `store.js`; xóa fallback `|| INITIAL_TASKS` trong `getAllTasksRaw()`; thêm cơ chế lưu vết ID đã xóa (`tvm_deleted_ids_v1`) để chặn vĩnh viễn dữ liệu mẫu/đã xóa tự động quay lại từ Google Sheets khi chưa redeploy `Code.gs`.
   - **Tinh gọn màn hình đăng nhập (`loginView.js`) (v8.1):**
     + Bỏ dòng chữ `"Đang đồng bộ từ Google Sheets..."` trên nút đăng nhập (đổi thành `"Đang đăng nhập..."` gọn gàng).
     + Xóa bỏ dòng chân trang `"Bệnh viện Đa Khoa Thanh Vũ Medic Bạc Liêu • Cơ Sở 3 (Cà Mau)"` ở cuối thẻ đăng nhập theo yêu cầu.
-  - **Nâng cấp Cache Buster toàn diện `?v=8.1`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
+  - **Khóa quyền hiển thị & chỉnh sửa Trang Cài Đặt (`app.js`, `settingsModal.js`) (v8.2):**
+    + Chỉ duy nhất tài khoản có quyền **Admin** (`auth.isAdmin()`) mới nhìn thấy và thao tác được các khối: *Cổng Kết Nối Google Sheets (Apps Script Webhook)*, *Hướng Dẫn 3 Bước Kết Nối Google Sheets*, *Bảo Mật & Phân Quyền RBAC*, và *Quản Trị Cơ Sở Dữ Liệu (Backup JSON & Xóa dữ liệu mẫu)*.
+    + Tất cả các tài khoản không phải Admin khi vào mục **Cài đặt** (cả trang chính `renderSettingsView` lẫn cửa sổ popup `SettingsModal`) chỉ nhìn thấy duy nhất phần **Tùy chỉnh Themes & Giao diện** (`shinTheme.renderSettingsUI()`).
+  - **Nâng cấp Cache Buster toàn diện `?v=8.2`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
 
 ---
 

@@ -8,9 +8,9 @@
  * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
  */
 
-import { auth } from '../auth.js?v=8.1';
-import { store } from '../store.js?v=8.1';
-import { esc, soVN, ngayVN, loiChao, toast, rung, kiemTraTreHan } from '../helpers.js?v=8.1';
+import { auth } from '../auth.js?v=8.2';
+import { store } from '../store.js?v=8.2';
+import { esc, soVN, ngayVN, loiChao, toast, rung, kiemTraTreHan } from '../helpers.js?v=8.2';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
