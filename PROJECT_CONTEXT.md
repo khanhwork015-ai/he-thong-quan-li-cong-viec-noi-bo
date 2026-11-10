@@ -74,7 +74,13 @@
     - Tài liệu đính kèm (Links): Nút "Lưu" đổi sang style chủ đạo hệ thống, kích thước chuẩn 44px, không lệch màu xanh biển.
     - Modal tạo việc: Bổ sung chọn phòng ban tiếp nhận khi đang xem toàn viện và tự động cập nhật danh sách bộ phận con (teams).
   - **Dữ liệu chuẩn bị triển khai bên thứ ba:** Dữ liệu khởi tạo trong `models.js` được làm sạch, hoàn chỉnh và thực tế cho Thanh Vũ Medic CS3.
-  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=7.0`.
+  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=7.1`.
+- [x] **12. Nâng Cấp Giao Diện Phân Công (Assignee Picker) & Giới Hạn Đúng Nhân Sự Phòng Ban (`createTaskModal.js`, `taskDrawer.js`)**:
+  - **Giới hạn phạm vi phân công:** Khi tạo hoặc sửa việc cho phòng ban nào (hoặc chuyển phòng ban tiếp nhận), hệ thống tự động lọc chỉ hiển thị đúng các nhân sự thuộc phòng ban đó (và tài khoản toàn viện). Không còn tình trạng hiển thị tràn lan toàn bộ nhân viên viện.
+  - **Thay thế hoàn toàn thẻ `<select>` mặc định:** Thiết kế lại bộ chọn thành viên (Member Picker) chuẩn công thái học cao cấp cho toàn bộ hệ thống (Mobile lẫn Desktop):
+    - **Trigger Card:** Thẻ hiển thị avatar có đèn online, họ tên, chức danh và badge vai trò (`Trưởng phòng`, `Chuyên viên`), nút bấm "Đổi người" $\ge 56$px.
+    - **Member Picker Modal:** Khi bấm sẽ mở bảng chọn nhân viên với ô tìm kiếm nhanh, danh sách thẻ nhân sự có vùng chạm $\ge 48$px, hiển thị tổ/đội con (`[CSKH]`, `[MKT]`) và icon checkmark xác nhận trực quan.
+    - Đồng bộ tự động: Khi đổi phòng ban tiếp nhận, tự động nạp lại danh sách nhân sự tương ứng và kiểm tra hợp lệ của người được phân công.
 - [x] **11. Loại Bỏ Logo TV & Chữ Thanh Vũ Trên Mobile Top Navbar (`topHeader.js`)**:
   - Gỡ bỏ hoàn toàn badge logo `TV` và text `Thanh Vũ Medic` trên thanh điều hướng di động (< 640px) theo yêu cầu.
   - Phía bên trái header di động nay chỉ giữ lại duy nhất 1 nút Hamburger Menu `☰` chuẩn touch target $\ge 44 \times 44$px, tạo khoảng không gian cực kỳ thoáng đãng, tối giản và chuyên nghiệp.

@@ -4,9 +4,9 @@
  * Hỗ trợ giao diện ngăn kéo trượt mượt mà cho Mobile/Tablet và cố định trên Desktop (lg)
  */
 
-import { auth } from '../auth.js?v=7.0';
-import { store } from '../store.js?v=7.0';
-import { toast, rung } from '../helpers.js?v=7.0';
+import { auth } from '../auth.js?v=7.1';
+import { store } from '../store.js?v=7.1';
+import { toast, rung } from '../helpers.js?v=7.1';
 
 export class Sidebar {
   constructor(containerId, onNavChange, onModeChange, onLogout) {

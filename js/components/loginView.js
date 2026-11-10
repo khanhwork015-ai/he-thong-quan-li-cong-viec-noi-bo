@@ -4,9 +4,9 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y Tế (#0D1C2F)
  */
 
-import { auth } from '../auth.js?v=7.0';
-import { store } from '../store.js?v=7.0';
-import { toast, rung } from '../helpers.js?v=7.0';
+import { auth } from '../auth.js?v=7.1';
+import { store } from '../store.js?v=7.1';
+import { toast, rung } from '../helpers.js?v=7.1';
 
 export class LoginView {
   constructor(containerId, onLoginSuccess) {

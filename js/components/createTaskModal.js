@@ -7,9 +7,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=7.0';
-import { store } from '../store.js?v=7.0';
-import { toast, rung, esc } from '../helpers.js?v=7.0';
+import { auth } from '../auth.js?v=7.1';
+import { store } from '../store.js?v=7.1';
+import { toast, rung, esc } from '../helpers.js?v=7.1';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -27,14 +27,19 @@ export class CreateTaskModal {
 
     const currentDept = auth.getActiveDepartment();
     const allUsers = store.getAllUsers();
-    const currentUser = auth.getCurrentUser();
+    const currentUser = auth.getCurrentUser() || { id: 'usr_admin', name: 'Quản Trị Viên' };
     const depts = store.getAllDepartments();
+    const validDepts = depts.filter(d => d.id !== 'all');
     
     // Nếu đang sửa task của phòng ban khác, lấy phòng ban của task đó
-    const taskDept = isEdit && taskToEdit.departmentId 
-      ? (store.getDepartmentById(taskToEdit.departmentId) || currentDept) 
-      : currentDept;
+    const initialDeptId = (isEdit && taskToEdit.departmentId && taskToEdit.departmentId !== 'all') 
+      ? taskToEdit.departmentId 
+      : (currentDept.id === 'all' ? (validDepts[0]?.id || 'dept_ptkh') : currentDept.id);
+    const taskDept = store.getDepartmentById(initialDeptId) || validDepts[0] || currentDept;
     const currentTeams = taskDept.teams || [];
+
+    // Chỉ lấy nhân sự thuộc đúng phòng ban được chọn (và tài khoản toàn viện 'all')
+    const deptUsers = store.getAllUsers().filter(u => u.departmentId === taskDept.id || u.departmentId === 'all');
 
     // Danh sách người có thẩm quyền phê duyệt (Admin, Leadership, Manager)
     const approvers = allUsers.filter(u => u.isAdmin || u.role === 'ADMIN' || u.role === 'LEADERSHIP' || u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER');
@@ -43,8 +48,12 @@ export class CreateTaskModal {
       ? taskToEdit.approverId
       : (taskDept.managerId || (approvers.find(u => u.role === 'LEADERSHIP')?.id || approvers[0]?.id || currentUser.id));
 
-    const selectedAssigneeId = isEdit && taskToEdit.assigneeId ? taskToEdit.assigneeId : currentUser.id;
-    const currentAssigneeUser = store.getUserById(selectedAssigneeId) || currentUser;
+    // Mặc định assignee: phải thuộc danh sách nhân sự của phòng ban đó
+    let selectedAssigneeId = isEdit && taskToEdit.assigneeId ? taskToEdit.assigneeId : currentUser.id;
+    if (!deptUsers.some(u => u.id === selectedAssigneeId)) {
+      selectedAssigneeId = deptUsers[0]?.id || currentUser.id;
+    }
+    const currentAssigneeUser = store.getUserById(selectedAssigneeId) || deptUsers[0] || currentUser;
 
     const requiresApproval = isEdit ? Boolean(taskToEdit.requiresApproval) : false;
     const currentPriority = isEdit && taskToEdit.priority ? taskToEdit.priority : 'P2';
@@ -137,38 +146,56 @@ export class CreateTaskModal {
               <div id="modalSubtasksContainer" class="flex flex-col gap-1.5 empty:hidden pt-0.5 max-h-48 overflow-y-auto"></div>
             </div>
 
-            <!-- PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE) -->
+            <!-- PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE) - THIẾT KẾ ĐẲNG CẤP TOÀN HỆ THỐNG -->
             <div class="p-3.5 rounded-xl border border-[#e2e8f0] flex flex-col gap-2.5" style="background-color: var(--primary-soft); border-color: var(--border);">
               <div class="flex items-center justify-between">
                 <label class="block text-[12.5px] font-bold flex items-center gap-1.5" style="color: var(--primary);">
-                  <span class="material-symbols-outlined text-[18px]">person_add</span>
+                  <span class="material-symbols-outlined text-[18px]">person_check</span>
                   <span>Phân công người thực hiện (Assignee) *</span>
                 </label>
-                <span class="text-[10.5px] font-semibold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-md">Tự động báo chuông</span>
+                <span class="text-[10.5px] font-bold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-md border border-amber-200" id="assigneeDeptBadge">
+                  ${esc(taskDept.name)}
+                </span>
               </div>
 
-              <div class="flex items-center gap-3">
-                <img id="newTaskAssigneeAvatar" src="${currentAssigneeUser.avatar}" class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow-xs" />
-                <div class="flex-1 min-w-0">
-                  <select id="newTaskAssignee" class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13.5px] font-bold text-[#0d1c2f] outline-none focus:border-[#d6a52a] bg-white cursor-pointer shadow-2xs">
-                    ${depts.map(d => {
-                      const dUsers = allUsers.filter(u => u.departmentId === d.id || u.departmentId === 'all');
-                      if (dUsers.length === 0) return '';
-                      return `
-                        <optgroup label="${esc(d.name)} (${esc(d.code)})">
-                          ${dUsers.map(u => {
-                            const team = (d.teams || []).find(t => t.id === u.teamId);
-                            const teamLabel = team ? `[${team.code}] ` : '';
-                            return `<option value="${u.id}" ${u.id === selectedAssigneeId ? 'selected' : ''}>${teamLabel}${esc(u.name)} (${esc(u.title)})</option>`;
-                          }).join('')}
-                        </optgroup>
-                      `;
-                    }).join('')}
-                  </select>
+              <!-- THẺ THÀNH VIÊN ĐƯỢC CHỌN (1-CHẠM MỞ MEMBER PICKER) -->
+              <div 
+                id="btnOpenAssigneePicker" 
+                class="flex items-center justify-between p-3 rounded-xl bg-white border border-[#cbd5e1] hover:border-[#d6a52a] transition-all cursor-pointer shadow-2xs group min-h-[56px]" 
+                style="background-color: var(--card); border-color: var(--border);"
+                title="Nhấn để chọn nhân viên trong phòng ban này"
+              >
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="relative shrink-0">
+                    <img id="newTaskAssigneeAvatar" src="${currentAssigneeUser.avatar}" class="w-10 h-10 rounded-full object-cover ring-2 ring-amber-300 shadow-xs" />
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                  </div>
+                  <div class="min-w-0 flex flex-col text-left">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span id="newTaskAssigneeName" class="font-bold text-[13.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
+                        ${esc(currentAssigneeUser.name)}
+                      </span>
+                      <span id="newTaskAssigneeBadge" class="font-mono-data text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                        ${esc(currentAssigneeUser.badge || currentAssigneeUser.role || 'Thành viên')}
+                      </span>
+                    </div>
+                    <span id="newTaskAssigneeTitle" class="text-[11.5px] text-[#64748b] truncate mt-0.5">
+                      ${esc(currentAssigneeUser.title || 'Chuyên viên')}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#f8f9ff] text-[#795900] group-hover:bg-[#fffbeb] border border-[#e2e8f0] transition-colors shrink-0 font-bold text-[12px]">
+                  <span>Đổi người</span>
+                  <span class="material-symbols-outlined text-[18px]">expand_more</span>
                 </div>
               </div>
+
+              <!-- INPUT ẨN LƯU VALUE CỦA ASSIGNEE -->
+              <input type="hidden" id="newTaskAssignee" value="${selectedAssigneeId}" />
+
               <span class="text-[11px] text-[#817663]">
-                * Bất kỳ ai cũng có thể phân công nhiệm vụ cho nhân sự trên toàn hệ thống viện.
+                * Hệ thống tự động lọc chỉ hiển thị nhân sự thuộc phòng ban được phân công.
               </span>
             </div>
 
@@ -249,42 +276,212 @@ export class CreateTaskModal {
             </div>
           </form>
         </div>
+
+        <!-- POPUP CHỌN NHÂN VIÊN TRONG PHÒNG BAN (TOUCH TARGET >= 44PX TOÀN HỆ THỐNG) -->
+        <div id="assigneePickerModal" class="hidden fixed inset-0 z-[120] bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+          <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full p-4 sm:p-5 flex flex-col gap-3 shadow-2xl border border-[#cbd5e1] max-h-[82vh] overflow-hidden" style="background-color: var(--card); border-color: var(--border);">
+            
+            <div class="flex items-center justify-between pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
+              <div>
+                <h4 class="font-bold text-[15px] text-[#0d1c2f]" style="color: var(--text);">Chọn Người Phụ Trách</h4>
+                <p class="text-[11.5px] text-[#64748b]">Nhân sự thuộc <strong id="assigneePickerDeptName" class="text-[#0d1c2f]">${esc(taskDept.name)}</strong></p>
+              </div>
+              <button type="button" id="btnCloseAssigneeModal" class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 cursor-pointer">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <!-- Ô TÌM KIẾM NHANH NHÂN SỰ -->
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">search</span>
+              <input 
+                type="text" 
+                id="inputSearchAssignee" 
+                placeholder="Tìm theo tên nhân viên hoặc chức danh..." 
+                class="w-full h-11 pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" 
+                style="color: var(--text); border-color: var(--border);"
+              />
+            </div>
+
+            <!-- DANH SÁCH THẺ NHÂN VIÊN (SCROLLABLE) -->
+            <div id="assigneeMemberList" class="flex flex-col gap-1.5 overflow-y-auto max-h-72 pr-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
       </div>
     `;
 
-    this.bindEvents(isEdit);
+    this.bindEvents(isEdit, taskDept.id);
   }
 
-  bindEvents(isEdit = false) {
+  bindEvents(isEdit = false, defaultDeptId = 'dept_ptkh') {
     const overlay = this.container.querySelector('#createModalOverlay');
     const btnClose = this.container.querySelector('#btnCloseCreateModal');
     const btnCancel = this.container.querySelector('#btnCancelCreateTask');
     const form = this.container.querySelector('#formCreateTask');
-    const selectAssignee = this.container.querySelector('#newTaskAssignee');
-    const avatarImg = this.container.querySelector('#newTaskAssigneeAvatar');
     const chkRequireApproval = this.container.querySelector('#newTaskRequireApproval');
     const approverBox = this.container.querySelector('#approverSelectionBox');
 
-    // Chuyển avatar khi đổi assignee
-    if (selectAssignee && avatarImg) {
-      selectAssignee.addEventListener('change', () => {
-        const u = store.getUserById(selectAssignee.value);
-        if (u) avatarImg.src = u.avatar;
+    // QUẢN LÝ MEMBER PICKER ASSIGNEE (CHỈ HIỂN THỊ NHÂN SỰ PHÒNG BAN ĐƯỢC CHỌN)
+    const hiddenAssignee = this.container.querySelector('#newTaskAssignee');
+    const avatarImg = this.container.querySelector('#newTaskAssigneeAvatar');
+    const nameSpan = this.container.querySelector('#newTaskAssigneeName');
+    const titleSpan = this.container.querySelector('#newTaskAssigneeTitle');
+    const badgeSpan = this.container.querySelector('#newTaskAssigneeBadge');
+    const deptBadge = this.container.querySelector('#assigneeDeptBadge');
+
+    const btnOpenPicker = this.container.querySelector('#btnOpenAssigneePicker');
+    const pickerModal = this.container.querySelector('#assigneePickerModal');
+    const btnClosePicker = this.container.querySelector('#btnCloseAssigneeModal');
+    const inputSearchAssignee = this.container.querySelector('#inputSearchAssignee');
+    const memberListContainer = this.container.querySelector('#assigneeMemberList');
+    const pickerDeptName = this.container.querySelector('#assigneePickerDeptName');
+
+    let currentDeptId = defaultDeptId;
+
+    const renderMemberList = (searchQuery = '') => {
+      if (!memberListContainer) return;
+      const dept = store.getDepartmentById(currentDeptId);
+      const members = store.getAllUsers().filter(u => u.departmentId === currentDeptId || u.departmentId === 'all');
+      
+      let filtered = members;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        filtered = filtered.filter(u => 
+          u.name.toLowerCase().includes(q) || 
+          (u.title && u.title.toLowerCase().includes(q)) ||
+          (u.badge && u.badge.toLowerCase().includes(q))
+        );
+      }
+
+      if (filtered.length === 0) {
+        memberListContainer.innerHTML = `
+          <div class="p-6 text-center text-gray-400 text-[12.5px]">
+            Không tìm thấy nhân viên phù hợp trong phòng ban này.
+          </div>
+        `;
+        return;
+      }
+
+      const selectedId = hiddenAssignee ? hiddenAssignee.value : '';
+      const currentDeptTeams = dept ? (dept.teams || []) : [];
+
+      memberListContainer.innerHTML = filtered.map(u => {
+        const isSelected = u.id === selectedId;
+        const team = currentDeptTeams.find(t => t.id === u.teamId);
+        return `
+          <div 
+            class="item-select-member flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer min-h-[48px] ${isSelected ? 'bg-amber-50/80 border-[#d6a52a] shadow-xs' : 'bg-white hover:bg-gray-50 border-[#e2e8f0]'}"
+            data-user-id="${u.id}"
+            style="background-color: ${isSelected ? 'var(--primary-soft)' : 'var(--card)'}; border-color: ${isSelected ? 'var(--primary)' : 'var(--border)'};"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="relative shrink-0">
+                <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover ring-1 ring-gray-200" />
+                <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white"></span>
+              </div>
+              <div class="min-w-0 flex flex-col text-left">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-[13px] text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</span>
+                  <span class="text-[10px] font-mono-data font-bold px-1.5 py-0.2 rounded bg-gray-100 text-gray-700">${esc(u.badge || u.role)}</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[11px] text-[#64748b] mt-0.5">
+                  ${team ? `<span class="font-semibold text-amber-800">[${esc(team.code)}]</span>` : ''}
+                  <span class="truncate">${esc(u.title || 'Chuyên viên')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="shrink-0 pl-2">
+              ${isSelected ? `
+                <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">check_circle</span>
+              ` : `
+                <span class="material-symbols-outlined text-[20px] text-gray-300">radio_button_unchecked</span>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Gán click cho từng nhân viên
+      memberListContainer.querySelectorAll('.item-select-member').forEach(item => {
+        item.addEventListener('click', () => {
+          rung(10);
+          const userId = item.dataset.userId;
+          const u = store.getUserById(userId);
+          if (u) {
+            if (hiddenAssignee) hiddenAssignee.value = u.id;
+            if (avatarImg) avatarImg.src = u.avatar;
+            if (nameSpan) nameSpan.textContent = u.name;
+            if (titleSpan) titleSpan.textContent = u.title || 'Chuyên viên';
+            if (badgeSpan) badgeSpan.textContent = u.badge || u.role || 'Thành viên';
+          }
+          if (pickerModal) pickerModal.classList.add('hidden');
+        });
+      });
+    };
+
+    if (btnOpenPicker && pickerModal) {
+      btnOpenPicker.addEventListener('click', () => {
+        rung(10);
+        if (inputSearchAssignee) inputSearchAssignee.value = '';
+        renderMemberList();
+        pickerModal.classList.remove('hidden');
+        if (inputSearchAssignee) inputSearchAssignee.focus();
       });
     }
 
-    // Đổi danh sách Bộ phận con (Team) khi chọn phòng ban khác
+    if (btnClosePicker && pickerModal) {
+      btnClosePicker.addEventListener('click', () => {
+        pickerModal.classList.add('hidden');
+      });
+    }
+
+    if (pickerModal) {
+      pickerModal.addEventListener('click', (e) => {
+        if (e.target === pickerModal) pickerModal.classList.add('hidden');
+      });
+    }
+
+    if (inputSearchAssignee) {
+      inputSearchAssignee.addEventListener('input', (e) => {
+        renderMemberList(e.target.value);
+      });
+    }
+
+    // Đổi phòng ban tiếp nhận -> Tự động nạp lại Assignee và Team tương ứng
     const selectDept = this.container.querySelector('#newTaskDept');
     const selectTeam = this.container.querySelector('#newTaskTeam');
-    if (selectDept && selectTeam) {
+    if (selectDept) {
       selectDept.addEventListener('change', () => {
         const chosenDept = store.getDepartmentById(selectDept.value);
         if (chosenDept) {
-          const tms = chosenDept.teams || [];
-          selectTeam.innerHTML = `
-            <option value="">-- Toàn phòng ban / Chưa phân tổ --</option>
-            ${tms.map(t => `<option value="${t.id}">${esc(t.name)} (${esc(t.code)})</option>`).join('')}
-          `;
+          currentDeptId = chosenDept.id;
+          if (deptBadge) deptBadge.textContent = chosenDept.name;
+          if (pickerDeptName) pickerDeptName.textContent = chosenDept.name;
+
+          // Cập nhật Team
+          if (selectTeam) {
+            const tms = chosenDept.teams || [];
+            selectTeam.innerHTML = `
+              <option value="">-- Toàn phòng ban / Chưa phân tổ --</option>
+              ${tms.map(t => `<option value="${t.id}">${esc(t.name)} (${esc(t.code)})</option>`).join('')}
+            `;
+          }
+
+          // Kiểm tra xem assignee hiện tại có thuộc phòng ban mới không
+          const newDeptUsers = store.getAllUsers().filter(u => u.departmentId === currentDeptId || u.departmentId === 'all');
+          const isStillValid = newDeptUsers.some(u => u.id === (hiddenAssignee ? hiddenAssignee.value : ''));
+          if (!isStillValid && newDeptUsers.length > 0) {
+            const defaultUser = newDeptUsers[0];
+            if (hiddenAssignee) hiddenAssignee.value = defaultUser.id;
+            if (avatarImg) avatarImg.src = defaultUser.avatar;
+            if (nameSpan) nameSpan.textContent = defaultUser.name;
+            if (titleSpan) titleSpan.textContent = defaultUser.title || 'Chuyên viên';
+            if (badgeSpan) badgeSpan.textContent = defaultUser.badge || defaultUser.role || 'Thành viên';
+          }
         }
       });
     }

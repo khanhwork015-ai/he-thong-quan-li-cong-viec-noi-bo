@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=7.0';
-import { store } from '../store.js?v=7.0';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=7.0';
+import { auth } from '../auth.js?v=7.1';
+import { store } from '../store.js?v=7.1';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=7.1';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
@@ -182,26 +182,36 @@ export class TaskDrawer {
                 <span class="text-[10.5px] font-semibold text-[#817663]">Đổi người phụ trách tại đây</span>
               </div>
 
-              <div class="flex items-center gap-3">
-                <img src="${assignee ? assignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" id="drawerAssigneeAvatar" class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow-xs" />
-                
-                <div class="flex-1 min-w-0">
-                  <select id="selectTaskAssignee" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13px] font-bold text-[#0d1c2f] bg-white outline-none focus:border-[#d6a52a] cursor-pointer shadow-2xs">
-                    ${store.getAllDepartments().map(d => {
-                      const dUsers = store.getAllUsers().filter(u => u.departmentId === d.id || u.departmentId === 'all');
-                      if (dUsers.length === 0) return '';
-                      const dTeams = Array.isArray(d.teams) ? d.teams : [];
-                      return `
-                        <optgroup label="${esc(d.name)} (${esc(d.code)})">
-                          ${dUsers.map(u => {
-                            const uTeam = dTeams.find(t => t.id === u.teamId);
-                            const teamLabel = uTeam ? `[${uTeam.code}] ` : '';
-                            return `<option value="${u.id}" ${u.id === task.assigneeId ? 'selected' : ''}>${teamLabel}${esc(u.name)} (${esc(u.title || 'Nhân sự')})</option>`;
-                          }).join('')}
-                        </optgroup>
-                      `;
-                    }).join('')}
-                  </select>
+              <!-- THẺ HIỂN THỊ VÀ ĐỔI NGƯỜI PHỤ TRÁCH (CUSTOM MEMBER CARD TOÀN HỆ THỐNG) -->
+              <div 
+                id="btnOpenDrawerAssigneePicker"
+                class="flex items-center justify-between p-3 rounded-xl bg-white border border-[#cbd5e1] hover:border-[#d6a52a] transition-all cursor-pointer shadow-2xs group min-h-[56px]"
+                style="background-color: var(--card); border-color: var(--border);"
+                title="Nhấn để đổi người phụ trách trong phòng ban này"
+              >
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="relative shrink-0">
+                    <img id="drawerAssigneeAvatar" src="${assignee ? assignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-10 h-10 rounded-full object-cover ring-2 ring-amber-300 shadow-xs" />
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                  </div>
+                  <div class="min-w-0 flex flex-col text-left">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span id="drawerAssigneeName" class="font-bold text-[13.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
+                        ${assignee ? esc(assignee.name) : 'Chưa giao'}
+                      </span>
+                      <span class="font-mono-data text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                        ${assignee ? esc(assignee.badge || assignee.role) : 'Thành viên'}
+                      </span>
+                    </div>
+                    <span id="drawerAssigneeTitle" class="text-[11.5px] text-[#64748b] truncate mt-0.5">
+                      ${assignee ? esc(assignee.title || 'Nhân sự') : 'Chưa chỉ định'}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#f8f9ff] text-[#795900] group-hover:bg-[#fffbeb] border border-[#e2e8f0] transition-colors shrink-0 font-bold text-[12px]">
+                  <span>Đổi người</span>
+                  <span class="material-symbols-outlined text-[18px]">expand_more</span>
                 </div>
               </div>
 
@@ -535,6 +545,39 @@ export class TaskDrawer {
             `}
           </div>
         </div>
+
+        <!-- POPUP ĐỔI NGƯỜI PHỤ TRÁCH (CHỈ HIỂN THỊ THÀNH VIÊN TRONG PHÒNG BAN) -->
+        <div id="drawerAssigneePickerModal" class="hidden fixed inset-0 z-[120] bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+          <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full p-4 sm:p-5 flex flex-col gap-3 shadow-2xl border border-[#cbd5e1] max-h-[82vh] overflow-hidden" style="background-color: var(--card); border-color: var(--border);">
+            <div class="flex items-center justify-between pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
+              <div>
+                <h4 class="font-bold text-[15px] text-[#0d1c2f]" style="color: var(--text);">Chuyển Giao Người Phụ Trách</h4>
+                <p class="text-[11.5px] text-[#64748b]">Nhân sự thuộc <strong class="text-[#0d1c2f]">${dept ? esc(dept.name) : 'Phòng ban'}</strong></p>
+              </div>
+              <button type="button" id="btnCloseDrawerAssigneeModal" class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 cursor-pointer">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <!-- Ô TÌM KIẾM NHANH NHÂN SỰ -->
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">search</span>
+              <input 
+                type="text" 
+                id="inputSearchDrawerAssignee" 
+                placeholder="Tìm theo tên nhân viên hoặc chức danh..." 
+                class="w-full h-11 pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" 
+                style="color: var(--text); border-color: var(--border);"
+              />
+            </div>
+
+            <!-- DANH SÁCH THẺ NHÂN VIÊN TRONG PHÒNG BAN (SCROLLABLE) -->
+            <div id="drawerAssigneeMemberList" class="flex flex-col gap-1.5 overflow-y-auto max-h-72 pr-1">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
       </div>
     `;
 
@@ -574,16 +617,120 @@ export class TaskDrawer {
       });
     }
 
-    const selectAssignee = this.container.querySelector('#selectTaskAssignee');
-    if (selectAssignee) {
-      selectAssignee.addEventListener('change', (e) => {
+    // QUẢN LÝ CHUYỂN GIAO ASSIGNEE TRONG TASK DRAWER
+    const btnOpenPicker = this.container.querySelector('#btnOpenDrawerAssigneePicker');
+    const pickerModal = this.container.querySelector('#drawerAssigneePickerModal');
+    const btnClosePicker = this.container.querySelector('#btnCloseDrawerAssigneeModal');
+    const inputSearch = this.container.querySelector('#inputSearchDrawerAssignee');
+    const memberListContainer = this.container.querySelector('#drawerAssigneeMemberList');
+
+    const renderDrawerMemberList = (searchQuery = '') => {
+      if (!memberListContainer) return;
+      const dept = store.getDepartmentById(task.departmentId);
+      // CHỈ LẤY NHÂN SỰ THUỘC PHÒNG BAN CỦA TASK
+      const members = store.getAllUsers().filter(u => u.departmentId === task.departmentId || u.departmentId === 'all');
+      
+      let filtered = members;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        filtered = filtered.filter(u => 
+          u.name.toLowerCase().includes(q) || 
+          (u.title && u.title.toLowerCase().includes(q)) ||
+          (u.badge && u.badge.toLowerCase().includes(q))
+        );
+      }
+
+      if (filtered.length === 0) {
+        memberListContainer.innerHTML = `
+          <div class="p-6 text-center text-gray-400 text-[12.5px]">
+            Không tìm thấy nhân sự phù hợp trong phòng ban này.
+          </div>
+        `;
+        return;
+      }
+
+      const currentDeptTeams = dept ? (dept.teams || []) : [];
+
+      memberListContainer.innerHTML = filtered.map(u => {
+        const isSelected = u.id === task.assigneeId;
+        const team = currentDeptTeams.find(t => t.id === u.teamId);
+        return `
+          <div 
+            class="item-select-drawer-member flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer min-h-[48px] ${isSelected ? 'bg-amber-50/80 border-[#d6a52a] shadow-xs' : 'bg-white hover:bg-gray-50 border-[#e2e8f0]'}"
+            data-user-id="${u.id}"
+            style="background-color: ${isSelected ? 'var(--primary-soft)' : 'var(--card)'}; border-color: ${isSelected ? 'var(--primary)' : 'var(--border)'};"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="relative shrink-0">
+                <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover ring-1 ring-gray-200" />
+                <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white"></span>
+              </div>
+              <div class="min-w-0 flex flex-col text-left">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-[13px] text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</span>
+                  <span class="text-[10px] font-mono-data font-bold px-1.5 py-0.2 rounded bg-gray-100 text-gray-700">${esc(u.badge || u.role)}</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-[11px] text-[#64748b] mt-0.5">
+                  ${team ? `<span class="font-semibold text-amber-800">[${esc(team.code)}]</span>` : ''}
+                  <span class="truncate">${esc(u.title || 'Chuyên viên')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="shrink-0 pl-2">
+              ${isSelected ? `
+                <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">check_circle</span>
+              ` : `
+                <span class="material-symbols-outlined text-[20px] text-gray-300">radio_button_unchecked</span>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      memberListContainer.querySelectorAll('.item-select-drawer-member').forEach(item => {
+        item.addEventListener('click', () => {
+          rung(10);
+          const newAssigneeId = item.dataset.userId;
+          if (newAssigneeId === task.assigneeId) {
+            pickerModal.classList.add('hidden');
+            return;
+          }
+          store.updateTaskAssignee(task.id, newAssigneeId);
+          const newAssignee = store.getUserById(newAssigneeId);
+          toast(`Đã chuyển giao nhiệm vụ cho ${newAssignee ? newAssignee.name : 'nhân sự mới'}!`, 'success');
+          pickerModal.classList.add('hidden');
+          if (this.onTaskUpdated) this.onTaskUpdated();
+          this.render();
+        });
+      });
+    };
+
+    if (btnOpenPicker && pickerModal) {
+      btnOpenPicker.addEventListener('click', () => {
         rung(10);
-        const newAssigneeId = e.target.value;
-        store.updateTaskAssignee(task.id, newAssigneeId);
-        const newAssignee = store.getUserById(newAssigneeId);
-        toast(`Đã phân công lại cho: ${newAssignee ? newAssignee.name : 'nhân sự mới'}!`, 'success');
-        if (this.onTaskUpdated) this.onTaskUpdated();
-        this.render();
+        if (inputSearch) inputSearch.value = '';
+        renderDrawerMemberList();
+        pickerModal.classList.remove('hidden');
+        if (inputSearch) inputSearch.focus();
+      });
+    }
+
+    if (btnClosePicker && pickerModal) {
+      btnClosePicker.addEventListener('click', () => {
+        pickerModal.classList.add('hidden');
+      });
+    }
+
+    if (pickerModal) {
+      pickerModal.addEventListener('click', (e) => {
+        if (e.target === pickerModal) pickerModal.classList.add('hidden');
+      });
+    }
+
+    if (inputSearch) {
+      inputSearch.addEventListener('input', (e) => {
+        renderDrawerMemberList(e.target.value);
       });
     }
 
