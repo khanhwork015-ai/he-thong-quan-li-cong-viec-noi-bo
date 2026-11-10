@@ -1,12 +1,12 @@
-/**
- * THANH VU MEDIC CS3 - USER PROFILE EDIT MODAL COMPONENT (MOBILE FIRST)
- * C?p nh?t th�ng tin c� nh�n: H? t�n, Avatar (T?i ?nh t? m�y / Base64), Ng�y sinh, Qu� qu�n, Ch?c danh, Li�n h?
- * Chu?n m�u V�ng Ho�ng Kim Google Stitch (#D6A52A / #795900)
+﻿/**
+ * THANH VŨ MEDIC CS3 - USER PROFILE EDIT MODAL COMPONENT (MOBILE FIRST)
+ * Cập nhật thông tin cá nhân: Họ tên, Avatar (Tải ảnh từ máy / Base64), Ngày sinh, Quê quán, Chức danh, Liên hệ
+ * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
  */
 
-import { auth } from '../auth.js?v=5.2';
-import { store } from '../store.js?v=5.2';
-import { esc, toast, rung } from '../helpers.js?v=5.2';
+import { auth } from '../auth.js?v=5.3';
+import { store } from '../store.js?v=5.3';
+import { esc, toast, rung } from '../helpers.js?v=5.3';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -41,11 +41,11 @@ export class ProfileModal {
                 <span class="material-symbols-outlined text-[22px]">account_circle</span>
               </div>
               <div class="min-w-0">
-                <h3 class="font-bold text-[16px] sm:text-[17px] text-[#0d1c2f] truncate">H? So C� Nh�n</h3>
-                <span class="text-[11.5px] text-[#795900] font-semibold truncate block">${user.name} � ${user.badge}</span>
+                <h3 class="font-bold text-[16px] sm:text-[17px] text-[#0d1c2f] truncate">Hồ Sơ Cá Nhân</h3>
+                <span class="text-[11.5px] text-[#795900] font-semibold truncate block">${user.name} • ${user.badge}</span>
               </div>
             </div>
-            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors" id="btnCloseProfileModal" aria-label="��ng">&times;</button>
+            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors" id="btnCloseProfileModal" aria-label="Đóng">&times;</button>
           </div>
 
           <!-- FORM -->
@@ -56,35 +56,35 @@ export class ProfileModal {
                 <img id="avatarPreview" src="${user.avatar}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover ring-4 ring-[#fffbeb] shadow-md transition-all" />
                 <button type="button" class="absolute inset-0 rounded-full bg-black/35 text-white flex flex-col items-center justify-center opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" id="btnAvatarOverlayClick">
                   <span class="material-symbols-outlined text-[22px]">photo_camera</span>
-                  <span class="text-[9.5px] font-bold">�?i ?nh</span>
+                  <span class="text-[9.5px] font-bold">Đổi ảnh</span>
                 </button>
               </div>
 
-              <!-- INPUT FILE ?N �? CH?N ?NH T? M�Y -->
+              <!-- INPUT FILE ẨN ĐỂ CHỌN ẢNH TỪ MÁY -->
               <input type="file" id="fileAvatarInput" accept="image/*" class="hidden" />
               
               <div class="flex flex-wrap items-center justify-center gap-2">
                 <button type="button" class="px-3.5 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[12px] sm:text-[12.5px] hover:bg-[#795900] hover:text-white transition-all flex items-center gap-1.5 shadow-xs min-h-[38px]" id="btnUploadAvatar">
                   <span class="material-symbols-outlined text-[18px]">upload</span>
-                  <span>T?i ?nh t? m�y</span>
+                  <span>Tải ảnh từ máy</span>
                 </button>
                 <button type="button" class="px-3 py-2 rounded-xl bg-white border border-[#e2e8f0] text-[12px] font-semibold text-[#64748b] hover:text-[#0d1c2f] hover:bg-gray-50 transition-colors min-h-[38px]" id="btnToggleUrlInput">
-                  Nh?p URL
+                  Nhập URL
                 </button>
               </div>
 
-              <!-- � NH?P LINK URL (M?C �?NH ?N HO?C HI?N KHI C?N) -->
+              <!-- Ô NHẬP LINK URL (MẶC ĐỊNH ẨN HOẶC HIỆN KHI CẦN) -->
               <div id="urlInputContainer" class="hidden w-full pt-1">
-                <label class="block text-[11px] font-bold text-[#64748b] mb-1 text-center">Ho?c d�n tr?c ti?p du?ng d?n URL ?nh:</label>
+                <label class="block text-[11px] font-bold text-[#64748b] mb-1 text-center">Hoặc dán trực tiếp đường dẫn URL ảnh:</label>
                 <input type="url" id="inputAvatarUrl" value="${esc(user.avatar)}" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
               </div>
 
               <!-- PRESET AVATARS -->
               <div class="w-full pt-2 border-t border-[#e2e8f0]/60 flex flex-col items-center gap-1.5">
-                <span class="text-[10px] sm:text-[10.5px] font-bold text-[#817663] uppercase tracking-wider">Ho?c ch?n ?nh y t? c� s?n:</span>
+                <span class="text-[10px] sm:text-[10.5px] font-bold text-[#817663] uppercase tracking-wider">Hoặc chọn ảnh y tế có sẵn:</span>
                 <div class="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
                   ${PRESET_AVATARS.map(url => `
-                    <img src="${url}" class="w-8 h-8 rounded-full object-cover cursor-pointer hover:scale-115 transition-transform ring-2 ring-white hover:ring-[#d6a52a] preset-avatar-item shrink-0 shadow-xs" data-avatar-url="${url}" title="B?m d? ch?n" />
+                    <img src="${url}" class="w-8 h-8 rounded-full object-cover cursor-pointer hover:scale-115 transition-transform ring-2 ring-white hover:ring-[#d6a52a] preset-avatar-item shrink-0 shadow-xs" data-avatar-url="${url}" title="Bấm để chọn" />
                   `).join('')}
                 </div>
               </div>
@@ -93,54 +93,54 @@ export class ProfileModal {
             <!-- NAME & TITLE -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">H? v� t�n *</label>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Họ và tên *</label>
                 <input type="text" id="profileName" required value="${esc(user.name)}" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Ch?c danh / V? tr� *</label>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Chức danh / Vị trí *</label>
                 <input type="text" id="profileTitle" required value="${esc(user.title)}" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
             </div>
 
-            <!-- NG�Y SINH & QU� QU�N -->
+            <!-- NGÀY SINH & QUÊ QUÁN -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Ng�y th�ng nam sinh</label>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Ngày tháng năm sinh</label>
                 <input type="date" id="profileDob" value="${esc(user.dob || '1985-09-22')}" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Qu� qu�n</label>
-                <input type="text" id="profileHometown" value="${esc(user.hometown || 'C� Mau')}" placeholder="V� d?: TP. C� Mau, �?m Doi, Th?i B�nh..." class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Quê quán</label>
+                <input type="text" id="profileHometown" value="${esc(user.hometown || 'Cà Mau')}" placeholder="Ví dụ: TP. Cà Mau, Đầm Dơi, Thới Bình..." class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
             </div>
 
             <!-- CONTACT -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">S? di?n tho?i li�n h?</label>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Số điện thoại liên hệ</label>
                 <input type="tel" id="profilePhone" value="${esc(user.phone || '')}" placeholder="09xx xxx xxx" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
 
               <div>
-                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Email n?i b? b?nh vi?n</label>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Email nội bộ bệnh viện</label>
                 <input type="email" id="profileEmail" value="${esc(user.email || '')}" placeholder="name@thanhvumedic.vn" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
               </div>
             </div>
 
             <div>
-              <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">�on v? / Khoa ph�ng c�ng t�c</label>
+              <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Đơn vị / Khoa phòng công tác</label>
               <input type="text" id="profileUnit" value="${esc(user.unit)}" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
             </div>
 
             <!-- BUTTONS (RESPONSIVE) -->
             <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-2">
               <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50 min-h-[44px]" id="btnCancelProfile">
-                H?y b?
+                Hủy bỏ
               </button>
               <button type="submit" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] text-[13px] font-bold hover:bg-[#795900] hover:text-white shadow-xs transition-all min-h-[44px]">
-                Luu H? So
+                Lưu Hồ Sơ
               </button>
             </div>
           </form>
@@ -177,14 +177,14 @@ export class ProfileModal {
       });
     }
 
-    // Toggle hi?n � URL
+    // Toggle hiện ô URL
     if (btnToggleUrl && urlContainer) {
       btnToggleUrl.addEventListener('click', () => {
         urlContainer.classList.toggle('hidden');
       });
     }
 
-    // N�t t?i ?nh t? m�y k�ch ho?t file input ?n
+    // Nút tải ảnh từ máy kích hoạt file input ẩn
     if (btnUpload && fileInput) {
       btnUpload.addEventListener('click', () => fileInput.click());
     }
@@ -192,19 +192,19 @@ export class ProfileModal {
       btnOverlay.addEventListener('click', () => fileInput.click());
     }
 
-    // X? l� khi ngu?i d�ng ch?n file ?nh t? thi?t b? (N�n ?nh v? t?i da 300x300 tr�nh tr�n localStorage)
+    // Xử lý khi người dùng chọn file ảnh từ thiết bị (Nén ảnh về tối đa 300x300 tránh tràn localStorage)
     if (fileInput && avatarPreview) {
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-          toast('Vui l�ng ch?n t?p d?nh d?ng h�nh ?nh (PNG, JPG, WEBP)!', 'warning');
+          toast('Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, WEBP)!', 'warning');
           return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-          toast('Dung lu?ng ?nh vu?t qu� 5MB. Vui l�ng ch?n ?nh nh? hon!', 'warning');
+          toast('Dung lượng ảnh vượt quá 5MB. Vui lòng chọn ảnh nhỏ hơn!', 'warning');
           return;
         }
 
@@ -235,7 +235,7 @@ export class ProfileModal {
 
             avatarPreview.src = compressedBase64;
             if (inputAvatar) inputAvatar.value = compressedBase64;
-            toast('�� t?i v� t?i uu ?nh d?i di?n th�nh c�ng!', 'success');
+            toast('Đã tải và tối ưu ảnh đại diện thành công!', 'success');
           };
           img.onerror = () => {
             avatarPreview.src = event.target.result;
@@ -247,25 +247,25 @@ export class ProfileModal {
       });
     }
 
-    // C?p nh?t khi g� link URL ?nh
+    // Cập nhật khi gõ link URL ảnh
     if (inputAvatar && avatarPreview) {
       inputAvatar.addEventListener('input', () => {
         avatarPreview.src = inputAvatar.value;
       });
     }
 
-    // Ch?n avatar c� s?n
+    // Chọn avatar có sẵn
     this.container.querySelectorAll('.preset-avatar-item').forEach(img => {
       img.addEventListener('click', () => {
         rung(10);
         const url = img.dataset.avatarUrl;
         if (avatarPreview) avatarPreview.src = url;
         if (inputAvatar) inputAvatar.value = url;
-        toast('�� ch?n ?nh d?i di?n m?u', 'info');
+        toast('Đã chọn ảnh đại diện mẫu', 'info');
       });
     });
 
-    // Submit form luu h? so
+    // Submit form lưu hồ sơ
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -282,11 +282,11 @@ export class ProfileModal {
         const avatar = (avatarPreview && avatarPreview.src) ? avatarPreview.src : user.avatar;
 
         if (!name) {
-          toast('H? v� t�n kh�ng du?c d? tr?ng!', 'warning');
+          toast('Họ và tên không được để trống!', 'warning');
           return;
         }
 
-        // C?p nh?t v�o store & auth
+        // Cập nhật vào store & auth
         const updated = store.updateUser(user.id, {
           name,
           title,
@@ -298,7 +298,7 @@ export class ProfileModal {
           avatar
         });
 
-        toast('�� luu th�ng tin h? so c� nh�n th�nh c�ng!', 'success');
+        toast('Đã lưu thông tin hồ sơ cá nhân thành công!', 'success');
         closeModal();
         if (this.onProfileUpdated) this.onProfileUpdated(updated || auth.getCurrentUser());
       });

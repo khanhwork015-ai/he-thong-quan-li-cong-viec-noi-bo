@@ -8,8 +8,8 @@
  * - Hỗ trợ mở chi tiết đầy đủ từng việc con (SubtaskDetailModal)
  */
 
-import { store } from '../store.js?v=5.2';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=5.2';
+import { store } from '../store.js?v=5.3';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=5.3';
 
 export class SubtasksModal {
   constructor(containerId, onTaskUpdated, onOpenTaskDetail = null, onOpenSubtaskDetail = null) {
@@ -165,11 +165,13 @@ export class SubtasksModal {
               const isDone = s.completed || s.status === 'done';
               return `
                 <div class="subtask-modal-card p-3 sm:p-3.5 rounded-2xl border border-[#e2e8f0] bg-white hover:border-[#d6a52a] hover:shadow-xs transition-all flex flex-col gap-2.5 cursor-pointer" data-subtask-id="${s.id}">
-                  <!-- Hàng 1: Checkbox, Mã việc con, Trạng thái & Nút thao tác (Sửa, Xóa) -->
+                  <!-- Hàng 1: Checkbox, Mã việc con, Badge trạng thái & Nút thao tác -->
                   <div class="flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2 flex-wrap">
                       <input type="checkbox" class="chk-modal-subtask w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0" data-subtask-id="${s.id}" ${isDone ? 'checked' : ''} />
-                      <span class="font-mono-data text-[10.5px] font-bold px-2 py-0.5 rounded bg-[#fffbeb] text-[#795900] border border-[#fef3c7] shrink-0">${esc(s.id)}</span>
+                      <span class="font-mono-data text-[10.5px] font-bold px-2 py-0.5 rounded bg-[#fffbeb] text-[#795900] border border-[#fef3c7] shrink-0">
+                        ${esc(s.id)}
+                      </span>
                       <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${isDone ? 'bg-teal-100 text-teal-800' : s.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}">
                         ${isDone ? 'Đã xong' : s.status === 'in_progress' ? 'Đang làm' : 'Chưa làm'}
                       </span>

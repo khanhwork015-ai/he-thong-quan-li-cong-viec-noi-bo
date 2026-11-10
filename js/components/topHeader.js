@@ -1,14 +1,14 @@
-/**
- * THANH VU MEDIC CS3 - TOP HEADER COMPONENT (SHIN AIOS v2.6.4)
- * Thi?t k? c�ng th�i h?c Mobile First: V�ng b?m >= 44x44px
- * H? tr? n�t Chuy?n Theme (Dark/Light) v� N�t �?i B?ng M�u Giao Di?n (8 Palettes)
+﻿/**
+ * THANH VŨ MEDIC CS3 - TOP HEADER COMPONENT (SHIN AIOS v2.6.4)
+ * Thiết kế công thái học Mobile First: Vùng bấm >= 44x44px
+ * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=5.2';
-import { store } from '../store.js?v=5.2';
-import { USERS } from '../models.js?v=5.2';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=5.2';
-import { shinTheme } from '../theme.js?v=5.2';
+import { auth } from '../auth.js?v=5.3';
+import { store } from '../store.js?v=5.3';
+import { USERS } from '../models.js?v=5.3';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=5.3';
+import { shinTheme } from '../theme.js?v=5.3';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications) {
@@ -35,22 +35,22 @@ export class TopHeader {
     const unreadCount = store.getUnreadNotificationCount(user.id);
     const userNotifs = store.getUserNotifications(user.id);
 
-    let roleBadgeText = '?? Nh�n Vi�n';
-    if (user.role === 'ADMIN') roleBadgeText = '?? Qu?n Tr? Vi�n (Admin)';
-    else if (user.role === 'LEADERSHIP') roleBadgeText = '??? Ban L�nh �?o';
-    else if (user.role === 'MANAGER') roleBadgeText = '?? Tru?ng Ph�ng';
-    else if (user.role === 'DEPUTY_MANAGER') roleBadgeText = '?? Ph� Tru?ng Ph�ng';
+    let roleBadgeText = '👤 Nhân Viên';
+    if (user.role === 'ADMIN') roleBadgeText = '👑 Quản Trị Viên (Admin)';
+    else if (user.role === 'LEADERSHIP') roleBadgeText = '🏛️ Ban Lãnh Đạo';
+    else if (user.role === 'MANAGER') roleBadgeText = '👔 Trưởng Phòng';
+    else if (user.role === 'DEPUTY_MANAGER') roleBadgeText = '👔 Phó Trưởng Phòng';
 
     this.container.innerHTML = `
       <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6">
         <!-- LEFT: MOBILE HAMBURGER & SEARCH BAR -->
         <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-xl">
-          <!-- HAMBURGER BUTTON (MOBILE / TABLET ONLY - V�NG B?M >= 44PX) -->
+          <!-- HAMBURGER BUTTON (MOBILE / TABLET ONLY - VÙNG BẤM >= 44PX) -->
           <button 
             type="button" 
             class="lg:hidden p-2 rounded-xl text-[#0d1c2f] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0 -ml-1 transition-colors" 
             id="btnToggleMobileSidebar" 
-            aria-label="M? Menu �i?u Hu?ng"
+            aria-label="Mở Menu Điều Hướng"
           >
             <span class="material-symbols-outlined text-[24px]">menu</span>
           </button>
@@ -62,27 +62,27 @@ export class TopHeader {
               type="text" 
               id="topSearchInput"
               class="w-full h-10 pl-8 sm:pl-9 pr-3 sm:pr-12 rounded-xl bg-[#f8f9ff] text-[#0d1c2f] text-[13.5px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 outline-none transition-all" 
-              placeholder="T�m ki?m c�ng vi?c..." 
+              placeholder="Tìm kiếm công việc..." 
             />
-            <kbd class="hidden sm:inline-block absolute right-2.5 px-1.5 py-0.5 rounded bg-[#e6eeff] font-mono-data text-[10px] text-[#4f4635] font-semibold">?K</kbd>
+            <kbd class="hidden sm:inline-block absolute right-2.5 px-1.5 py-0.5 rounded bg-[#e6eeff] font-mono-data text-[10px] text-[#4f4635] font-semibold">⌘K</kbd>
           </div>
         </div>
 
         <!-- RIGHT ACTIONS & USER PROFILE -->
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-          <!-- N�T CHUY?N NHANH DARK / LIGHT MODE (SHIN CHU?N) -->
-          <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="${isDark ? 'Chuy?n sang ch? d? S�ng' : 'Chuy?n sang ch? d? T?i (Dark Mode)'}" id="btnQuickThemeToggle">
+          <!-- NÚT CHUYỂN NHANH DARK / LIGHT MODE (SHIN CHUẨN) -->
+          <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="${isDark ? 'Chuyển sang chế độ Sáng' : 'Chuyển sang chế độ Tối (Dark Mode)'}" id="btnQuickThemeToggle">
             <span class="material-symbols-outlined text-[20px] text-[#64748b]">${isDark ? 'light_mode' : 'dark_mode'}</span>
           </button>
 
-          <!-- N�T �?I M�U GIAO DI?N (8 PALETTES SHIN) -->
-          <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="�?i m�u giao di?n (8 Palettes SHIN AIOS)" id="btnQuickPalette">
+          <!-- NÚT ĐỔI MÀU GIAO DIỆN (8 PALETTES SHIN) -->
+          <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="Đổi màu giao diện (8 Palettes SHIN AIOS)" id="btnQuickPalette">
             <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">palette</span>
           </button>
 
           <!-- NOTIFICATIONS BELL & DROPDOWN -->
           <div class="relative">
-            <button type="button" class="relative p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer" title="Th�ng b�o (${unreadCount} chua d?c)" id="btnNotifications">
+            <button type="button" class="relative p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer" title="Thông báo (${unreadCount} chưa đọc)" id="btnNotifications">
               <span class="material-symbols-outlined text-[22px]" style="${unreadCount > 0 ? 'color: var(--primary);' : ''}">notifications</span>
               ${unreadCount > 0 ? `
                 <span class="absolute top-1.5 right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#dc2626] px-1 text-[10px] font-bold text-white shadow-xs animate-pulse">
@@ -91,34 +91,34 @@ export class TopHeader {
               ` : ''}
             </button>
 
-            <!-- DROPDOWN TH�NG B�O -->
+            <!-- DROPDOWN THÔNG BÁO -->
             <div id="notificationsDropdown" class="hidden absolute right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 top-12 w-[340px] sm:w-[380px] bg-white rounded-2xl shadow-2xl border border-[#e2e8f0] overflow-hidden z-50 flex flex-col" style="background-color: var(--card); border-color: var(--border);">
               
               <!-- HEADER DROPDOWN -->
               <div class="p-3.5 px-4 border-b border-[#f1f5f9] flex items-center justify-between bg-[#f8f9ff]/60 shrink-0" style="border-color: var(--border); background-color: var(--primary-soft);">
                 <div class="flex items-center gap-2">
                   <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">notifications_active</span>
-                  <span class="text-[13.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">Th�ng B�o</span>
+                  <span class="text-[13.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">Thông Báo</span>
                   ${unreadCount > 0 ? `
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-mono-data">
-                      ${unreadCount} m?i
+                      ${unreadCount} mới
                     </span>
                   ` : ''}
                 </div>
 
                 ${unreadCount > 0 ? `
                   <button type="button" id="btnMarkAllNotifsRead" class="text-[11.5px] font-semibold text-amber-700 hover:text-amber-900 hover:underline cursor-pointer">
-                    �� d?c t?t c?
+                    Đã đọc tất cả
                   </button>
                 ` : ''}
               </div>
 
-              <!-- LIST TH�NG B�O -->
+              <!-- LIST THÔNG BÁO -->
               <div class="max-h-[360px] overflow-y-auto flex flex-col divide-y divide-[#f1f5f9]" style="border-color: var(--border);">
                 ${userNotifs.length === 0 ? `
                   <div class="p-8 text-center flex flex-col items-center justify-center gap-2 text-gray-400">
                     <span class="material-symbols-outlined text-[36px] text-gray-300">notifications_off</span>
-                    <span class="text-[12.5px]">B?n kh�ng c� th�ng b�o n�o.</span>
+                    <span class="text-[12.5px]">Bạn không có thông báo nào.</span>
                   </div>
                 ` : userNotifs.slice(0, 30).map(n => {
                   let icon = 'notifications';
@@ -169,9 +169,9 @@ export class TopHeader {
               <!-- FOOTER DROPDOWN -->
               ${userNotifs.length > 0 ? `
                 <div class="p-2.5 px-3 border-t border-[#f1f5f9] flex items-center justify-between bg-gray-50/50 shrink-0 text-[11px]" style="border-color: var(--border);">
-                  <span class="text-gray-400">${userNotifs.length} th�ng b�o</span>
+                  <span class="text-gray-400">${userNotifs.length} thông báo</span>
                   <button type="button" id="btnClearAllNotifs" class="text-gray-500 hover:text-rose-600 transition-colors font-medium cursor-pointer">
-                    X�a t?t c?
+                    Xóa tất cả
                   </button>
                 </div>
               ` : ''}
@@ -180,15 +180,15 @@ export class TopHeader {
           </div>
 
           <!-- QUICK SETTINGS BUTTON (DESKTOP) -->
-          <button type="button" class="hidden sm:flex p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] items-center justify-center transition-colors" title="C�i d?t h? th?ng & T�ch h?p Cloud" id="btnQuickSettings">
+          <button type="button" class="hidden sm:flex p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] items-center justify-center transition-colors" title="Cài đặt hệ thống & Tích hợp Cloud" id="btnQuickSettings">
             <span class="material-symbols-outlined text-[22px]">settings</span>
           </button>
 
-          <!-- PRIMARY ACTION: T?O C�NG VI?C -->
+          <!-- PRIMARY ACTION: TẠO CÔNG VIỆC -->
           ${canCreate ? `
-            <button type="button" class="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold shadow-xs transition-all min-h-[44px]" id="btnHeaderCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);" title="Giao vi?c m?i">
+            <button type="button" class="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold shadow-xs transition-all min-h-[44px]" id="btnHeaderCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);" title="Giao việc mới">
               <span class="material-symbols-outlined text-[18px]">add</span>
-              <span class="hidden sm:inline">Giao vi?c</span>
+              <span class="hidden sm:inline">Giao việc</span>
             </button>
           ` : ''}
 
@@ -217,26 +217,26 @@ export class TopHeader {
               </div>
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnOpenProfile">
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">badge</span>
-                <span>H? so c� nh�n</span>
+                <span>Hồ sơ cá nhân</span>
               </button>
               ${auth.isAdmin() ? `
                 <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenDepts">
                   <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">domain</span>
-                  <span>Ph�ng ban &amp; B? ph?n</span>
+                  <span>Phòng ban &amp; Bộ phận</span>
                 </button>
               ` : ''}
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenPalette">
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">palette</span>
-                <span>�?i m�u giao di?n (SHIN)</span>
+                <span>Đổi màu giao diện (SHIN)</span>
               </button>
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenSettings">
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">settings</span>
-                <span>C�i d?t h? th?ng</span>
+                <span>Cài đặt hệ thống</span>
               </button>
 
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 border-t border-[#f1f5f9] mt-1 pt-2 min-h-[44px]" id="btnLogoutTopHeader">
                 <span class="material-symbols-outlined text-[18px]">logout</span>
-                <span>�ang Xu?t (Logout)</span>
+                <span>Đăng Xuất (Logout)</span>
               </button>
             </div>
           </div>
@@ -347,7 +347,7 @@ export class TopHeader {
       btnLogout.addEventListener('click', () => {
         dropdown.classList.add('hidden');
         auth.logout();
-        toast('�� dang xu?t th�nh c�ng!', 'info');
+        toast('Đã đăng xuất thành công!', 'info');
         if (this.onLogout) this.onLogout();
       });
     }
@@ -384,7 +384,7 @@ export class TopHeader {
         e.stopPropagation();
         rung(10);
         store.markAllNotificationsAsRead(user.id);
-        toast('�� d�nh d?u t?t c? th�ng b�o l� d� d?c!', 'success');
+        toast('Đã đánh dấu tất cả thông báo là đã đọc!', 'success');
         this.render();
       });
     }
@@ -394,7 +394,7 @@ export class TopHeader {
         e.stopPropagation();
         rung(15);
         store.clearUserNotifications(user.id);
-        toast('�� x�a danh s�ch th�ng b�o!', 'info');
+        toast('Đã xóa danh sách thông báo!', 'info');
         this.render();
       });
     }
@@ -434,13 +434,13 @@ export class TopHeader {
             <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background-color: var(--primary-soft); color: var(--primary);">
               <span class="material-symbols-outlined text-[20px]">manage_accounts</span>
             </div>
-            <h3 class="font-bold text-[16px] text-[#0d1c2f]">Chuy?n �?i Nh�n S? Ki?m Th?</h3>
+            <h3 class="font-bold text-[16px] text-[#0d1c2f]">Chuyển Đổi Nhân Sự Kiểm Thử</h3>
           </div>
-          <button type="button" class="text-gray-400 hover:text-gray-600 text-xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center" id="btnCloseRoleModal" aria-label="��ng">&times;</button>
+          <button type="button" class="text-gray-400 hover:text-gray-600 text-xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center" id="btnCloseRoleModal" aria-label="Đóng">&times;</button>
         </div>
 
         <p class="text-[12.5px] text-[#64748b] mb-4">
-          Ch?n m?t nh�n s? d? tr?i nghi?m d�ng quy?n h?n (RBAC):
+          Chọn một nhân sự để trải nghiệm đúng quyền hạn (RBAC):
         </p>
 
         <div class="flex flex-col gap-2.5 max-h-80 overflow-y-auto">
@@ -449,8 +449,8 @@ export class TopHeader {
               <div class="flex items-center gap-3">
                 <img src="${u.avatar}" class="w-9 h-9 rounded-full object-cover ring-2 ring-gray-100 shrink-0" />
                 <div class="min-w-0">
-                  <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate">${u.name} ${u.id === currentUser.id ? '?' : ''}</div>
-                  <div class="text-[11.5px] text-[#64748b] truncate">${u.title} � ${u.unit}</div>
+                  <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate">${u.name} ${u.id === currentUser.id ? '✓' : ''}</div>
+                  <div class="text-[11.5px] text-[#64748b] truncate">${u.title} • ${u.unit}</div>
                 </div>
               </div>
               <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full shrink-0 ${u.role === 'ADMIN' ? 'bg-[#ffdea9] text-[#5f4100]' : (u.role === 'MANAGER' ? 'bg-[#fffbeb] text-[#795900] border border-[#fef3c7]' : 'bg-gray-100 text-gray-700')}">
@@ -470,7 +470,7 @@ export class TopHeader {
         const uid = el.dataset.userId;
         auth.loginAs(uid);
         modal.remove();
-        toast(`�� dang nh?p: ${auth.getCurrentUser().name} (${auth.getCurrentUser().role})`, 'success');
+        toast(`Đã đăng nhập: ${auth.getCurrentUser().name} (${auth.getCurrentUser().role})`, 'success');
       });
     });
   }

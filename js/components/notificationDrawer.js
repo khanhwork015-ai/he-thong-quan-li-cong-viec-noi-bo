@@ -1,12 +1,12 @@
-/**
- * THANH VU MEDIC CS3 - NOTIFICATION CENTER SLIDE-OVER DRAWER (SHIN AIOS v2.7)
- * Trung t�m th�ng b�o chuy�n nghi?p, h? tr? l?c Chua d?c/T?t c?,
- * ��nh d?u d� d?c v� Deep-linking m? th?ng Task Detail Drawer
+﻿/**
+ * THANH VŨ MEDIC CS3 - NOTIFICATION CENTER SLIDE-OVER DRAWER (SHIN AIOS v2.7)
+ * Trung tâm thông báo chuyên nghiệp, hỗ trợ lọc Chưa đọc/Tất cả,
+ * Đánh dấu đã đọc và Deep-linking mở thẳng Task Detail Drawer
  */
 
-import { auth } from '../auth.js?v=5.2';
-import { store } from '../store.js?v=5.2';
-import { esc, timeAgo, rung, toast } from '../helpers.js?v=5.2';
+import { auth } from '../auth.js?v=5.3';
+import { store } from '../store.js?v=5.3';
+import { esc, timeAgo, rung, toast } from '../helpers.js?v=5.3';
 
 export class NotificationDrawer {
   constructor(containerId, onSelectTask) {
@@ -42,7 +42,7 @@ export class NotificationDrawer {
       ? allNotifs.filter(n => !n.isRead)
       : allNotifs;
 
-    // Lo?i b? overlay cu n?u c�
+    // Loại bỏ overlay cũ nếu có
     const oldOverlay = document.getElementById('notifDrawerOverlay');
     if (oldOverlay) oldOverlay.remove();
 
@@ -61,18 +61,18 @@ export class NotificationDrawer {
             </div>
             <div class="min-w-0">
               <div class="flex items-center gap-2">
-                <h3 class="font-bold text-[16px] text-[#0d1c2f] truncate" style="color: var(--text);">Trung T�m Th�ng B�o</h3>
+                <h3 class="font-bold text-[16px] text-[#0d1c2f] truncate" style="color: var(--text);">Trung Tâm Thông Báo</h3>
                 ${unreadCount > 0 ? `
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dc2626] text-white font-mono-data shrink-0">
-                    ${unreadCount} m?i
+                    ${unreadCount} mới
                   </span>
                 ` : ''}
               </div>
-              <span class="text-[11.5px] text-[#64748b] truncate block">C?p nh?t ti?n d? &amp; y�u c?u ph� duy?t</span>
+              <span class="text-[11.5px] text-[#64748b] truncate block">Cập nhật tiến độ &amp; yêu cầu phê duyệt</span>
             </div>
           </div>
 
-          <button type="button" class="p-2 rounded-xl text-[#64748b] hover:text-[#0d1c2f] hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer" id="btnCloseNotifDrawer" aria-label="��ng">
+          <button type="button" class="p-2 rounded-xl text-[#64748b] hover:text-[#0d1c2f] hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer" id="btnCloseNotifDrawer" aria-label="Đóng">
             <span class="material-symbols-outlined text-[22px]">close</span>
           </button>
         </div>
@@ -81,17 +81,17 @@ export class NotificationDrawer {
         <div class="px-4 py-2.5 border-b border-[#f1f5f9] flex items-center justify-between bg-white shrink-0" style="background-color: var(--card); border-color: var(--border);">
           <div class="flex items-center gap-1.5 p-1 rounded-xl bg-[#f1f5f9]">
             <button type="button" class="px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all min-h-[36px] cursor-pointer ${this.currentFilter === 'all' ? 'bg-white shadow-xs text-[#0d1c2f]' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnFilterAll">
-              T?t c? (${allNotifs.length})
+              Tất cả (${allNotifs.length})
             </button>
             <button type="button" class="px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all min-h-[36px] cursor-pointer ${this.currentFilter === 'unread' ? 'bg-white shadow-xs text-[#b45309]' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnFilterUnread">
-              Chua d?c (${unreadCount})
+              Chưa đọc (${unreadCount})
             </button>
           </div>
 
           ${unreadCount > 0 ? `
             <button type="button" id="btnMarkAllReadInDrawer" class="text-[12px] font-bold text-amber-800 hover:text-amber-950 hover:underline min-h-[44px] px-2 flex items-center gap-1 cursor-pointer">
               <span class="material-symbols-outlined text-[16px]">done_all</span>
-              <span>�� d?c h?t</span>
+              <span>Đã đọc hết</span>
             </button>
           ` : ''}
         </div>
@@ -103,9 +103,9 @@ export class NotificationDrawer {
               <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mb-1">
                 <span class="material-symbols-outlined text-[32px]">notifications_none</span>
               </div>
-              <span class="text-[13.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">Kh�ng c� th�ng b�o n�o</span>
+              <span class="text-[13.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">Không có thông báo nào</span>
               <span class="text-[12px] text-gray-400 max-w-xs">
-                ${this.currentFilter === 'unread' ? 'B?n d� d?c to�n b? th�ng b�o g?n d�y!' : 'T?t c? c�c th�ng b�o m?i v? c�ng vi?c s? hi?n th? t?i d�y.'}
+                ${this.currentFilter === 'unread' ? 'Bạn đã đọc toàn bộ thông báo gần đây!' : 'Tất cả các thông báo mới về công việc sẽ hiển thị tại đây.'}
               </span>
             </div>
           ` : displayNotifs.map(n => {
@@ -153,7 +153,7 @@ export class NotificationDrawer {
                       </span>
                     ` : '<span></span>'}
                     <span class="text-[11px] text-[#795900] font-bold flex items-center gap-0.5 hover:underline">
-                      <span>M? xem vi?c</span>
+                      <span>Mở xem việc</span>
                       <span class="material-symbols-outlined text-[14px]">chevron_right</span>
                     </span>
                   </div>
@@ -168,11 +168,11 @@ export class NotificationDrawer {
 
         <!-- FOOTER -->
         <div class="p-3 px-5 border-t border-[#e2e8f0] flex items-center justify-between bg-white shrink-0 text-[11.5px]" style="background-color: var(--card); border-color: var(--border);">
-          <span class="text-[#64748b]">T?i da 100 th�ng b�o g?n nh?t</span>
+          <span class="text-[#64748b]">Tối đa 100 thông báo gần nhất</span>
           ${allNotifs.length > 0 ? `
             <button type="button" id="btnClearNotifsInDrawer" class="text-rose-600 hover:text-rose-800 font-bold hover:underline min-h-[44px] px-2 flex items-center gap-1 cursor-pointer">
               <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
-              <span>X�a t?t c?</span>
+              <span>Xóa tất cả</span>
             </button>
           ` : ''}
         </div>
@@ -217,7 +217,7 @@ export class NotificationDrawer {
         const currentUser = auth.getCurrentUser();
         if (currentUser) {
           store.markAllNotificationsAsRead(currentUser.id);
-          toast('�� d�nh d?u to�n b? th�ng b�o l� d� d?c!', 'success');
+          toast('Đã đánh dấu toàn bộ thông báo là đã đọc!', 'success');
           this.render();
         }
       });
@@ -228,15 +228,15 @@ export class NotificationDrawer {
       btnClearAll.addEventListener('click', () => {
         rung(15);
         const currentUser = auth.getCurrentUser();
-        if (currentUser && confirm('B?n c� ch?c mu?n x�a t?t c? th�ng b�o kh�ng?')) {
+        if (currentUser && confirm('Bạn có chắc muốn xóa tất cả thông báo không?')) {
           store.clearUserNotifications(currentUser.id);
-          toast('�� x�a to�n b? th�ng b�o!', 'info');
+          toast('Đã xóa toàn bộ thông báo!', 'info');
           this.render();
         }
       });
     }
 
-    // CLICK V�O ITEM TH�NG B�O -> ��NH D?U �� �?C & M? TH?NG TASK DRAWER
+    // CLICK VÀO ITEM THÔNG BÁO -> ĐÁNH DẤU ĐÃ ĐỌC & MỞ THẲNG TASK DRAWER
     overlay.querySelectorAll('.notif-drawer-item').forEach(item => {
       item.addEventListener('click', () => {
         rung(15);

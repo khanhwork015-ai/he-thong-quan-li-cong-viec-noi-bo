@@ -1,6 +1,6 @@
-/**
- * THANH VU MEDIC CS3 - HELPER UTILITIES & SHIN TOOLKIT
- * H? tr? d?nh d?ng d? li?u, toast th�ng b�o, x�c nh?n 2 l?n v� b?o m?t XSS
+﻿/**
+ * THANH VŨ MEDIC CS3 - HELPER UTILITIES & SHIN TOOLKIT
+ * Hỗ trợ định dạng dữ liệu, toast thông báo, xác nhận 2 lần và bảo mật XSS
  */
 
 export function esc(str) {
@@ -46,23 +46,23 @@ export function timeAgo(dateStr) {
   if (isNaN(d.getTime())) return '';
   const diffMs = Date.now() - d.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'v?a xong';
-  if (diffMins < 60) return `${diffMins} ph�t tru?c`;
+  if (diffMins < 1) return 'vừa xong';
+  if (diffMins < 60) return `${diffMins} phút trước`;
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} gi? tru?c`;
+  if (diffHours < 24) return `${diffHours} giờ trước`;
   const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays} ng�y tru?c`;
+  return `${diffDays} ngày trước`;
 }
 
-/** L?i ch�o th�ng minh theo gi? Vi?t Nam chu?n SHIN */
+/** Lời chào thông minh theo giờ Việt Nam chuẩn SHIN */
 export function loiChao(hoTen) {
   const g = new Date().getHours();
-  const buoi = g < 11 ? 'bu?i s�ng' : g < 14 ? 'bu?i trua' : g < 18 ? 'bu?i chi?u' : 'bu?i t?i';
+  const buoi = g < 11 ? 'buổi sáng' : g < 14 ? 'buổi trưa' : g < 18 ? 'buổi chiều' : 'buổi tối';
   const tenGoi = String(hoTen || '').trim().split(/\s+/).pop();
-  return `Ch�o ${buoi}${tenGoi ? ', ' + tenGoi : ''} ??`;
+  return `Chào ${buoi}${tenGoi ? ', ' + tenGoi : ''} ☀️`;
 }
 
-/** Toast th�ng b�o ch?ng gi?t lag */
+/** Toast thông báo chống giật lag */
 export function toast(message, type = 'info') {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -100,14 +100,14 @@ export function toast(message, type = 'info') {
   }, 4000);
 }
 
-/** Ph?n h?i x�c gi�c rung haptic */
+/** Phản hồi xúc giác rung haptic */
 export function rung(ms = 35) {
   if (typeof window !== 'undefined' && 'vibrate' in navigator) {
     try { navigator.vibrate(ms); } catch (_) {}
   }
 }
 
-/** Co ch? x�c nh?n 2 l?n trong 5 gi�y cho thao t�c nguy hi?m (X�a b? window.confirm theo chu?n SHIN) */
+/** Cơ chế xác nhận 2 lần trong 5 giây cho thao tác nguy hiểm (Xóa bỏ window.confirm theo chuẩn SHIN) */
 const choXacNhan = {};
 export function xacNhan2Lan(khoa, msg, viec) {
   const bayGio = Date.now();
@@ -119,7 +119,7 @@ export function xacNhan2Lan(khoa, msg, viec) {
   }
   choXacNhan[khoa] = bayGio;
   rung(15);
-  toast(`${msg} � B?m l?i l?n 2 trong 5 gi�y d? th?c thi!`, 'warning');
+  toast(`${msg} – Bấm lại lần 2 trong 5 giây để thực thi!`, 'warning');
 }
 
 

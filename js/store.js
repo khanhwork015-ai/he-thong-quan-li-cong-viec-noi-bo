@@ -1,6 +1,6 @@
-/**
- * THANH VU MEDIC CS3 - CENTRALIZED REACTIVE STORE (APPS SCRIPT INTEGRATED)
- * H? tr? CRUD Nh�n vi�n, H? so c� nh�n v� �?ng b? Google Sheets / SHIN AIOS
+﻿/**
+ * THANH VŨ MEDIC CS3 - CENTRALIZED REACTIVE STORE (APPS SCRIPT INTEGRATED)
+ * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
 
 import { INITIAL_TASKS, DEPARTMENTS, USERS } from './models.js';
@@ -35,8 +35,8 @@ export class Store {
           recipientId: 'user_tam_ptkh',
           senderId: 'user_lanhdao',
           type: 'task_assigned',
-          title: '?? Ph�n c�ng c�ng vi?c m?i',
-          content: 'ThS.BS Nguy?n Thanh Vu d� giao vi?c "T? ch?c kh�m s?c kh?e d?nh k? VIP Doanh nghi?p C� Mau" cho b?n.',
+          title: '📋 Phân công công việc mới',
+          content: 'ThS.BS Nguyễn Thanh Vũ đã giao việc "Tổ chức khám sức khỏe định kỳ VIP Doanh nghiệp Cà Mau" cho bạn.',
           taskId: 'PTKH-01',
           isRead: false,
           createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
@@ -46,8 +46,8 @@ export class Store {
           recipientId: 'user_mai_ptkh',
           senderId: 'user_tam_ptkh',
           type: 'task_assigned',
-          title: '?? Ph�n c�ng c�ng vi?c m?i',
-          content: 'Hu?nh Tru?ng Thanh T�m d� ph�n c�ng vi?c "G?i di?n cham s�c & kh?o s�t � ki?n 50 b?nh nh�n n?i tr�" cho b?n.',
+          title: '📋 Phân công công việc mới',
+          content: 'Huỳnh Trường Thanh Tâm đã phân công việc "Gọi điện chăm sóc & khảo sát ý kiến 50 bệnh nhân nội trú" cho bạn.',
           taskId: 'PTKH-02',
           isRead: false,
           createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
@@ -57,8 +57,8 @@ export class Store {
           recipientId: 'user_admin',
           senderId: 'user_tam_ptkh',
           type: 'status_change',
-          title: '?? C?p nh?t ti?n d? nhi?m v?',
-          content: 'Ph�ng PTKH v?a c?p nh?t ti?n d? c�ng vi?c "�? xu?t chi?n d?ch Marketing truy?n th�ng qu� 4".',
+          title: '🔄 Cập nhật tiến độ nhiệm vụ',
+          content: 'Phòng PTKH vừa cập nhật tiến độ công việc "Đề xuất chiến dịch Marketing truyền thông quý 4".',
           taskId: 'PTKH-03',
           isRead: false,
           createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
@@ -68,10 +68,10 @@ export class Store {
     }
   }
 
-  // T?i d? li?u t? Google Sheet v?
+  // Tải dữ liệu từ Google Sheet về
   async syncFromCloudIfAvailable() {
     if (!appScriptBridge.isConnected()) {
-      return { success: false, message: 'Chua c?u h�nh URL Google Apps Script Endpoint' };
+      return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
     }
 
     const cloudData = await appScriptBridge.fetchCloudData();
@@ -80,7 +80,7 @@ export class Store {
       let userCount = 0;
 
       if (cloudData.tasks && cloudData.tasks.length > 0) {
-        // H?P NH?T D? LI?U C�NG VI?C & VI?C CON 2 CHI?U (ZERO DATA LOSS)
+        // HỢP NHẤT DỮ LIỆU CÔNG VIỆC & VIỆC CON 2 CHIỀU (ZERO DATA LOSS)
         const localTasks = this.getAllTasksRaw();
         const taskMap = new Map();
         localTasks.forEach(lt => { if (lt && lt.id) taskMap.set(lt.id, lt); });
@@ -89,7 +89,7 @@ export class Store {
           if (!ct || !ct.id) return;
           const local = taskMap.get(ct.id) || {};
 
-          // Chu?n h�a subtasks t? cloud (h? tr? c? tru?ng subtasks v� checklist)
+          // Chuẩn hóa subtasks từ cloud (hỗ trợ cả trường subtasks và checklist)
           let ctSubtasks = ct.subtasks;
           if (typeof ctSubtasks === 'string' && ctSubtasks.trim().startsWith('[')) {
             try { ctSubtasks = JSON.parse(ctSubtasks); } catch (_) { ctSubtasks = []; }
@@ -114,7 +114,7 @@ export class Store {
           }
           if (!Array.isArray(ctSubtasks)) ctSubtasks = [];
 
-          // H?p nh?t vi?c con: Uu ti�n gi? l?i to�n b? vi?c con c?c b? d� t?o m� cloud chua k?p nh?n
+          // Hợp nhất việc con: Ưu tiên giữ lại toàn bộ việc con cục bộ đã tạo mà cloud chưa kịp nhận
           const localSubtasks = Array.isArray(local.subtasks) ? local.subtasks : [];
           const subMap = new Map();
           ctSubtasks.forEach(s => { if (s && s.id) subMap.set(s.id, s); });
@@ -129,7 +129,7 @@ export class Store {
           });
           const mergedSubtasks = Array.from(subMap.values());
 
-          // H?p nh?t b�nh lu?n & trao d?i
+          // Hợp nhất bình luận & trao đổi
           let ctComments = ct.comments;
           if (typeof ctComments === 'string' && ctComments.trim().startsWith('[')) {
             try { ctComments = JSON.parse(ctComments); } catch (_) { ctComments = []; }
@@ -164,7 +164,7 @@ export class Store {
         taskCount = mergedList.length;
       }
       if (cloudData.users && cloudData.users.length > 0) {
-        // Chu?n h�a v� h?p nh?t ngu?i d�ng an to�n (Zero Data Loss & Type Safety)
+        // Chuẩn hóa và hợp nhất người dùng an toàn (Zero Data Loss & Type Safety)
         const currentUsers = this.getAllUsers();
         const userMap = new Map();
         currentUsers.forEach(u => { if (u && u.id) userMap.set(u.id, u); });
@@ -200,7 +200,7 @@ export class Store {
           if (!Array.isArray(cdTeams)) cdTeams = [];
           
           const ldTeams = (ld && Array.isArray(ld.teams)) ? ld.teams : [];
-          // H?p nh?t teams c?a ph�ng ban gi?a Local v� Cloud, b?o to�n 100% d? li?u d� t?o
+          // Hợp nhất teams của phòng ban giữa Local và Cloud, bảo toàn 100% dữ liệu đã tạo
           const teamMap = new Map();
           ldTeams.forEach(t => { if (t && t.id) teamMap.set(t.id, t); });
           cdTeams.forEach(t => { if (t && t.id) teamMap.set(t.id, { ...(teamMap.get(t.id) || {}), ...t }); });
@@ -212,7 +212,7 @@ export class Store {
           };
         });
 
-        // Gi? l?i c�c ph�ng ban t?o ? local chua k?p d?y l�n Cloud
+        // Giữ lại các phòng ban tạo ở local chưa kịp đẩy lên Cloud
         localDepts.forEach(ld => {
           if (!mergedDepts.some(md => md.id === ld.id)) {
             mergedDepts.push(ld);
@@ -234,20 +234,20 @@ export class Store {
         success: true,
         taskCount,
         userCount,
-        message: `�?ng b? th�nh c�ng! �� n?p ${taskCount} c�ng vi?c v� ${userCount} nh�n s? t? Google Sheet.`
+        message: `Đồng bộ thành công! Đã nạp ${taskCount} công việc và ${userCount} nhân sự từ Google Sheet.`
       };
     } else {
       return {
         success: false,
-        message: cloudData ? (cloudData.message || cloudData.error) : 'L?i k?t n?i t?i Apps Script'
+        message: cloudData ? (cloudData.message || cloudData.error) : 'Lỗi kết nối tới Apps Script'
       };
     }
   }
 
-  // �?y to�n b? d? li?u m?u / hi?n t?i t? Web App l�n Google Sheet
+  // Đẩy toàn bộ dữ liệu mẫu / hiện tại từ Web App lên Google Sheet
   async pushAllToCloud() {
     if (!appScriptBridge.isConnected()) {
-      return { success: false, message: 'Chua c?u h�nh URL Google Apps Script Endpoint' };
+      return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
     }
 
     const tasks = this.getAllTasksRaw();
@@ -261,15 +261,15 @@ export class Store {
       userCount: users.length,
       deptCount: depts.length,
       message: success 
-        ? `�� d?y ${tasks.length} c�ng vi?c, ${users.length} nh�n s? v� ${depts.length} ph�ng ban l�n Google Sheet th�nh c�ng!` 
-        : 'G?i d? li?u l�n Google Sheet th?t b?i'
+        ? `Đã đẩy ${tasks.length} công việc, ${users.length} nhân sự và ${depts.length} phòng ban lên Google Sheet thành công!` 
+        : 'Gửi dữ liệu lên Google Sheet thất bại'
     };
   }
 
-  // Kh?i t?o b?ng d? li?u m?u tr�n Google Sheet
+  // Khởi tạo bảng dữ liệu mẫu trên Google Sheet
   async seedCloudData() {
     if (!appScriptBridge.isConnected()) {
-      return { success: false, message: 'Chua c?u h�nh URL Google Apps Script' };
+      return { success: false, message: 'Chưa cấu hình URL Google Apps Script' };
     }
     const res = await appScriptBridge.seedCloudData();
     if (res && res.success) {
@@ -280,12 +280,12 @@ export class Store {
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(res.users));
       }
       window.dispatchEvent(new CustomEvent('tvm:data_changed'));
-      return { success: true, message: '�� kh?i t?o b?ng d? li?u m?u tr�n Google Sheet!' };
+      return { success: true, message: 'Đã khởi tạo bảng dữ liệu mẫu trên Google Sheet!' };
     }
-    return { success: false, message: 'Kh�ng th? kh?i t?o tr�n Google Sheet' };
+    return { success: false, message: 'Không thể khởi tạo trên Google Sheet' };
   }
 
-  // --- QU?N L� NH�N S? (CRUD USERS) ---
+  // --- QUẢN LÝ NHÂN SỰ (CRUD USERS) ---
   getAllUsers() {
     try {
       return JSON.parse(localStorage.getItem(USERS_STORAGE_KEY)) || USERS;
@@ -310,7 +310,7 @@ export class Store {
     return this.getAllUsers().filter(u => u.departmentId === deptId || (includeGlobal && u.departmentId === 'all'));
   }
 
-  // --- QU?N L� PH�NG BAN & B? PH?N CON (CRUD DEPARTMENTS & TEAMS) ---
+  // --- QUẢN LÝ PHÒNG BAN & BỘ PHẬN CON (CRUD DEPARTMENTS & TEAMS) ---
   getAllDepartments() {
     try {
       const saved = localStorage.getItem(DEPTS_STORAGE_KEY);
@@ -326,7 +326,7 @@ export class Store {
     localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(depts));
     window.dispatchEvent(new CustomEvent('tvm:departments_changed', { detail: { departments: depts } }));
     window.dispatchEvent(new CustomEvent('tvm:data_changed'));
-    // T? d?ng d?ng b? l�n Google Sheets (n?u c� k?t n?i)
+    // Tự động đồng bộ lên Google Sheets (nếu có kết nối)
     if (appScriptBridge.isConnected()) {
       appScriptBridge.pushDepartments(depts);
     }
@@ -338,14 +338,14 @@ export class Store {
 
   createDepartment(deptData) {
     if (!auth.canCRUDDepartments()) {
-      return { success: false, message: 'Ch? Qu?n Tr? Vi�n (Admin) m?i c� quy?n t?o ph�ng ban!' };
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền tạo phòng ban!' };
     }
     const depts = this.getAllDepartments();
     const newDept = {
       id: `dept_${Date.now().toString().slice(-6)}`,
       name: deptData.name.trim(),
       code: (deptData.code || 'PB').trim().toUpperCase(),
-      unit: deptData.unit || 'Co S? 3 (C� Mau)',
+      unit: deptData.unit || 'Cơ Sở 3 (Cà Mau)',
       managerId: deptData.managerId || '',
       description: deptData.description || '',
       badge: deptData.badge || deptData.code,
@@ -359,11 +359,11 @@ export class Store {
 
   updateDepartment(deptId, deptData) {
     if (!auth.canCRUDDepartments()) {
-      return { success: false, message: 'Ch? Qu?n Tr? Vi�n (Admin) m?i c� quy?n s?a ph�ng ban!' };
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền sửa phòng ban!' };
     }
     const depts = this.getAllDepartments();
     const idx = depts.findIndex(d => d.id === deptId);
-    if (idx < 0) return { success: false, message: 'Kh�ng t�m th?y ph�ng ban!' };
+    if (idx < 0) return { success: false, message: 'Không tìm thấy phòng ban!' };
 
     const sanitizedData = { ...deptData };
     if (typeof sanitizedData.name === 'string') sanitizedData.name = sanitizedData.name.trim();
@@ -383,7 +383,7 @@ export class Store {
 
   deleteDepartment(deptId) {
     if (!auth.canCRUDDepartments()) {
-      return { success: false, message: 'Ch? Qu?n Tr? Vi�n (Admin) m?i c� quy?n x�a ph�ng ban!' };
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền xóa phòng ban!' };
     }
     const depts = this.getAllDepartments();
     const filtered = depts.filter(d => d.id !== deptId);
@@ -393,11 +393,11 @@ export class Store {
 
   addTeamToDepartment(deptId, teamData) {
     if (!auth.canCRUDDepartments()) {
-      return { success: false, message: 'Ch? Qu?n Tr? Vi�n (Admin) m?i c� quy?n th�m b? ph?n con!' };
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền thêm bộ phận con!' };
     }
     const depts = this.getAllDepartments();
     const dept = depts.find(d => d.id === deptId);
-    if (!dept) return { success: false, message: 'Kh�ng t�m th?y ph�ng ban!' };
+    if (!dept) return { success: false, message: 'Không tìm thấy phòng ban!' };
 
     const newTeam = {
       id: `team_${Date.now().toString().slice(-6)}`,
@@ -413,17 +413,17 @@ export class Store {
 
   updateTeamInDepartment(deptId, teamId, teamData) {
     if (!auth.canCRUDDepartments()) {
-      return { success: false, message: 'Ch? Qu?n Tr? Vi�n (Admin) m?i c� quy?n s?a b? ph?n con!' };
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền sửa bộ phận con!' };
     }
     if (!teamData || typeof teamData !== 'object') {
-      return { success: false, message: 'D? li?u b? ph?n con kh�ng h?p l?!' };
+      return { success: false, message: 'Dữ liệu bộ phận con không hợp lệ!' };
     }
     const depts = this.getAllDepartments();
     const dept = depts.find(d => d.id === deptId);
-    if (!dept || !dept.teams) return { success: false, message: 'Kh�ng t�m th?y ph�ng ban ho?c b? ph?n con!' };
+    if (!dept || !dept.teams) return { success: false, message: 'Không tìm thấy phòng ban hoặc bộ phận con!' };
 
     const teamIdx = dept.teams.findIndex(t => t.id === teamId);
-    if (teamIdx < 0) return { success: false, message: 'Kh�ng t�m th?y b? ph?n con!' };
+    if (teamIdx < 0) return { success: false, message: 'Không tìm thấy bộ phận con!' };
 
     const currentTeam = dept.teams[teamIdx];
     const updatedTeam = {
@@ -441,11 +441,11 @@ export class Store {
 
   removeTeamFromDepartment(deptId, teamId) {
     if (!auth.canCRUDDepartments()) {
-      return { success: false, message: 'Ch? Qu?n Tr? Vi�n (Admin) m?i c� quy?n x�a b? ph?n con!' };
+      return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền xóa bộ phận con!' };
     }
     const depts = this.getAllDepartments();
     const dept = depts.find(d => d.id === deptId);
-    if (!dept || !dept.teams) return { success: false, message: 'Kh�ng t�m th?y ph�ng ban ho?c b? ph?n con!' };
+    if (!dept || !dept.teams) return { success: false, message: 'Không tìm thấy phòng ban hoặc bộ phận con!' };
 
     dept.teams = dept.teams.filter(t => t.id !== teamId);
     this.saveAllDepartments(depts);
@@ -469,10 +469,10 @@ export class Store {
       role: targetRole,
       departmentId: targetDeptId,
       teamId: userData.teamId || '',
-      title: userData.title.trim() || 'Chuy�n vi�n',
-      unit: userData.unit || (this.getDepartmentById(targetDeptId)?.name || 'Thanh Vu Medic'),
+      title: userData.title.trim() || 'Chuyên viên',
+      unit: userData.unit || (this.getDepartmentById(targetDeptId)?.name || 'Thanh Vũ Medic'),
       avatar: userData.avatar?.trim() || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=160&q=80',
-      badge: userData.badge || (targetRole === 'MANAGER' ? 'Tru?ng ph�ng' : (targetRole === 'DEPUTY_MANAGER' ? 'Ph� ph�ng' : (targetRole === 'ADMIN' ? 'Admin' : (targetRole === 'LEADERSHIP' ? 'Ban L�nh �?o' : 'Chuy�n vi�n')))),
+      badge: userData.badge || (targetRole === 'MANAGER' ? 'Trưởng phòng' : (targetRole === 'DEPUTY_MANAGER' ? 'Phó phòng' : (targetRole === 'ADMIN' ? 'Admin' : (targetRole === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Chuyên viên')))),
       phone: userData.phone || '',
       email: userData.email || '',
       dob: userData.dob || '',
@@ -503,14 +503,14 @@ export class Store {
     this.saveAllUsers(users);
     appScriptBridge.pushUser(users[idx]);
 
-    // Lu�n luu b?n sao profile d?c l?p d? auth.loadUser() c� th? n?p ngay
+    // Luôn lưu bản sao profile độc lập để auth.loadUser() có thể nạp ngay
     try {
       localStorage.setItem('tvm_user_profile_' + users[idx].id, JSON.stringify(users[idx]));
     } catch (e) {
-      console.warn('L?i luu tvm_user_profile_:', e);
+      console.warn('Lỗi lưu tvm_user_profile_:', e);
     }
 
-    // N?u s?a th�ng tin c?a ch�nh ngu?i dang dang nh?p -> C?p nh?t Auth
+    // Nếu sửa thông tin của chính người đang đăng nhập -> Cập nhật Auth
     const current = auth.getCurrentUser();
     if (current && current.id === users[idx].id) {
       auth.updateProfile(users[idx]);
@@ -524,7 +524,7 @@ export class Store {
     const userToDelete = users.find(u => u.id === userId);
     if (!userToDelete) return false;
 
-    // Kh�ng cho ph�p x�a Admin ch�nh
+    // Không cho phép xóa Admin chính
     if (userToDelete.role === 'ADMIN') {
       return false;
     }
@@ -535,7 +535,7 @@ export class Store {
     return true;
   }
 
-  // C?p nh?t h? so c� nh�n c?a ch�nh m�nh
+  // Cập nhật hồ sơ cá nhân của chính mình
   updateCurrentUserProfile(profileData) {
     const current = auth.getCurrentUser();
     return this.updateUser({
@@ -549,7 +549,7 @@ export class Store {
     });
   }
 
-  // --- QU?N L� C�NG VI?C (CRUD TASKS) ---
+  // --- QUẢN LÝ CÔNG VIỆC (CRUD TASKS) ---
   getAllTasksRaw() {
     try {
       const raw = JSON.parse(localStorage.getItem(TASKS_STORAGE_KEY)) || INITIAL_TASKS;
@@ -585,7 +585,7 @@ export class Store {
             ...t, 
             subtasks, 
             comments,
-            creatorName: t.creatorName || (this.getUserById(t.creatorId)?.name || 'H? th?ng')
+            creatorName: t.creatorName || (this.getUserById(t.creatorId)?.name || 'Hệ thống')
           };
         });
       }
@@ -655,7 +655,7 @@ export class Store {
   createTask(taskData) {
     const tasks = this.getAllTasksRaw();
     const currentDept = auth.getActiveDepartment() || { id: 'dept_ptkh', code: 'PTKH-CS3' };
-    const currentUser = auth.getCurrentUser() || { id: 'user_admin', name: 'Ban Gi�m �?c' };
+    const currentUser = auth.getCurrentUser() || { id: 'user_admin', name: 'Ban Giám Đốc' };
 
     const prefix = currentDept.code.split('-')[0] || 'TASK';
     const newId = `${prefix}-${Date.now().toString().slice(-4)}`;
@@ -696,7 +696,7 @@ export class Store {
       priority: taskData.priority || 'P2',
       status: initialStatus,
       dueDate: taskData.dueDate || new Date().toISOString().split('T')[0],
-      category: taskData.category || 'H�nh ch�nh',
+      category: taskData.category || 'Hành chính',
       progress: initialProgress,
       cost: parseInt(taskData.cost, 10) || 0,
       subtasks: subtasks,
@@ -716,26 +716,26 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(newTask);
 
-    // G?i th�ng b�o cho Assignee
+    // Gửi thông báo cho Assignee
     if (newTask.assigneeId && newTask.assigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: newTask.assigneeId,
         senderId: currentUser.id,
         type: 'task_assigned',
-        title: '?? B?n du?c giao c�ng vi?c m?i',
-        content: `${currentUser.name} d� giao nhi?m v? "${newTask.title}" (${newTask.id}) cho b?n. H?n ho�n th�nh: ${newTask.dueDate}.`,
+        title: '📋 Bạn được giao công việc mới',
+        content: `${currentUser.name} đã giao nhiệm vụ "${newTask.title}" (${newTask.id}) cho bạn. Hạn hoàn thành: ${newTask.dueDate}.`,
         taskId: newTask.id
       });
     }
 
-    // N?u c�ng vi?c c?n ph� duy?t, g?i th�ng b�o kh?n cho Ngu?i ph� duy?t
+    // Nếu công việc cần phê duyệt, gửi thông báo khẩn cho Người phê duyệt
     if (newTask.requiresApproval && newTask.approverId && newTask.approverId !== currentUser.id) {
       this.addNotification({
         recipientId: newTask.approverId,
         senderId: currentUser.id,
         type: 'approval_request',
-        title: '? Nhi?m v? m?i c?n b?n ph� duy?t',
-        content: `${currentUser.name} d� g?i y�u c?u ph� duy?t c�ng vi?c "${newTask.title}" (${newTask.id}).`,
+        title: '⏳ Nhiệm vụ mới cần bạn phê duyệt',
+        content: `${currentUser.name} đã gửi yêu cầu phê duyệt công việc "${newTask.title}" (${newTask.id}).`,
         taskId: newTask.id
       });
     }
@@ -748,18 +748,18 @@ export class Store {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return null;
 
-    const currentUser = auth.getCurrentUser() || { id: '', name: 'H? th?ng' };
+    const currentUser = auth.getCurrentUser() || { id: '', name: 'Hệ thống' };
 
     if (updates.title !== undefined) task.title = updates.title.trim();
     if (updates.description !== undefined) task.description = (updates.description || '').trim();
     if (updates.teamId !== undefined) task.teamId = updates.teamId || '';
     if (updates.priority !== undefined) task.priority = updates.priority;
     if (updates.dueDate !== undefined) task.dueDate = updates.dueDate;
-    if (updates.category !== undefined) task.category = updates.category.trim() || 'Chuy�n m�n';
+    if (updates.category !== undefined) task.category = updates.category.trim() || 'Chuyên môn';
     if (updates.cost !== undefined) task.cost = parseInt(updates.cost, 10) || 0;
     if (updates.departmentId !== undefined) task.departmentId = updates.departmentId;
 
-    // Ph�n c�ng ngu?i th?c hi?n
+    // Phân công người thực hiện
     const oldAssigneeId = task.assigneeId;
     if (updates.assigneeId !== undefined) {
       task.assigneeId = updates.assigneeId;
@@ -768,14 +768,14 @@ export class Store {
           recipientId: updates.assigneeId,
           senderId: currentUser.id,
           type: 'task_assigned',
-          title: '?? B?n du?c ph�n c�ng nhi?m v?',
-          content: `${currentUser.name} d� c?p nh?t ngu?i th?c hi?n nhi?m v? "${task.title}" (${task.id}) cho b?n.`,
+          title: '📋 Bạn được phân công nhiệm vụ',
+          content: `${currentUser.name} đã cập nhật người thực hiện nhiệm vụ "${task.title}" (${task.id}) cho bạn.`,
           taskId: task.id
         });
       }
     }
 
-    // Y�u c?u ph� duy?t
+    // Yêu cầu phê duyệt
     if (updates.requiresApproval !== undefined) {
       task.requiresApproval = Boolean(updates.requiresApproval);
       if (task.requiresApproval && (!task.approvalStatus || task.approvalStatus === 'NONE')) {
@@ -784,7 +784,7 @@ export class Store {
     }
     if (updates.approverId !== undefined) task.approverId = updates.approverId || null;
 
-    // Tr?ng th�i c�ng vi?c
+    // Trạng thái công việc
     if (updates.status !== undefined) {
       task.status = updates.status;
       if (updates.status === 'done' || updates.status === 'completed') {
@@ -793,7 +793,7 @@ export class Store {
       }
     }
 
-    // �?ng b? v� t�nh to�n subtasks n?u c� truy?n v�o
+    // Đồng bộ và tính toán subtasks nếu có truyền vào
     if (Array.isArray(updates.subtasks)) {
       task.subtasks = updates.subtasks.map((s, idx) => {
         const isCompleted = s.status === 'done' || Boolean(s.completed);
@@ -848,33 +848,33 @@ export class Store {
     task.comments.push({
       id: `cm-${Date.now()}`,
       userId: currentUser.id,
-      content: `[�i?u chuy?n] �� ph�n c�ng l?i ngu?i th?c hi?n cho ${newAssignee ? newAssignee.name : 'nh�n s? m?i'}.`,
+      content: `[Điều chuyển] Đã phân công lại người thực hiện cho ${newAssignee ? newAssignee.name : 'nhân sự mới'}.`,
       createdAt: new Date().toISOString()
     });
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // G?i th�ng b�o cho ngu?i du?c assign m?i
+    // Gửi thông báo cho người được assign mới
     if (newAssigneeId && newAssigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: newAssigneeId,
         senderId: currentUser.id,
         type: 'task_assigned',
-        title: '?? B?n du?c ph�n c�ng l�m ngu?i ph? tr�ch',
-        content: `${currentUser.name} d� ph�n c�ng c�ng vi?c "${task.title}" (${task.id}) cho b?n.`,
+        title: '👤 Bạn được phân công làm người phụ trách',
+        content: `${currentUser.name} đã phân công công việc "${task.title}" (${task.id}) cho bạn.`,
         taskId: task.id
       });
     }
 
-    // N?u ngu?i cu kh�c ngu?i thao t�c, th�ng b�o chuy?n giao
+    // Nếu người cũ khác người thao tác, thông báo chuyển giao
     if (oldAssigneeId && oldAssigneeId !== currentUser.id && oldAssigneeId !== newAssigneeId) {
       this.addNotification({
         recipientId: oldAssigneeId,
         senderId: currentUser.id,
         type: 'update',
-        title: '?? C�ng vi?c d� du?c chuy?n giao',
-        content: `C�ng vi?c "${task.title}" (${task.id}) d� du?c ${currentUser.name} chuy?n giao cho ${newAssignee ? newAssignee.name : 'ngu?i kh�c'}.`,
+        title: 'ℹ️ Công việc đã được chuyển giao',
+        content: `Công việc "${task.title}" (${task.id}) đã được ${currentUser.name} chuyển giao cho ${newAssignee ? newAssignee.name : 'người khác'}.`,
         taskId: task.id
       });
     }
@@ -898,38 +898,38 @@ export class Store {
     appScriptBridge.pushTask(task);
 
     const statusLabels = {
-      'todo': 'Chua b?t d?u',
-      'in_progress': '�ang th?c hi?n',
-      'pending_approval': 'Ch? ph� duy?t',
-      'review': 'Ch? ph� duy?t',
-      'done': '�� ho�n th�nh',
-      'completed': '�� ho�n th�nh',
-      'paused': 'T?m d?ng',
-      'overdue': 'Qu� h?n'
+      'todo': 'Chưa bắt đầu',
+      'in_progress': 'Đang thực hiện',
+      'pending_approval': 'Chờ phê duyệt',
+      'review': 'Chờ phê duyệt',
+      'done': 'Đã hoàn thành',
+      'completed': 'Đã hoàn thành',
+      'paused': 'Tạm dừng',
+      'overdue': 'Quá hạn'
     };
     const sLabel = statusLabels[newStatus] || newStatus;
     const currentUser = auth.getCurrentUser();
 
-    // Th�ng b�o cho Assignee
+    // Thông báo cho Assignee
     if (task.assigneeId && task.assigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: task.assigneeId,
         senderId: currentUser.id,
         type: 'status_change',
-        title: '?? C?p nh?t tr?ng th�i c�ng vi?c',
-        content: `C�ng vi?c "${task.title}" (${task.id}) d� du?c ${currentUser.name} chuy?n sang "${sLabel}".`,
+        title: '🔄 Cập nhật trạng thái công việc',
+        content: `Công việc "${task.title}" (${task.id}) đã được ${currentUser.name} chuyển sang "${sLabel}".`,
         taskId: task.id
       });
     }
 
-    // Th�ng b�o cho Creator
+    // Thông báo cho Creator
     if (task.creatorId && task.creatorId !== currentUser.id && task.creatorId !== task.assigneeId) {
       this.addNotification({
         recipientId: task.creatorId,
         senderId: currentUser.id,
         type: 'status_change',
-        title: '?? Ti?n d? nhi?m v? c?p nh?t',
-        content: `${currentUser.name} d� c?p nh?t tr?ng th�i vi?c "${task.title}" (${task.id}) th�nh "${sLabel}".`,
+        title: '🔄 Tiến độ nhiệm vụ cập nhật',
+        content: `${currentUser.name} đã cập nhật trạng thái việc "${task.title}" (${task.id}) thành "${sLabel}".`,
         taskId: task.id
       });
     }
@@ -954,14 +954,14 @@ export class Store {
     task.comments.push({
       id: `cm-${Date.now()}`,
       userId: currentUser.id,
-      content: `[�� PH� DUY?T 1-CH?M] Ngu?i duy?t: ${currentUser.name}${note ? ` - Ghi ch�: "${note}"` : ''}.`,
+      content: `[ĐÃ PHÊ DUYỆT 1-CHẠM] Người duyệt: ${currentUser.name}${note ? ` - Ghi chú: "${note}"` : ''}.`,
       createdAt: new Date().toISOString()
     });
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // G?i th�ng b�o cho Assignee v� Creator
+    // Gửi thông báo cho Assignee và Creator
     const targets = new Set([task.assigneeId, task.creatorId].filter(Boolean));
     targets.forEach(userId => {
       if (userId !== currentUser.id) {
@@ -969,8 +969,8 @@ export class Store {
           recipientId: userId,
           senderId: currentUser.id,
           type: 'approval_approved',
-          title: '? Nhi?m v? d� du?c ph� duy?t 1-ch?m',
-          content: `${currentUser.name} d� k� duy?t ho�n th�nh nhi?m v? "${task.title}" (${task.id}).`,
+          title: '✅ Nhiệm vụ đã được phê duyệt 1-chạm',
+          content: `${currentUser.name} đã ký duyệt hoàn thành nhiệm vụ "${task.title}" (${task.id}).`,
           taskId: task.id
         });
       }
@@ -979,7 +979,7 @@ export class Store {
     return true;
   }
 
-  rejectTask(taskId, reason = 'Chua d?t ti�u chu?n y�u c?u') {
+  rejectTask(taskId, reason = 'Chưa đạt tiêu chuẩn yêu cầu') {
     const tasks = this.getAllTasksRaw();
     const task = tasks.find(t => t.id === taskId);
     if (!task) return false;
@@ -996,14 +996,14 @@ export class Store {
     task.comments.push({
       id: `cm-${Date.now()}`,
       userId: currentUser.id,
-      content: `[T? CH?I PH� DUY?T] Ngu?i duy?t: ${currentUser.name}. L� do: "${reason}"`,
+      content: `[TỪ CHỐI PHÊ DUYỆT] Người duyệt: ${currentUser.name}. Lý do: "${reason}"`,
       createdAt: new Date().toISOString()
     });
 
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // G?i th�ng b�o cho Assignee v� Creator
+    // Gửi thông báo cho Assignee và Creator
     const targets = new Set([task.assigneeId, task.creatorId].filter(Boolean));
     targets.forEach(userId => {
       if (userId !== currentUser.id) {
@@ -1011,8 +1011,8 @@ export class Store {
           recipientId: userId,
           senderId: currentUser.id,
           type: 'approval_rejected',
-          title: '? Nhi?m v? b? t? ch?i ph� duy?t',
-          content: `${currentUser.name} d� t? ch?i duy?t nhi?m v? "${task.title}" (${task.id}). L� do: "${reason}"`,
+          title: '❌ Nhiệm vụ bị từ chối phê duyệt',
+          content: `${currentUser.name} đã từ chối duyệt nhiệm vụ "${task.title}" (${task.id}). Lý do: "${reason}"`,
           taskId: task.id
         });
       }
@@ -1055,15 +1055,15 @@ export class Store {
       this.saveAllTasks(tasks);
       appScriptBridge.pushTask(task);
 
-      // Th�ng b�o c?p nh?t ti?n d?
+      // Thông báo cập nhật tiến độ
       const currentUser = auth.getCurrentUser();
       if (task.assigneeId && task.assigneeId !== currentUser.id) {
         this.addNotification({
           recipientId: task.assigneeId,
           senderId: currentUser.id,
           type: 'update',
-          title: '?? C?p nh?t ti?n d? vi?c con',
-          content: `${currentUser.name} d� c?p nh?t checklist c�ng vi?c "${task.title}" (Ti?n d?: ${task.progress}%).`,
+          title: '☑️ Cập nhật tiến độ việc con',
+          content: `${currentUser.name} đã cập nhật checklist công việc "${task.title}" (Tiến độ: ${task.progress}%).`,
           taskId: task.id
         });
       }
@@ -1091,7 +1091,7 @@ export class Store {
     };
     task.subtasks.push(newSubtask);
 
-    // �?ng b? sang checklist cho tuong th�ch ngu?c
+    // Đồng bộ sang checklist cho tương thích ngược
     task.checklist = task.subtasks.map(s => ({
       id: s.id,
       text: s.title,
@@ -1107,15 +1107,15 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // G?i th�ng b�o cho ngu?i du?c assign vi?c con n?u kh�c currentUser
+    // Gửi thông báo cho người được assign việc con nếu khác currentUser
     const currentUser = auth.getCurrentUser();
     if (newSubtask.assigneeId && newSubtask.assigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: newSubtask.assigneeId,
         senderId: currentUser.id,
         type: 'task_assigned',
-        title: '?? B?n du?c giao vi?c con m?i',
-        content: `${currentUser.name} d� ph�n c�ng vi?c con "${newSubtask.title}" trong nhi?m v? "${task.title}" cho b?n.`,
+        title: '📋 Bạn được giao việc con mới',
+        content: `${currentUser.name} đã phân công việc con "${newSubtask.title}" trong nhiệm vụ "${task.title}" cho bạn.`,
         taskId: task.id
       });
     }
@@ -1205,31 +1205,31 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // Th�ng b�o cho Assignee
+    // Thông báo cho Assignee
     if (task.assigneeId && task.assigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: task.assigneeId,
         senderId: currentUser.id,
         type: 'comment',
-        title: '?? � ki?n ch? d?o / Trao d?i m?i',
-        content: `${currentUser.name} d� nh?n trong vi?c "${task.title}": "${content.slice(0, 60)}..."`,
+        title: '💬 Ý kiến chỉ đạo / Trao đổi mới',
+        content: `${currentUser.name} đã nhắn trong việc "${task.title}": "${content.slice(0, 60)}..."`,
         taskId: task.id
       });
     }
-    // Th�ng b�o cho Creator
+    // Thông báo cho Creator
     if (task.creatorId && task.creatorId !== currentUser.id && task.creatorId !== task.assigneeId) {
       this.addNotification({
         recipientId: task.creatorId,
         senderId: currentUser.id,
         type: 'comment',
-        title: '?? Trao d?i trong c�ng vi?c b?n giao',
-        content: `${currentUser.name} d� nh?n trong vi?c "${task.title}": "${content.slice(0, 60)}..."`,
+        title: '💬 Trao đổi trong công việc bạn giao',
+        content: `${currentUser.name} đã nhắn trong việc "${task.title}": "${content.slice(0, 60)}..."`,
         taskId: task.id
       });
     }
   }
 
-  // --- H? TH?NG TH�NG B�O (NOTIFICATIONS SYSTEM) ---
+  // --- HỆ THỐNG THÔNG BÁO (NOTIFICATIONS SYSTEM) ---
   getAllNotifications() {
     try {
       const saved = localStorage.getItem(NOTIF_STORAGE_KEY);
@@ -1263,14 +1263,14 @@ export class Store {
       recipientId: notifData.recipientId,
       senderId: notifData.senderId || (auth.getCurrentUser()?.id || 'system'),
       type: notifData.type || 'info', // 'task_assigned' | 'status_change' | 'comment' | 'approval' | 'update'
-      title: notifData.title || 'Th�ng b�o m?i',
+      title: notifData.title || 'Thông báo mới',
       content: notifData.content || '',
       taskId: notifData.taskId || null,
       isRead: false,
       createdAt: new Date().toISOString()
     };
     notifs.unshift(newNotif);
-    // Gi? t?i da 100 th�ng b�o g?n nh?t
+    // Giữ tối đa 100 thông báo gần nhất
     if (notifs.length > 100) notifs.length = 100;
     this.saveAllNotifications(notifs);
     appScriptBridge.pushNotification(newNotif);
