@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=6.9';
-import { store } from '../store.js?v=6.9';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=6.9';
+import { auth } from '../auth.js?v=7.0';
+import { store } from '../store.js?v=7.0';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=7.0';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {

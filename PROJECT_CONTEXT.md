@@ -74,7 +74,10 @@
     - Tài liệu đính kèm (Links): Nút "Lưu" đổi sang style chủ đạo hệ thống, kích thước chuẩn 44px, không lệch màu xanh biển.
     - Modal tạo việc: Bổ sung chọn phòng ban tiếp nhận khi đang xem toàn viện và tự động cập nhật danh sách bộ phận con (teams).
   - **Dữ liệu chuẩn bị triển khai bên thứ ba:** Dữ liệu khởi tạo trong `models.js` được làm sạch, hoàn chỉnh và thực tế cho Thanh Vũ Medic CS3.
-  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=6.9`.
+  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=7.0`.
+- [x] **11. Loại Bỏ Logo TV & Chữ Thanh Vũ Trên Mobile Top Navbar (`topHeader.js`)**:
+  - Gỡ bỏ hoàn toàn badge logo `TV` và text `Thanh Vũ Medic` trên thanh điều hướng di động (< 640px) theo yêu cầu.
+  - Phía bên trái header di động nay chỉ giữ lại duy nhất 1 nút Hamburger Menu `☰` chuẩn touch target $\ge 44 \times 44$px, tạo khoảng không gian cực kỳ thoáng đãng, tối giản và chuyên nghiệp.
 - [x] **10. Tách Riêng Hàng Thực Hiện & Hạn Hoàn Thành, Chuẩn Hóa Định Dạng Ngày Tháng (`dashboardView.js`, `planDrawer.js`)**:
   - Khắc phục triệt để lỗi hiển thị thời gian thô dạng ISO timestamp (`2026-11-06T15:00:00.000Z`) trong hàng đợi phê duyệt của Dashboard. Bỏ hoàn toàn phần giờ/múi giờ, chỉ giữ lại ngày tháng năm dạng `DD/MM/YYYY` qua hàm `ngayVN()`.
   - Tách riêng thông tin "Thực hiện:" và "Hạn:" thành 2 hàng độc lập trên giao diện Mobile, giúp hiển thị trọn vẹn họ tên nhân viên và hạn chót mà không bị co kéo, ngắt dòng luộm thuộm.

@@ -4,11 +4,11 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=6.9';
-import { store } from '../store.js?v=6.9';
-import { USERS } from '../models.js?v=6.9';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=6.9';
-import { shinTheme } from '../theme.js?v=6.9';
+import { auth } from '../auth.js?v=7.0';
+import { store } from '../store.js?v=7.0';
+import { USERS } from '../models.js?v=7.0';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=7.0';
+import { shinTheme } from '../theme.js?v=7.0';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
@@ -50,7 +50,7 @@ export class TopHeader {
     this.container.innerHTML = `
       <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6 relative" style="background-color: var(--card); border-color: var(--border);">
         
-        <!-- 1. LEFT: HAMBURGER & LOGO / SEARCH BAR -->
+        <!-- 1. LEFT: HAMBURGER & SEARCH BAR -->
         <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-xl">
           <!-- HAMBURGER BUTTON (MOBILE / TABLET ONLY - VÙNG BẤM >= 44PX) -->
           <button 
@@ -62,16 +62,6 @@ export class TopHeader {
           >
             <span class="material-symbols-outlined text-[24px]">menu</span>
           </button>
-
-          <!-- MOBILE BRAND LOGO & TITLE (CHỈ HIỆN TRÊN MOBILE, GỌN GÀNG KHÔNG LẤN CHIẾM) -->
-          <div class="flex items-center gap-2 sm:hidden min-w-0">
-            <div class="w-7 h-7 rounded-lg flex items-center justify-center font-black text-[12px] tracking-tight shrink-0 shadow-2xs" style="background-color: var(--primary); color: white;">
-              TV
-            </div>
-            <span class="font-extrabold text-[14px] tracking-tight truncate" style="color: var(--text);">
-              Thanh Vũ Medic
-            </span>
-          </div>
 
           <!-- DESKTOP SEARCH SPOTLIGHT BAR (ẨN TRÊN MOBILE ĐỂ TRÁNH ĐÈ NÚT) -->
           <div class="hidden sm:flex relative items-center w-full max-w-xs lg:w-96">
