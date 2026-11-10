@@ -6,8 +6,8 @@
  * Hỗ trợ Stacked Modal độc lập (z-[120]), không ghi đè SubtasksModal hay TaskDrawer bên dưới.
  */
 
-import { store } from '../store.js?v=5.9';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=5.9';
+import { store } from '../store.js?v=6.0';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.0';
 
 export class SubtaskDetailModal {
   constructor(containerId, onUpdated) {

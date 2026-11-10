@@ -153,6 +153,10 @@
   - **Thay "Toàn viện" bằng "Tất cả":** Đồng bộ nhãn bộ lọc, badge trạng thái (`TẤT CẢ`), tab lọc nhân sự (`🏥 Tất cả`), biểu đồ tiến độ (`(Tất Cả)`).
   - **Thay "Toàn Bệnh Viện CS3" bằng "Toàn Phòng Khám CS3":** Cập nhật trên Executive Dashboard (`Toàn Phòng Khám CS3`), Modal chuyển đổi phòng ban (`Toàn Phòng Khám CS3 (Tất Cả)`), và banner quản lý nhân sự.
   - **Nâng cấp Cache Buster toàn diện `?v=5.9`:** Đảm bảo toàn bộ trình duyệt người dùng tự động làm mới giao diện chuẩn xác.
+- [x] **23. Tối Ưu Bố Cục Thẻ Nhân Sự: Đưa Các Badge / Tag Chức Vụ Xuống Dưới Phần Email (`app.js`)**:
+  - **Cố định hàng Avatar & Họ tên ở đỉnh thẻ:** Đưa Avatar, Họ tên, Chức danh chuyên môn và Email lên vị trí đầu tiên của thẻ nhân sự với khoảng trống `pr-20` an toàn cho cụm nút thao tác (Sửa/Xóa).
+  - **Chuyển toàn bộ Badges xuống dưới Email:** Các nhãn Phòng ban, Chức vụ, Admin Hệ Thống, Bộ phận con đặt ngay bên dưới email. Khi một nhân sự có nhiều role/bộ phận khiến badge rớt dòng, chiều cao toàn bộ thẻ trong hàng sẽ tự co giãn đều nhau mà không làm lệch vị trí Avatar và Họ tên so với các thẻ bên cạnh.
+  - **Nâng cấp Cache Buster toàn diện `?v=6.0`:** Đẩy Git `origin/main` để toàn bộ người dùng nhận phiên bản mới nhất.
 
 ---
 

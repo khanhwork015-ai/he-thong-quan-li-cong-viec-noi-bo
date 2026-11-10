@@ -4,27 +4,27 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=5.9';
-import { store } from './store.js?v=5.9';
-import { Sidebar } from './components/sidebar.js?v=5.9';
-import { TopHeader } from './components/topHeader.js?v=5.9';
-import { BottomNav } from './components/bottomNav.js?v=5.9';
-import { DashboardView } from './components/dashboardView.js?v=5.9';
-import { WorkspaceView } from './components/workspaceView.js?v=5.9';
-import { TaskDrawer } from './components/taskDrawer.js?v=5.9';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=5.9';
-import { CreateTaskModal } from './components/createTaskModal.js?v=5.9'
-import { SubtasksModal } from './components/subtasksModal.js?v=5.9';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.9';;
-import { ProfileModal } from './components/profileModal.js?v=5.9';
-import { MemberModal } from './components/memberModal.js?v=5.9';
-import { SettingsModal } from './components/settingsModal.js?v=5.9';
-import { LoginView } from './components/loginView.js?v=5.9';
-import { DepartmentModal } from './components/departmentModal.js?v=5.9';
-import { DepartmentView } from './components/departmentView.js?v=5.9';
-import { appScriptBridge } from './services/appScriptBridge.js?v=5.9';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.9';
-import { shinTheme } from './theme.js?v=5.9';
+import { auth } from './auth.js?v=6.0';
+import { store } from './store.js?v=6.0';
+import { Sidebar } from './components/sidebar.js?v=6.0';
+import { TopHeader } from './components/topHeader.js?v=6.0';
+import { BottomNav } from './components/bottomNav.js?v=6.0';
+import { DashboardView } from './components/dashboardView.js?v=6.0';
+import { WorkspaceView } from './components/workspaceView.js?v=6.0';
+import { TaskDrawer } from './components/taskDrawer.js?v=6.0';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=6.0';
+import { CreateTaskModal } from './components/createTaskModal.js?v=6.0'
+import { SubtasksModal } from './components/subtasksModal.js?v=6.0';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.0';;
+import { ProfileModal } from './components/profileModal.js?v=6.0';
+import { MemberModal } from './components/memberModal.js?v=6.0';
+import { SettingsModal } from './components/settingsModal.js?v=6.0';
+import { LoginView } from './components/loginView.js?v=6.0';
+import { DepartmentModal } from './components/departmentModal.js?v=6.0';
+import { DepartmentView } from './components/departmentView.js?v=6.0';
+import { appScriptBridge } from './services/appScriptBridge.js?v=6.0';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.0';
+import { shinTheme } from './theme.js?v=6.0';
 
 class App {
   constructor() {
@@ -440,8 +440,29 @@ class App {
                 <!-- THÔNG TIN ĐỊNH DANH NHÂN SỰ -->
                 <div class="flex flex-col gap-3">
                   
-                  <!-- BADGES: PHÒNG BAN & VAI TRÒ -->
-                  <div class="flex items-center gap-1.5 flex-wrap pr-16">
+                  <!-- AVATAR & HỌ TÊN (ĐẨY LÊN ĐẦU ĐỂ KHÔNG BỊ LỆCH HÀNG KHI NHIỀU BADGE) -->
+                  <div class="flex items-start gap-3.5 pr-20">
+                    <div class="relative shrink-0">
+                      <img src="${u.avatar}" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-gray-100 shadow-2xs" alt="${esc(u.name)}" />
+                      ${u.role === 'MANAGER' ? '<span class="absolute -top-1.5 -right-1.5 text-[11px]">👑</span>' : ''}
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                      <div class="font-bold text-[14.5px] sm:text-[15px] text-[#0d1c2f] truncate flex items-center gap-1.5" style="color: var(--text);">
+                        <span class="truncate">${esc(u.name)}</span>
+                        ${isSelf ? '<span class="text-[9.5px] text-[#795900] bg-[#fffbeb] px-1.5 py-0.2 rounded border border-[#fef3c7] font-bold shrink-0">Bạn</span>' : ''}
+                      </div>
+                      <div class="text-[12px] font-semibold text-[#795900] truncate mt-0.5" style="color: var(--primary);">
+                        ${esc(u.title || 'Chuyên viên')}
+                      </div>
+                      <div class="text-[11px] text-[#64748b] truncate mt-0.5 font-mono-data" style="color: var(--text-muted);">
+                        ${esc(u.email || u.phone || u.username || '')}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- BADGES: PHÒNG BAN & VAI TRÒ & BỘ PHẬN ĐƯA XUỐNG DƯỚI EMAIL -->
+                  <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
                     <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono-data uppercase text-white shadow-2xs" style="background-color: ${userDept?.color || '#D6A52A'};">
                       ${esc(userDept?.code || 'TẤT CẢ')}
                     </span>
@@ -459,27 +480,6 @@ class App {
                         ${esc(userTeam.name)}
                       </span>
                     ` : ''}
-                  </div>
-
-                  <!-- AVATAR & HỌ TÊN -->
-                  <div class="flex items-center gap-3">
-                    <div class="relative shrink-0">
-                      <img src="${u.avatar}" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-gray-100 shadow-2xs" alt="${esc(u.name)}" />
-                      ${u.role === 'MANAGER' ? '<span class="absolute -top-1.5 -right-1.5 text-[11px]">👑</span>' : ''}
-                    </div>
-
-                    <div class="min-w-0 flex-1">
-                      <div class="font-bold text-[14.5px] sm:text-[15px] text-[#0d1c2f] truncate flex items-center gap-1.5" style="color: var(--text);">
-                        <span>${esc(u.name)}</span>
-                        ${isSelf ? '<span class="text-[9.5px] text-[#795900] bg-[#fffbeb] px-1.5 py-0.2 rounded border border-[#fef3c7] font-bold">Bạn</span>' : ''}
-                      </div>
-                      <div class="text-[12px] font-semibold text-[#795900] truncate mt-0.5" style="color: var(--primary);">
-                        ${esc(u.title || 'Chuyên viên')}
-                      </div>
-                      <div class="text-[11px] text-[#64748b] truncate mt-0.5 font-mono-data" style="color: var(--text-muted);">
-                        ${esc(u.email || u.phone || u.username || '')}
-                      </div>
-                    </div>
                   </div>
 
                 </div>
