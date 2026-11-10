@@ -5,9 +5,9 @@
  * Đổi màu đồng bộ theo 8 Palettes của SHIN AIOS
  */
 
-import { rung } from '../helpers.js?v=8.2';
-import { auth } from '../auth.js?v=8.2';
-import { store } from '../store.js?v=8.2';
+import { rung } from '../helpers.js?v=8.3';
+import { auth } from '../auth.js?v=8.3';
+import { store } from '../store.js?v=8.3';
 
 export class BottomNav {
   constructor(containerId, onNavChange) {

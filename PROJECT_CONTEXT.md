@@ -318,7 +318,11 @@
   - **Khóa quyền hiển thị & chỉnh sửa Trang Cài Đặt (`app.js`, `settingsModal.js`) (v8.2):**
     + Chỉ duy nhất tài khoản có quyền **Admin** (`auth.isAdmin()`) mới nhìn thấy và thao tác được các khối: *Cổng Kết Nối Google Sheets (Apps Script Webhook)*, *Hướng Dẫn 3 Bước Kết Nối Google Sheets*, *Bảo Mật & Phân Quyền RBAC*, và *Quản Trị Cơ Sở Dữ Liệu (Backup JSON & Xóa dữ liệu mẫu)*.
     + Tất cả các tài khoản không phải Admin khi vào mục **Cài đặt** (cả trang chính `renderSettingsView` lẫn cửa sổ popup `SettingsModal`) chỉ nhìn thấy duy nhất phần **Tùy chỉnh Themes & Giao diện** (`shinTheme.renderSettingsUI()`).
-  - **Nâng cấp Cache Buster toàn diện `?v=8.2`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
+  - **Thông Báo Lỗi Đăng Nhập Trực Quan & Hiệu Ứng Rung Cảnh Báo (`loginView.js`, `stitch-theme.css`) (v8.3):**
+    + Tích hợp **Hộp thông báo lỗi trực quan (Inline Alert Banner)** ngay trên thẻ form đăng nhập, loại bỏ hoàn toàn tình trạng "không có thông báo gì" khi bàn phím ảo che mất toast góc dưới.
+    + Phân loại lỗi sắc nét: Sai tài khoản (báo lỗi & viền đỏ ô tài khoản, gợi ý tài khoản admin nếu chưa kết nối cloud); Sai mật khẩu (báo lỗi & viền đỏ ô mật khẩu kèm focus lại).
+    + Tích hợp animation rung lắc `animate-shake`, rung xúc giác `rung(40)`, và tự động xóa lỗi khi người dùng bắt đầu gõ lại.
+  - **Nâng cấp Cache Buster toàn diện `?v=8.3`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
 
 ---
 

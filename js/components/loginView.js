@@ -4,9 +4,10 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y Tế (#0D1C2F)
  */
 
-import { auth } from '../auth.js?v=8.2';
-import { store } from '../store.js?v=8.2';
-import { toast, rung } from '../helpers.js?v=8.2';
+import { auth } from '../auth.js?v=8.3';
+import { store } from '../store.js?v=8.3';
+import { appScriptBridge } from '../services/appScriptBridge.js?v=8.3';
+import { toast, rung } from '../helpers.js?v=8.3';
 
 export class LoginView {
   constructor(containerId, onLoginSuccess) {
@@ -47,6 +48,14 @@ export class LoginView {
 
           <!-- FORM LOGIN -->
           <form id="formLogin" class="flex flex-col gap-4">
+            
+            <!-- HỘP THÔNG BÁO LỖI ĐĂNG NHẬP TRỰC QUAN (INLINE ERROR BANNER) -->
+            <div id="loginAlertBox" class="hidden p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-[13px] font-semibold flex items-start gap-2.5 animate-shake shadow-xs">
+              <span class="material-symbols-outlined text-[20px] text-rose-600 shrink-0 mt-0.5">error</span>
+              <div class="flex-1 min-w-0 leading-snug" id="loginAlertText"></div>
+              <button type="button" id="btnCloseAlert" class="text-rose-400 hover:text-rose-700 text-[18px] leading-none shrink-0 p-0.5 min-w-[28px] min-h-[28px] flex items-center justify-center rounded-lg cursor-pointer" aria-label="Đóng thông báo">&times;</button>
+            </div>
+
             <div>
               <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">
                 Tên đăng nhập hoặc Email *
@@ -117,6 +126,42 @@ export class LoginView {
     const btnEye = this.container.querySelector('#btnTogglePassword');
     const iconEye = this.container.querySelector('#iconEye');
     const btnSubmit = this.container.querySelector('#btnLoginSubmit');
+    const alertBox = this.container.querySelector('#loginAlertBox');
+    const alertText = this.container.querySelector('#loginAlertText');
+    const btnCloseAlert = this.container.querySelector('#btnCloseAlert');
+
+    const showError = (msg, targetInput = null) => {
+      rung(40);
+      if (alertText && alertBox) {
+        alertText.innerHTML = msg;
+        alertBox.classList.remove('hidden');
+        alertBox.classList.remove('animate-shake');
+        void alertBox.offsetWidth; // Reflow để khởi chạy lại hiệu ứng rung
+        alertBox.classList.add('animate-shake');
+      }
+      toast(msg.replace(/<[^>]+>/g, ''), 'error');
+
+      if (targetInput === 'user' && inputUser) {
+        inputUser.classList.add('!border-rose-400', '!bg-rose-50/20');
+        inputUser.focus();
+      } else if (targetInput === 'pass' && inputPass) {
+        inputPass.classList.add('!border-rose-400', '!bg-rose-50/20');
+        inputPass.focus();
+      } else if (targetInput === 'both') {
+        if (inputUser) inputUser.classList.add('!border-rose-400', '!bg-rose-50/20');
+        if (inputPass) inputPass.classList.add('!border-rose-400', '!bg-rose-50/20');
+      }
+    };
+
+    const clearError = () => {
+      if (alertBox) alertBox.classList.add('hidden');
+      if (inputUser) inputUser.classList.remove('!border-rose-400', '!bg-rose-50/20');
+      if (inputPass) inputPass.classList.remove('!border-rose-400', '!bg-rose-50/20');
+    };
+
+    if (btnCloseAlert) btnCloseAlert.addEventListener('click', clearError);
+    if (inputUser) inputUser.addEventListener('input', clearError);
+    if (inputPass) inputPass.addEventListener('input', clearError);
 
     if (btnEye && inputPass && iconEye) {
       btnEye.addEventListener('click', () => {
@@ -130,12 +175,13 @@ export class LoginView {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         rung(15);
+        clearError();
 
         const username = inputUser.value.trim();
         const password = inputPass.value.trim();
 
         if (!username || !password) {
-          toast('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!', 'warning');
+          showError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!', !username ? 'user' : 'pass');
           return;
         }
 
@@ -145,11 +191,13 @@ export class LoginView {
         try {
           let res = await auth.login(username, password);
 
-          // Nếu chưa tìm thấy cục bộ, kích hoạt cập nhật ngầm và thử lại
+          // Nếu chưa tìm thấy cục bộ và có kết nối Cloud, kích hoạt cập nhật ngầm và thử lại
           if (!res.success && res.code === 'USER_NOT_FOUND') {
             try {
-              await store.syncFromCloudIfAvailable();
-              res = await auth.login(username, password);
+              if (appScriptBridge.isConnected()) {
+                await store.syncFromCloudIfAvailable();
+                res = await auth.login(username, password);
+              }
             } catch (_) {}
           }
 
@@ -157,12 +205,22 @@ export class LoginView {
             toast(`Đăng nhập thành công! Chào mừng ${res.user.name}`, 'success');
             if (this.onLoginSuccess) this.onLoginSuccess(res.user);
           } else {
-            toast(res.message, 'warning');
-            inputPass.focus();
+            const isCloudConnected = appScriptBridge.isConnected();
+            if (res.code === 'USER_NOT_FOUND') {
+              if (!isCloudConnected) {
+                showError('Tài khoản không tồn tại trên hệ thống máy này.<br><span class="text-[12px] text-rose-600/90 font-normal mt-1 block">💡 <em>Lưu ý: Trang web chưa kết nối Google Sheets. Hãy đăng nhập bằng tài khoản Quản trị (<strong>admin</strong> / mật khẩu: <strong>123</strong>) để dán URL Web App trong Cài Đặt.</em></span>', 'user');
+              } else {
+                showError('Tên đăng nhập hoặc email không tồn tại trong hệ thống! Vui lòng kiểm tra lại.', 'user');
+              }
+            } else if (res.code === 'WRONG_PASSWORD') {
+              showError('Mật khẩu không chính xác. Vui lòng kiểm tra lại!', 'pass');
+            } else {
+              showError(res.message || 'Đăng nhập không thành công. Vui lòng thử lại!', 'both');
+            }
           }
         } catch (err) {
           console.error('[LOGIN ERROR]', err);
-          toast('Đã xảy ra lỗi khi xác thực tài khoản. Vui lòng thử lại!', 'error');
+          showError('Đã xảy ra lỗi khi xác thực tài khoản. Vui lòng thử lại!', 'both');
         } finally {
           btnSubmit.disabled = false;
           btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px]">login</span><span>Đăng Nhập Vào Hệ Thống</span>';

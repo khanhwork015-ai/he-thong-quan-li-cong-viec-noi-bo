@@ -10,8 +10,8 @@
  * Quy tắc giao việc: Bất cứ ai cũng có quyền tạo và assign task cho bất kỳ nhân viên nào.
  */
 
-import { USERS, DEPARTMENTS, ROLES } from './models.js?v=8.2';
-import { toast, rung } from './helpers.js?v=8.2';
+import { USERS, DEPARTMENTS, ROLES } from './models.js?v=8.3';
+import { toast, rung } from './helpers.js?v=8.3';
 
 /**
  * Băm mật khẩu SHA-256 an toàn bằng Web Cryptography API
@@ -184,7 +184,7 @@ export class AuthManager {
     // NẾU CHƯA TÌM THẤY TRONG BỘ NHỚ LOCAL: Tự động sync tức thời từ Google Sheet
     if (!matched) {
       try {
-        const { appScriptBridge } = await import('./services/appScriptBridge.js?v=8.2');
+        const { appScriptBridge } = await import('./services/appScriptBridge.js?v=8.3');
         if (appScriptBridge && appScriptBridge.isConnected()) {
           const cloudData = await appScriptBridge.fetchCloudData();
           if (cloudData && cloudData.success && Array.isArray(cloudData.users) && cloudData.users.length > 0) {
