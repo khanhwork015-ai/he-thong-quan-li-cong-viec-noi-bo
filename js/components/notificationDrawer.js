@@ -4,9 +4,9 @@
  * Đánh dấu đã đọc và Deep-linking mở thẳng Task Detail Drawer
  */
 
-import { auth } from '../auth.js?v=5.4';
-import { store } from '../store.js?v=5.4';
-import { esc, timeAgo, rung, toast } from '../helpers.js?v=5.4';
+import { auth } from '../auth.js?v=5.5';
+import { store } from '../store.js?v=5.5';
+import { esc, timeAgo, rung, toast } from '../helpers.js?v=5.5';
 
 export class NotificationDrawer {
   constructor(containerId, onSelectTask) {

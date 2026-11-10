@@ -133,6 +133,11 @@
   - **Hiển thị huy hiệu kép (Dual Badges):** Trên thẻ nhân sự và TopHeader hiển thị song song Chức vụ nghiệp vụ và Huy hiệu `👑 Admin Hệ Thống` nổi bật.
   - **Phòng vệ xóa tài khoản Admin:** Ngăn chặn tuyệt đối việc xóa nhầm Admin cuối cùng trong hệ thống.
   - **Nâng cấp Cache Buster toàn diện `?v=5.4`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
+- [x] **18. Tối Ưu Bảng Công Việc Table View: Loại Bỏ Cột Thao Tác, Chống Xuống Dòng Mã Việc & Tên Người Tạo (`workspaceView.js`)**:
+  - **Loại bỏ hoàn toàn cột "Thao tác":** Tiết kiệm không gian ngang cho màn hình desktop và tablet. Người dùng bấm trực tiếp vào bất kỳ điểm nào trên dòng nhiệm vụ (`tr.row-task-item`) đều mở ngay Task Drawer trượt từ phải sang để xem chi tiết đầy đủ và chỉnh sửa.
+  - **Khắc phục lỗi ngắt dòng Mã việc (`TSK-PTKH-xx`):** Thiết lập `whitespace-nowrap font-mono-data` với độ rộng chuẩn `w-36`, đảm bảo mã công việc luôn nằm trên 1 dòng duy nhất.
+  - **Thiết kế lại thông tin Người tạo & Ngày tháng:** Mở rộng cột tiêu đề lên `min-w-[320px]`, bố trí Người tạo (`Tạo bởi: ...`) và Ngày tạo (`calendar_today + ngayVN`) gọn gàng với `whitespace-nowrap overflow-hidden text-ellipsis`, triệt tiêu hoàn toàn hiện tượng tên dài bị rớt chữ xuống dòng.
+  - **Nâng cấp Cache Buster toàn diện `?v=5.5`:** Đảm bảo toàn bộ trình duyệt người dùng nạp phiên bản giao diện mới nhất.
 
 ---
 

@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=5.4';
-import { store } from '../store.js?v=5.4';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.4';
+import { auth } from '../auth.js?v=5.5';
+import { store } from '../store.js?v=5.5';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.5';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
@@ -205,7 +205,7 @@ export class WorkspaceView {
             <div class="p-4 bg-white rounded-2xl border border-[#e2e8f0] shadow-xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer row-task-item" data-task-id="${t.id}">
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
-                  <span class="font-mono-data text-[11px] font-bold text-[#795900] px-2 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7]">${t.id}</span>
+                  <span class="font-mono-data text-[11px] font-bold text-[#795900] px-2 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7] whitespace-nowrap">${t.id}</span>
                   <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">
                     ${t.priority}
                   </span>
@@ -224,10 +224,14 @@ export class WorkspaceView {
                 ${esc(t.title)}
               </h4>
 
-              <div class="text-[11px] text-[#795900] font-medium mb-1.5 flex items-center gap-1">
-                <span>Tạo bởi: <strong>${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong></span>
-                <span>•</span>
-                <span class="text-[#817663] font-mono-data">${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}</span>
+              <div class="text-[11.5px] text-[#64748b] mb-1.5 flex items-center gap-1.5 flex-wrap">
+                <span class="text-[#817663]">Tạo bởi:</span>
+                <strong class="text-[#0d1c2f] font-semibold">${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong>
+                <span class="text-gray-300">•</span>
+                <span class="text-[#795900] font-mono-data font-medium inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px] text-[#d6a52a]">calendar_today</span>
+                  ${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}
+                </span>
               </div>
 
               <p class="text-[12px] text-[#64748b] line-clamp-2 mb-3">
@@ -266,15 +270,14 @@ export class WorkspaceView {
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-[#f8f9ff] border-b border-[#e2e8f0] text-[11.5px] font-bold text-[#64748b] uppercase tracking-wider">
-                <th class="py-3 px-4 w-28">Mã việc</th>
-                <th class="py-3 px-4 min-w-[280px]">Tên công việc</th>
-                <th class="py-3 px-4 w-24">Ưu tiên</th>
-                <th class="py-3 px-4 w-44">Phụ trách</th>
-                <th class="py-3 px-4 w-32">Danh mục</th>
-                <th class="py-3 px-4 w-32">Hạn chót</th>
-                <th class="py-3 px-4 w-36">Trạng thái</th>
-                <th class="py-3 px-4 w-40 text-center">Việc con</th>
-                <th class="py-3 px-4 w-24 text-center">Thao tác</th>
+                <th class="py-3.5 px-4 w-36 whitespace-nowrap">Mã việc</th>
+                <th class="py-3.5 px-4 min-w-[320px]">Tên công việc</th>
+                <th class="py-3.5 px-4 w-24 text-center whitespace-nowrap">Ưu tiên</th>
+                <th class="py-3.5 px-4 w-44 whitespace-nowrap">Phụ trách</th>
+                <th class="py-3.5 px-4 w-32 whitespace-nowrap">Danh mục</th>
+                <th class="py-3.5 px-4 w-32 whitespace-nowrap">Hạn chót</th>
+                <th class="py-3.5 px-4 w-36 text-center whitespace-nowrap">Trạng thái</th>
+                <th class="py-3.5 px-4 w-40 text-center whitespace-nowrap">Việc con</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#f1f5f9] text-[13px]">
@@ -288,36 +291,40 @@ export class WorkspaceView {
 
                 return `
                   <tr class="hover:bg-[#fffbeb]/40 transition-colors cursor-pointer row-task-item" data-task-id="${t.id}">
-                    <td class="py-3 px-4 font-mono-data font-bold text-[#795900]">${t.id}</td>
-                    <td class="py-3 px-4">
+                    <td class="py-3.5 px-4 font-mono-data font-bold text-[#795900] whitespace-nowrap">${t.id}</td>
+                    <td class="py-3.5 px-4">
                       <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
-                      <div class="text-[11px] text-[#795900] font-medium flex items-center gap-1.5 mt-0.5">
-                        <span>Tạo bởi: <strong>${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong></span>
-                        <span>•</span>
-                        <span class="text-[#817663] font-mono-data">${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}</span>
+                      <div class="text-[11.5px] text-[#64748b] flex items-center gap-1.5 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                        <span class="text-[#817663]">Tạo bởi:</span>
+                        <strong class="text-[#0d1c2f] font-semibold">${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong>
+                        <span class="text-gray-300">•</span>
+                        <span class="text-[#795900] font-mono-data font-medium inline-flex items-center gap-1 shrink-0">
+                          <span class="material-symbols-outlined text-[13px] text-[#d6a52a]">calendar_today</span>
+                          ${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}
+                        </span>
                       </div>
-                      <div class="text-[11.5px] text-[#64748b] line-clamp-1 mt-0.5">${esc(t.description || '')}</div>
+                      ${t.description ? `<div class="text-[11.5px] text-[#64748b] line-clamp-1 mt-0.5">${esc(t.description)}</div>` : ''}
                     </td>
-                    <td class="py-3 px-4">
+                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
                       <span class="px-2 py-0.5 rounded-full font-bold text-[10.5px] ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : t.priority === 'P2' ? 'bg-[#fef3c7] text-[#92400e]' : 'bg-[#eff4ff] text-[#1d4ed8]'}">
                         ${t.priority}
                       </span>
                     </td>
-                    <td class="py-3 px-4">
+                    <td class="py-3.5 px-4">
                       <div class="flex items-center gap-2">
                         <img src="${assignee ? assignee.avatar : ''}" class="w-6 h-6 rounded-full object-cover shrink-0" />
                         <span class="truncate text-[#0d1c2f] font-semibold">${assignee ? assignee.name : 'Chưa giao'}</span>
                       </div>
                     </td>
-                    <td class="py-3 px-4 text-[#64748b] font-medium">${esc(t.category)}</td>
-                    <td class="py-3 px-4 text-[#0d1c2f] font-mono-data text-[12px]">${ngayVN(t.dueDate)}</td>
-                    <td class="py-3 px-4">
+                    <td class="py-3.5 px-4 text-[#64748b] font-medium whitespace-nowrap">${esc(t.category)}</td>
+                    <td class="py-3.5 px-4 text-[#0d1c2f] font-mono-data text-[12px] whitespace-nowrap">${ngayVN(t.dueDate)}</td>
+                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
                       <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block" style="background-color: ${statusMeta.bg}; color: ${statusMeta.text};">
                         ${statusMeta.label}
                       </span>
                     </td>
                     <!-- CỘT RIÊNG CHO VIỆC CON -->
-                    <td class="py-3 px-4 text-center">
+                    <td class="py-3.5 px-4 text-center">
                       ${hasSubtasks ? `
                         <button type="button" class="btn-open-subtasks-modal px-2.5 py-1.5 rounded-xl font-bold text-[12px] bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a] hover:border-[#d6a52a] transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs min-h-[36px]" data-task-id="${t.id}" title="Xem danh sách ${subtasks.length} việc con">
                           <span class="material-symbols-outlined text-[16px]">account_tree</span>
@@ -329,14 +336,6 @@ export class WorkspaceView {
                           <span>Thêm việc con</span>
                         </button>
                       `}
-                    </td>
-                    <!-- CỘT THAO TÁC GỌN GÀNG (CLICK DÒNG ĐÃ XEM ĐƯỢC CHI TIẾT) -->
-                    <td class="py-3 px-4 text-center">
-                      <div class="flex items-center justify-center">
-                        <button type="button" class="btn-edit-task p-2 rounded-xl text-amber-700 hover:bg-amber-100/70 min-w-[38px] min-h-[38px] flex items-center justify-center cursor-pointer shrink-0 transition-colors" data-task-id="${t.id}" title="Chỉnh sửa công việc">
-                          <span class="material-symbols-outlined text-[19px]">edit</span>
-                        </button>
-                      </div>
                     </td>
                   </tr>
                 `;
@@ -390,7 +389,7 @@ export class WorkspaceView {
                   return `
                     <div class="p-3.5 bg-white rounded-xl border border-[#e2e8f0] hover:border-[#d6a52a] active:bg-[#fffbeb]/20 shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card flex flex-col gap-2" data-task-id="${t.id}">
                       <div class="flex items-center justify-between">
-                        <span class="font-mono-data text-[10.5px] font-bold text-[#795900] px-1.5 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7]">${t.id}</span>
+                        <span class="font-mono-data text-[10.5px] font-bold text-[#795900] px-1.5 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7] whitespace-nowrap">${t.id}</span>
                         <div class="flex items-center gap-1">
                           <button type="button" class="btn-edit-task p-1 text-amber-700 hover:bg-amber-100/70 rounded min-w-[28px] min-h-[28px] flex items-center justify-center cursor-pointer" data-task-id="${t.id}" title="Chỉnh sửa">
                             <span class="material-symbols-outlined text-[16px]">edit</span>
