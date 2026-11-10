@@ -9,9 +9,9 @@
  * - Nhân viên: Không được phép cấp tài khoản.
  */
 
-import { auth } from '../auth.js?v=5.7';
-import { store } from '../store.js?v=5.7';
-import { esc, toast, rung } from '../helpers.js?v=5.7';
+import { auth } from '../auth.js?v=5.8';
+import { store } from '../store.js?v=5.8';
+import { esc, toast, rung } from '../helpers.js?v=5.8';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -197,8 +197,8 @@ export class MemberModal {
               </label>
             </div>
 
-            <!-- BỘ PHẬN CON (TEAMS) BÊN TRONG PHÒNG BAN -->
-            <div>
+            <!-- BỘ PHẬN CON (TEAMS) BÊN TRONG PHÒNG BAN (CHỈ DÀNH CHO NHÂN VIÊN) -->
+            <div id="boxMemberTeam" class="${(currentRole === 'MANAGER' || currentRole === 'DEPUTY_MANAGER' || currentRole === 'LEADERSHIP') ? 'hidden' : ''}">
               <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
                 Bộ phận con trực thuộc (Team) *
               </label>
@@ -211,8 +211,17 @@ export class MemberModal {
                 `).join('')}
               </select>
               <span class="text-[10.5px] text-[#64748b] block mt-1">
-                Ví dụ: Phòng PTKH gồm Marketing, CSKH, Hỗ trợ... Trưởng phòng quản lý toàn bộ.
+                Phân bổ nhân viên vào các bộ phận chuyên trách (VD: Marketing, CSKH, Hỗ trợ...).
               </span>
+            </div>
+
+            <!-- THÔNG BÁO CHO TRƯỞNG PHÒNG / PHÓ PHÒNG / BAN LÃNH ĐẠO -->
+            <div id="boxMemberTeamNotice" class="${(currentRole === 'MANAGER' || currentRole === 'DEPUTY_MANAGER' || currentRole === 'LEADERSHIP') ? '' : 'hidden'} p-3 rounded-2xl bg-[#fffbeb] border border-[#fef3c7] text-[#795900] text-[12px] flex items-center gap-2.5 shadow-2xs">
+              <span class="material-symbols-outlined text-[20px] text-[#d6a52a] shrink-0">domain_verification</span>
+              <div class="leading-snug">
+                <span class="font-bold">Bao quát toàn bộ khoa phòng:</span>
+                <span class="text-[#817663] block text-[11.5px] mt-0.5">Trưởng phòng và Phó phòng phụ trách tất cả các bộ phận con, không cần chọn bộ phận riêng.</span>
+              </div>
             </div>
 
             <!-- EMAIL & SĐT -->
@@ -260,6 +269,33 @@ export class MemberModal {
     const btnOverlay = this.container.querySelector('#btnMemberAvatarOverlay');
     const selectDept = this.container.querySelector('#memberDept');
     const selectTeam = this.container.querySelector('#memberTeam');
+    const selectRole = this.container.querySelector('#memberRole');
+    const boxMemberTeam = this.container.querySelector('#boxMemberTeam');
+    const boxMemberTeamNotice = this.container.querySelector('#boxMemberTeamNotice');
+
+    const updateTeamVisibility = () => {
+      const r = selectRole ? selectRole.value : 'MEMBER';
+      const isLeaderOrManager = (r === 'MANAGER' || r === 'DEPUTY_MANAGER' || r === 'LEADERSHIP');
+      if (boxMemberTeam) {
+        if (isLeaderOrManager) {
+          boxMemberTeam.classList.add('hidden');
+          if (selectTeam) selectTeam.value = '';
+        } else {
+          boxMemberTeam.classList.remove('hidden');
+        }
+      }
+      if (boxMemberTeamNotice) {
+        if (isLeaderOrManager) {
+          boxMemberTeamNotice.classList.remove('hidden');
+        } else {
+          boxMemberTeamNotice.classList.add('hidden');
+        }
+      }
+    };
+
+    if (selectRole) {
+      selectRole.addEventListener('change', updateTeamVisibility);
+    }
 
     const closeModal = () => {
       rung(10);
@@ -391,7 +427,8 @@ export class MemberModal {
         const role = this.container.querySelector('#memberRole').value;
         const isAdminFlag = Boolean(this.container.querySelector('#memberIsAdmin')?.checked);
         const departmentId = selectDept.value;
-        const teamId = selectTeam.value;
+        const isLeaderOrManager = (role === 'MANAGER' || role === 'DEPUTY_MANAGER' || role === 'LEADERSHIP');
+        const teamId = isLeaderOrManager ? '' : (selectTeam ? selectTeam.value : '');
         const username = this.container.querySelector('#memberUsername').value.trim();
         const password = this.container.querySelector('#memberPassword').value.trim();
         const email = this.container.querySelector('#memberEmail').value.trim();

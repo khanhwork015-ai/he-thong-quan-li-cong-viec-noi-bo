@@ -4,27 +4,27 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=5.7';
-import { store } from './store.js?v=5.7';
-import { Sidebar } from './components/sidebar.js?v=5.7';
-import { TopHeader } from './components/topHeader.js?v=5.7';
-import { BottomNav } from './components/bottomNav.js?v=5.7';
-import { DashboardView } from './components/dashboardView.js?v=5.7';
-import { WorkspaceView } from './components/workspaceView.js?v=5.7';
-import { TaskDrawer } from './components/taskDrawer.js?v=5.7';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=5.7';
-import { CreateTaskModal } from './components/createTaskModal.js?v=5.7'
-import { SubtasksModal } from './components/subtasksModal.js?v=5.7';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.7';;
-import { ProfileModal } from './components/profileModal.js?v=5.7';
-import { MemberModal } from './components/memberModal.js?v=5.7';
-import { SettingsModal } from './components/settingsModal.js?v=5.7';
-import { LoginView } from './components/loginView.js?v=5.7';
-import { DepartmentModal } from './components/departmentModal.js?v=5.7';
-import { DepartmentView } from './components/departmentView.js?v=5.7';
-import { appScriptBridge } from './services/appScriptBridge.js?v=5.7';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.7';
-import { shinTheme } from './theme.js?v=5.7';
+import { auth } from './auth.js?v=5.8';
+import { store } from './store.js?v=5.8';
+import { Sidebar } from './components/sidebar.js?v=5.8';
+import { TopHeader } from './components/topHeader.js?v=5.8';
+import { BottomNav } from './components/bottomNav.js?v=5.8';
+import { DashboardView } from './components/dashboardView.js?v=5.8';
+import { WorkspaceView } from './components/workspaceView.js?v=5.8';
+import { TaskDrawer } from './components/taskDrawer.js?v=5.8';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=5.8';
+import { CreateTaskModal } from './components/createTaskModal.js?v=5.8'
+import { SubtasksModal } from './components/subtasksModal.js?v=5.8';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.8';;
+import { ProfileModal } from './components/profileModal.js?v=5.8';
+import { MemberModal } from './components/memberModal.js?v=5.8';
+import { SettingsModal } from './components/settingsModal.js?v=5.8';
+import { LoginView } from './components/loginView.js?v=5.8';
+import { DepartmentModal } from './components/departmentModal.js?v=5.8';
+import { DepartmentView } from './components/departmentView.js?v=5.8';
+import { appScriptBridge } from './services/appScriptBridge.js?v=5.8';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.8';
+import { shinTheme } from './theme.js?v=5.8';
 
 class App {
   constructor() {

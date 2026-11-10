@@ -145,6 +145,10 @@
   - **Loại bỏ role Admin trong list:** Dropdown chức vụ chỉ giữ đúng 4 vị trí thực tế trong bệnh viện (`MEMBER`, `DEPUTY_MANAGER`, `MANAGER`, `LEADERSHIP`).
   - **Quản lý Admin độc lập bằng nút bật:** Quyền Admin được kích hoạt/hủy hoàn toàn thông qua nút bật Switch riêng biệt `Đặc Quyền Quản Trị Viên (Admin Hệ Thống)`.
   - **Nâng cấp Cache Buster toàn diện `?v=5.7`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
+- [x] **21. Tự Động Ẩn Chọn Bộ Phận Con Khi Chọn Trưởng Phòng / Phó Phòng (`memberModal.js`)**:
+  - **Bao quát toàn bộ khoa phòng:** Khi chọn vai trò `Trưởng Phòng`, `Phó Phòng` hoặc `Ban Lãnh Đạo`, hệ thống tự động ẩn khối chọn Bộ phận con (Team), tự động gán `teamId = ''` và hiển thị thẻ thông báo nghiệp vụ trực quan.
+  - Khối chọn Bộ phận con chỉ xuất hiện khi phân bổ nhân sự cho vị trí `Nhân viên / Chuyên viên`.
+  - **Nâng cấp Cache Buster toàn diện `?v=5.8`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
 
 ---
 
