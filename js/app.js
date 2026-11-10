@@ -1,30 +1,30 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - MAIN APPLICATION CONTROLLER (MOBILE FIRST & RESPONSIVE)
  * Tích hợp Quản lý nhân viên (Thêm/Sửa/Xóa), Profile Modal, Settings Grid, Bottom Nav & Google Apps Script
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=5.3';
-import { store } from './store.js?v=5.3';
-import { Sidebar } from './components/sidebar.js?v=5.3';
-import { TopHeader } from './components/topHeader.js?v=5.3';
-import { BottomNav } from './components/bottomNav.js?v=5.3';
-import { DashboardView } from './components/dashboardView.js?v=5.3';
-import { WorkspaceView } from './components/workspaceView.js?v=5.3';
-import { TaskDrawer } from './components/taskDrawer.js?v=5.3';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=5.3';
-import { CreateTaskModal } from './components/createTaskModal.js?v=5.3'
-import { SubtasksModal } from './components/subtasksModal.js?v=5.3';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.3';;
-import { ProfileModal } from './components/profileModal.js?v=5.3';
-import { MemberModal } from './components/memberModal.js?v=5.3';
-import { SettingsModal } from './components/settingsModal.js?v=5.3';
-import { LoginView } from './components/loginView.js?v=5.3';
-import { DepartmentModal } from './components/departmentModal.js?v=5.3';
-import { DepartmentView } from './components/departmentView.js?v=5.3';
-import { appScriptBridge } from './services/appScriptBridge.js?v=5.3';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.3';
-import { shinTheme } from './theme.js?v=5.3';
+import { auth } from './auth.js?v=5.4';
+import { store } from './store.js?v=5.4';
+import { Sidebar } from './components/sidebar.js?v=5.4';
+import { TopHeader } from './components/topHeader.js?v=5.4';
+import { BottomNav } from './components/bottomNav.js?v=5.4';
+import { DashboardView } from './components/dashboardView.js?v=5.4';
+import { WorkspaceView } from './components/workspaceView.js?v=5.4';
+import { TaskDrawer } from './components/taskDrawer.js?v=5.4';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=5.4';
+import { CreateTaskModal } from './components/createTaskModal.js?v=5.4'
+import { SubtasksModal } from './components/subtasksModal.js?v=5.4';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.4';;
+import { ProfileModal } from './components/profileModal.js?v=5.4';
+import { MemberModal } from './components/memberModal.js?v=5.4';
+import { SettingsModal } from './components/settingsModal.js?v=5.4';
+import { LoginView } from './components/loginView.js?v=5.4';
+import { DepartmentModal } from './components/departmentModal.js?v=5.4';
+import { DepartmentView } from './components/departmentView.js?v=5.4';
+import { appScriptBridge } from './services/appScriptBridge.js?v=5.4';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.4';
+import { shinTheme } from './theme.js?v=5.4';
 
 class App {
   constructor() {
@@ -414,12 +414,13 @@ class App {
             const done = userTasks.filter(t => t.status === 'done' || t.status === 'completed').length;
             const inProg = userTasks.filter(t => t.status === 'in_progress' || t.status === 'pending_approval' || t.status === 'review').length;
             const isSelf = auth.getCurrentUser().id === u.id;
+            const isUserAdmin = Boolean(u.isAdmin || u.role === 'ADMIN');
 
             let roleBadge = { text: 'Chuyên Viên', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: 'person' };
-            if (u.role === 'ADMIN') roleBadge = { text: 'Admin Hệ Thống', color: 'bg-amber-100 text-amber-900 border-amber-300', icon: 'shield_person' };
+            if (u.role === 'ADMIN') roleBadge = { text: 'Quản Trị Viên', color: 'bg-amber-100 text-amber-900 border-amber-300', icon: 'shield_person' };
             else if (u.role === 'LEADERSHIP') roleBadge = { text: 'Ban Lãnh Đạo', color: 'bg-purple-100 text-purple-900 border-purple-300', icon: 'account_balance' };
-            else if (u.role === 'MANAGER') roleBadge = { text: '👑 Trưởng Phòng', color: 'bg-[#fef3c7] text-[#92400e] border-amber-300 font-extrabold', icon: 'verified' };
-            else if (u.role === 'DEPUTY_MANAGER') roleBadge = { text: '⭐ Phó Trưởng Phòng', color: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-extrabold', icon: 'stars' };
+            else if (u.role === 'MANAGER') roleBadge = { text: 'Trưởng Phòng', color: 'bg-[#fef3c7] text-[#92400e] border-amber-300 font-extrabold', icon: 'verified' };
+            else if (u.role === 'DEPUTY_MANAGER') roleBadge = { text: 'Phó Trưởng Phòng', color: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-extrabold', icon: 'stars' };
 
             return `
               <div class="bg-white p-4 sm:p-5 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] hover:shadow-md transition-all relative group" style="background-color: var(--card); border-color: var(--border);">
@@ -429,7 +430,7 @@ class App {
                     <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#0d1c2f] btn-edit-member min-w-[38px] min-h-[38px] flex items-center justify-center transition-colors cursor-pointer" data-member-id="${u.id}" title="Sửa thông tin nhân viên">
                       <span class="material-symbols-outlined text-[18px]">edit</span>
                     </button>
-                    ${u.role !== 'ADMIN' && !isSelf ? `
+                    ${!isUserAdmin && !isSelf ? `
                       <button type="button" class="p-2 rounded-xl hover:bg-red-50 text-[#64748b] hover:text-red-600 btn-delete-member min-w-[38px] min-h-[38px] flex items-center justify-center transition-colors cursor-pointer" data-member-id="${u.id}" data-member-name="${esc(u.name)}" title="Xóa nhân viên">
                         <span class="material-symbols-outlined text-[18px]">delete</span>
                       </button>
@@ -448,6 +449,12 @@ class App {
                     <span class="px-2 py-0.5 rounded-lg text-[10.5px] font-bold border flex items-center gap-1 ${roleBadge.color}">
                       <span>${roleBadge.text}</span>
                     </span>
+                    ${isUserAdmin ? `
+                      <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#fffbeb] text-[#795900] border border-[#fef3c7] flex items-center gap-1 shadow-2xs">
+                        <span class="material-symbols-outlined text-[13px] text-[#d6a52a]">admin_panel_settings</span>
+                        <span>Admin Hệ Thống</span>
+                      </span>
+                    ` : ''}
                     ${userTeam ? `
                       <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#f1f5f9] text-[#475569] border border-gray-200">
                         ${esc(userTeam.name)}

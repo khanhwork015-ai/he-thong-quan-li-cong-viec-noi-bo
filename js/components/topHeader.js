@@ -1,14 +1,14 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - TOP HEADER COMPONENT (SHIN AIOS v2.6.4)
  * Thiết kế công thái học Mobile First: Vùng bấm >= 44x44px
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=5.3';
-import { store } from '../store.js?v=5.3';
-import { USERS } from '../models.js?v=5.3';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=5.3';
-import { shinTheme } from '../theme.js?v=5.3';
+import { auth } from '../auth.js?v=5.4';
+import { store } from '../store.js?v=5.4';
+import { USERS } from '../models.js?v=5.4';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=5.4';
+import { shinTheme } from '../theme.js?v=5.4';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications) {
@@ -36,10 +36,14 @@ export class TopHeader {
     const userNotifs = store.getUserNotifications(user.id);
 
     let roleBadgeText = '👤 Nhân Viên';
-    if (user.role === 'ADMIN') roleBadgeText = '👑 Quản Trị Viên (Admin)';
+    if (user.role === 'ADMIN') roleBadgeText = '👑 Quản Trị Viên';
     else if (user.role === 'LEADERSHIP') roleBadgeText = '🏛️ Ban Lãnh Đạo';
     else if (user.role === 'MANAGER') roleBadgeText = '👔 Trưởng Phòng';
-    else if (user.role === 'DEPUTY_MANAGER') roleBadgeText = '👔 Phó Trưởng Phòng';
+    else if (user.role === 'DEPUTY_MANAGER') roleBadgeText = '⭐ Phó Trưởng Phòng';
+
+    if (auth.isAdmin() && user.role !== 'ADMIN') {
+      roleBadgeText += ' • 👑 Admin';
+    }
 
     this.container.innerHTML = `
       <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6">
@@ -453,9 +457,16 @@ export class TopHeader {
                   <div class="text-[11.5px] text-[#64748b] truncate">${u.title} • ${u.unit}</div>
                 </div>
               </div>
-              <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full shrink-0 ${u.role === 'ADMIN' ? 'bg-[#ffdea9] text-[#5f4100]' : (u.role === 'MANAGER' ? 'bg-[#fffbeb] text-[#795900] border border-[#fef3c7]' : 'bg-gray-100 text-gray-700')}">
-                ${u.badge}
-              </span>
+              <div class="flex items-center gap-1.5 flex-wrap shrink-0">
+                <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full shrink-0 ${u.role === 'MANAGER' ? 'bg-[#fffbeb] text-[#795900] border border-[#fef3c7]' : (u.role === 'LEADERSHIP' ? 'bg-purple-100 text-purple-900 border border-purple-200' : 'bg-gray-100 text-gray-700')}">
+                  ${u.badge}
+                </span>
+                ${(u.isAdmin || u.role === 'ADMIN') ? `
+                  <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-[#ffdea9] text-[#5f4100] border border-amber-300 shrink-0">
+                    👑 Admin
+                  </span>
+                ` : ''}
+              </div>
             </div>
           `).join('')}
         </div>

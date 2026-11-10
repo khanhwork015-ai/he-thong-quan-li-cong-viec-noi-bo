@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT MODAL
  * Dành riêng cho Quản Trị Viên (ADMIN):
  * - Toàn quyền Thêm / Sửa / Xóa Phòng Ban
@@ -6,9 +6,9 @@
  * (Ví dụ: Phòng PTKH gồm các bộ phận Marketing, CSKH, Hỗ trợ)
  */
 
-import { auth } from '../auth.js?v=5.3';
-import { store } from '../store.js?v=5.3';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=5.3';
+import { auth } from '../auth.js?v=5.4';
+import { store } from '../store.js?v=5.4';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=5.4';
 
 export class DepartmentModal {
   constructor(containerId, onUpdated) {
@@ -37,7 +37,7 @@ export class DepartmentModal {
     rung(10);
     const depts = store.getAllDepartments();
     const allUsers = store.getAllUsers();
-    const managers = allUsers.filter(u => u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER' || u.role === 'ADMIN');
+    const managers = allUsers.filter(u => u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER' || u.isAdmin || u.role === 'ADMIN');
 
     if (deptIdToSelect && deptIdToSelect !== this.selectedDeptId) {
       this.editingTeamId = null;

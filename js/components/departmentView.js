@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT VIEW
  * Màn hình quản lý Cơ cấu Phòng Ban & Bộ Phận Con toàn diện (Dành cho Quản Trị Viên)
  * Chuẩn SHIN AIOS v2.7:
@@ -8,9 +8,9 @@
  * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
-import { auth } from '../auth.js?v=5.3';
-import { store } from '../store.js?v=5.3';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=5.3';
+import { auth } from '../auth.js?v=5.4';
+import { store } from '../store.js?v=5.4';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=5.4';
 
 export class DepartmentView {
   constructor(containerId, onUpdated, onOpenMemberModal) {
@@ -43,7 +43,7 @@ export class DepartmentView {
 
     const depts = store.getAllDepartments();
     const allUsers = store.getAllUsers();
-    const managers = allUsers.filter(u => u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER' || u.role === 'ADMIN');
+    const managers = allUsers.filter(u => u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER' || u.isAdmin || u.role === 'ADMIN');
 
     if (deptIdToSelect && deptIdToSelect !== this.selectedDeptId) {
       this.editingTeamId = null;
@@ -873,7 +873,7 @@ export class DepartmentView {
         // Nếu chọn một nhân sự làm Trưởng phòng mà người đó chưa có role MANAGER -> Tự động cập nhật chức danh
         if (managerId) {
           const selectedManagerUser = store.getUserById(managerId);
-          if (selectedManagerUser && selectedManagerUser.role !== 'MANAGER' && selectedManagerUser.role !== 'ADMIN') {
+          if (selectedManagerUser && selectedManagerUser.role !== 'MANAGER') {
             store.updateUser(managerId, { role: 'MANAGER', badge: 'Trưởng phòng', teamId: '' });
           }
         }

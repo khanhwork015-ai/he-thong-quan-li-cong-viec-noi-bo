@@ -127,6 +127,12 @@
   - **Tối ưu trải nghiệm chạm (Click-to-open):** Bấm trực tiếp vào dòng bảng hoặc thẻ việc con để xem chi tiết, loại bỏ hoàn toàn các nút icon `open_in_new` dư thừa.
   - **Hiển thị việc con chống cắt chữ (Anti-truncate):** Dùng `break-words` đa dòng trên Mobile & Tablet giúp hiển thị trọn vẹn tiêu đề và nội dung việc con.
   - **Nâng cấp Cache Buster toàn diện `?v=5.3`:** Đảm bảo trình duyệt client tải lại toàn bộ mã nguồn sạch không dính cache lỗi font.
+- [x] **17. Tách Riêng Đặc Quyền Quản Trị Viên (Admin Privilege) Khỏi Chức Vụ Chuyên Môn (`auth.js`, `models.js`, `store.js`, `memberModal.js`, `app.js`, `topHeader.js`)**:
+  - **Tách quyền Admin độc lập (`isAdmin: boolean`):** Một người dùng có thể giữ chức vụ chuyên môn thực tế (Trưởng Phòng, Phó Trưởng Phòng, Ban Lãnh Đạo hoặc Nhân Viên) đồng thời sở hữu đặc quyền Quản Trị Hệ Thống (`isAdmin: true`).
+  - **Nâng cấp Modal Cấp/Sửa Nhân Sự (`memberModal.js`):** Vai trò công tác (Role) chỉ gồm các vị trí thực tế (`MEMBER`, `DEPUTY_MANAGER`, `MANAGER`, `LEADERSHIP`); bổ sung khối chuyển đổi riêng biệt với Toggle Switch sang trọng để cấp/hủy quyền Admin Hệ Thống.
+  - **Hiển thị huy hiệu kép (Dual Badges):** Trên thẻ nhân sự và TopHeader hiển thị song song Chức vụ nghiệp vụ và Huy hiệu `👑 Admin Hệ Thống` nổi bật.
+  - **Phòng vệ xóa tài khoản Admin:** Ngăn chặn tuyệt đối việc xóa nhầm Admin cuối cùng trong hệ thống.
+  - **Nâng cấp Cache Buster toàn diện `?v=5.4`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
 
 ---
 

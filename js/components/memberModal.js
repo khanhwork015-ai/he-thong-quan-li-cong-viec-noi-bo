@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - MEMBER MANAGEMENT MODAL COMPONENT (SHIN AIOS v2.6.4)
  * Cấp tài khoản nhân viên mới & phân bổ vào đúng Phòng Ban & Bộ Phận Con
  * 
@@ -9,9 +9,9 @@
  * - Nhân viên: Không được phép cấp tài khoản.
  */
 
-import { auth } from '../auth.js?v=5.3';
-import { store } from '../store.js?v=5.3';
-import { esc, toast, rung } from '../helpers.js?v=5.3';
+import { auth } from '../auth.js?v=5.4';
+import { store } from '../store.js?v=5.4';
+import { esc, toast, rung } from '../helpers.js?v=5.4';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -46,6 +46,8 @@ export class MemberModal {
     const isAdmin = auth.isAdmin();
     const isLeadership = auth.isLeadership();
     const isManager = auth.isManager();
+    const isUserAdmin = Boolean(this.editingUser?.isAdmin || this.editingUser?.role === 'ADMIN');
+    const currentRole = this.editingUser?.role || 'MEMBER';
 
     // Xác định phòng ban ban đầu (ưu tiên defaultDeptId nếu đang xem phòng ban cụ thể)
     const initialDeptId = this.editingUser 
@@ -141,18 +143,18 @@ export class MemberModal {
               </div>
             </div>
 
-            <!-- VAI TRÒ PHÂN QUYỀN (STRICT RBAC) & PHÒNG BAN -->
+            <!-- VAI TRÒ CHUYÊN MÔN & PHÒNG BAN -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
-                  Vai trò phân quyền (Role) *
+                  Chức vụ / Vị trí công tác (Role) *
                 </label>
                 <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
-                  <option value="MEMBER" ${this.editingUser && this.editingUser.role === 'MEMBER' ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
-                  <option value="DEPUTY_MANAGER" ${this.editingUser && this.editingUser.role === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Trưởng Phòng (DEPUTY_MANAGER)</option>
-                  <option value="MANAGER" ${this.editingUser && this.editingUser.role === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng (MANAGER)</option>
-                  <option value="LEADERSHIP" ${this.editingUser && this.editingUser.role === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo (LEADERSHIP)</option>
-                  <option value="ADMIN" ${this.editingUser && this.editingUser.role === 'ADMIN' ? 'selected' : ''}>👑 Quản Trị Viên (ADMIN)</option>
+                  <option value="MEMBER" ${currentRole === 'MEMBER' || (!this.editingUser && true) ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
+                  <option value="DEPUTY_MANAGER" ${currentRole === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Trưởng Phòng (DEPUTY_MANAGER)</option>
+                  <option value="MANAGER" ${currentRole === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng (MANAGER)</option>
+                  <option value="LEADERSHIP" ${currentRole === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo (LEADERSHIP)</option>
+                  ${currentRole === 'ADMIN' ? '<option value="ADMIN" selected>👑 Quản Trị Viên (ADMIN)</option>' : ''}
                 </select>
                 ${isManager ? `
                   <span class="text-[10px] text-amber-600 block mt-1">
@@ -171,6 +173,29 @@ export class MemberModal {
                   `).join('')}
                 </select>
               </div>
+            </div>
+
+            <!-- TÁCH BIỆT ĐẶC QUYỀN QUẢN TRỊ VIÊN (ADMIN HỆ THỐNG) -->
+            <div class="p-3 sm:p-3.5 rounded-2xl border border-amber-300 bg-[#fffbeb] flex items-center justify-between gap-3 shadow-2xs">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-[#795900] flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] flex items-center gap-1.5 flex-wrap">
+                    <span>Đặc Quyền Quản Trị Viên (Admin Hệ Thống)</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 shrink-0">Quyền Cấp Cao</span>
+                  </div>
+                  <p class="text-[11px] sm:text-[11.5px] text-[#795900] leading-snug mt-0.5">
+                    Bật để cấp quyền Admin cho người này (kể cả khi đang là Trưởng phòng hay Nhân viên).
+                  </p>
+                </div>
+              </div>
+
+              <label class="relative inline-flex items-center cursor-pointer shrink-0 min-w-[44px] min-h-[44px] justify-center" title="${isAdmin ? 'Bật/Tắt quyền Quản trị viên' : 'Chỉ Admin mới có quyền cấp Admin'}">
+                <input type="checkbox" id="memberIsAdmin" class="sr-only peer" ${isUserAdmin ? 'checked' : ''} ${!isAdmin ? 'disabled' : ''}>
+                <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[12px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d6a52a] ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}"></div>
+              </label>
             </div>
 
             <!-- BỘ PHẬN CON (TEAMS) BÊN TRONG PHÒNG BAN -->
@@ -365,6 +390,7 @@ export class MemberModal {
         const name = this.container.querySelector('#memberName').value.trim();
         const title = this.container.querySelector('#memberTitle').value.trim();
         const role = this.container.querySelector('#memberRole').value;
+        const isAdminFlag = Boolean(this.container.querySelector('#memberIsAdmin')?.checked);
         const departmentId = selectDept.value;
         const teamId = selectTeam.value;
         const username = this.container.querySelector('#memberUsername').value.trim();
@@ -399,6 +425,7 @@ export class MemberModal {
             name,
             title,
             role,
+            isAdmin: isAdminFlag,
             departmentId,
             teamId,
             username,
@@ -418,6 +445,7 @@ export class MemberModal {
             name,
             title,
             role,
+            isAdmin: isAdminFlag,
             departmentId,
             teamId,
             username,

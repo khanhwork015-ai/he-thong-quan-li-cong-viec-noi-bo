@@ -1,15 +1,15 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - DATA MODELS & MULTI-DEPARTMENT ARCHITECTURE
  * Cấu trúc thực thể hỗ trợ mở rộng không giới hạn phòng ban (Multi-tenant ready)
  * Hỗ trợ phân cấp 4 nhóm quyền (RBAC) & Cơ cấu Phòng ban - Bộ phận con (Teams)
  */
 
 export const ROLES = {
-  ADMIN: { key: 'ADMIN', name: 'Quản Trị Viên (Admin)', badge: 'Admin Hệ Thống', level: 1 },
-  LEADERSHIP: { key: 'LEADERSHIP', name: 'Ban Lãnh Đạo', badge: 'Ban Lãnh Đạo', level: 2 },
-  MANAGER: { key: 'MANAGER', name: 'Trưởng Phòng', badge: 'Trưởng Phòng', level: 3 },
-  DEPUTY_MANAGER: { key: 'DEPUTY_MANAGER', name: 'Phó Trưởng Phòng', badge: 'Phó Phòng', level: 3 },
-  MEMBER: { key: 'MEMBER', name: 'Nhân Viên / Chuyên Viên', badge: 'Chuyên Viên', level: 4 }
+  LEADERSHIP: { key: 'LEADERSHIP', name: 'Ban Lãnh Đạo', badge: 'Ban Lãnh Đạo', level: 1 },
+  MANAGER: { key: 'MANAGER', name: 'Trưởng Phòng', badge: 'Trưởng Phòng', level: 2 },
+  DEPUTY_MANAGER: { key: 'DEPUTY_MANAGER', name: 'Phó Trưởng Phòng', badge: 'Phó Phòng', level: 2 },
+  MEMBER: { key: 'MEMBER', name: 'Nhân Viên / Chuyên Viên', badge: 'Chuyên Viên', level: 3 },
+  ADMIN: { key: 'ADMIN', name: 'Quản Trị Viên (Admin)', badge: 'Admin Hệ Thống', level: 0 }
 };
 
 export const DEPARTMENTS = [
@@ -60,13 +60,14 @@ export const DEPARTMENTS = [
 ];
 
 export const USERS = [
-  // 1. ADMIN TOÀN HỆ THỐNG
+  // 1. ADMIN TOÀN HỆ THỐNG (ĐẶC QUYỀN QUẢN TRỊ VIÊN)
   {
     id: 'user_admin',
     username: 'admin',
     password: '123',
     name: 'Quản Trị Viên Hệ Thống',
-    role: 'ADMIN',
+    role: 'MANAGER',
+    isAdmin: true,
     departmentId: 'all',
     teamId: 'all',
     title: 'Quản Trị Viên Cấp Cao',

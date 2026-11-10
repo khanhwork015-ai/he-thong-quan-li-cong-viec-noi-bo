@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - CENTRALIZED REACTIVE STORE (APPS SCRIPT INTEGRATED)
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
@@ -178,6 +178,7 @@ export class Store {
             username: String(su.username || existing.username || su.id.replace('user_', '')).trim().toLowerCase(),
             password: String(su.password !== undefined && su.password !== null && String(su.password).trim() !== '' ? su.password : (existing.password || '123')).trim(),
             role: (su.role || existing.role || 'MEMBER').toUpperCase(),
+            isAdmin: Boolean(su.isAdmin !== undefined ? (su.isAdmin === true || su.isAdmin === 'true' || su.isAdmin === 1) : (existing.isAdmin || su.role === 'ADMIN' || existing.role === 'ADMIN')),
             departmentId: su.departmentId || existing.departmentId || 'dept_ptkh',
             teamId: su.teamId || existing.teamId || null
           };
@@ -467,6 +468,7 @@ export class Store {
       password: (userData.password || '123').trim(),
       name: userData.name.trim(),
       role: targetRole,
+      isAdmin: Boolean(userData.isAdmin || targetRole === 'ADMIN'),
       departmentId: targetDeptId,
       teamId: userData.teamId || '',
       title: userData.title.trim() || 'Chuyên viên',
@@ -524,9 +526,13 @@ export class Store {
     const userToDelete = users.find(u => u.id === userId);
     if (!userToDelete) return false;
 
-    // Không cho phép xóa Admin chính
-    if (userToDelete.role === 'ADMIN') {
-      return false;
+    // Không cho phép xóa Quản Trị Viên (Admin) nếu là Admin duy nhất
+    if (userToDelete.isAdmin || userToDelete.role === 'ADMIN') {
+      const adminCount = users.filter(u => u.isAdmin || u.role === 'ADMIN').length;
+      if (adminCount <= 1) {
+        toast('Không thể xóa Quản Trị Viên duy nhất của hệ thống!', 'error');
+        return false;
+      }
     }
 
     const filtered = users.filter(u => u.id !== userId);

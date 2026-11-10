@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - STRICT RBAC & DATA ISOLATION ENGINE
  * Phân quyền 4 cấp độ (SHIN AIOS v2.6.4):
  * 1. ADMIN (Quản trị viên): Toàn quyền toàn viện, CRUD phòng ban & bộ phận con, cấp mọi tài khoản.
@@ -85,9 +85,10 @@ export class AuthManager {
       } catch (_) {}
     }
 
-    // Chuẩn hóa an toàn cho toàn bộ user: password luôn là chuỗi string, username lowercase trimmed
+    // Chuẩn hóa an toàn cho toàn bộ user: password luôn là chuỗi string, username lowercase trimmed, isAdmin tách biệt
     return users.map(u => ({
       ...u,
+      isAdmin: Boolean(u.isAdmin === true || u.isAdmin === 'true' || u.role === 'ADMIN'),
       username: String(u.username || (u.id ? u.id.replace('user_', '') : '')).trim().toLowerCase(),
       password: String(u.password !== undefined && u.password !== null && String(u.password).trim() !== '' ? u.password : '123').trim()
     }));
@@ -300,8 +301,9 @@ export class AuthManager {
   }
 
   // --- PHÂN QUYỀN VAI TRÒ (RBAC) ---
+  // Tách riêng Admin thành đặc quyền hệ thống: Một người có thể vừa là Trưởng phòng/Nhân viên vừa là Admin
   isAdmin() {
-    return this.currentUser?.role === 'ADMIN';
+    return Boolean(this.currentUser && (this.currentUser.isAdmin === true || this.currentUser.role === 'ADMIN'));
   }
 
   isLeadership() {

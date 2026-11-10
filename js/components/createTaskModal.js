@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - CREATE / EDIT TASK MODAL COMPONENT (SHIN AIOS v2.7)
  * Giao diện form chuẩn Google Stitch Gold:
  * Nút Gold #D6A52A, Border #E2E8F0, Text #0D1C2F
@@ -7,9 +7,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=5.3';
-import { store } from '../store.js?v=5.3';
-import { toast, rung, esc } from '../helpers.js?v=5.3';
+import { auth } from '../auth.js?v=5.4';
+import { store } from '../store.js?v=5.4';
+import { toast, rung, esc } from '../helpers.js?v=5.4';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -37,7 +37,7 @@ export class CreateTaskModal {
     const currentTeams = taskDept.teams || [];
 
     // Danh sách người có thẩm quyền phê duyệt (Admin, Leadership, Manager)
-    const approvers = allUsers.filter(u => u.role === 'ADMIN' || u.role === 'LEADERSHIP' || u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER');
+    const approvers = allUsers.filter(u => u.isAdmin || u.role === 'ADMIN' || u.role === 'LEADERSHIP' || u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER');
     // Mặc định người duyệt: Trưởng phòng hiện tại hoặc Ban Lãnh Đạo
     const defaultApproverId = isEdit && taskToEdit.approverId
       ? taskToEdit.approverId
@@ -175,7 +175,9 @@ export class CreateTaskModal {
                 <label class="block text-[12px] font-bold text-[#0d1c2f]">Chỉ định Người phê duyệt *</label>
                 <select id="newTaskApprover" class="w-full h-11 px-3 rounded-xl border border-amber-300 text-[13.5px] font-bold text-[#0d1c2f] outline-none focus:border-[#d6a52a] bg-white cursor-pointer shadow-2xs">
                   ${approvers.map(u => {
-                    const rText = u.role === 'ADMIN' ? 'Admin' : (u.role === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Trưởng phòng');
+                    const rText = (u.isAdmin || u.role === 'ADMIN')
+                      ? (u.role === 'MANAGER' ? 'Trưởng phòng (Admin)' : (u.role === 'LEADERSHIP' ? 'Lãnh đạo (Admin)' : (u.role === 'MEMBER' ? 'Chuyên viên (Admin)' : 'Admin')))
+                      : (u.role === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : (u.role === 'MANAGER' ? 'Trưởng phòng' : 'Phó phòng'));
                     return `<option value="${u.id}" ${u.id === defaultApproverId ? 'selected' : ''}>[${rText}] ${esc(u.name)} (${esc(u.title)})</option>`;
                   }).join('')}
                 </select>
