@@ -8,9 +8,9 @@
  * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
-import { auth } from '../auth.js?v=5.5';
-import { store } from '../store.js?v=5.5';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=5.5';
+import { auth } from '../auth.js?v=5.6';
+import { store } from '../store.js?v=5.6';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=5.6';
 
 export class DepartmentView {
   constructor(containerId, onUpdated, onOpenMemberModal) {
@@ -481,14 +481,14 @@ export class DepartmentView {
                           <div class="flex items-center gap-2 flex-wrap">
                             <span class="text-[14.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">${esc(deputy.name)}</span>
                             <span class="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
-                              ⭐ Phó Trưởng Phòng
+                              ⭐ Phó Phòng
                             </span>
                             <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
                               Toàn phòng
                             </span>
                           </div>
                           <div class="text-[12px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
-                            ${esc(deputy.title || 'Phó Trưởng phòng')} • <span class="font-mono-data">${esc(deputy.email || deputy.username || '')}</span>
+                            ${esc(deputy.title || 'Phó phòng')} • <span class="font-mono-data">${esc(deputy.email || deputy.username || '')}</span>
                             ${deputy.phone ? ` • <span class="font-mono-data">${esc(deputy.phone)}</span>` : ''}
                           </div>
                         </div>

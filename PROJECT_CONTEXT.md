@@ -138,6 +138,9 @@
   - **Khắc phục lỗi ngắt dòng Mã việc (`TSK-PTKH-xx`):** Thiết lập `whitespace-nowrap font-mono-data` với độ rộng chuẩn `w-36`, đảm bảo mã công việc luôn nằm trên 1 dòng duy nhất.
   - **Thiết kế lại thông tin Người tạo & Ngày tháng:** Mở rộng cột tiêu đề lên `min-w-[320px]`, bố trí Người tạo (`Tạo bởi: ...`) và Ngày tạo (`calendar_today + ngayVN`) gọn gàng với `whitespace-nowrap overflow-hidden text-ellipsis`, triệt tiêu hoàn toàn hiện tượng tên dài bị rớt chữ xuống dòng.
   - **Nâng cấp Cache Buster toàn diện `?v=5.5`:** Đảm bảo toàn bộ trình duyệt người dùng nạp phiên bản giao diện mới nhất.
+- [x] **19. Chuẩn Hóa Danh Xưng Chức Vụ: Đổi "Phó Trưởng Phòng" Thành "Phó Phòng" Toàn Hệ Thống (`models.js`, `app.js`, `memberModal.js`, `departmentView.js`, `topHeader.js`)**:
+  - **Chuẩn hóa danh xưng ngắn gọn, chính xác:** Thay thế toàn bộ nhãn `Phó Trưởng Phòng` thành `Phó Phòng` trên toàn bộ hệ thống (Danh bạ nhân viên, Header vai trò, Modal phân quyền và Chi tiết khoa phòng).
+  - **Nâng cấp Cache Buster toàn diện `?v=5.6`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
 
 ---
 

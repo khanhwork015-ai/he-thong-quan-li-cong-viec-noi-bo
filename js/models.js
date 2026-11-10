@@ -7,7 +7,7 @@
 export const ROLES = {
   LEADERSHIP: { key: 'LEADERSHIP', name: 'Ban Lãnh Đạo', badge: 'Ban Lãnh Đạo', level: 1 },
   MANAGER: { key: 'MANAGER', name: 'Trưởng Phòng', badge: 'Trưởng Phòng', level: 2 },
-  DEPUTY_MANAGER: { key: 'DEPUTY_MANAGER', name: 'Phó Trưởng Phòng', badge: 'Phó Phòng', level: 2 },
+  DEPUTY_MANAGER: { key: 'DEPUTY_MANAGER', name: 'Phó Phòng', badge: 'Phó Phòng', level: 2 },
   MEMBER: { key: 'MEMBER', name: 'Nhân Viên / Chuyên Viên', badge: 'Chuyên Viên', level: 3 },
   ADMIN: { key: 'ADMIN', name: 'Quản Trị Viên (Admin)', badge: 'Admin Hệ Thống', level: 0 }
 };

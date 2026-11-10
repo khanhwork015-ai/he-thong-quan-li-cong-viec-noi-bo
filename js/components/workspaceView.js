@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=5.5';
-import { store } from '../store.js?v=5.5';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.5';
+import { auth } from '../auth.js?v=5.6';
+import { store } from '../store.js?v=5.6';
+import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=5.6';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {

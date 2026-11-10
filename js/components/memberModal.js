@@ -9,9 +9,9 @@
  * - Nhân viên: Không được phép cấp tài khoản.
  */
 
-import { auth } from '../auth.js?v=5.5';
-import { store } from '../store.js?v=5.5';
-import { esc, toast, rung } from '../helpers.js?v=5.5';
+import { auth } from '../auth.js?v=5.6';
+import { store } from '../store.js?v=5.6';
+import { esc, toast, rung } from '../helpers.js?v=5.6';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -151,7 +151,7 @@ export class MemberModal {
                 </label>
                 <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
                   <option value="MEMBER" ${currentRole === 'MEMBER' || (!this.editingUser && true) ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
-                  <option value="DEPUTY_MANAGER" ${currentRole === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Trưởng Phòng (DEPUTY_MANAGER)</option>
+                  <option value="DEPUTY_MANAGER" ${currentRole === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Phòng (DEPUTY_MANAGER)</option>
                   <option value="MANAGER" ${currentRole === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng (MANAGER)</option>
                   <option value="LEADERSHIP" ${currentRole === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo (LEADERSHIP)</option>
                   ${currentRole === 'ADMIN' ? '<option value="ADMIN" selected>👑 Quản Trị Viên (ADMIN)</option>' : ''}
