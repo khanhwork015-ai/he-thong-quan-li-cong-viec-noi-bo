@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=7.3';
-import { store } from '../store.js?v=7.3';
-import { esc, soVN, ngayVN, toast, timeAgo, rung, xacNhan2Lan, xacNhanXoa, popupTuChoiPheDuyet } from '../helpers.js?v=7.3';
+import { auth } from '../auth.js?v=7.4';
+import { store } from '../store.js?v=7.4';
+import { esc, soVN, ngayVN, toast, timeAgo, rung, xacNhan2Lan, xacNhanXoa, popupTuChoiPheDuyet, kiemTraTreHan } from '../helpers.js?v=7.4';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
@@ -93,6 +93,8 @@ export class TaskDrawer {
       auth.isLeadership() || 
       (task.approverId && task.approverId === currentUser.id) || 
       (auth.isManager() && currentUser.departmentId === task.departmentId);
+    
+    const { isOverdue, daysLate } = kiemTraTreHan(task.dueDate, task.status);
 
     const statusMeta = this.getStatusMeta(task.status);
 
@@ -135,6 +137,24 @@ export class TaskDrawer {
           <!-- DRAWER SCROLLABLE BODY -->
           <div class="p-5 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4 sm:gap-5" id="taskDrawerScrollBody">
             
+            ${isOverdue ? `
+              <!-- 0. CẢNH BÁO QUÁ HẠN DEADLINE (OVERDUE ALERT BANNER) -->
+              <div class="p-3.5 sm:p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-900 flex items-start gap-3 shadow-2xs animate-fade-in">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[24px]">alarm_on</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <strong class="font-extrabold text-[14px] text-rose-700">CẢNH BÁO: NHIỆM VỤ ĐÃ TRỄ DEADLINE ${daysLate} NGÀY!</strong>
+                    <span class="px-2 py-0.2 rounded-full bg-rose-200 text-rose-900 font-bold text-[10.5px]">Đôn đốc khẩn</span>
+                  </div>
+                  <p class="text-[12px] text-rose-800 mt-1 leading-relaxed">
+                    Hạn hoàn thành ban đầu là <strong>${ngayVN(task.dueDate)}</strong>. Người phụ trách cần nhanh chóng xử lý dứt điểm hoặc liên hệ quản lý để gia hạn.
+                  </p>
+                </div>
+              </div>
+            ` : ''}
+
             <!-- 1. BANNER CẢNH BÁO PHÊ DUYỆT 1-CHẠM -->
             ${isPendingApproval ? `
               <div class="p-4 rounded-2xl bg-amber-50 border border-amber-300 flex items-start gap-3 text-amber-900 shadow-2xs animate-fade-in">
@@ -225,12 +245,20 @@ export class TaskDrawer {
             </div>
 
             <!-- 4. METADATA GRID -->
-            <div class="grid grid-cols-2 gap-3.5 p-4 rounded-2xl bg-white border border-[#e2e8f0]" style="background-color: var(--card); border-color: var(--border);">
+            <div class="grid grid-cols-2 gap-3.5 p-4 rounded-2xl bg-white border ${isOverdue ? 'border-rose-200 bg-rose-50/15' : 'border-[#e2e8f0]'}" style="background-color: var(--card); border-color: var(--border);">
               <div>
-                <span class="text-[11px] text-[#64748b] font-medium uppercase tracking-wider">Hạn hoàn thành</span>
-                <div class="text-[13px] font-bold text-[#0d1c2f] font-mono-data mt-1 flex items-center gap-1" style="color: var(--text);">
-                  <span class="material-symbols-outlined text-[16px] text-[#795900]">event</span>
-                  ${ngayVN(task.dueDate)}
+                <span class="text-[11px] ${isOverdue ? 'text-rose-600 font-bold' : 'text-[#64748b] font-medium'} uppercase tracking-wider flex items-center gap-1">
+                  ${isOverdue ? '<span class="material-symbols-outlined text-[14px] text-rose-600">warning</span>' : ''}
+                  <span>Hạn hoàn thành</span>
+                </span>
+                <div class="text-[13px] font-bold ${isOverdue ? 'text-rose-600' : 'text-[#0d1c2f]'} font-mono-data mt-1 flex items-center gap-1.5 flex-wrap" style="${isOverdue ? 'color: #dc2626;' : 'color: var(--text);'}">
+                  <span class="material-symbols-outlined text-[16px] ${isOverdue ? 'text-rose-600' : 'text-[#795900]'}">${isOverdue ? 'alarm' : 'event'}</span>
+                  <span>${ngayVN(task.dueDate)}</span>
+                  ${isOverdue ? `
+                    <span class="text-[10px] font-extrabold px-1.5 py-0.2 rounded bg-rose-100 text-rose-800 border border-rose-300">
+                      Trễ ${daysLate} ngày
+                    </span>
+                  ` : ''}
                 </div>
               </div>
 

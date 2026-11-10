@@ -259,6 +259,19 @@
   - **Triệt tiêu hiện tượng click nút màn hình giật sang trái rồi trở ngược lại:** Thiết lập `overflow-x: clip !important;` trên cả `html` và `body` để cấm hoàn toàn hành vi cuộn ngang của trình duyệt khi focus nút; loại bỏ `scroll-behavior: smooth` trên root để chặn hiệu ứng bounce/rung giật.
   - **Popup Modal Từ Chối Phê Duyệt (`popupTuChoiPheDuyet`):** Thay thế toàn bộ hộp thoại `prompt()` / `alert()` mặc định của trình duyệt bằng Popup Modal chuyên nghiệp chuẩn SHIN AIOS v2.7 (đồng bộ với `xacNhanXoa`), có icon chuyển trả, textarea nhập góp ý (linh hoạt tùy chọn) và các nút bấm $\ge 44 \times 44$px.
   - **Nâng cấp Cache Buster toàn diện `?v=7.3`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
+- [x] **33. Hệ Thống Cảnh Báo Trễ Deadline Toàn Diện (Overdue Warning System) v7.4**:
+  - **Hàm chuẩn hóa kiểm tra trễ hạn `kiemTraTreHan(dueDateStr, status)`:** Tính toán chính xác số ngày trễ (`daysLate`) dựa trên mốc ngày thực tế và loại trừ các nhiệm vụ đã hoàn thành (`done` / `completed`).
+  - **Bảng Quản Lý Công Việc (`workspaceView.js`):**
+    + Thêm tab mới "Quá hạn" kèm icon báo thức và huy hiệu đếm số lượng việc quá hạn nhấp nháy (`animate-pulse`). Hỗ trợ lọc tức thì qua `store.getDepartmentTasks({ tab: 'overdue' })`.
+    + Danh sách dạng bảng (Table view): Hàng task trễ hạn có viền trái đỏ `border-l-4 border-l-rose-500 bg-rose-50/15`, cột Hạn chót nổi bật với icon `alarm` đỏ và huy hiệu `Quá hạn X ngày`.
+    + Dạng thẻ Mobile & Kanban: Thẻ task quá hạn có viền đỏ nổi bật, hiển thị huy hiệu `⚠️ Quá hạn X ngày` / `Trễ Xn` rõ ràng.
+  - **Ngăn Kéo Chi Tiết Task (`taskDrawer.js`):**
+    + Xuất hiện Banner cảnh báo khẩn cấp màu đỏ nổi bật ngay đầu trang: *"CẢNH BÁO: NHIỆM VỤ ĐÃ TRỄ DEADLINE X NGÀY!"* kèm thông điệp đôn đốc xử lý.
+    + Khối Metadata Grid "Hạn hoàn thành" đổi sang màu đỏ kèm huy hiệu `Trễ X ngày`.
+  - **Trang Tổng Quan (`dashboardView.js` & `app.js`):**
+    + Hàng đợi duyệt việc (Priority Queue) hiển thị cảnh báo đỏ cạnh ngày hạn.
+    + Click thẻ KPI "Quá hạn" chuyển hướng thẳng sang tab "Quá hạn" trên Không gian công việc.
+  - **Nâng cấp Cache Buster toàn diện `?v=7.4`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
 
 ---
 

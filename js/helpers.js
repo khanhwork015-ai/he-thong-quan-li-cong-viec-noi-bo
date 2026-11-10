@@ -386,4 +386,30 @@ export function popupTuChoiPheDuyet({
   window.addEventListener('keydown', onKeyDown);
 }
 
+/**
+ * Kiểm tra xem công việc / nhiệm vụ có bị trễ hạn (overdue) hay không
+ * @param {string} dueDateStr - Chuỗi ngày hạn chót (YYYY-MM-DD hoặc ISO date)
+ * @param {string} status - Trạng thái công việc ('done', 'completed' là đã xong, không coi là trễ)
+ * @returns {{ isOverdue: boolean, daysLate: number }}
+ */
+export function kiemTraTreHan(dueDateStr, status) {
+  if (!dueDateStr || status === 'done' || status === 'completed') {
+    return { isOverdue: false, daysLate: 0 };
+  }
+
+  const d = new Date(dueDateStr);
+  if (isNaN(d.getTime())) return { isOverdue: false, daysLate: 0 };
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const dueStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+
+  if (dueStart < todayStart) {
+    const diffDays = Math.max(1, Math.floor((todayStart - dueStart) / (1000 * 60 * 60 * 24)));
+    return { isOverdue: true, daysLate: diffDays };
+  }
+
+  return { isOverdue: false, daysLate: 0 };
+}
+
 

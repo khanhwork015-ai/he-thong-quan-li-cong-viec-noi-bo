@@ -8,9 +8,9 @@
  * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
  */
 
-import { auth } from '../auth.js?v=7.3';
-import { store } from '../store.js?v=7.3';
-import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=7.3';
+import { auth } from '../auth.js?v=7.4';
+import { store } from '../store.js?v=7.4';
+import { esc, soVN, ngayVN, loiChao, toast, rung, kiemTraTreHan } from '../helpers.js?v=7.4';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
@@ -276,17 +276,24 @@ export class DashboardView {
               const assignee = store.getUserById(task.assigneeId);
               const creator = store.getUserById(task.creatorId);
               const dept = store.getDepartmentById(task.departmentId);
+              const { isOverdue, daysLate } = kiemTraTreHan(task.dueDate, task.status);
 
               return `
-                <div class="p-4 rounded-2xl border border-amber-200 bg-[#fffbeb]/40 hover:bg-[#fffbeb] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                <div class="p-4 rounded-2xl border ${isOverdue ? 'border-l-4 border-l-rose-500 border-rose-300 bg-rose-50/25 hover:bg-rose-50/40' : 'border-amber-200 bg-[#fffbeb]/40 hover:bg-[#fffbeb]'} transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                   <div class="flex-1 min-w-0 cursor-pointer btn-open-task-from-queue" data-task-id="${task.id}">
                     <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-white border border-amber-300 text-[#795900]">
+                      <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-white border ${isOverdue ? 'border-rose-300 text-rose-700' : 'border-amber-300 text-[#795900]'}">
                         ${esc(task.id)}
                       </span>
                       <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${task.priority === 'P1' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}">
                         ${task.priority === 'P1' ? 'P1 • Khẩn' : 'P2 • Quan trọng'}
                       </span>
+                      ${isOverdue ? `
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs animate-pulse">
+                          <span class="material-symbols-outlined text-[13px] text-rose-600">alarm</span>
+                          <span>Quá hạn ${daysLate} ngày</span>
+                        </span>
+                      ` : ''}
                       ${dept ? `
                         <span class="text-[10.5px] font-semibold text-gray-600 bg-white px-2 py-0.5 rounded border border-gray-200">
                           ${esc(dept.name)}
@@ -306,7 +313,10 @@ export class DashboardView {
                       </div>
                       <div class="flex items-center gap-1.5">
                         <span class="text-[#817663] shrink-0">Hạn:</span>
-                        <strong class="font-mono-data text-amber-900 font-bold">${ngayVN(task.dueDate)}</strong>
+                        <strong class="font-mono-data ${isOverdue ? 'text-rose-700 font-extrabold flex items-center gap-1' : 'text-amber-900 font-bold'}">
+                          <span class="material-symbols-outlined text-[14px] ${isOverdue ? 'text-rose-600' : ''}">${isOverdue ? 'alarm' : 'event'}</span>
+                          <span>${ngayVN(task.dueDate)}</span>
+                        </strong>
                       </div>
                     </div>
                   </div>

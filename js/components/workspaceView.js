@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=7.3';
-import { store } from '../store.js?v=7.3';
-import { esc, soVN, ngayVN, toast, rung } from '../helpers.js?v=7.3';
+import { auth } from '../auth.js?v=7.4';
+import { store } from '../store.js?v=7.4';
+import { esc, soVN, ngayVN, toast, rung, kiemTraTreHan } from '../helpers.js?v=7.4';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
@@ -57,6 +57,7 @@ export class WorkspaceView {
     const countCreated = allDeptTasks.filter(t => t.creatorId === currentUser.id).length;
     const countPending = allDeptTasks.filter(t => t.status === 'pending_approval' || t.status === 'review').length;
     const countDone = allDeptTasks.filter(t => t.status === 'done' || t.status === 'completed').length;
+    const countOverdue = allDeptTasks.filter(t => kiemTraTreHan(t.dueDate, t.status).isOverdue).length;
     const deptTeams = Array.isArray(currentDept.teams) ? currentDept.teams : [];
 
     this.container.innerHTML = `
@@ -116,6 +117,12 @@ export class WorkspaceView {
               <span class="w-2 h-2 rounded-full bg-[#f59e0b]"></span>
               <span>Chờ duyệt</span>
               <span class="px-2 py-0.2 rounded-full bg-[#f59e0b] text-white font-mono-data text-[10.5px] font-bold">${countPending}</span>
+            </button>
+
+            <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-1.5 shrink-0 transition-all min-h-[40px] cursor-pointer ${this.activeTab === 'overdue' ? 'bg-[#fee2e2] text-[#b91c1c] font-bold border border-rose-300 shadow-2xs' : 'text-rose-700 hover:bg-rose-50'}" data-tab="overdue">
+              <span class="material-symbols-outlined text-[16px] text-rose-600">alarm</span>
+              <span>Quá hạn</span>
+              <span class="px-2 py-0.2 rounded-full ${countOverdue > 0 ? 'bg-rose-600 text-white animate-pulse' : 'bg-gray-100 text-gray-500'} font-mono-data text-[10.5px] font-bold">${countOverdue}</span>
             </button>
 
             <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] cursor-pointer ${this.activeTab === 'completed' ? 'bg-[#ccfbf1] text-[#0f766e] font-bold border border-teal-200' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="completed">
@@ -209,17 +216,24 @@ export class WorkspaceView {
           const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
           const hasSubtasks = subtasks.length > 0;
           const completedSubtasksCount = subtasks.filter(s => s.completed || s.status === 'done').length;
+          const { isOverdue, daysLate } = kiemTraTreHan(t.dueDate, t.status);
 
           return `
-            <div class="p-4 bg-white rounded-2xl border border-[#e2e8f0] shadow-xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer row-task-item" data-task-id="${t.id}">
+            <div class="p-4 bg-white rounded-2xl border ${isOverdue ? 'border-l-4 border-l-rose-500 border-rose-200 bg-rose-50/10' : 'border-[#e2e8f0]'} shadow-xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer row-task-item" data-task-id="${t.id}">
               <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-mono-data text-[11px] font-bold text-[#795900] px-2 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7] whitespace-nowrap">${t.id}</span>
                   <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full ${t.priority === 'P1' ? 'bg-[#fee2e2] text-[#b91c1c]' : 'bg-[#fef3c7] text-[#92400e]'}">
                     ${t.priority}
                   </span>
+                  ${isOverdue ? `
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-extrabold bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs whitespace-nowrap animate-pulse">
+                      <span class="material-symbols-outlined text-[13px] text-rose-600">alarm</span>
+                      <span>Quá hạn ${daysLate} ngày</span>
+                    </span>
+                  ` : ''}
                 </div>
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 shrink-0">
                   <button type="button" class="btn-edit-task p-1 rounded-lg text-amber-700 hover:bg-amber-100/70 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer" data-task-id="${t.id}" title="Chỉnh sửa công việc">
                     <span class="material-symbols-outlined text-[18px]">edit</span>
                   </button>
@@ -252,9 +266,9 @@ export class WorkspaceView {
                   <img src="${assignee ? assignee.avatar : ''}" class="w-6 h-6 rounded-full object-cover shrink-0" />
                   <span class="text-[#0d1c2f] font-semibold truncate">${assignee ? assignee.name : 'Chưa giao'}</span>
                 </div>
-                <span class="font-mono-data text-[11.5px] text-[#817663] shrink-0 flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[14px]">event</span>
-                  ${ngayVN(t.dueDate)}
+                <span class="font-mono-data text-[11.5px] ${isOverdue ? 'text-rose-700 font-bold flex items-center gap-1' : 'text-[#817663]'} shrink-0">
+                  <span class="material-symbols-outlined text-[14px] ${isOverdue ? 'text-rose-600' : ''}">${isOverdue ? 'alarm' : 'event'}</span>
+                  <span>${ngayVN(t.dueDate)}</span>
                 </span>
               </div>
 
@@ -297,10 +311,16 @@ export class WorkspaceView {
                 const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
                 const hasSubtasks = subtasks.length > 0;
                 const completedSubtasksCount = subtasks.filter(s => s.completed || s.status === 'done').length;
+                const { isOverdue, daysLate } = kiemTraTreHan(t.dueDate, t.status);
 
                 return `
-                  <tr class="hover:bg-[#fffbeb]/40 transition-colors cursor-pointer row-task-item" data-task-id="${t.id}">
-                    <td class="py-3.5 px-4 font-mono-data font-bold text-[#795900] whitespace-nowrap">${t.id}</td>
+                  <tr class="hover:bg-[#fffbeb]/40 transition-colors cursor-pointer row-task-item ${isOverdue ? 'border-l-4 border-l-rose-500 bg-rose-50/15 hover:bg-rose-50/30' : ''}" data-task-id="${t.id}">
+                    <td class="py-3.5 px-4 font-mono-data font-bold text-[#795900] whitespace-nowrap">
+                      <div class="flex items-center gap-1.5">
+                        ${isOverdue ? '<span class="w-2 h-2 rounded-full bg-rose-500 shrink-0" title="Đã quá hạn"></span>' : ''}
+                        <span>${t.id}</span>
+                      </div>
+                    </td>
                     <td class="py-3.5 px-4">
                       <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
                       <div class="text-[11.5px] text-[#64748b] flex items-center gap-1.5 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">
@@ -326,7 +346,21 @@ export class WorkspaceView {
                       </div>
                     </td>
                     <td class="py-3.5 px-4 text-[#64748b] font-medium whitespace-nowrap">${esc(t.category)}</td>
-                    <td class="py-3.5 px-4 text-[#0d1c2f] font-mono-data text-[12px] whitespace-nowrap">${ngayVN(t.dueDate)}</td>
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      ${isOverdue ? `
+                        <div class="flex flex-col items-start gap-1">
+                          <span class="text-rose-700 font-mono-data text-[12px] font-bold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[15px] text-rose-600">alarm</span>
+                            ${ngayVN(t.dueDate)}
+                          </span>
+                          <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 whitespace-nowrap shadow-2xs animate-pulse">
+                            Quá hạn ${daysLate} ngày
+                          </span>
+                        </div>
+                      ` : `
+                        <span class="text-[#0d1c2f] font-mono-data text-[12px]">${ngayVN(t.dueDate)}</span>
+                      `}
+                    </td>
                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
                       <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block" style="background-color: ${statusMeta.bg}; color: ${statusMeta.text};">
                         ${statusMeta.label}
@@ -394,11 +428,15 @@ export class WorkspaceView {
                   const subtasks = Array.isArray(t.subtasks) ? t.subtasks : [];
                   const hasSubtasks = subtasks.length > 0;
                   const completedSubtasksCount = subtasks.filter(s => s.completed || s.status === 'done').length;
+                  const { isOverdue, daysLate } = kiemTraTreHan(t.dueDate, t.status);
 
                   return `
-                    <div class="p-3.5 bg-white rounded-xl border border-[#e2e8f0] hover:border-[#d6a52a] active:bg-[#fffbeb]/20 shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card flex flex-col gap-2" data-task-id="${t.id}">
+                    <div class="p-3.5 bg-white rounded-xl border ${isOverdue ? 'border-l-4 border-l-rose-500 border-rose-300 bg-rose-50/10' : 'border-[#e2e8f0]'} hover:border-[#d6a52a] active:bg-[#fffbeb]/20 shadow-2xs hover:shadow-sm transition-all cursor-pointer kanban-card flex flex-col gap-2" data-task-id="${t.id}">
                       <div class="flex items-center justify-between">
-                        <span class="font-mono-data text-[10.5px] font-bold text-[#795900] px-1.5 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7] whitespace-nowrap">${t.id}</span>
+                        <div class="flex items-center gap-1.5">
+                          ${isOverdue ? '<span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>' : ''}
+                          <span class="font-mono-data text-[10.5px] font-bold text-[#795900] px-1.5 py-0.5 rounded bg-[#fffbeb] border border-[#fef3c7] whitespace-nowrap">${t.id}</span>
+                        </div>
                         <div class="flex items-center gap-1">
                           <button type="button" class="btn-edit-task p-1 text-amber-700 hover:bg-amber-100/70 rounded min-w-[28px] min-h-[28px] flex items-center justify-center cursor-pointer" data-task-id="${t.id}" title="Chỉnh sửa">
                             <span class="material-symbols-outlined text-[16px]">edit</span>
@@ -430,7 +468,9 @@ export class WorkspaceView {
                           <img src="${assignee ? assignee.avatar : ''}" class="w-5 h-5 rounded-full object-cover shrink-0" />
                           <span class="text-[#64748b] font-medium truncate max-w-[90px]">${assignee ? assignee.name.split(' ').pop() : ''}</span>
                         </div>
-                        <span class="font-mono-data text-[#817663] shrink-0">${t.dueDate ? t.dueDate.slice(5) : ''}</span>
+                        <span class="font-mono-data shrink-0 ${isOverdue ? 'text-rose-700 font-bold flex items-center gap-0.5' : 'text-[#817663]'}">
+                          ${isOverdue ? `<span class="material-symbols-outlined text-[12px] text-rose-600">alarm</span>Trễ ${daysLate}n` : (t.dueDate ? t.dueDate.slice(5) : '')}
+                        </span>
                       </div>
                     </div>
                   `;

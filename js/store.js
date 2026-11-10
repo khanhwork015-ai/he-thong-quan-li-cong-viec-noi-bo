@@ -597,6 +597,9 @@ export class Store {
       filtered = filtered.filter(t => t.status === 'pending_approval' || t.status === 'review');
     } else if (options.tab === 'completed') {
       filtered = filtered.filter(t => t.status === 'done' || t.status === 'completed');
+    } else if (options.tab === 'overdue') {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      filtered = filtered.filter(t => t.dueDate && t.dueDate < todayStr && t.status !== 'done' && t.status !== 'completed');
     }
 
     if (options.priority && options.priority !== 'ALL') {
