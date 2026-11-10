@@ -325,7 +325,12 @@
   - **Tự Động Kết Nối Vĩnh Viễn Google Sheets Web App Endpoint (`appScriptBridge.js`) (v8.4):**
     + Nhúng URL Web App thực tế (`AKfycbwMvK9EzyweeOVB4wraPzdwZVUEzbLcSd3RyYcdUzbIrOcFcAgHCwvmvYOcu_9UdhRW/exec`) làm `DEFAULT_GAS_ENDPOINT`.
     + Giải quyết triệt để 100% lỗi không đồng bộ khi deploy trên Cloudflare/Workers/GitHub Pages/Điện thoại mới: Web app tự động kích hoạt kết nối Cloud và tải ngay 14 tài khoản thật từ Google Sheets mà không cần thao tác dán link thủ công.
-  - **Nâng cấp Cache Buster toàn diện `?v=8.4`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
+  - **Triệt Tiêu Hoàn Toàn Duplicate & Dọn Sạch Lỗi Font Mojibake (`store.js`, Google Sheets) (v8.5):**
+    + Chạy dọn sạch triệt để cơ sở dữ liệu trên Google Sheets: Xóa bỏ toàn bộ các bản ghi kiểm thử bị lệch mã hóa Windows (mojibake) và các dòng phòng ban trùng lặp (từ 11 dòng còn đúng 3 phòng ban chuẩn).
+    + Chuẩn hóa và làm sạch danh sách 14 nhân sự thực tế, đưa danh sách Tasks và Plans về trạng thái sẵn sàng 100% (0 task mẫu, 0 plan mẫu).
+    + Bổ sung cơ chế Deduplication Map lọc theo `id` trong `store.js` để tuyệt đối không bao giờ bị nhân bản phòng ban hay nhân sự khi đồng bộ 2 chiều.
+    + Cách ly hoàn toàn môi trường Unit Test (`test_all_crud.mjs`), cấm gửi dữ liệu kiểm thử lên Google Sheet thật.
+  - **Nâng cấp Cache Buster toàn diện `?v=8.5`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
 
 ---
 

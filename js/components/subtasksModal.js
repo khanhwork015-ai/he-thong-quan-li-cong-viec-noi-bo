@@ -8,8 +8,8 @@
  * - Hỗ trợ mở chi tiết đầy đủ từng việc con (SubtaskDetailModal)
  */
 
-import { store } from '../store.js?v=8.4';
-import { esc, ngayVN, toast, rung, xacNhanXoa } from '../helpers.js?v=8.4';
+import { store } from '../store.js?v=8.5';
+import { esc, ngayVN, toast, rung, xacNhanXoa } from '../helpers.js?v=8.5';
 
 export class SubtasksModal {
   constructor(containerId, onTaskUpdated, onOpenTaskDetail = null, onOpenSubtaskDetail = null) {

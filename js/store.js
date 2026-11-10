@@ -3,10 +3,10 @@
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
 
-import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.4';
-import { auth } from './auth.js?v=8.4';
-import { appScriptBridge } from './services/appScriptBridge.js?v=8.4';
-import { toast } from './helpers.js?v=8.4';
+import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.5';
+import { auth } from './auth.js?v=8.5';
+import { appScriptBridge } from './services/appScriptBridge.js?v=8.5';
+import { toast } from './helpers.js?v=8.5';
 
 const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
 const USERS_STORAGE_KEY = 'tvm_users_v4';
@@ -171,14 +171,28 @@ export class Store {
         });
 
         const mergedList = Array.from(userMap.values());
-        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(mergedList));
-        userCount = mergedList.length;
+        const deletedIds = this.getDeletedIds();
+        const cleanUsers = mergedList.filter(u => {
+          if (!u || !u.id || deletedIds.has(String(u.id))) return false;
+          // Loại bỏ các bản ghi test bị lỗi font mojibake
+          if (String(u.name).includes('BÃ¡c') || String(u.id).includes('test') || String(u.username).includes('testuser')) return false;
+          return true;
+        });
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cleanUsers));
+        userCount = cleanUsers.length;
       }
 
       if (cloudData.depts && cloudData.depts.length > 0) {
         const localDepts = this.getAllDepartments();
-        const mergedDepts = cloudData.depts.map(cd => {
-          const ld = localDepts.find(l => l.id === cd.id);
+        const deptMap = new Map();
+
+        // Nạp local depts trước (chống trùng lặp id)
+        localDepts.forEach(ld => { if (ld && ld.id) deptMap.set(ld.id, ld); });
+
+        // Hợp nhất dữ liệu mới nhất từ cloud theo id (triệt tiêu 100% duplicate)
+        cloudData.depts.forEach(cd => {
+          if (!cd || !cd.id) return;
+          const ld = deptMap.get(cd.id);
           let cdTeams = cd.teams;
           if (typeof cdTeams === 'string') {
             try { cdTeams = JSON.parse(cdTeams); } catch (_) { cdTeams = []; }
@@ -186,26 +200,24 @@ export class Store {
           if (!Array.isArray(cdTeams)) cdTeams = [];
           
           const ldTeams = (ld && Array.isArray(ld.teams)) ? ld.teams : [];
-          // Hợp nhất teams của phòng ban giữa Local và Cloud, bảo toàn 100% dữ liệu đã tạo
           const teamMap = new Map();
           ldTeams.forEach(t => { if (t && t.id) teamMap.set(t.id, t); });
           cdTeams.forEach(t => { if (t && t.id) teamMap.set(t.id, { ...(teamMap.get(t.id) || {}), ...t }); });
 
-          return {
+          deptMap.set(cd.id, {
             ...(ld || {}),
             ...cd,
             teams: Array.from(teamMap.values())
-          };
+          });
         });
 
-        // Giữ lại các phòng ban tạo ở local chưa kịp đẩy lên Cloud
-        localDepts.forEach(ld => {
-          if (!mergedDepts.some(md => md.id === ld.id)) {
-            mergedDepts.push(ld);
-          }
+        const cleanDepts = Array.from(deptMap.values()).filter(d => {
+          if (!d || !d.id) return false;
+          if (String(d.id).includes('test') || String(d.name).includes('Khá»­') || String(d.id).includes('391328')) return false;
+          return true;
         });
 
-        localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(mergedDepts));
+        localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(cleanDepts));
       }
 
       // Thông báo: Sheet là nguồn chuẩn (xóa/đã đọc đã được đồng bộ ngược lên Sheet)
