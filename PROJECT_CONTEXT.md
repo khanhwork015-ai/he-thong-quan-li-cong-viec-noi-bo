@@ -238,6 +238,22 @@
     + **Top Header (Mobile & Desktop):** Thêm nút lối tắt Phê duyệt nhanh ngay cạnh chuông thông báo.
     + **Trang Tổng Quan (Dashboard):** Click vào ô Hero "Chờ duyệt khẩn", thẻ KPI "Chờ Duyệt Khẩn" hoặc nút "Xem tất cả" đều chuyển ngay sang Trung Tâm Phê Duyệt.
   - **Nâng cấp Cache Buster toàn diện `?v=6.6`:** Đồng bộ trên 22 files và đẩy Git `origin/main`.
+- [x] **30. Tinh Chỉnh Navbar Mobile, Định Dạng Ngày & Assignee Custom Picker (v6.8 - v7.1)**:
+  - **Navbar Mobile Tối Giản (v6.8):** Thay thế thanh tìm kiếm 180px chiếm diện tích bằng nút kính lúp 1-chạm mở Mobile Search Overlay toàn màn hình. Chuyển đổi theme mode tích hợp gọn vào Profile Dropdown.
+  - **Tách Riêng Hàng Thực Hiện & Hạn Chót (v6.9):** Tách 2 thông tin thành 2 hàng riêng biệt trên thẻ hàng đợi di động, loại bỏ chuỗi ISO UTC thô và định dạng ngày tháng chuẩn `DD/MM/YYYY`.
+  - **Tối Giản Thương Hiệu Mobile (v7.0):** Ẩn huy hiệu logo `TV Thanh Vũ Medic` trên thanh tiêu đề di động (< 640px) để tối đa diện tích hiển thị.
+  - **Custom Assignee Picker Toàn Hệ Thống (v7.1):** Thay thế `<select>` mặc định bằng thẻ chọn nhân sự sang trọng kèm modal tìm kiếm tức thì; giới hạn danh sách nhân viên theo đúng phòng ban đang làm việc.
+- [x] **31. Triệt Tiêu Co Giật Màn Hình Desktop & Thay Thế Bằng Popup Xác Nhận Xóa Chuẩn SHIN AIOS (v7.2)**:
+  - **Triệt tiêu hiện tượng màn hình desktop bị giật sang trái:**
+    + Cố định không gian thanh cuộn bằng `html { overflow-y: scroll !important; scrollbar-gutter: stable; }`.
+    + Loại bỏ `overflow-y: auto;` thừa ở `body` để chống xung đột thanh cuộn lồng nhau.
+    + Bỏ `transition-all` trên `#main-app-shell`, thay bằng `transition-[padding] duration-200` để tránh việc trình duyệt tự động animate bề rộng khung hình khi DOM render lại.
+  - **Popup Modal Xác Nhận Xóa (`xacNhanXoa`):**
+    + Loại bỏ cơ chế bấm 2 lần trong 5 giây gây phiền toái.
+    + Xây dựng Modal Popup Xác Nhận Xóa sang trọng chuẩn UI/UX SHIN AIOS v2.7 với icon cảnh báo nổi bật, thông điệp chi tiết, nút Hủy bỏ và nút Xác nhận xóa (Touch target $\ge 44 \times 44$px).
+    + Điều hướng tự động toàn bộ lệnh gọi `xacNhan2Lan` sang `xacNhanXoa`, đồng bộ 100% tất cả vị trí xóa (Nhiệm vụ, Kế hoạch, Phòng ban, Bộ phận, Cột mốc, Đầu việc dự kiến, Việc con, Reset dữ liệu, Xóa thông báo).
+    + Thay thế toàn bộ `window.confirm` còn sót lại bằng `xacNhanXoa`.
+  - **Nâng cấp Cache Buster toàn diện `?v=7.2`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
 
 ---
 

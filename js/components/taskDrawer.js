@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=7.1';
-import { store } from '../store.js?v=7.1';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=7.1';
+import { auth } from '../auth.js?v=7.2';
+import { store } from '../store.js?v=7.2';
+import { esc, soVN, ngayVN, toast, timeAgo, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=7.2';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
@@ -909,16 +909,23 @@ export class TaskDrawer {
       });
     });
 
-    // XÓA VIỆC CON
+    // XÓA VIỆC CON (POPUP XÁC NHẬN CHUẨN SHIN)
     this.container.querySelectorAll('.btn-delete-subtask').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        rung(10);
         const sid = btn.dataset.subtaskId;
-        store.deleteSubtask(task.id, sid);
-        toast('Đã xóa việc con', 'info');
-        if (this.onTaskUpdated) this.onTaskUpdated();
-        this.render();
+        const subtask = (task.subtasks || []).find(s => s.id === sid);
+        const stTitle = subtask ? subtask.title : 'việc con này';
+        xacNhanXoa(
+          'Xóa Việc Con',
+          `Bạn có chắc chắn muốn xóa "${stTitle}" không? Hành động này sẽ không thể hoàn tác.`,
+          () => {
+            store.deleteSubtask(task.id, sid);
+            toast('Đã xóa việc con thành công!', 'info');
+            if (this.onTaskUpdated) this.onTaskUpdated();
+            this.render();
+          }
+        );
       });
     });
 

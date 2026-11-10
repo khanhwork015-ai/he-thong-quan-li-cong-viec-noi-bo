@@ -5,11 +5,11 @@
  * Bảo mật: Chỉ ADMIN mới được xem, cấu hình và đồng bộ Google Apps Script Web App
  */
 
-import { auth } from '../auth.js?v=7.1';
-import { store } from '../store.js?v=7.1';
+import { auth } from '../auth.js?v=7.2';
+import { store } from '../store.js?v=7.2';
 import { appScriptBridge } from '../services/appScriptBridge.js';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=7.1';
-import { shinTheme } from '../theme.js?v=7.1';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=7.2';
+import { shinTheme } from '../theme.js?v=7.2';
 
 export class SettingsModal {
   constructor(containerId, onSettingsUpdated) {

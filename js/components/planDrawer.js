@@ -7,10 +7,10 @@
  * - Ghi chú, Tài liệu đính kèm & Bình luận thảo luận
  */
 
-import { auth } from '../auth.js?v=7.1';
-import { store } from '../store.js?v=7.1';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=7.1';
-import { PLAN_STATUSES } from '../models.js?v=7.1';
+import { auth } from '../auth.js?v=7.2';
+import { store } from '../store.js?v=7.2';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=7.2';
+import { PLAN_STATUSES } from '../models.js?v=7.2';
 
 export class PlanDrawer {
   constructor(containerId, onPlanChanged, onEditPlan, onOpenTask) {
@@ -562,9 +562,19 @@ export class PlanDrawer {
     this.container.querySelectorAll('.btn-delete-milestone').forEach(btn => {
       btn.addEventListener('click', () => {
         const mId = btn.dataset.milestoneId;
-        store.deletePlanMilestone(this.currentPlanId, mId);
-        this.render();
-        if (this.onPlanChanged) this.onPlanChanged();
+        const plan = store.getPlanById(this.currentPlanId);
+        const mObj = plan && (plan.milestones || []).find(m => m.id === mId);
+        const mTitle = mObj ? mObj.title : 'cột mốc này';
+        xacNhanXoa(
+          'Xóa Cột Mốc Lộ Trình',
+          `Bạn có chắc chắn muốn xóa "${mTitle}" khỏi kế hoạch không?`,
+          () => {
+            store.deletePlanMilestone(this.currentPlanId, mId);
+            toast('Đã xóa cột mốc!', 'info');
+            this.render();
+            if (this.onPlanChanged) this.onPlanChanged();
+          }
+        );
       });
     });
 
@@ -640,10 +650,19 @@ export class PlanDrawer {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const idx = parseInt(btn.dataset.taskIdx, 10);
-        store.deletePlanTaskItem(this.currentPlanId, idx);
-        toast('Đã xóa đầu việc dự kiến!', 'info');
-        this.render();
-        if (this.onPlanChanged) this.onPlanChanged();
+        const plan = store.getPlanById(this.currentPlanId);
+        const tObj = plan && plan.tasks && plan.tasks[idx];
+        const tTitle = tObj ? tObj.title : 'đầu việc này';
+        xacNhanXoa(
+          'Xóa Đầu Việc Dự Kiến',
+          `Bạn có chắc chắn muốn xóa "${tTitle}" không?`,
+          () => {
+            store.deletePlanTaskItem(this.currentPlanId, idx);
+            toast('Đã xóa đầu việc dự kiến!', 'info');
+            this.render();
+            if (this.onPlanChanged) this.onPlanChanged();
+          }
+        );
       });
     });
 

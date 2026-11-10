@@ -4,10 +4,10 @@
  * Ai cũng có thể tạo kế hoạch - Tự động ghi nhận Người tạo và Thời gian tạo
  */
 
-import { auth } from '../auth.js?v=7.1';
-import { store } from '../store.js?v=7.1';
-import { esc, toast, rung } from '../helpers.js?v=7.1';
-import { PLAN_STATUSES } from '../models.js?v=7.1';
+import { auth } from '../auth.js?v=7.2';
+import { store } from '../store.js?v=7.2';
+import { esc, toast, rung } from '../helpers.js?v=7.2';
+import { PLAN_STATUSES } from '../models.js?v=7.2';
 
 export class PlanModal {
   constructor(containerId, onSaved) {

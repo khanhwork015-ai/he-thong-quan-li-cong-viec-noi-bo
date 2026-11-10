@@ -1,12 +1,12 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - NOTIFICATION CENTER SLIDE-OVER DRAWER (SHIN AIOS v2.7)
  * Trung tâm thông báo chuyên nghiệp, hỗ trợ lọc Chưa đọc/Tất cả,
  * Đánh dấu đã đọc và Deep-linking mở thẳng Task Detail Drawer
  */
 
-import { auth } from '../auth.js?v=7.1';
-import { store } from '../store.js?v=7.1';
-import { esc, timeAgo, rung, toast } from '../helpers.js?v=7.1';
+import { auth } from '../auth.js?v=7.2';
+import { store } from '../store.js?v=7.2';
+import { esc, timeAgo, rung, toast, xacNhanXoa } from '../helpers.js?v=7.2';
 
 export class NotificationDrawer {
   constructor(containerId, onSelectTask) {
@@ -228,10 +228,16 @@ export class NotificationDrawer {
       btnClearAll.addEventListener('click', () => {
         rung(15);
         const currentUser = auth.getCurrentUser();
-        if (currentUser && confirm('Bạn có chắc muốn xóa tất cả thông báo không?')) {
-          store.clearUserNotifications(currentUser.id);
-          toast('Đã xóa toàn bộ thông báo!', 'info');
-          this.render();
+        if (currentUser) {
+          xacNhanXoa(
+            'Xóa Toàn Bộ Thông Báo',
+            'Bạn có chắc chắn muốn xóa toàn bộ thông báo không? Hành động này sẽ dọn sạch danh sách thông báo của bạn.',
+            () => {
+              store.clearUserNotifications(currentUser.id);
+              toast('Đã xóa toàn bộ thông báo!', 'info');
+              this.render();
+            }
+          );
         }
       });
     }

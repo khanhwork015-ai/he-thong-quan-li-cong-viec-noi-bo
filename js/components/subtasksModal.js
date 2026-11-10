@@ -8,8 +8,8 @@
  * - Hỗ trợ mở chi tiết đầy đủ từng việc con (SubtaskDetailModal)
  */
 
-import { store } from '../store.js?v=7.1';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=7.1';
+import { store } from '../store.js?v=7.2';
+import { esc, ngayVN, toast, rung, xacNhanXoa } from '../helpers.js?v=7.2';
 
 export class SubtasksModal {
   constructor(containerId, onTaskUpdated, onOpenTaskDetail = null, onOpenSubtaskDetail = null) {
@@ -488,16 +488,23 @@ export class SubtasksModal {
       });
     });
 
-    // XÓA VIỆC CON
+    // XÓA VIỆC CON (POPUP XÁC NHẬN CHUẨN SHIN)
     overlay.querySelectorAll('.btn-delete-modal-subtask').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        rung(10);
         const sid = btn.dataset.subtaskId;
-        store.deleteSubtask(task.id, sid);
-        toast('Đã xóa việc con', 'info');
-        if (this.onTaskUpdated) this.onTaskUpdated();
-        this.render();
+        const subtask = (task.subtasks || []).find(s => s.id === sid);
+        const stTitle = subtask ? subtask.title : 'việc con này';
+        xacNhanXoa(
+          'Xóa Việc Con',
+          `Bạn có chắc chắn muốn xóa "${stTitle}" không? Hành động này sẽ không thể hoàn tác.`,
+          () => {
+            store.deleteSubtask(task.id, sid);
+            toast('Đã xóa việc con thành công!', 'info');
+            if (this.onTaskUpdated) this.onTaskUpdated();
+            this.render();
+          }
+        );
       });
     });
   }
