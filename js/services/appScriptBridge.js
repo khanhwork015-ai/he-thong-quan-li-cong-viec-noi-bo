@@ -4,7 +4,7 @@
  * Khắc phục 100% lỗi CORS: Không dùng header tùy biến trong GET, dùng text/plain trong POST
  */
 
-import { toast } from '../helpers.js?v=8.0';
+import { toast } from '../helpers.js?v=8.1';
 
 const GAS_ENDPOINT_KEY = 'tvm_gas_endpoint';
 const LAST_SYNC_KEY = 'tvm_last_sync_time';

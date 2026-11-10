@@ -310,6 +310,13 @@
   - **Hợp nhất module:** mọi import nội bộ dùng cùng `?v=` để chỉ còn 1 instance của auth/store/appScriptBridge (trước đây URL endpoint lưu ở trang Cài đặt không đến được store cho tới khi F5).
   - **Cache Buster `?v=7.9`.** Cần Deploy lại Code.gs (New version) để dùng sheet PLANS.
 
+- [x] **39. Sửa Lỗi Nút Xóa Dữ Liệu Mẫu & Tinh Chỉnh Màn Hình Đăng Nhập (v8.0 - v8.1)**:
+  - **Sửa lỗi nút "Xóa dữ liệu mẫu" không mở popup (v8.0):** Bổ sung import `xacNhanXoa` trong `settingsModal.js` và `toast` trong `store.js`; xóa fallback `|| INITIAL_TASKS` trong `getAllTasksRaw()`; thêm cơ chế lưu vết ID đã xóa (`tvm_deleted_ids_v1`) để chặn vĩnh viễn dữ liệu mẫu/đã xóa tự động quay lại từ Google Sheets khi chưa redeploy `Code.gs`.
+  - **Tinh gọn màn hình đăng nhập (`loginView.js`) (v8.1):**
+    + Bỏ dòng chữ `"Đang đồng bộ từ Google Sheets..."` trên nút đăng nhập (đổi thành `"Đang đăng nhập..."` gọn gàng).
+    + Xóa bỏ dòng chân trang `"Bệnh viện Đa Khoa Thanh Vũ Medic Bạc Liêu • Cơ Sở 3 (Cà Mau)"` ở cuối thẻ đăng nhập theo yêu cầu.
+  - **Nâng cấp Cache Buster toàn diện `?v=8.1`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
+
 ---
 
 ## 4. QUY TẮC PHÁT TRIỂN & TIẾT KIỆM TOKEN

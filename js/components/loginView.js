@@ -1,12 +1,12 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - LOGIN VIEW COMPONENT (SHIN AIOS v2.6.4)
  * Màn hình Đăng Nhập Mobile-First & Quản Lý Phiên Bảo Mật
  * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y Tế (#0D1C2F)
  */
 
-import { auth } from '../auth.js?v=8.0';
-import { store } from '../store.js?v=8.0';
-import { toast, rung } from '../helpers.js?v=8.0';
+import { auth } from '../auth.js?v=8.1';
+import { store } from '../store.js?v=8.1';
+import { toast, rung } from '../helpers.js?v=8.1';
 
 export class LoginView {
   constructor(containerId, onLoginSuccess) {
@@ -103,11 +103,6 @@ export class LoginView {
             </button>
           </form>
 
-          <!-- FOOTER INFO -->
-          <div class="text-center text-[11px] text-[#817663] border-t border-[#f1f5f9] pt-3" style="border-color: var(--border);">
-            Bệnh viện Đa Khoa Thanh Vũ Medic Bạc Liêu • Cơ Sở 3 (Cà Mau)
-          </div>
-
         </div>
       </div>
     `;
@@ -145,14 +140,13 @@ export class LoginView {
         }
 
         btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Đang kiểm tra tài khoản...</span>';
+        btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Đang đăng nhập...</span>';
 
         try {
           let res = await auth.login(username, password);
 
-          // Nếu chưa tìm thấy cục bộ, kích hoạt sync từ Google Sheets và thử lại
+          // Nếu chưa tìm thấy cục bộ, kích hoạt cập nhật ngầm và thử lại
           if (!res.success && res.code === 'USER_NOT_FOUND') {
-            btnSubmit.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">cloud_sync</span><span>Đang đồng bộ từ Google Sheets...</span>';
             try {
               await store.syncFromCloudIfAvailable();
               res = await auth.login(username, password);
