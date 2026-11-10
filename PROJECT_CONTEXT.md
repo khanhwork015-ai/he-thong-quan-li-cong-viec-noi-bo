@@ -278,6 +278,14 @@
     + Dòng 2: `📅 Ngày tạo: DD/MM/YYYY` (màu vàng kim font mono-data chuyên nghiệp).
   - Giúp cột Tên công việc thông thoáng, dễ đọc lướt, không bị dài dòng hay tràn dòng ngang.
   - **Nâng cấp Cache Buster toàn diện `?v=7.5`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
+- [x] **35. Tích Hợp App Splash Loader Toàn Màn Hình & Tối Ưu Font Preload Triệt Tiêu FOUC / FOUT (v7.6)**:
+  - **Nguyên nhân cốt lõi FOUC/FOUT:** Khi mạng chậm hoặc cold load, Google Fonts (Material Symbols) tải theo dạng font ligature văn bản (`check_circle`, `search`, `menu`). Trình duyệt chưa kịp tải woff2 sẽ hiển thị chuỗi text thô trước khi nhảy thành icon, gây giật chữ và vỡ tạm thời layout.
+  - **Giải pháp 2 tầng triệt để:**
+    + **Tầng 1 (Font Loading Optimization):** Bổ sung `&display=block` trực tiếp vào liên kết Google Fonts Material Symbols trong `index.html`. Trình duyệt tự động ẩn fallback text thô trong thời gian tải font thay vì hiển thị chữ ligature lộn xộn.
+    + **Tầng 2 (0ms Inline App Splash Loader):** Đặt phần tử `#app-splash-loader` ngay sau thẻ mở `<body>` trong `index.html` với 100% inline CSS & animation tự thân. Hiển thị tức thì ở **0ms** trước cả khi trình duyệt tải xong CDN Tailwind hay mã nguồn JavaScript, che chắn toàn bộ giai đoạn biên dịch DOM ban đầu.
+    + **Splash UI:** Thiết kế logo mạ vàng Thanh Vũ Medic CS3 với vòng quay vô cực spinner, hiệu ứng pulse tinh tế, tương thích hoàn hảo cả Dark Mode (`[data-theme="dark"]`) và Light Mode.
+    + **Điều phối gỡ bỏ mượt mà (`dismissSplash` trong `app.js`):** Sử dụng API hiện đại `document.fonts.ready` kết hợp bộ đệm 120ms sau khi DOM render xong, chuyển tiếp fade-out 0.35s nhẹ nhàng. Tích hợp fallback an toàn 800ms để đảm bảo app luôn hiển thị bình thường ngay cả khi rớt mạng hoặc CDN font bị gián đoạn.
+  - **Nâng cấp Cache Buster toàn diện `?v=7.6`:** Đồng bộ trên toàn bộ file dự án và đẩy Git `origin/main`.
 
 ---
 

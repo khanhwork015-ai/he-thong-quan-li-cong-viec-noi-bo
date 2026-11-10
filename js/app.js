@@ -4,31 +4,31 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=7.5';
-import { store } from './store.js?v=7.5';
-import { Sidebar } from './components/sidebar.js?v=7.5';
-import { TopHeader } from './components/topHeader.js?v=7.5';
-import { BottomNav } from './components/bottomNav.js?v=7.5';
-import { DashboardView } from './components/dashboardView.js?v=7.5';
-import { WorkspaceView } from './components/workspaceView.js?v=7.5';
-import { TaskDrawer } from './components/taskDrawer.js?v=7.5';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=7.5';
-import { CreateTaskModal } from './components/createTaskModal.js?v=7.5'
-import { SubtasksModal } from './components/subtasksModal.js?v=7.5';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=7.5';;
-import { ProfileModal } from './components/profileModal.js?v=7.5';
-import { MemberModal } from './components/memberModal.js?v=7.5';
-import { SettingsModal } from './components/settingsModal.js?v=7.5';
-import { LoginView } from './components/loginView.js?v=7.5';
-import { DepartmentModal } from './components/departmentModal.js?v=7.5';
-import { DepartmentView } from './components/departmentView.js?v=7.5';
-import { PlansView } from './components/plansView.js?v=7.5';
-import { PlanDrawer } from './components/planDrawer.js?v=7.5';
-import { PlanModal } from './components/planModal.js?v=7.5';
-import { ApprovalView } from './components/approvalView.js?v=7.5';
-import { appScriptBridge } from './services/appScriptBridge.js?v=7.5';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=7.5';
-import { shinTheme } from './theme.js?v=7.5';
+import { auth } from './auth.js?v=7.6';
+import { store } from './store.js?v=7.6';
+import { Sidebar } from './components/sidebar.js?v=7.6';
+import { TopHeader } from './components/topHeader.js?v=7.6';
+import { BottomNav } from './components/bottomNav.js?v=7.6';
+import { DashboardView } from './components/dashboardView.js?v=7.6';
+import { WorkspaceView } from './components/workspaceView.js?v=7.6';
+import { TaskDrawer } from './components/taskDrawer.js?v=7.6';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=7.6';
+import { CreateTaskModal } from './components/createTaskModal.js?v=7.6'
+import { SubtasksModal } from './components/subtasksModal.js?v=7.6';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=7.6';;
+import { ProfileModal } from './components/profileModal.js?v=7.6';
+import { MemberModal } from './components/memberModal.js?v=7.6';
+import { SettingsModal } from './components/settingsModal.js?v=7.6';
+import { LoginView } from './components/loginView.js?v=7.6';
+import { DepartmentModal } from './components/departmentModal.js?v=7.6';
+import { DepartmentView } from './components/departmentView.js?v=7.6';
+import { PlansView } from './components/plansView.js?v=7.6';
+import { PlanDrawer } from './components/planDrawer.js?v=7.6';
+import { PlanModal } from './components/planModal.js?v=7.6';
+import { ApprovalView } from './components/approvalView.js?v=7.6';
+import { appScriptBridge } from './services/appScriptBridge.js?v=7.6';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=7.6';
+import { shinTheme } from './theme.js?v=7.6';
 
 class App {
   constructor() {
@@ -965,6 +965,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
   app.init();
   window.TVM_APP = app;
+
+  // GỠ BỎ SPLASH LOADER KHI FONTS VÀ GIAO DIỆN SẴN SÀNG (TRIỆT TIÊU FOUC / FOUT)
+  const dismissSplash = () => {
+    const splash = document.getElementById('app-splash-loader');
+    if (splash && !splash.dataset.dismissed) {
+      splash.dataset.dismissed = 'true';
+      splash.style.opacity = '0';
+      splash.style.pointerEvents = 'none';
+      setTimeout(() => {
+        splash.style.display = 'none';
+        if (splash.parentNode) splash.parentNode.removeChild(splash);
+      }, 380);
+    }
+  };
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready
+      .then(() => {
+        // Đệm 120ms để CSS Tailwind hoàn tất dàn trang lần đầu
+        setTimeout(dismissSplash, 120);
+      })
+      .catch(() => dismissSplash());
+  } else {
+    setTimeout(dismissSplash, 150);
+  }
+
+  // Fallback an toàn: Tối đa 800ms dù mất mạng hay font CDN chậm cũng tự động hiển thị app
+  setTimeout(dismissSplash, 800);
 });
 
 

@@ -8,9 +8,9 @@
  * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
-import { auth } from '../auth.js?v=7.5';
-import { store } from '../store.js?v=7.5';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=7.5';
+import { auth } from '../auth.js?v=7.6';
+import { store } from '../store.js?v=7.6';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=7.6';
 
 export class DepartmentView {
   constructor(containerId, onUpdated, onOpenMemberModal) {
