@@ -4,11 +4,11 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=6.7';
-import { store } from '../store.js?v=6.7';
-import { USERS } from '../models.js?v=6.7';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=6.7';
-import { shinTheme } from '../theme.js?v=6.7';
+import { auth } from '../auth.js?v=6.8';
+import { store } from '../store.js?v=6.8';
+import { USERS } from '../models.js?v=6.8';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=6.8';
+import { shinTheme } from '../theme.js?v=6.8';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
@@ -48,8 +48,9 @@ export class TopHeader {
     }
 
     this.container.innerHTML = `
-      <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6">
-        <!-- LEFT: MOBILE HAMBURGER & SEARCH BAR -->
+      <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6 relative" style="background-color: var(--card); border-color: var(--border);">
+        
+        <!-- 1. LEFT: HAMBURGER & LOGO / SEARCH BAR -->
         <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-xl">
           <!-- HAMBURGER BUTTON (MOBILE / TABLET ONLY - VÙNG BẤM >= 44PX) -->
           <button 
@@ -57,36 +58,60 @@ export class TopHeader {
             class="lg:hidden p-2 rounded-xl text-[#0d1c2f] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0 -ml-1 transition-colors" 
             id="btnToggleMobileSidebar" 
             aria-label="Mở Menu Điều Hướng"
+            style="color: var(--text);"
           >
             <span class="material-symbols-outlined text-[24px]">menu</span>
           </button>
 
-          <!-- SEARCH SPOTLIGHT BAR -->
-          <div class="relative flex items-center w-full max-w-[180px] sm:max-w-xs lg:w-96">
+          <!-- MOBILE BRAND LOGO & TITLE (CHỈ HIỆN TRÊN MOBILE, GỌN GÀNG KHÔNG LẤN CHIẾM) -->
+          <div class="flex items-center gap-2 sm:hidden min-w-0">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center font-black text-[12px] tracking-tight shrink-0 shadow-2xs" style="background-color: var(--primary); color: white;">
+              TV
+            </div>
+            <span class="font-extrabold text-[14px] tracking-tight truncate" style="color: var(--text);">
+              Thanh Vũ Medic
+            </span>
+          </div>
+
+          <!-- DESKTOP SEARCH SPOTLIGHT BAR (ẨN TRÊN MOBILE ĐỂ TRÁNH ĐÈ NÚT) -->
+          <div class="hidden sm:flex relative items-center w-full max-w-xs lg:w-96">
             <span class="material-symbols-outlined absolute left-2.5 sm:left-3 text-[18px] text-[#817663]">search</span>
             <input 
               type="text" 
               id="topSearchInput"
               class="w-full h-10 pl-8 sm:pl-9 pr-3 sm:pr-12 rounded-xl bg-[#f8f9ff] text-[#0d1c2f] text-[13.5px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 outline-none transition-all" 
               placeholder="Tìm kiếm công việc..." 
+              style="color: var(--text); border-color: var(--border);"
             />
             <kbd class="hidden sm:inline-block absolute right-2.5 px-1.5 py-0.5 rounded bg-[#e6eeff] font-mono-data text-[10px] text-[#4f4635] font-semibold">⌘K</kbd>
           </div>
         </div>
 
-        <!-- RIGHT ACTIONS & USER PROFILE -->
+        <!-- 2. RIGHT ACTIONS & USER PROFILE -->
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
-          <!-- NÚT CHUYỂN NHANH DARK / LIGHT MODE (SHIN CHUẨN) -->
-          <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="${isDark ? 'Chuyển sang chế độ Sáng' : 'Chuyển sang chế độ Tối (Dark Mode)'}" id="btnQuickThemeToggle">
+          
+          <!-- NÚT TÌM KIẾM CHO MOBILE (CHỈ HIỂN THỊ DƯỚI SM - 1 CHẠM MỞ FULL OVERLAY) -->
+          <button 
+            type="button" 
+            class="sm:hidden p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer text-[#64748b]" 
+            title="Tìm kiếm" 
+            id="btnMobileSearchToggle"
+            aria-label="Tìm kiếm"
+          >
+            <span class="material-symbols-outlined text-[21px]">search</span>
+          </button>
+
+          <!-- NÚT CHUYỂN NHANH DARK / LIGHT MODE (CHỈ HIỂN THỊ TỪ SM TRỞ LÊN, MOBILE DÙNG TRONG USER MENU) -->
+          <button type="button" class="hidden sm:flex p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] items-center justify-center transition-colors" title="${isDark ? 'Chuyển sang chế độ Sáng' : 'Chuyển sang chế độ Tối (Dark Mode)'}" id="btnQuickThemeToggle">
             <span class="material-symbols-outlined text-[20px] text-[#64748b]">${isDark ? 'light_mode' : 'dark_mode'}</span>
           </button>
 
-          <!-- NÚT ĐỔI MÀU GIAO DIỆN (8 PALETTES SHIN) -->
-          <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors" title="Đổi màu giao diện (8 Palettes SHIN AIOS)" id="btnQuickPalette">
+          <!-- NÚT ĐỔI MÀU GIAO DIỆN (CHỈ HIỂN THỊ TỪ MD TRỞ LÊN, MOBILE DÙNG TRONG USER MENU) -->
+          <button type="button" class="hidden md:flex p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] items-center justify-center transition-colors" title="Đổi màu giao diện (8 Palettes SHIN AIOS)" id="btnQuickPalette">
             <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">palette</span>
           </button>
 
-          <!-- NÚT PHÊ DUYỆT 1-CHẠM NHANH (APPROVAL HUB SHORTCUT) -->
+          <!-- NÚT PHÊ DUYỆT 1-CHẠM NHANH (APPROVAL HUB SHORTCUT - CÓ BADGE SỐ LƯỢNG) -->
           <button type="button" class="relative p-2 rounded-xl text-[#4f4635] hover:bg-[#fffbeb] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer" title="Trung tâm phê duyệt 1-chạm (${pendingApprovalCount} đang chờ)" id="btnTopApproval">
             <span class="material-symbols-outlined text-[22px]" style="${pendingApprovalCount > 0 ? 'color: #b45309;' : 'color: #64748b;'}">verified</span>
             ${pendingApprovalCount > 0 ? `
@@ -108,7 +133,7 @@ export class TopHeader {
             </button>
 
             <!-- DROPDOWN THÔNG BÁO -->
-            <div id="notificationsDropdown" class="hidden absolute right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 top-12 w-[340px] sm:w-[380px] bg-white rounded-2xl shadow-2xl border border-[#e2e8f0] overflow-hidden z-50 flex flex-col" style="background-color: var(--card); border-color: var(--border);">
+            <div id="notificationsDropdown" class="hidden absolute right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 top-12 w-[calc(100vw-24px)] max-w-[360px] sm:w-[380px] bg-white rounded-2xl shadow-2xl border border-[#e2e8f0] overflow-hidden z-50 flex flex-col" style="background-color: var(--card); border-color: var(--border);">
               
               <!-- HEADER DROPDOWN -->
               <div class="p-3.5 px-4 border-b border-[#f1f5f9] flex items-center justify-between bg-[#f8f9ff]/60 shrink-0" style="border-color: var(--border); background-color: var(--primary-soft);">
@@ -206,9 +231,9 @@ export class TopHeader {
             <span class="material-symbols-outlined text-[22px]">settings</span>
           </button>
 
-          <!-- PRIMARY ACTION: TẠO CÔNG VIỆC -->
+          <!-- PRIMARY ACTION: TẠO CÔNG VIỆC (CHỈ HIỂN THỊ TỪ SM TRỞ LÊN ĐỂ TRÁNH QUÁ TẢI MOBILE) -->
           ${canCreate ? `
-            <button type="button" class="flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold shadow-xs transition-all min-h-[44px]" id="btnHeaderCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);" title="Giao việc mới">
+            <button type="button" class="hidden sm:flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold shadow-xs transition-all min-h-[44px]" id="btnHeaderCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);" title="Giao việc mới">
               <span class="material-symbols-outlined text-[18px]">add</span>
               <span class="hidden sm:inline">Giao việc</span>
             </button>
@@ -229,40 +254,66 @@ export class TopHeader {
             </div>
 
             <!-- POPUP USER MENU -->
-            <div id="userMenuDropdown" class="hidden absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-2xl border border-[#e2e8f0] py-2 z-50">
-              <div class="px-4 py-2.5 border-b border-[#f1f5f9] mb-1">
-                <div class="text-[13px] font-bold text-[#0d1c2f] truncate">${user.name}</div>
+            <div id="userMenuDropdown" class="hidden absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-2xl border border-[#e2e8f0] py-2 z-50" style="background-color: var(--card); border-color: var(--border);">
+              <div class="px-4 py-2.5 border-b border-[#f1f5f9] mb-1" style="border-color: var(--border);">
+                <div class="text-[13px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${user.name}</div>
                 <div class="text-[11px] text-[#64748b] truncate">${user.email || user.title}</div>
                 <span class="mt-1 inline-block text-[10.5px] font-bold px-2 py-0.5 rounded-full" style="background-color: var(--primary-soft); color: var(--primary);">
                   ${roleBadgeText}
                 </span>
               </div>
-              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnOpenProfile">
+
+              <!-- CHUYỂN DARK / LIGHT MODE TRỰC TIẾP TRONG MENU (TIỆN LỢI CHO MOBILE) -->
+              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold hover:bg-[#f8f9ff] flex items-center justify-between min-h-[44px] cursor-pointer" id="btnUserMenuThemeToggle" style="color: var(--text);">
+                <div class="flex items-center gap-2.5">
+                  <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">${isDark ? 'light_mode' : 'dark_mode'}</span>
+                  <span>${isDark ? 'Chế độ Sáng' : 'Chế độ Tối (Dark)'}</span>
+                </div>
+                <span class="text-[10px] font-mono-data px-2 py-0.5 rounded bg-gray-100 text-gray-600 font-bold">${isDark ? 'DARK' : 'LIGHT'}</span>
+              </button>
+
+              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnOpenProfile" style="color: var(--text);">
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">badge</span>
                 <span>Hồ sơ cá nhân</span>
               </button>
               ${auth.isAdmin() ? `
-                <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenDepts">
+                <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenDepts" style="color: var(--text);">
                   <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">domain</span>
                   <span>Phòng ban &amp; Bộ phận</span>
                 </button>
               ` : ''}
-              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenPalette">
+              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenPalette" style="color: var(--text);">
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">palette</span>
                 <span>Đổi màu giao diện (SHIN)</span>
               </button>
-              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenSettings">
+              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-[#0d1c2f] hover:bg-[#f8f9ff] flex items-center gap-2.5 min-h-[44px]" id="btnHeaderOpenSettings" style="color: var(--text);">
                 <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">settings</span>
                 <span>Cài đặt hệ thống</span>
               </button>
 
-              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 border-t border-[#f1f5f9] mt-1 pt-2 min-h-[44px]" id="btnLogoutTopHeader">
+              <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 border-t border-[#f1f5f9] mt-1 pt-2 min-h-[44px] cursor-pointer" id="btnLogoutTopHeader" style="border-color: var(--border);">
                 <span class="material-symbols-outlined text-[18px]">logout</span>
                 <span>Đăng Xuất (Logout)</span>
               </button>
             </div>
           </div>
         </div>
+
+        <!-- 3. MOBILE SEARCH FULL-WIDTH OVERLAY (TRƯỢT MỞ 1-CHẠM KHI NHẤN NÚT TÌM KIẾM TRÊN MOBILE) -->
+        <div id="mobileSearchOverlay" class="hidden sm:!hidden absolute inset-0 bg-white z-40 flex items-center px-3 gap-2 border-b border-[#e2e8f0] shadow-sm animate-fade-in" style="background-color: var(--card); border-color: var(--border);">
+          <span class="material-symbols-outlined text-[20px] text-[#817663] shrink-0">search</span>
+          <input 
+            type="text" 
+            id="mobileSearchInput"
+            class="flex-1 h-11 px-2 text-[14px] bg-transparent outline-none text-[#0d1c2f] placeholder:text-[#817663]" 
+            placeholder="Tìm kiếm công việc, kế hoạch..." 
+            style="color: var(--text);"
+          />
+          <button type="button" id="btnCloseMobileSearch" class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#64748b] hover:text-[#0d1c2f] cursor-pointer shrink-0" aria-label="Đóng tìm kiếm">
+            <span class="material-symbols-outlined text-[22px]">close</span>
+          </button>
+        </div>
+
       </header>
     `;
 
@@ -293,6 +344,41 @@ export class TopHeader {
       });
     }
 
+    // TÌM KIẾM DÀNH RIÊNG CHO MOBILE (FULL-WIDTH OVERLAY)
+    const btnMobileSearch = this.container.querySelector('#btnMobileSearchToggle');
+    const mobileSearchOverlay = this.container.querySelector('#mobileSearchOverlay');
+    const mobileSearchInput = this.container.querySelector('#mobileSearchInput');
+    const btnCloseMobileSearch = this.container.querySelector('#btnCloseMobileSearch');
+
+    if (btnMobileSearch && mobileSearchOverlay) {
+      btnMobileSearch.addEventListener('click', () => {
+        rung(10);
+        mobileSearchOverlay.classList.remove('hidden');
+        if (mobileSearchInput) {
+          mobileSearchInput.value = searchInput ? searchInput.value : '';
+          mobileSearchInput.focus();
+        }
+      });
+    }
+
+    if (btnCloseMobileSearch && mobileSearchOverlay) {
+      btnCloseMobileSearch.addEventListener('click', () => {
+        rung(10);
+        mobileSearchOverlay.classList.add('hidden');
+        if (mobileSearchInput) mobileSearchInput.value = '';
+        if (searchInput) searchInput.value = '';
+        if (this.onSearch) this.onSearch('');
+      });
+    }
+
+    if (mobileSearchInput) {
+      mobileSearchInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (searchInput) searchInput.value = val;
+        if (this.onSearch) this.onSearch(val);
+      });
+    }
+
     const btnCreate = this.container.querySelector('#btnHeaderCreateTask');
     if (btnCreate) {
       btnCreate.addEventListener('click', () => {
@@ -301,10 +387,19 @@ export class TopHeader {
       });
     }
 
-    // Quick toggle theme (Dark/Light)
+    // Quick toggle theme (Dark/Light) trên Desktop
     const btnQuickTheme = this.container.querySelector('#btnQuickThemeToggle');
     if (btnQuickTheme) {
       btnQuickTheme.addEventListener('click', () => {
+        shinTheme.toggleThemeQuick();
+        this.render();
+      });
+    }
+
+    // Quick toggle theme (Dark/Light) bên trong User Menu (tiện lợi cho Mobile)
+    const btnUserMenuTheme = this.container.querySelector('#btnUserMenuThemeToggle');
+    if (btnUserMenuTheme) {
+      btnUserMenuTheme.addEventListener('click', () => {
         shinTheme.toggleThemeQuick();
         this.render();
       });

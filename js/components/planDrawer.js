@@ -7,10 +7,10 @@
  * - Ghi chú, Tài liệu đính kèm & Bình luận thảo luận
  */
 
-import { auth } from '../auth.js?v=6.7';
-import { store } from '../store.js?v=6.7';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.7';
-import { PLAN_STATUSES } from '../models.js?v=6.7';
+import { auth } from '../auth.js?v=6.8';
+import { store } from '../store.js?v=6.8';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.8';
+import { PLAN_STATUSES } from '../models.js?v=6.8';
 
 export class PlanDrawer {
   constructor(containerId, onPlanChanged, onEditPlan, onOpenTask) {

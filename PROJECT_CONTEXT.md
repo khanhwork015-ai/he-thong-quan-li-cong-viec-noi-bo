@@ -74,7 +74,12 @@
     - Tài liệu đính kèm (Links): Nút "Lưu" đổi sang style chủ đạo hệ thống, kích thước chuẩn 44px, không lệch màu xanh biển.
     - Modal tạo việc: Bổ sung chọn phòng ban tiếp nhận khi đang xem toàn viện và tự động cập nhật danh sách bộ phận con (teams).
   - **Dữ liệu chuẩn bị triển khai bên thứ ba:** Dữ liệu khởi tạo trong `models.js` được làm sạch, hoàn chỉnh và thực tế cho Thanh Vũ Medic CS3.
-  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=6.7`.
+  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=6.8`.
+- [x] **9. Tinh Chỉnh Tối Giản Thanh Điều Hướng (Top Navbar) Cho Mobile (`topHeader.js`)**:
+  - Khắc phục triệt để hiện tượng ô tìm kiếm đè/chèn lấn lên nút Dark Mode và các nút chức năng trên màn hình hẹp điện thoại.
+  - Trên Mobile (< 640px): Tối giản thanh navbar chỉ còn 4 nút hành động gọn gàng bên phải (Kính lúp tìm kiếm, Khiên phê duyệt 1-chạm, Chuông thông báo, Avatar cá nhân).
+  - Tích hợp **Full-width Mobile Search Overlay**: Bấm kính lúp sẽ mở ô tìm kiếm tràn viền toàn bộ header với icon đóng `✕`, tìm kiếm tức thì không chiếm không gian thường trực.
+  - Ẩn bớt các nút dư thừa trên mobile bar (`btnQuickThemeToggle`, `btnQuickPalette`, `btnHeaderCreateTask`) và chuyển nút bật/tắt Dark Mode trực tiếp vào trong Menu Avatar (User Menu) với 1-chạm cực kỳ tiện lợi.
   - Fix triệt để lỗi F5 bị mất bộ phận: Đồng bộ hóa cấu trúc teams 2 chiều giữa LocalStorage và Google Sheets (`Code.gs` + `appScriptBridge.js`), hợp nhất dữ liệu không ghi đè mất mát.
   - Fix lỗi placeholder đè lên icon tìm kiếm phòng ban (`pl-10`).
   - Fix lỗi giật layout khi bấm "Thêm bộ phận": Xóa vòng lặp re-render kép, tự động dọn sạch input và hỗ trợ phím Enter.
