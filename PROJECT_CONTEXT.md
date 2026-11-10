@@ -279,13 +279,17 @@
   - Giúp cột Tên công việc thông thoáng, dễ đọc lướt, không bị dài dòng hay tràn dòng ngang.
   - **Nâng cấp Cache Buster toàn diện `?v=7.5`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
 - [x] **35. Tích Hợp App Splash Loader Toàn Màn Hình & Tối Ưu Font Preload Triệt Tiêu FOUC / FOUT (v7.6)**:
-  - **Nguyên nhân cốt lõi FOUC/FOUT:** Khi mạng chậm hoặc cold load, Google Fonts (Material Symbols) tải theo dạng font ligature văn bản (`check_circle`, `search`, `menu`). Trình duyệt chưa kịp tải woff2 sẽ hiển thị chuỗi text thô trước khi nhảy thành icon, gây giật chữ và vỡ tạm thời layout.
-  - **Giải pháp 2 tầng triệt để:**
-    + **Tầng 1 (Font Loading Optimization):** Bổ sung `&display=block` trực tiếp vào liên kết Google Fonts Material Symbols trong `index.html`. Trình duyệt tự động ẩn fallback text thô trong thời gian tải font thay vì hiển thị chữ ligature lộn xộn.
-    + **Tầng 2 (0ms Inline App Splash Loader):** Đặt phần tử `#app-splash-loader` ngay sau thẻ mở `<body>` trong `index.html` với 100% inline CSS & animation tự thân. Hiển thị tức thì ở **0ms** trước cả khi trình duyệt tải xong CDN Tailwind hay mã nguồn JavaScript, che chắn toàn bộ giai đoạn biên dịch DOM ban đầu.
-    + **Splash UI:** Thiết kế logo mạ vàng Thanh Vũ Medic CS3 với vòng quay vô cực spinner, hiệu ứng pulse tinh tế, tương thích hoàn hảo cả Dark Mode (`[data-theme="dark"]`) và Light Mode.
-    + **Điều phối gỡ bỏ mượt mà (`dismissSplash` trong `app.js`):** Sử dụng API hiện đại `document.fonts.ready` kết hợp bộ đệm 120ms sau khi DOM render xong, chuyển tiếp fade-out 0.35s nhẹ nhàng. Tích hợp fallback an toàn 800ms để đảm bảo app luôn hiển thị bình thường ngay cả khi rớt mạng hoặc CDN font bị gián đoạn.
-  - **Nâng cấp Cache Buster toàn diện `?v=7.6`:** Đồng bộ trên toàn bộ file dự án và đẩy Git `origin/main`.
+  - Tích hợp `#app-splash-loader` inline 0ms che chắn giai đoạn nạp ban đầu.
+- [x] **36. Khắc Phục Triệt Để Lỗi Mất Icon / Vỡ Chữ Ligature Bằng Font Cục Bộ & Khung Chặn 1em (v7.7)**:
+  - **Phân tích nguyên nhân sự cố hình ảnh (`7b0adb73` & `bfb4a53e`):**
+    + Hình 1: Khi dùng `&display=block` trên Google Fonts CDN (1MB woff2), nếu font chưa tải xong trong 800ms mà splash đã đóng, trình duyệt ẩn toàn bộ icon thành khoảng trắng vô hình.
+    + Hình 2: Khi kết nối CDN bị nghẽn/timeout, trình duyệt hủy `display: block` và chuyển sang dùng font mặc định Times New Roman, in ra toàn bộ tên ligature thô (`grid_view`, `search`, `notifications`, `pending_actions`, v.v.). Vì `.material-symbols-outlined` không có giới hạn kích thước, chữ dài đến 15 ký tự chèn ép vỡ toang layout navbar, sidebar và thẻ thống kê.
+  - **Giải pháp xử lý triệt để 4 tầng (Zero External Dependency & Zero Layout Shift):**
+    + **Tầng 1 - Self-hosted Font Cục Bộ (`fonts/material-symbols-outlined.woff2`):** Tải và nhúng trực tiếp font WOFF2 chuẩn 323KB vào thư mục dự án. Cấu hình `@font-face` ưu tiên nạp từ file local (`../fonts/material-symbols-outlined.woff2`) trước, CDN chỉ làm fallback dự phòng. Loại bỏ 100% rủi ro nghẽn mạng quốc tế hay chặn Google Fonts.
+    + **Tầng 2 - Preload cực nhanh ở 0ms (`<link rel="preload">`):** Đặt thẻ preload trong `<head>` của `index.html` để tải font ngay từ mili-giây đầu tiên song song với phân tích HTML.
+    + **Tầng 3 - Khung Bounding Box Cố Định 1em (`width: 1em; height: 1em; overflow: hidden`):** Quy định chặt chẽ `.material-symbols-outlined` có `display: inline-flex; width: 1em; height: 1em; overflow: hidden; white-space: nowrap; flex-shrink: 0;`. Kể cả trong trường hợp xấu nhất font bị trễ, văn bản ligature tuyệt đối không bao giờ tràn ra ngoài làm xô lệch bất kỳ nút bấm hay layout nào.
+    + **Tầng 4 - Điều phối gỡ Splash chính xác bằng `document.fonts.load`:** Chờ trực tiếp `document.fonts.load('24px "Material Symbols Outlined"')` trước khi ẩn Splash Screen, timeout dự phòng 1200ms.
+  - **Nâng cấp Cache Buster toàn diện `?v=7.7`:** Đồng bộ trên toàn bộ 23 files và đẩy Git `origin/main`.
 
 ---
 

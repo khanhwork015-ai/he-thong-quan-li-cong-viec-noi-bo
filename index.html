@@ -33,11 +33,14 @@
     })();
   </script>
 
+  <!-- PRELOAD PHÔNG CHỮ BIỂU TƯỢNG CỤC BỘ (TRIỆT TIÊU FOUC / FOUT TỨC THÌ) -->
+  <link rel="preload" href="fonts/material-symbols-outlined.woff2" as="font" type="font/woff2" crossorigin />
+
   <!-- FONTS & ICONS (PLUS JAKARTA SANS, JETBRAINS MONO & MATERIAL SYMBOLS OUTLINED) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
   <!-- TAILWIND CSS CDN DYNAMICALLY CONFIGURED WITH SHIN AIOS PALETTES -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -70,7 +73,7 @@
   </script>
 
   <!-- SHIN AIOS MASTER UX/UI STYLESHEET -->
-  <link rel="stylesheet" href="css/stitch-theme.css?v=7.6" />
+  <link rel="stylesheet" href="css/stitch-theme.css?v=7.7" />
 </head>
 <body class="antialiased min-h-screen transition-colors duration-200">
 
@@ -160,7 +163,7 @@
   <div id="toast-container"></div>
 
   <!-- CORE APPLICATION LOGIC (ES MODULE) -->
-  <script type="module" src="js/app.js?v=7.6"></script>
+  <script type="module" src="js/app.js?v=7.7"></script>
 </body>
 </html>
 

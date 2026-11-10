@@ -8,9 +8,9 @@
  * - Phân quyền thông minh: Lãnh đạo thấy toàn viện, Trưởng phòng thấy khoa mình, Nhân viên theo dõi hồ sơ đã gửi
  */
 
-import { store } from '../store.js?v=7.6';
-import { auth } from '../auth.js?v=7.6';
-import { esc, ngayVN, soVN, toast, rung, popupTuChoiPheDuyet } from '../helpers.js?v=7.6';
+import { store } from '../store.js?v=7.7';
+import { auth } from '../auth.js?v=7.7';
+import { esc, ngayVN, soVN, toast, rung, popupTuChoiPheDuyet } from '../helpers.js?v=7.7';
 
 export class ApprovalView {
   constructor(containerId, onOpenTask, onOpenPlan, onUpdated) {
