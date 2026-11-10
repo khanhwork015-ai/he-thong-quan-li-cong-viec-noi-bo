@@ -149,6 +149,10 @@
   - **Bao quát toàn bộ khoa phòng:** Khi chọn vai trò `Trưởng Phòng`, `Phó Phòng` hoặc `Ban Lãnh Đạo`, hệ thống tự động ẩn khối chọn Bộ phận con (Team), tự động gán `teamId = ''` và hiển thị thẻ thông báo nghiệp vụ trực quan.
   - Khối chọn Bộ phận con chỉ xuất hiện khi phân bổ nhân sự cho vị trí `Nhân viên / Chuyên viên`.
   - **Nâng cấp Cache Buster toàn diện `?v=5.8`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
+- [x] **22. Chuẩn Hóa Thuật Ngữ "Tất Cả" & "Toàn Phòng Khám CS3" (`dashboardView.js`, `auth.js`, `app.js`, `sidebar.js`, `memberModal.js`, `models.js`)**:
+  - **Thay "Toàn viện" bằng "Tất cả":** Đồng bộ nhãn bộ lọc, badge trạng thái (`TẤT CẢ`), tab lọc nhân sự (`🏥 Tất cả`), biểu đồ tiến độ (`(Tất Cả)`).
+  - **Thay "Toàn Bệnh Viện CS3" bằng "Toàn Phòng Khám CS3":** Cập nhật trên Executive Dashboard (`Toàn Phòng Khám CS3`), Modal chuyển đổi phòng ban (`Toàn Phòng Khám CS3 (Tất Cả)`), và banner quản lý nhân sự.
+  - **Nâng cấp Cache Buster toàn diện `?v=5.9`:** Đảm bảo toàn bộ trình duyệt người dùng tự động làm mới giao diện chuẩn xác.
 
 ---
 

@@ -288,9 +288,9 @@ export class AuthManager {
     if (this.activeDepartmentId === 'all') {
       return {
         id: 'all',
-        name: 'Toàn Bệnh Viện (Tất cả PB)',
-        code: 'TOÀN VIỆN',
-        badge: 'TOÀN VIỆN',
+        name: 'Toàn Phòng Khám CS3 (Tất Cả)',
+        code: 'TẤT CẢ',
+        badge: 'TẤT CẢ',
         unit: 'Cơ Sở 3 (Cà Mau)',
         color: '#D6A52A'
       };

@@ -9,9 +9,9 @@
  * - Nhân viên: Không được phép cấp tài khoản.
  */
 
-import { auth } from '../auth.js?v=5.8';
-import { store } from '../store.js?v=5.8';
-import { esc, toast, rung } from '../helpers.js?v=5.8';
+import { auth } from '../auth.js?v=5.9';
+import { store } from '../store.js?v=5.9';
+import { esc, toast, rung } from '../helpers.js?v=5.9';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -70,7 +70,7 @@ export class MemberModal {
                   ${this.editingUser ? 'Cập Nhật Nhân Sự' : 'Cấp Tài Khoản Nhân Viên Mới'}
                 </h3>
                 <span class="text-[11.5px] font-semibold truncate block" style="color: var(--primary);">
-                  ${isAdmin ? 'Toàn viện' : currentDept.name} • ${auth.getCurrentUser().name} (${auth.getCurrentUser().role})
+                  ${isAdmin ? 'Tất cả' : currentDept.name} • ${auth.getCurrentUser().name} (${auth.getCurrentUser().role})
                 </span>
               </div>
             </div>

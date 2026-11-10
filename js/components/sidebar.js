@@ -1,12 +1,12 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - SIDEBAR NAVIGATION COMPONENT (MOBILE RESPONSIVE DRAWER)
  * Khôi phục tông Vàng Hoàng Kim (#D6A52A / #795900) chuẩn Google Stitch
  * Hỗ trợ giao diện ngăn kéo trượt mượt mà cho Mobile/Tablet và cố định trên Desktop (lg)
  */
 
-import { auth } from '../auth.js?v=5.8';
-import { store } from '../store.js?v=5.8';
-import { toast, rung } from '../helpers.js?v=5.8';
+import { auth } from '../auth.js?v=5.9';
+import { store } from '../store.js?v=5.9';
+import { toast, rung } from '../helpers.js?v=5.9';
 
 export class Sidebar {
   constructor(containerId, onNavChange, onModeChange, onLogout) {
@@ -272,16 +272,16 @@ export class Sidebar {
         </p>
 
         <div class="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-1">
-          <!-- TÙY CHỌN TOÀN VIỆN DÀNH CHO ADMIN & BAN LÃNH ĐẠO -->
+          <!-- TÙY CHỌN TẤT CẢ DÀNH CHO ADMIN & BAN LÃNH ĐẠO -->
           <div class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${activeDept.id === 'all' ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="all">
             <div class="flex items-center gap-3 min-w-0">
               <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] shrink-0"></span>
               <div class="min-w-0">
-                <div class="text-[13.5px] font-bold text-[#0d1c2f]">🏥 Toàn Viện (Tất cả Phòng Ban) ${activeDept.id === 'all' ? '✓' : ''}</div>
-                <div class="text-[11.5px] text-[#64748b]">Bao quát toàn bộ nhân sự và luồng công việc toàn viện</div>
+                <div class="text-[13.5px] font-bold text-[#0d1c2f]">🏥 Toàn Phòng Khám CS3 (Tất Cả) ${activeDept.id === 'all' ? '✓' : ''}</div>
+                <div class="text-[11.5px] text-[#64748b]">Bao quát toàn bộ nhân sự và luồng công việc tất cả phòng ban</div>
               </div>
             </div>
-            <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">TOÀN VIỆN</span>
+            <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">TẤT CẢ</span>
           </div>
 
           ${store.getAllDepartments().map(d => `

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - EXECUTIVE DASHBOARD COMPONENT (SHIN AIOS v2.7)
  * Thiết kế chuẩn Archetype B:
  * - Compact Bar (40px) chọn phạm vi Toàn viện / Từng phòng ban
@@ -8,9 +8,9 @@
  * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
  */
 
-import { auth } from '../auth.js?v=5.8';
-import { store } from '../store.js?v=5.8';
-import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=5.8';
+import { auth } from '../auth.js?v=5.9';
+import { store } from '../store.js?v=5.9';
+import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=5.9';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
@@ -86,17 +86,17 @@ export class DashboardView {
           <div class="flex items-center gap-2.5 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[#16a34a] shrink-0 animate-pulse"></span>
             <span class="font-bold text-[13px] sm:text-[13.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
-              ${isLeadershipOrAdmin ? '🏛️ Executive Dashboard • Điều Hành Bệnh Viện' : '👔 Bảng Điều Hành Phòng Ban'}
+              ${isLeadershipOrAdmin ? '🏛️ Executive Dashboard • Điều Hành Toàn Phòng Khám' : '👔 Bảng Điều Hành Phòng Ban'}
             </span>
             <span class="text-[11px] text-[#64748b] hidden md:inline truncate">• Cập nhật trực tiếp ${ngayVN(new Date())}</span>
           </div>
 
-          <!-- BỘ CHỌN PHẠM VI XEM TOÀN VIỆN HOẶC TỪNG PHÒNG -->
+          <!-- BỘ CHỌN PHẠM VI XEM TẤT CẢ HOẶC TỪNG PHÒNG -->
           ${isLeadershipOrAdmin ? `
             <div class="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2 min-w-0">
               <label for="selectDashboardScope" class="text-[12px] font-bold text-[#64748b] shrink-0">Phạm vi:</label>
               <select id="selectDashboardScope" class="flex-1 sm:flex-initial max-w-[210px] sm:max-w-xs h-9 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] sm:text-[12.5px] font-bold text-[#0d1c2f] bg-[#f8f9ff] focus:bg-white focus:border-[#d6a52a] outline-none cursor-pointer shadow-2xs truncate">
-                <option value="all" ${this.selectedDeptScope === 'all' ? 'selected' : ''}>🏥 Toàn Viện (Tất Cả)</option>
+                <option value="all" ${this.selectedDeptScope === 'all' ? 'selected' : ''}>🏥 Tất Cả Phòng Ban</option>
                 ${allDepartments.map(d => `
                   <option value="${d.id}" ${this.selectedDeptScope === d.id ? 'selected' : ''}>${esc(d.name)} (${esc(d.code)})</option>
                 `).join('')}
@@ -115,7 +115,7 @@ export class DashboardView {
             <div>
               <div class="hn-chao" id="lblLoiChao">${loiChao(currentUser.name)}</div>
               <div class="hn-ngay" id="lblNgayThang">
-                ${ngayVN(new Date())} • ${activeDeptId === 'all' ? 'Toàn Bệnh Viện CS3' : (activeDeptObj?.name || 'Phòng ban')}
+                ${ngayVN(new Date())} • ${activeDeptId === 'all' ? 'Toàn Phòng Khám CS3' : (activeDeptObj?.name || 'Phòng ban')}
               </div>
             </div>
             <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold" style="background-color: var(--primary-soft); color: var(--primary);">
@@ -157,7 +157,7 @@ export class DashboardView {
               <span class="material-symbols-outlined text-[20px]">assignment</span>
             </div>
             <div class="text-[24px] sm:text-[28px] font-extrabold text-[#0d1c2f] mt-1.5" style="color: var(--text);">${totalCount}</div>
-            <span class="text-[11px] text-[#64748b] mt-0.5 truncate block">Đang vận hành toàn viện</span>
+            <span class="text-[11px] text-[#64748b] mt-0.5 truncate block">Đang vận hành tất cả</span>
           </div>
 
           <!-- THẺ 2: TỶ LỆ HOÀN THÀNH ĐÚNG HẠN -->
@@ -201,7 +201,7 @@ export class DashboardView {
             <div>
               <h2 class="text-[15.5px] sm:text-[16.5px] font-extrabold text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
                 <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">bar_chart</span>
-                <span>So Sánh Tiến Độ Giữa Các Phòng Ban Toàn Viện</span>
+                <span>So Sánh Tiến Độ Giữa Các Phòng Ban (Tất Cả)</span>
               </h2>
               <p class="text-[12px] text-[#64748b] mt-0.5">Tỷ lệ hoàn thành nhiệm vụ và công việc đang xử lý tại mỗi đơn vị</p>
             </div>

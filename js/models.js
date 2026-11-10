@@ -88,7 +88,7 @@ export const USERS = [
     departmentId: 'all',
     teamId: 'all',
     title: 'Chủ Tịch HĐQT / Ban Lãnh Đạo',
-    unit: 'Ban Lãnh Đạo Toàn Viện',
+    unit: 'Ban Lãnh Đạo CS3',
     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=160&q=80',
     badge: 'Ban Lãnh Đạo',
     phone: '0913 777 888',

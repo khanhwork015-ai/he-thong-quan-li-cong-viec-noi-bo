@@ -4,27 +4,27 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=5.8';
-import { store } from './store.js?v=5.8';
-import { Sidebar } from './components/sidebar.js?v=5.8';
-import { TopHeader } from './components/topHeader.js?v=5.8';
-import { BottomNav } from './components/bottomNav.js?v=5.8';
-import { DashboardView } from './components/dashboardView.js?v=5.8';
-import { WorkspaceView } from './components/workspaceView.js?v=5.8';
-import { TaskDrawer } from './components/taskDrawer.js?v=5.8';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=5.8';
-import { CreateTaskModal } from './components/createTaskModal.js?v=5.8'
-import { SubtasksModal } from './components/subtasksModal.js?v=5.8';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.8';;
-import { ProfileModal } from './components/profileModal.js?v=5.8';
-import { MemberModal } from './components/memberModal.js?v=5.8';
-import { SettingsModal } from './components/settingsModal.js?v=5.8';
-import { LoginView } from './components/loginView.js?v=5.8';
-import { DepartmentModal } from './components/departmentModal.js?v=5.8';
-import { DepartmentView } from './components/departmentView.js?v=5.8';
-import { appScriptBridge } from './services/appScriptBridge.js?v=5.8';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.8';
-import { shinTheme } from './theme.js?v=5.8';
+import { auth } from './auth.js?v=5.9';
+import { store } from './store.js?v=5.9';
+import { Sidebar } from './components/sidebar.js?v=5.9';
+import { TopHeader } from './components/topHeader.js?v=5.9';
+import { BottomNav } from './components/bottomNav.js?v=5.9';
+import { DashboardView } from './components/dashboardView.js?v=5.9';
+import { WorkspaceView } from './components/workspaceView.js?v=5.9';
+import { TaskDrawer } from './components/taskDrawer.js?v=5.9';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=5.9';
+import { CreateTaskModal } from './components/createTaskModal.js?v=5.9'
+import { SubtasksModal } from './components/subtasksModal.js?v=5.9';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=5.9';;
+import { ProfileModal } from './components/profileModal.js?v=5.9';
+import { MemberModal } from './components/memberModal.js?v=5.9';
+import { SettingsModal } from './components/settingsModal.js?v=5.9';
+import { LoginView } from './components/loginView.js?v=5.9';
+import { DepartmentModal } from './components/departmentModal.js?v=5.9';
+import { DepartmentView } from './components/departmentView.js?v=5.9';
+import { appScriptBridge } from './services/appScriptBridge.js?v=5.9';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=5.9';
+import { shinTheme } from './theme.js?v=5.9';
 
 class App {
   constructor() {
@@ -319,7 +319,7 @@ class App {
     }
 
     const currentFilterDept = allDepts.find(d => d.id === this.employeeDeptFilter);
-    const filterTitle = (this.employeeDeptFilter === 'all') ? 'Toàn Bệnh Viện (Tất cả Phòng Ban)' : (currentFilterDept?.name || 'Phòng ban');
+    const filterTitle = (this.employeeDeptFilter === 'all') ? 'Toàn Phòng Khám CS3 (Tất Cả)' : (currentFilterDept?.name || 'Phòng ban');
 
     canvas.innerHTML = `
       <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl pb-12 overflow-x-hidden">
@@ -329,7 +329,7 @@ class App {
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="font-mono-data text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--border);">
-                ${this.employeeDeptFilter === 'all' ? 'TOÀN VIỆN' : (currentFilterDept?.code || 'PB')}
+                ${this.employeeDeptFilter === 'all' ? 'TẤT CẢ' : (currentFilterDept?.code || 'PB')}
               </span>
               <span class="text-[12px] text-[#64748b]" style="color: var(--text-muted);">Danh bạ &amp; Nhân sự viện</span>
             </div>
@@ -337,7 +337,7 @@ class App {
               Quản Lý Nhân Sự • ${esc(filterTitle)}
             </h1>
             <p class="text-[12.5px] text-[#817663] mt-0.5" style="color: var(--text-muted);">
-              Theo dõi hồ sơ chuyên môn, phân bổ phòng ban &amp; bộ phận, đánh giá năng suất toàn viện
+              Theo dõi hồ sơ chuyên môn, phân bổ phòng ban &amp; bộ phận, đánh giá năng suất tất cả phòng ban
             </p>
           </div>
 
@@ -361,7 +361,7 @@ class App {
           <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 flex-1 min-w-0" id="employeeDeptTabs">
             ${canSwitch ? `
               <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${this.employeeDeptFilter === 'all' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.employeeDeptFilter === 'all' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="all">
-                <span>🏥 Toàn viện</span>
+                <span>🏥 Tất cả</span>
                 <span class="px-1.5 py-0.2 rounded-full text-[10.5px] font-mono-data font-bold bg-white/40">${allUsers.length}</span>
               </button>
             ` : ''}
@@ -443,7 +443,7 @@ class App {
                   <!-- BADGES: PHÒNG BAN & VAI TRÒ -->
                   <div class="flex items-center gap-1.5 flex-wrap pr-16">
                     <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono-data uppercase text-white shadow-2xs" style="background-color: ${userDept?.color || '#D6A52A'};">
-                      ${esc(userDept?.code || 'TOÀN VIỆN')}
+                      ${esc(userDept?.code || 'TẤT CẢ')}
                     </span>
                     <span class="px-2 py-0.5 rounded-lg text-[10.5px] font-bold border flex items-center gap-1 ${roleBadge.color}">
                       <span>${roleBadge.text}</span>
