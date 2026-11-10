@@ -3,7 +3,7 @@
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
 
-import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS } from './models.js';
+import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js';
 import { auth } from './auth.js';
 import { appScriptBridge } from './services/appScriptBridge.js';
 
@@ -33,42 +33,7 @@ export class Store {
       localStorage.setItem(PLANS_STORAGE_KEY, JSON.stringify(INITIAL_PLANS));
     }
     if (!localStorage.getItem(NOTIF_STORAGE_KEY)) {
-      const initialNotifs = [
-        {
-          id: 'notif_init_1',
-          recipientId: 'user_tam_ptkh',
-          senderId: 'user_lanhdao',
-          type: 'task_assigned',
-          title: '📋 Phân công công việc mới',
-          content: 'ThS.BS Nguyễn Thanh Vũ đã giao việc "Tổ chức khám sức khỏe định kỳ VIP Doanh nghiệp Cà Mau" cho bạn.',
-          taskId: 'PTKH-01',
-          isRead: false,
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
-        },
-        {
-          id: 'notif_init_2',
-          recipientId: 'user_mai_ptkh',
-          senderId: 'user_tam_ptkh',
-          type: 'task_assigned',
-          title: '📋 Phân công công việc mới',
-          content: 'Huỳnh Trường Thanh Tâm đã phân công việc "Gọi điện chăm sóc & khảo sát ý kiến 50 bệnh nhân nội trú" cho bạn.',
-          taskId: 'PTKH-02',
-          isRead: false,
-          createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
-        },
-        {
-          id: 'notif_init_3',
-          recipientId: 'user_admin',
-          senderId: 'user_tam_ptkh',
-          type: 'status_change',
-          title: '🔄 Cập nhật tiến độ nhiệm vụ',
-          content: 'Phòng PTKH vừa cập nhật tiến độ công việc "Đề xuất chiến dịch Marketing truyền thông quý 4".',
-          taskId: 'PTKH-03',
-          isRead: false,
-          createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
-        }
-      ];
-      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(initialNotifs));
+      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(INITIAL_NOTIFICATIONS));
     }
   }
 
@@ -664,14 +629,18 @@ export class Store {
 
   createTask(taskData) {
     const tasks = this.getAllTasksRaw();
-    const currentDept = auth.getActiveDepartment() || { id: 'dept_ptkh', code: 'PTKH-CS3' };
+    const activeDept = auth.getActiveDepartment() || { id: 'dept_ptkh', code: 'PTKH-CS3' };
     const currentUser = auth.getCurrentUser() || { id: 'user_admin', name: 'Ban Giám Đốc' };
 
-    const prefix = currentDept.code.split('-')[0] || 'TASK';
+    const targetDeptId = (taskData.departmentId && taskData.departmentId !== 'all') 
+      ? taskData.departmentId 
+      : (activeDept.id === 'all' ? (this.getAllDepartments()[0]?.id || 'dept_ptkh') : activeDept.id);
+    const dept = this.getDepartmentById(targetDeptId) || activeDept;
+    const prefix = dept?.code ? dept.code.split('-')[0] : 'TASK';
     const newId = `${prefix}-${Date.now().toString().slice(-4)}`;
 
     const requiresApproval = Boolean(taskData.requiresApproval);
-    const approverId = requiresApproval ? (taskData.approverId || currentDept.managerId || 'user_lanhdao') : null;
+    const approverId = requiresApproval ? (taskData.approverId || dept.managerId || 'user_lanhdao') : null;
     const initialStatus = requiresApproval ? 'pending_approval' : (taskData.status || 'todo');
 
     const rawSubtasks = Array.isArray(taskData.subtasks) ? taskData.subtasks : [];
@@ -1375,6 +1344,10 @@ export class Store {
     return all.find(p => p.id === id) || null;
   }
 
+  createPlan(planData) {
+    return this.addPlan(planData);
+  }
+
   addPlan(planData) {
     const all = this.getAllPlansRaw();
     const currentUser = auth.getCurrentUser() || { id: 'user_admin', name: 'Quản trị viên' };
@@ -1616,7 +1589,7 @@ export class Store {
           senderId: currentUser.id,
           type: 'approval_approved',
           title: '✅ Kế hoạch đã được Ban Lãnh Đạo phê duyệt',
-          content: `${currentUser.name} đã thông qua chủ trương kế hoạch "${plan.name}" (${plan.id}).`,
+          content: `${currentUser.name} đã thông qua chủ trương kế hoạch "${plan.title || plan.name || plan.id}" (${plan.id}).`,
           taskId: plan.id
         });
       }
@@ -1665,7 +1638,7 @@ export class Store {
           senderId: currentUser.id,
           type: 'approval_rejected',
           title: '⚠️ Kế hoạch cần chỉnh sửa bổ sung',
-          content: `${currentUser.name} yêu cầu hoàn thiện lại kế hoạch "${plan.name}" (${plan.id}): ${finalReason}`,
+          content: `${currentUser.name} yêu cầu hoàn thiện lại kế hoạch "${plan.title || plan.name || plan.id}" (${plan.id}): ${finalReason}`,
           taskId: plan.id
         });
       }

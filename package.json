@@ -1,0 +1,9 @@
+{
+  "name": "thanhvu-medic-cs3",
+  "version": "6.6.0",
+  "description": "Hệ thống Quản lý Công việc & Dự án - Phòng khám Đa khoa Thanh Vũ Medic Cơ Sở 3 (Cà Mau)",
+  "type": "module",
+  "scripts": {
+    "test": "node scratch/test_all_crud.js"
+  }
+}

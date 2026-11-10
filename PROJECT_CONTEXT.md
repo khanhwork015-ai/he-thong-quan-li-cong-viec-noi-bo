@@ -64,10 +64,17 @@
   - Cố định `font-size: 16px` trên `html` để layout (width, padding, modal, drawer) không bị phình to khi tăng cỡ chữ; chỉ scale các class font-size của chữ (1.1x / 1.2x).
   - Cài đặt Google Apps Script Web App và Reset dữ liệu mẫu: CHỈ ADMIN mới nhìn thấy và cập nhật được.
   - Cung cấp nút đồng bộ thông minh 2 chiều duy nhất (`🔄 Đồng Bộ 2 Chiều Ngay`) kèm tùy chọn tải/đẩy nâng cao cho Admin.
-- [x] **7. Quản lý Cơ cấu Bộ Phận Con & Phân bổ Nhân sự Linh Hoạt (`departmentView.js`, `store.js`, `Code.gs`)**:
-  - Hỗ trợ Kéo Thả (Drag & Drop) trực tiếp thẻ nhân viên vào bộ phận con.
-  - Nút "+ Thêm nhân viên" trên mỗi bộ phận con mở popup gán nhanh 1-chạm.
-  - Bộ chọn nhanh (Dropdown selector) trực tiếp trên từng thẻ nhân sự và nút gỡ nhân sự nhanh.
+- [x] **8. Rà Soát Toàn Diện Hệ Thống CRUD, Deep-Link Notification & Tối Ưu Hóa Giao Diện Di Động (`PROJECT_CONTEXT.md`)**:
+  - **Kiểm thử tự động 100% CRUD:** Toàn bộ thao tác Thêm, Sửa, Xóa, Cột mốc, Việc con, Phê duyệt, Đổi trạng thái, Bình luận, Đính kèm tài liệu trên Task, Plan, Department, Team, User, Notification đều hoạt động trơn tru 100% (xác minh qua Node test runner `test_all_crud.mjs`).
+  - **Deep-linking từ Notification:** Click bất kỳ thông báo nào (trong dropdown chuông ở top header hay ngăn kéo thông báo) sẽ tự động mở thẳng chính xác Task Drawer (`TSK-` / `PTKH-`) hoặc Plan Drawer (`PLN-` / `PLAN-`) hoặc Trung tâm Phê duyệt (`phe-duyet`).
+  - **Trung tâm Phê duyệt Executive Approval Hub (`approvalView.js`):** 3 tab trực quan (Công việc chờ duyệt, Kế hoạch chờ duyệt, Lịch sử đã duyệt) hỗ trợ duyệt 1-chạm cá nhân và duyệt hàng loạt (Batch approval).
+  - **Khắc phục triệt để lỗi giao diện Mobile theo phản hồi hình ảnh:**
+    - Cột mốc (Milestones): Đồng bộ huy hiệu tiến độ theo tông màu vàng hổ phách `amber`, thanh tiến độ gradient `amber-500` đến `emerald-500`. Nút "Thêm mốc" đổi sang style chuẩn của hệ sinh thái, vùng chạm chuẩn $\ge 44$px.
+    - Phân rã đầu việc (Tasks breakdown): Loại bỏ ký tự trùng lặp icon `+` trên nút "Chuyển thành Task"; điều chỉnh form nhập việc con sang layout `grid-cols-1 sm:grid-cols-3` chống hoàn toàn việc bị ép cắt ngắn ngày tháng trên điện thoại.
+    - Tài liệu đính kèm (Links): Nút "Lưu" đổi sang style chủ đạo hệ thống, kích thước chuẩn 44px, không lệch màu xanh biển.
+    - Modal tạo việc: Bổ sung chọn phòng ban tiếp nhận khi đang xem toàn viện và tự động cập nhật danh sách bộ phận con (teams).
+  - **Dữ liệu chuẩn bị triển khai bên thứ ba:** Dữ liệu khởi tạo trong `models.js` được làm sạch, hoàn chỉnh và thực tế cho Thanh Vũ Medic CS3.
+  - **Cache Buster:** Nâng toàn bộ đường dẫn import JS và `index.html` lên `?v=6.7`.
   - Fix triệt để lỗi F5 bị mất bộ phận: Đồng bộ hóa cấu trúc teams 2 chiều giữa LocalStorage và Google Sheets (`Code.gs` + `appScriptBridge.js`), hợp nhất dữ liệu không ghi đè mất mát.
   - Fix lỗi placeholder đè lên icon tìm kiếm phòng ban (`pl-10`).
   - Fix lỗi giật layout khi bấm "Thêm bộ phận": Xóa vòng lặp re-render kép, tự động dọn sạch input và hỗ trợ phím Enter.

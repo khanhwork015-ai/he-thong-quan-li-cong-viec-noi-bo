@@ -1,4 +1,4 @@
-﻿/**
+/**
  * THANH VŨ MEDIC CS3 - GOOGLE APPS SCRIPT & SHIN AIOS BRIDGE
  * Dịch vụ đồng bộ dữ liệu thật 2 chiều với Google Sheets / SHIN AIOS
  * Khắc phục 100% lỗi CORS: Không dùng header tùy biến trong GET, dùng text/plain trong POST
@@ -232,6 +232,38 @@ export class AppScriptBridge {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({ action: 'markNotificationRead', notifId }),
+        mode: 'no-cors'
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Đẩy 1 kế hoạch lên Google Sheet
+  async pushPlan(plan) {
+    if (!this.isConnected()) return false;
+    try {
+      await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'savePlan', plan }),
+        mode: 'no-cors'
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Xóa 1 kế hoạch trên Google Sheet
+  async deletePlan(planId) {
+    if (!this.isConnected()) return false;
+    try {
+      await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'deletePlan', planId }),
         mode: 'no-cors'
       });
       return true;

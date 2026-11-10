@@ -4,11 +4,11 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=6.6';
-import { store } from '../store.js?v=6.6';
-import { USERS } from '../models.js?v=6.6';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=6.6';
-import { shinTheme } from '../theme.js?v=6.6';
+import { auth } from '../auth.js?v=6.7';
+import { store } from '../store.js?v=6.7';
+import { USERS } from '../models.js?v=6.7';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=6.7';
+import { shinTheme } from '../theme.js?v=6.7';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
@@ -145,9 +145,15 @@ export class TopHeader {
                   } else if (n.type === 'status_change') {
                     icon = 'sync_alt';
                     iconBg = 'bg-sky-50 text-sky-600';
-                  } else if (n.type === 'approval') {
+                  } else if (n.type === 'approval' || n.type === 'approval_approved') {
                     icon = 'verified';
                     iconBg = 'bg-emerald-50 text-emerald-600';
+                  } else if (n.type === 'approval_request') {
+                    icon = 'pending_actions';
+                    iconBg = 'bg-amber-50 text-amber-700';
+                  } else if (n.type === 'approval_rejected') {
+                    icon = 'cancel';
+                    iconBg = 'bg-rose-50 text-rose-600';
                   } else if (n.type === 'comment') {
                     icon = 'chat';
                     iconBg = 'bg-purple-50 text-purple-600';

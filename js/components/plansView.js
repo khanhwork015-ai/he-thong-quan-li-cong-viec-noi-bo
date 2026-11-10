@@ -6,10 +6,10 @@
  * - Bộ lọc trạng thái trực quan & Tìm kiếm nhanh
  */
 
-import { auth } from '../auth.js?v=6.6';
-import { store } from '../store.js?v=6.6';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.6';
-import { PLAN_STATUSES } from '../models.js?v=6.6';
+import { auth } from '../auth.js?v=6.7';
+import { store } from '../store.js?v=6.7';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.7';
+import { PLAN_STATUSES } from '../models.js?v=6.7';
 
 export class PlansView {
   constructor(containerId, onSelectPlan, onOpenCreatePlanModal, onEditPlan) {

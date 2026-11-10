@@ -4,31 +4,31 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=6.6';
-import { store } from './store.js?v=6.6';
-import { Sidebar } from './components/sidebar.js?v=6.6';
-import { TopHeader } from './components/topHeader.js?v=6.6';
-import { BottomNav } from './components/bottomNav.js?v=6.6';
-import { DashboardView } from './components/dashboardView.js?v=6.6';
-import { WorkspaceView } from './components/workspaceView.js?v=6.6';
-import { TaskDrawer } from './components/taskDrawer.js?v=6.6';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=6.6';
-import { CreateTaskModal } from './components/createTaskModal.js?v=6.6'
-import { SubtasksModal } from './components/subtasksModal.js?v=6.6';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.6';;
-import { ProfileModal } from './components/profileModal.js?v=6.6';
-import { MemberModal } from './components/memberModal.js?v=6.6';
-import { SettingsModal } from './components/settingsModal.js?v=6.6';
-import { LoginView } from './components/loginView.js?v=6.6';
-import { DepartmentModal } from './components/departmentModal.js?v=6.6';
-import { DepartmentView } from './components/departmentView.js?v=6.6';
-import { PlansView } from './components/plansView.js?v=6.6';
-import { PlanDrawer } from './components/planDrawer.js?v=6.6';
-import { PlanModal } from './components/planModal.js?v=6.6';
-import { ApprovalView } from './components/approvalView.js?v=6.6';
-import { appScriptBridge } from './services/appScriptBridge.js?v=6.6';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.6';
-import { shinTheme } from './theme.js?v=6.6';
+import { auth } from './auth.js?v=6.7';
+import { store } from './store.js?v=6.7';
+import { Sidebar } from './components/sidebar.js?v=6.7';
+import { TopHeader } from './components/topHeader.js?v=6.7';
+import { BottomNav } from './components/bottomNav.js?v=6.7';
+import { DashboardView } from './components/dashboardView.js?v=6.7';
+import { WorkspaceView } from './components/workspaceView.js?v=6.7';
+import { TaskDrawer } from './components/taskDrawer.js?v=6.7';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=6.7';
+import { CreateTaskModal } from './components/createTaskModal.js?v=6.7'
+import { SubtasksModal } from './components/subtasksModal.js?v=6.7';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.7';;
+import { ProfileModal } from './components/profileModal.js?v=6.7';
+import { MemberModal } from './components/memberModal.js?v=6.7';
+import { SettingsModal } from './components/settingsModal.js?v=6.7';
+import { LoginView } from './components/loginView.js?v=6.7';
+import { DepartmentModal } from './components/departmentModal.js?v=6.7';
+import { DepartmentView } from './components/departmentView.js?v=6.7';
+import { PlansView } from './components/plansView.js?v=6.7';
+import { PlanDrawer } from './components/planDrawer.js?v=6.7';
+import { PlanModal } from './components/planModal.js?v=6.7';
+import { ApprovalView } from './components/approvalView.js?v=6.7';
+import { appScriptBridge } from './services/appScriptBridge.js?v=6.7';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.7';
+import { shinTheme } from './theme.js?v=6.7';
 
 class App {
   constructor() {
@@ -80,7 +80,7 @@ class App {
       (navId) => this.switchNav(navId)
     );
 
-    this.notificationDrawer = new NotificationDrawer('notification-drawer-container', (taskId) => this.taskDrawer.open(taskId));
+    this.notificationDrawer = new NotificationDrawer('notification-drawer-container', (targetId) => this.openItemFromNotification(targetId));
 
     this.header = new TopHeader('header-container',
       (query) => this.onSearch(query),
@@ -90,7 +90,7 @@ class App {
       () => this.sidebar.toggle(),
       () => this.switchNav('phong-ban'),
       () => this.onLogout(),
-      (taskId) => this.taskDrawer.open(taskId),
+      (targetId) => this.openItemFromNotification(targetId),
       () => this.notificationDrawer.open(),
       () => this.switchNav('phe-duyet')
     );
@@ -278,6 +278,36 @@ class App {
       this.workspaceView.searchQuery = query;
       this.workspaceView.render();
     }
+  }
+
+  openItemFromNotification(targetId) {
+    if (!targetId) {
+      this.switchNav('phe-duyet');
+      return;
+    }
+
+    // 1. Nếu là Kế hoạch (Plan)
+    if (targetId.startsWith('PLN-') || store.getPlanById(targetId)) {
+      if (this.currentNav !== 'ke-hoach') {
+        this.switchNav('ke-hoach');
+      }
+      if (this.planDrawer) {
+        this.planDrawer.open(targetId);
+      }
+      return;
+    }
+
+    // 2. Nếu là Công việc (Task)
+    const task = store.getTaskById(targetId);
+    if (task) {
+      if (this.taskDrawer) {
+        this.taskDrawer.open(targetId);
+      }
+      return;
+    }
+
+    // 3. Fallback
+    toast('Hạng mục liên kết không tồn tại hoặc đã được gỡ bỏ.', 'warning');
   }
 
   openTask(taskId) {

@@ -7,9 +7,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=6.6';
-import { store } from '../store.js?v=6.6';
-import { toast, rung, esc } from '../helpers.js?v=6.6';
+import { auth } from '../auth.js?v=6.7';
+import { store } from '../store.js?v=6.7';
+import { toast, rung, esc } from '../helpers.js?v=6.7';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -84,6 +84,18 @@ export class CreateTaskModal {
               <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Tên công việc / Nhiệm vụ *</label>
               <input type="text" id="newTaskTitle" required value="${isEdit ? esc(taskToEdit.title) : ''}" placeholder="Ví dụ: Đàm phán hợp đồng khám đoàn Minh Phú (1.200 CBCNV)" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[14px] outline-none focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 bg-[#f8f9ff] focus:bg-white text-[#0d1c2f]" />
             </div>
+
+            <!-- PHÒNG BAN TIẾP NHẬN (ADMIN / BAN LÃNH ĐẠO HOẶC KHI ĐANG XEM TOÀN VIỆN) -->
+            ${(auth.canSwitchDepartment() || currentDept.id === 'all') ? `
+              <div>
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Phòng ban tiếp nhận *</label>
+                <select id="newTaskDept" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f] cursor-pointer">
+                  ${depts.map(d => `
+                    <option value="${d.id}" ${d.id === (taskDept.id === 'all' ? 'dept_ptkh' : taskDept.id) ? 'selected' : ''}>${esc(d.name)} (${esc(d.code)})</option>
+                  `).join('')}
+                </select>
+              </div>
+            ` : ''}
 
             <!-- BỘ PHẬN CON (TEAMS) TRONG PHÒNG BAN -->
             <div>
@@ -261,6 +273,22 @@ export class CreateTaskModal {
       });
     }
 
+    // Đổi danh sách Bộ phận con (Team) khi chọn phòng ban khác
+    const selectDept = this.container.querySelector('#newTaskDept');
+    const selectTeam = this.container.querySelector('#newTaskTeam');
+    if (selectDept && selectTeam) {
+      selectDept.addEventListener('change', () => {
+        const chosenDept = store.getDepartmentById(selectDept.value);
+        if (chosenDept) {
+          const tms = chosenDept.teams || [];
+          selectTeam.innerHTML = `
+            <option value="">-- Toàn phòng ban / Chưa phân tổ --</option>
+            ${tms.map(t => `<option value="${t.id}">${esc(t.name)} (${esc(t.code)})</option>`).join('')}
+          `;
+        }
+      });
+    }
+
     // Toggle hộp chọn người duyệt khi bật/tắt switch
     if (chkRequireApproval && approverBox) {
       chkRequireApproval.addEventListener('change', () => {
@@ -373,8 +401,15 @@ export class CreateTaskModal {
         e.preventDefault();
         rung(15);
 
-        const currentDept = auth.getActiveDepartment();
-        const currentUser = auth.getCurrentUser();
+        const currentDept = auth.getActiveDepartment() || { id: 'dept_ptkh' };
+        const currentUser = auth.getCurrentUser() || { id: 'usr_admin' };
+
+        const selectDept = this.container.querySelector('#newTaskDept');
+        let targetDeptId = selectDept ? selectDept.value : currentDept.id;
+        if (targetDeptId === 'all') {
+          const allDepts = store.getDepartments().filter(d => d.id !== 'all');
+          targetDeptId = allDepts.length > 0 ? allDepts[0].id : 'dept_ptkh';
+        }
 
         const title = this.container.querySelector('#newTaskTitle').value.trim();
         const teamId = this.container.querySelector('#newTaskTeam').value || '';
@@ -397,6 +432,7 @@ export class CreateTaskModal {
           const updatedTask = store.updateTask(this.taskToEdit.id, {
             title,
             description,
+            departmentId: targetDeptId,
             teamId,
             assigneeId,
             priority,
@@ -416,7 +452,7 @@ export class CreateTaskModal {
           const newTask = store.createTask({
             title,
             description,
-            departmentId: currentDept.id,
+            departmentId: targetDeptId,
             teamId,
             assigneeId,
             creatorId: currentUser.id,

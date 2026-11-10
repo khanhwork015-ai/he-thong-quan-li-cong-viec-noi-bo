@@ -407,6 +407,28 @@ export const INITIAL_NOTIFICATIONS = [
     taskId: 'PTKH-101',
     isRead: false,
     createdAt: new Date(Date.now() - 3600000 * 1).toISOString()
+  },
+  {
+    id: 'notif_init_5',
+    recipientId: 'user_lanhdao',
+    senderId: 'user_minh_duoc',
+    type: 'approval_request',
+    title: '⏳ Kế hoạch chiến lược chờ phê duyệt',
+    content: 'DS.CKI Nguyễn Văn Minh đã trình kế hoạch "Nâng Cấp Hệ Thống Giám Sát Nhiệt Độ Tự Động Kho Lạnh Vaccine" (PLN-03) xin chủ trương.',
+    taskId: 'PLAN-DUOC-01',
+    isRead: false,
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
+  },
+  {
+    id: 'notif_init_6',
+    recipientId: 'user_admin',
+    senderId: 'user_mai_ptkh',
+    type: 'approval_request',
+    title: '⏳ Hồ sơ nghiệm thu hợp đồng cần phê duyệt',
+    content: 'CN. Nguyễn Thị Tuyết Mai đã gửi đề xuất phê duyệt nghiệm thu hợp đồng khám đoàn Minh Phú (1.200 CBCNV).',
+    taskId: 'PTKH-102',
+    isRead: false,
+    createdAt: new Date(Date.now() - 3600000 * 3).toISOString()
   }
 ];
 

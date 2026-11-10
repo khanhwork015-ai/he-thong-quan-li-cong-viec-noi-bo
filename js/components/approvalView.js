@@ -8,9 +8,9 @@
  * - Phân quyền thông minh: Lãnh đạo thấy toàn viện, Trưởng phòng thấy khoa mình, Nhân viên theo dõi hồ sơ đã gửi
  */
 
-import { store } from '../store.js?v=6.6';
-import { auth } from '../auth.js?v=6.6';
-import { esc, ngayVN, soVN, toast, rung } from '../helpers.js?v=6.6';
+import { store } from '../store.js?v=6.7';
+import { auth } from '../auth.js?v=6.7';
+import { esc, ngayVN, soVN, toast, rung } from '../helpers.js?v=6.7';
 
 export class ApprovalView {
   constructor(containerId, onOpenTask, onOpenPlan, onUpdated) {
@@ -64,7 +64,7 @@ export class ApprovalView {
       if (this.filterDept !== 'all' && p.departmentId !== this.filterDept) return false;
       if (this.searchQuery) {
         const q = this.searchQuery.toLowerCase();
-        const nameMatch = (p.name || '').toLowerCase().includes(q);
+        const nameMatch = (p.title || p.name || '').toLowerCase().includes(q);
         const idMatch = (p.id || '').toLowerCase().includes(q);
         const lead = store.getUserById(p.leadId);
         const leadMatch = lead ? lead.name.toLowerCase().includes(q) : false;
@@ -450,7 +450,7 @@ export class ApprovalView {
                   </div>
                 ` : ''}
                 <h3 class="font-bold text-[15px] sm:text-[16px] text-[#0d1c2f] leading-snug hover:text-[#795900] transition-colors break-words">
-                  ${esc(plan.name)}
+                  ${esc(plan.title || plan.name)}
                 </h3>
                 ${plan.target ? `
                   <div class="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/80 text-[12px] text-amber-900 mt-2 leading-relaxed italic line-clamp-2">
@@ -498,7 +498,7 @@ export class ApprovalView {
                     type="button" 
                     class="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-reject-plan-modal" 
                     data-plan-id="${plan.id}"
-                    data-plan-name="${esc(plan.name)}"
+                    data-plan-name="${esc(plan.title || plan.name)}"
                   >
                     <span class="material-symbols-outlined text-[16px]">restart_alt</span>
                     <span>Cần Sửa</span>
