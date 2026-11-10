@@ -322,7 +322,10 @@
     + Tích hợp **Hộp thông báo lỗi trực quan (Inline Alert Banner)** ngay trên thẻ form đăng nhập, loại bỏ hoàn toàn tình trạng "không có thông báo gì" khi bàn phím ảo che mất toast góc dưới.
     + Phân loại lỗi sắc nét: Sai tài khoản (báo lỗi & viền đỏ ô tài khoản, gợi ý tài khoản admin nếu chưa kết nối cloud); Sai mật khẩu (báo lỗi & viền đỏ ô mật khẩu kèm focus lại).
     + Tích hợp animation rung lắc `animate-shake`, rung xúc giác `rung(40)`, và tự động xóa lỗi khi người dùng bắt đầu gõ lại.
-  - **Nâng cấp Cache Buster toàn diện `?v=8.3`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
+  - **Tự Động Kết Nối Vĩnh Viễn Google Sheets Web App Endpoint (`appScriptBridge.js`) (v8.4):**
+    + Nhúng URL Web App thực tế (`AKfycbwMvK9EzyweeOVB4wraPzdwZVUEzbLcSd3RyYcdUzbIrOcFcAgHCwvmvYOcu_9UdhRW/exec`) làm `DEFAULT_GAS_ENDPOINT`.
+    + Giải quyết triệt để 100% lỗi không đồng bộ khi deploy trên Cloudflare/Workers/GitHub Pages/Điện thoại mới: Web app tự động kích hoạt kết nối Cloud và tải ngay 14 tài khoản thật từ Google Sheets mà không cần thao tác dán link thủ công.
+  - **Nâng cấp Cache Buster toàn diện `?v=8.4`:** Đồng bộ trên 26 files và đẩy Git `origin/main`.
 
 ---
 

@@ -4,14 +4,20 @@
  * Khắc phục 100% lỗi CORS: Không dùng header tùy biến trong GET, dùng text/plain trong POST
  */
 
-import { toast } from '../helpers.js?v=8.3';
+import { toast } from '../helpers.js?v=8.4';
 
 const GAS_ENDPOINT_KEY = 'tvm_gas_endpoint';
 const LAST_SYNC_KEY = 'tvm_last_sync_time';
 
+export const DEFAULT_GAS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwMvK9EzyweeOVB4wraPzdwZVUEzbLcSd3RyYcdUzbIrOcFcAgHCwvmvYOcu_9UdhRW/exec';
+
 export class AppScriptBridge {
   constructor() {
-    this.endpoint = localStorage.getItem(GAS_ENDPOINT_KEY) || '';
+    const saved = localStorage.getItem(GAS_ENDPOINT_KEY);
+    this.endpoint = (saved && saved.trim().startsWith('https://script.google.com/')) ? saved.trim() : DEFAULT_GAS_ENDPOINT;
+    if (!saved) {
+      try { localStorage.setItem(GAS_ENDPOINT_KEY, this.endpoint); } catch (_) {}
+    }
     this.isOnline = navigator.onLine;
     this.lastSyncTime = localStorage.getItem(LAST_SYNC_KEY) || null;
 
