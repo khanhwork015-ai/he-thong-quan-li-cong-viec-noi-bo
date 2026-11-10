@@ -165,6 +165,12 @@
   - **Modal soạn thảo / chỉnh sửa kế hoạch (`planModal.js`):** Form trực quan hỗ trợ cả lập mới và cập nhật.
   - **Tích hợp thanh điều hướng:** Thêm mục `📂 Dự án và kế hoạch` trên Sidebar và `Kế hoạch` trên Bottom Nav Mobile.
   - **Nâng cấp Cache Buster toàn diện `?v=6.1`:** Đẩy Git `origin/main`.
+- [x] **25. Kiểm Tra & Tối Ưu Toàn Diện Chức Năng Xóa / Sửa (`plansView.js`, `planDrawer.js`, `planModal.js`, `taskDrawer.js`, `store.js`)**:
+  - **Sửa lỗi xác nhận xóa `xacNhan2Lan`:** Sửa lỗi thiếu tham số khóa `khoa` trong `planDrawer.js`, đảm bảo cơ chế xác nhận 2 lần (double-confirmation 5s) hoạt động chính xác 100%.
+  - **Bổ sung cụm nút Sửa & Xóa trực tiếp trên Card (`plansView.js`):** Cho phép người tạo/quản lý chỉnh sửa và xóa kế hoạch ngay trên lưới thẻ mà không bắt buộc phải mở Drawer.
+  - **Bổ sung chức năng Xóa đầu việc dự kiến & Xóa bình luận (`planDrawer.js`, `store.js`):** Hỗ trợ `deletePlanTaskItem` và `deletePlanComment` giúp quản lý nội dung linh hoạt.
+  - **Bổ sung nút Xóa công việc trên Task Drawer (`taskDrawer.js`):** Bổ sung nút Xóa nhiệm vụ kèm xác nhận 2 lần ngay trên thanh Header của Task Drawer.
+  - **Nâng cấp Cache Buster toàn diện `?v=6.2`:** Đẩy Git `origin/main`.
 
 ---
 

@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=6.1';
-import { store } from '../store.js?v=6.1';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=6.1';
+import { auth } from '../auth.js?v=6.2';
+import { store } from '../store.js?v=6.2';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=6.2';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
@@ -83,11 +83,12 @@ export class TaskDrawer {
     const team = deptTeams.find(t => t.id === task.teamId);
 
     const isPendingApproval = task.status === 'pending_approval' || task.status === 'review';
+    const canManageTask = auth.isAdmin() || auth.isLeadership() || (auth.isManager() && currentUser.departmentId === task.departmentId) || (currentUser.id === task.creatorId);
     
     // Phân quyền phê duyệt: Người duyệt chỉ định, Admin, Lãnh đạo hoặc Trưởng phòng cùng khoa
     const canUserApproveThisTask = auth.isAdmin() || 
       auth.isLeadership() || 
-      (task.approverId && task.approverId === currentUser.id) ||
+      (task.approverId && task.approverId === currentUser.id) || 
       (auth.isManager() && currentUser.departmentId === task.departmentId);
 
     const statusMeta = this.getStatusMeta(task.status);
@@ -112,11 +113,16 @@ export class TaskDrawer {
               ` : ''}
             </div>
 
-            <div class="flex items-center gap-2">
-              <button type="button" id="btnDrawerEditTask" class="px-3 py-1.5 rounded-xl border border-[#d6a52a] text-[#795900] bg-[#fffbeb] hover:bg-[#fde68a] font-bold text-[12.5px] min-h-[38px] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs shrink-0" title="Chỉnh sửa thông tin nhiệm vụ cha">
-                <span class="material-symbols-outlined text-[17px]">edit</span>
-                <span>Chỉnh sửa</span>
-              </button>
+            <div class="flex items-center gap-1.5">
+              ${canManageTask ? `
+                <button type="button" id="btnDrawerEditTask" class="px-3 py-1.5 rounded-xl border border-[#d6a52a] text-[#795900] bg-[#fffbeb] hover:bg-[#fde68a] font-bold text-[12.5px] min-h-[38px] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs shrink-0" title="Chỉnh sửa thông tin nhiệm vụ cha">
+                  <span class="material-symbols-outlined text-[17px]">edit</span>
+                  <span>Chỉnh sửa</span>
+                </button>
+                <button type="button" id="btnDrawerDeleteTask" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl min-w-[38px] min-h-[38px] flex items-center justify-center transition-colors cursor-pointer shrink-0" title="Xóa nhiệm vụ này">
+                  <span class="material-symbols-outlined text-[18px]">delete</span>
+                </button>
+              ` : ''}
               <button type="button" class="p-2 rounded-xl text-[#64748b] hover:text-[#0d1c2f] hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer shrink-0" id="btnCloseDrawer" aria-label="Đóng">
                 <span class="material-symbols-outlined text-[22px]">close</span>
               </button>
@@ -621,6 +627,23 @@ export class TaskDrawer {
         if (this.onEditTask) {
           this.onEditTask(task);
         }
+      });
+    }
+
+    // XÓA NHIỆM VỤ CHA
+    const btnDrawerDeleteTask = this.container.querySelector('#btnDrawerDeleteTask');
+    if (btnDrawerDeleteTask) {
+      btnDrawerDeleteTask.addEventListener('click', () => {
+        xacNhan2Lan(
+          'del_task_drawer_' + task.id,
+          `Xóa công việc "${task.title}" (${task.id})`,
+          () => {
+            store.deleteTask(task.id);
+            toast('Đã xóa công việc thành công!', 'success');
+            this.close();
+            if (this.onTaskChanged) this.onTaskChanged();
+          }
+        );
       });
     }
 

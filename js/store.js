@@ -1559,6 +1559,22 @@ export class Store {
     const links = plan.links.filter((_, idx) => idx !== linkIndex);
     return this.updatePlan(planId, { links });
   }
+
+  deletePlanTaskItem(planId, taskIndex) {
+    const plan = this.getPlanById(planId);
+    if (!plan || !Array.isArray(plan.tasksList)) return null;
+
+    const tasksList = plan.tasksList.filter((_, idx) => idx !== taskIndex);
+    return this.updatePlan(planId, { tasksList });
+  }
+
+  deletePlanComment(planId, commentId) {
+    const plan = this.getPlanById(planId);
+    if (!plan || !Array.isArray(plan.comments)) return null;
+
+    const comments = plan.comments.filter(c => c.id !== commentId);
+    return this.updatePlan(planId, { comments });
+  }
 }
 
 export const store = new Store();

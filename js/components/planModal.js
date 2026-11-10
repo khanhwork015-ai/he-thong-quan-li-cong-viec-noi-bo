@@ -4,10 +4,10 @@
  * Ai cũng có thể tạo kế hoạch - Tự động ghi nhận Người tạo và Thời gian tạo
  */
 
-import { auth } from '../auth.js?v=6.1';
-import { store } from '../store.js?v=6.1';
-import { esc, toast, rung } from '../helpers.js?v=6.1';
-import { PLAN_STATUSES } from '../models.js?v=6.1';
+import { auth } from '../auth.js?v=6.2';
+import { store } from '../store.js?v=6.2';
+import { esc, toast, rung } from '../helpers.js?v=6.2';
+import { PLAN_STATUSES } from '../models.js?v=6.2';
 
 export class PlanModal {
   constructor(containerId, onSaved) {
@@ -261,14 +261,26 @@ export class PlanModal {
       });
     }
 
+    const deptSelect = this.container.querySelector('#selectPlanDept');
+    const leadSelect = this.container.querySelector('#selectPlanLead');
+    if (deptSelect && leadSelect) {
+      deptSelect.addEventListener('change', () => {
+        const newDeptId = deptSelect.value;
+        const newMembers = (newDeptId && newDeptId !== 'all')
+          ? store.getDepartmentUsers(newDeptId)
+          : store.getAllUsers();
+        leadSelect.innerHTML = newMembers.map(u => `
+          <option value="${u.id}">${esc(u.name)} (${esc(u.title || 'Chuyên viên')})</option>
+        `).join('');
+      });
+    }
+
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         rung(15);
 
         const titleInput = this.container.querySelector('#inputPlanTitle');
-        const deptSelect = this.container.querySelector('#selectPlanDept');
-        const leadSelect = this.container.querySelector('#selectPlanLead');
         const startDateInput = this.container.querySelector('#inputPlanStartDate');
         const dueDateInput = this.container.querySelector('#inputPlanDueDate');
         const prioritySelect = this.container.querySelector('#selectPlanPriority');
@@ -285,7 +297,7 @@ export class PlanModal {
 
         const planData = {
           title,
-          departmentId: deptSelect?.value,
+          departmentId: deptSelect?.value || (this.planToEdit ? this.planToEdit.departmentId : (auth.getActiveDepartment().id === 'all' ? 'dept_ptkh' : auth.getActiveDepartment().id)),
           leadId: leadSelect?.value,
           startDate: startDateInput?.value,
           dueDate: dueDateInput?.value,

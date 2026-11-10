@@ -7,10 +7,10 @@
  * - Ghi chú, Tài liệu đính kèm & Bình luận thảo luận
  */
 
-import { auth } from '../auth.js?v=6.1';
-import { store } from '../store.js?v=6.1';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.1';
-import { PLAN_STATUSES } from '../models.js?v=6.1';
+import { auth } from '../auth.js?v=6.2';
+import { store } from '../store.js?v=6.2';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.2';
+import { PLAN_STATUSES } from '../models.js?v=6.2';
 
 export class PlanDrawer {
   constructor(containerId, onPlanChanged, onEditPlan, onOpenTask) {
@@ -278,6 +278,11 @@ export class PlanDrawer {
                             <span>＋ Chuyển thành Task</span>
                           </button>
                         `}
+                        ${canManagePlan && !t.converted ? `
+                          <button type="button" class="btn-delete-plan-task p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors cursor-pointer" data-task-idx="${idx}" title="Xóa đầu việc dự kiến">
+                            <span class="material-symbols-outlined text-[17px]">delete</span>
+                          </button>
+                        ` : ''}
                       </div>
                     </div>
                   `;
@@ -380,7 +385,14 @@ export class PlanDrawer {
                     <div class="min-w-0 flex-1">
                       <div class="flex items-center justify-between gap-2">
                         <span class="font-bold text-[12.5px] text-[#0d1c2f]" style="color: var(--text);">${esc(c.userName)}</span>
-                        <span class="text-[10.5px] text-[#64748b] font-mono-data">${timeAgo(c.createdAt)}</span>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                          <span class="text-[10.5px] text-[#64748b] font-mono-data">${timeAgo(c.createdAt)}</span>
+                          ${(currentUser.id === c.userId || auth.isAdmin()) ? `
+                            <button type="button" class="text-gray-400 hover:text-red-500 btn-delete-plan-comment p-0.5" data-comment-id="${c.id}" title="Xóa bình luận">
+                              <span class="material-symbols-outlined text-[15px]">close</span>
+                            </button>
+                          ` : ''}
+                        </div>
                       </div>
                       <p class="text-[12.5px] text-[#4f4635] mt-1 leading-relaxed" style="color: var(--text-muted);">${esc(c.text)}</p>
                     </div>
@@ -452,7 +464,8 @@ export class PlanDrawer {
         if (!plan) return;
 
         xacNhan2Lan(
-          `Bạn có chắc chắn muốn xóa kế hoạch "${plan.title}" (${plan.code}) không?`,
+          'del_plan_drawer_' + plan.id,
+          `Xóa kế hoạch "${plan.title}" (${plan.code})`,
           () => {
             store.deletePlan(this.currentPlanId);
             toast('Đã xóa kế hoạch thành công!', 'success');
@@ -551,6 +564,18 @@ export class PlanDrawer {
       });
     }
 
+    // Xóa đầu việc dự kiến
+    this.container.querySelectorAll('.btn-delete-plan-task').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.taskIdx, 10);
+        store.deletePlanTaskItem(this.currentPlanId, idx);
+        toast('Đã xóa đầu việc dự kiến!', 'info');
+        this.render();
+        if (this.onPlanChanged) this.onPlanChanged();
+      });
+    });
+
     // Form thêm link tài liệu
     const formAddLink = this.container.querySelector('#formAddLink');
     if (formAddLink) {
@@ -573,6 +598,17 @@ export class PlanDrawer {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.linkIdx, 10);
         store.deletePlanLink(this.currentPlanId, idx);
+        this.render();
+      });
+    });
+
+    // Xóa bình luận
+    this.container.querySelectorAll('.btn-delete-plan-comment').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cId = btn.dataset.commentId;
+        store.deletePlanComment(this.currentPlanId, cId);
+        toast('Đã xóa bình luận!', 'info');
         this.render();
       });
     });

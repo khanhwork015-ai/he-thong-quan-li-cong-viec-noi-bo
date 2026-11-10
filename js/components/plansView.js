@@ -6,16 +6,17 @@
  * - Bộ lọc trạng thái trực quan & Tìm kiếm nhanh
  */
 
-import { auth } from '../auth.js?v=6.1';
-import { store } from '../store.js?v=6.1';
-import { esc, ngayVN, timeAgo, toast, rung } from '../helpers.js?v=6.1';
-import { PLAN_STATUSES } from '../models.js?v=6.1';
+import { auth } from '../auth.js?v=6.2';
+import { store } from '../store.js?v=6.2';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.2';
+import { PLAN_STATUSES } from '../models.js?v=6.2';
 
 export class PlansView {
-  constructor(containerId, onSelectPlan, onOpenCreatePlanModal) {
+  constructor(containerId, onSelectPlan, onOpenCreatePlanModal, onEditPlan) {
     this.container = document.getElementById(containerId);
     this.onSelectPlan = onSelectPlan;
     this.onOpenCreatePlanModal = onOpenCreatePlanModal;
+    this.onEditPlan = onEditPlan;
     this.currentFilterStatus = 'all';
     this.searchQuery = '';
   }
@@ -162,6 +163,12 @@ export class PlansView {
             const lead = store.getUserById(plan.leadId);
             const dept = store.getDepartmentById(plan.departmentId);
             const statusMeta = PLAN_STATUSES[plan.status] || PLAN_STATUSES.planning;
+            const currentUser = auth.getCurrentUser() || {};
+            const canManagePlan = (currentUser.id === plan.creatorId) || 
+              (currentUser.id === plan.leadId) || 
+              auth.isAdmin() || 
+              auth.isLeadership() || 
+              auth.isManager();
 
             const milestones = Array.isArray(plan.milestones) ? plan.milestones : [];
             const doneMs = milestones.filter(m => m.completed).length;
@@ -189,9 +196,19 @@ export class PlansView {
                       </span>
                     </div>
 
-                    <span class="material-symbols-outlined text-gray-300 group-hover:text-[#d6a52a] transition-colors text-[20px]">
-                      chevron_right
-                    </span>
+                    <div class="flex items-center gap-1">
+                      ${canManagePlan ? `
+                        <button type="button" class="btn-card-edit-plan p-1.5 rounded-lg text-gray-400 hover:text-[#795900] hover:bg-amber-50 transition-colors cursor-pointer" data-plan-id="${plan.id}" title="Sửa kế hoạch">
+                          <span class="material-symbols-outlined text-[17px]">edit</span>
+                        </button>
+                        <button type="button" class="btn-card-delete-plan p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer" data-plan-id="${plan.id}" title="Xóa kế hoạch">
+                          <span class="material-symbols-outlined text-[17px]">delete</span>
+                        </button>
+                      ` : ''}
+                      <span class="material-symbols-outlined text-gray-300 group-hover:text-[#d6a52a] transition-colors text-[20px]">
+                        chevron_right
+                      </span>
+                    </div>
                   </div>
 
                   <!-- TIÊU ĐỀ KẾ HOẠCH -->
@@ -315,6 +332,38 @@ export class PlansView {
         if (planId && this.onSelectPlan) {
           this.onSelectPlan(planId);
         }
+      });
+    });
+
+    // 5. Bấm Sửa trực tiếp trên Card
+    this.container.querySelectorAll('.btn-card-edit-plan').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const planId = btn.dataset.planId;
+        const plan = store.getPlanById(planId);
+        if (plan && this.onEditPlan) {
+          this.onEditPlan(plan);
+        }
+      });
+    });
+
+    // 6. Bấm Xóa trực tiếp trên Card (xác nhận 2 lần)
+    this.container.querySelectorAll('.btn-card-delete-plan').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const planId = btn.dataset.planId;
+        const plan = store.getPlanById(planId);
+        if (!plan) return;
+
+        xacNhan2Lan(
+          'del_card_plan_' + plan.id,
+          `Xóa kế hoạch "${plan.title}" (${plan.code})`,
+          () => {
+            store.deletePlan(planId);
+            toast('Đã xóa kế hoạch thành công!', 'success');
+            this.render();
+          }
+        );
       });
     });
   }

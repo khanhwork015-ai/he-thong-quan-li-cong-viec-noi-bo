@@ -4,30 +4,30 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=6.1';
-import { store } from './store.js?v=6.1';
-import { Sidebar } from './components/sidebar.js?v=6.1';
-import { TopHeader } from './components/topHeader.js?v=6.1';
-import { BottomNav } from './components/bottomNav.js?v=6.1';
-import { DashboardView } from './components/dashboardView.js?v=6.1';
-import { WorkspaceView } from './components/workspaceView.js?v=6.1';
-import { TaskDrawer } from './components/taskDrawer.js?v=6.1';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=6.1';
-import { CreateTaskModal } from './components/createTaskModal.js?v=6.1'
-import { SubtasksModal } from './components/subtasksModal.js?v=6.1';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.1';;
-import { ProfileModal } from './components/profileModal.js?v=6.1';
-import { MemberModal } from './components/memberModal.js?v=6.1';
-import { SettingsModal } from './components/settingsModal.js?v=6.1';
-import { LoginView } from './components/loginView.js?v=6.1';
-import { DepartmentModal } from './components/departmentModal.js?v=6.1';
-import { DepartmentView } from './components/departmentView.js?v=6.1';
-import { PlansView } from './components/plansView.js?v=6.1';
-import { PlanDrawer } from './components/planDrawer.js?v=6.1';
-import { PlanModal } from './components/planModal.js?v=6.1';
-import { appScriptBridge } from './services/appScriptBridge.js?v=6.1';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.1';
-import { shinTheme } from './theme.js?v=6.1';
+import { auth } from './auth.js?v=6.2';
+import { store } from './store.js?v=6.2';
+import { Sidebar } from './components/sidebar.js?v=6.2';
+import { TopHeader } from './components/topHeader.js?v=6.2';
+import { BottomNav } from './components/bottomNav.js?v=6.2';
+import { DashboardView } from './components/dashboardView.js?v=6.2';
+import { WorkspaceView } from './components/workspaceView.js?v=6.2';
+import { TaskDrawer } from './components/taskDrawer.js?v=6.2';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=6.2';
+import { CreateTaskModal } from './components/createTaskModal.js?v=6.2'
+import { SubtasksModal } from './components/subtasksModal.js?v=6.2';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.2';;
+import { ProfileModal } from './components/profileModal.js?v=6.2';
+import { MemberModal } from './components/memberModal.js?v=6.2';
+import { SettingsModal } from './components/settingsModal.js?v=6.2';
+import { LoginView } from './components/loginView.js?v=6.2';
+import { DepartmentModal } from './components/departmentModal.js?v=6.2';
+import { DepartmentView } from './components/departmentView.js?v=6.2';
+import { PlansView } from './components/plansView.js?v=6.2';
+import { PlanDrawer } from './components/planDrawer.js?v=6.2';
+import { PlanModal } from './components/planModal.js?v=6.2';
+import { appScriptBridge } from './services/appScriptBridge.js?v=6.2';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.2';
+import { shinTheme } from './theme.js?v=6.2';
 
 class App {
   constructor() {
@@ -142,13 +142,19 @@ class App {
 
     this.planModal = new PlanModal(
       'modal-container',
-      () => this.refreshCurrentView()
+      (savedPlan) => {
+        this.refreshCurrentView();
+        if (savedPlan && this.currentNav === 'ke-hoach') {
+          this.planDrawer.open(savedPlan.id);
+        }
+      }
     );
 
     this.plansView = new PlansView(
       'main-content-canvas',
       (planId) => this.planDrawer.open(planId),
-      () => this.planModal.show()
+      () => this.planModal.show(),
+      (plan) => this.planModal.show(plan)
     );
 
     this.bindGlobalEvents();
