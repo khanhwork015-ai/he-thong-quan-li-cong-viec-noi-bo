@@ -8,9 +8,9 @@
  * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
-import { auth } from '../auth.js?v=6.3';
-import { store } from '../store.js?v=6.3';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.3';
+import { auth } from '../auth.js?v=6.4';
+import { store } from '../store.js?v=6.4';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.4';
 
 export class DepartmentView {
   constructor(containerId, onUpdated, onOpenMemberModal) {
@@ -532,7 +532,7 @@ export class DepartmentView {
                         </div>
                         <button type="button" class="btn-empty-add-member px-4 py-2.5 rounded-xl font-bold text-[12.5px] shadow-xs flex items-center gap-2 cursor-pointer transition-all hover:scale-105" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                           <span class="material-symbols-outlined text-[18px]">add_circle</span>
-                          <span>+ Cấp Tài Khoản Nhân Sự Đầu Tiên</span>
+                          <span>Cấp Tài Khoản Nhân Sự Đầu Tiên</span>
                         </button>
                       </div>
                     ` : (regularStaff.length === 0 ? `

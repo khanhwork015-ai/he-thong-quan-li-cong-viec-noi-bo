@@ -8,8 +8,8 @@
  * - Hỗ trợ mở chi tiết đầy đủ từng việc con (SubtaskDetailModal)
  */
 
-import { store } from '../store.js?v=6.3';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.3';
+import { store } from '../store.js?v=6.4';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=6.4';
 
 export class SubtasksModal {
   constructor(containerId, onTaskUpdated, onOpenTaskDetail = null, onOpenSubtaskDetail = null) {
@@ -115,18 +115,18 @@ export class SubtasksModal {
 
               <div>
                 <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Tiêu đề việc con *</label>
-                <input type="text" id="modalInputNewTitle" required placeholder="Nhập tên việc con (VD: Đối soát hóa đơn BHYT, kiểm kê kho thuốc...)" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
+                <input type="text" id="modalInputNewTitle" required placeholder="Nhập tên việc con (VD: Đối soát hóa đơn BHYT, kiểm kê kho thuốc...)" class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13.5px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
               </div>
 
               <div>
                 <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1">Mô tả &amp; Tiêu chuẩn nghiệm thu</label>
-                <textarea id="modalInputNewDesc" rows="2" placeholder="Ghi chú chi tiết yêu cầu, tiêu chuẩn kỹ thuật..." class="w-full p-2.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"></textarea>
+                <textarea id="modalInputNewDesc" rows="2" placeholder="Ghi chú chi tiết yêu cầu, tiêu chuẩn kỹ thuật..." class="w-full p-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"></textarea>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1">Người phụ trách</label>
-                  <select id="modalSelectNewAssignee" class="w-full h-9 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] outline-none focus:border-[#d6a52a] bg-white cursor-pointer">
+                  <select id="modalSelectNewAssignee" class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white cursor-pointer">
                     <option value="">-- Mặc định theo nhiệm vụ cha --</option>
                     ${allUsers.map(u => `
                       <option value="${u.id}">${esc(u.name)} (${esc(u.title)})</option>
@@ -136,7 +136,7 @@ export class SubtasksModal {
 
                 <div>
                   <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1">Hạn hoàn thành</label>
-                  <input type="date" id="modalInputNewDueDate" value="${task.dueDate ? task.dueDate.slice(0, 10) : new Date().toISOString().split('T')[0]}" class="w-full h-9 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-mono-data outline-none focus:border-[#d6a52a] bg-white" />
+                  <input type="date" id="modalInputNewDueDate" value="${task.dueDate ? task.dueDate.slice(0, 10) : new Date().toISOString().split('T')[0]}" class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-mono-data outline-none focus:border-[#d6a52a] bg-white" />
                 </div>
               </div>
 
@@ -220,18 +220,18 @@ export class SubtasksModal {
 
                     <div>
                       <label class="block text-[11px] font-bold text-[#0d1c2f] mb-0.5">Tiêu đề việc con *</label>
-                      <input type="text" class="edit-subtask-title w-full h-9 px-3 rounded-lg border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a]" value="${esc(s.title || s.text)}" />
+                      <input type="text" class="edit-subtask-title w-full h-10 px-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a]" value="${esc(s.title || s.text)}" />
                     </div>
 
                     <div>
                       <label class="block text-[11px] font-bold text-[#0d1c2f] mb-0.5">Mô tả &amp; Tiêu chuẩn nghiệm thu</label>
-                      <textarea class="edit-subtask-desc w-full p-2 rounded-lg border border-[#e2e8f0] text-[12px] outline-none focus:border-[#d6a52a]" rows="2">${esc(s.description || '')}</textarea>
+                      <textarea class="edit-subtask-desc w-full p-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] outline-none focus:border-[#d6a52a]" rows="2">${esc(s.description || '')}</textarea>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div>
                         <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Phân công</label>
-                        <select class="edit-subtask-assignee w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-semibold outline-none focus:border-[#d6a52a]">
+                        <select class="edit-subtask-assignee w-full h-10 px-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] font-semibold outline-none focus:border-[#d6a52a]">
                           <option value="">-- Chưa giao --</option>
                           ${allUsers.map(u => `
                             <option value="${u.id}" ${u.id === s.assigneeId ? 'selected' : ''}>${esc(u.name)}</option>
@@ -241,12 +241,12 @@ export class SubtasksModal {
 
                       <div>
                         <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Hạn chót</label>
-                        <input type="date" class="edit-subtask-duedate w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-mono-data outline-none focus:border-[#d6a52a]" value="${s.dueDate ? s.dueDate.slice(0, 10) : ''}" />
+                        <input type="date" class="edit-subtask-duedate w-full h-10 px-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] font-mono-data outline-none focus:border-[#d6a52a]" value="${s.dueDate ? s.dueDate.slice(0, 10) : ''}" />
                       </div>
 
                       <div>
                         <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Trạng thái</label>
-                        <select class="edit-subtask-status w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-bold outline-none focus:border-[#d6a52a]">
+                        <select class="edit-subtask-status w-full h-10 px-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] font-bold outline-none focus:border-[#d6a52a]">
                           <option value="todo" ${s.status === 'todo' ? 'selected' : ''}>Chưa bắt đầu</option>
                           <option value="in_progress" ${s.status === 'in_progress' ? 'selected' : ''}>Đang thực hiện</option>
                           <option value="done" ${isDone ? 'selected' : ''}>Đã hoàn thành</option>

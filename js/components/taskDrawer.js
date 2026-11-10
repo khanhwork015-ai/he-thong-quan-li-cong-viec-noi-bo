@@ -5,9 +5,9 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=6.3';
-import { store } from '../store.js?v=6.3';
-import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=6.3';
+import { auth } from '../auth.js?v=6.4';
+import { store } from '../store.js?v=6.4';
+import { esc, soVN, ngayVN, toast, timeAgo, rung } from '../helpers.js?v=6.4';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
@@ -360,18 +360,18 @@ export class TaskDrawer {
                         
                         <div>
                           <label class="block text-[11px] font-bold text-[#0d1c2f] mb-0.5">Tiêu đề việc con *</label>
-                          <input type="text" class="edit-subtask-title w-full h-9 px-3 rounded-lg border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a]" value="${esc(s.title || s.text)}" />
+                          <input type="text" class="edit-subtask-title w-full h-10 px-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a]" value="${esc(s.title || s.text)}" />
                         </div>
 
                         <div>
                           <label class="block text-[11px] font-bold text-[#0d1c2f] mb-0.5">Mô tả &amp; Tiêu chuẩn bàn giao</label>
-                          <textarea class="edit-subtask-desc w-full p-2 rounded-lg border border-[#e2e8f0] text-[12px] outline-none focus:border-[#d6a52a]" rows="2" placeholder="Ghi chú yêu cầu kỹ thuật...">${esc(s.description || '')}</textarea>
+                          <textarea class="edit-subtask-desc w-full p-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] outline-none focus:border-[#d6a52a]" rows="2" placeholder="Ghi chú yêu cầu kỹ thuật...">${esc(s.description || '')}</textarea>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                           <div>
                             <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Phân công</label>
-                            <select class="edit-subtask-assignee w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-semibold outline-none focus:border-[#d6a52a]">
+                            <select class="edit-subtask-assignee w-full h-10 px-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] font-semibold outline-none focus:border-[#d6a52a]">
                               <option value="">-- Chưa giao --</option>
                               ${store.getAllUsers().map(u => `
                                 <option value="${u.id}" ${u.id === s.assigneeId ? 'selected' : ''}>${esc(u.name)}</option>
@@ -381,12 +381,12 @@ export class TaskDrawer {
 
                           <div>
                             <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Hạn chót</label>
-                            <input type="date" class="edit-subtask-duedate w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-mono-data outline-none focus:border-[#d6a52a]" value="${s.dueDate ? s.dueDate.slice(0, 10) : ''}" />
+                            <input type="date" class="edit-subtask-duedate w-full h-10 px-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] font-mono-data outline-none focus:border-[#d6a52a]" value="${s.dueDate ? s.dueDate.slice(0, 10) : ''}" />
                           </div>
 
                           <div>
                             <label class="block text-[10.5px] font-bold text-[#0d1c2f] mb-0.5">Trạng thái</label>
-                            <select class="edit-subtask-status w-full h-8 px-2 rounded-lg border border-[#e2e8f0] text-[11.5px] font-bold outline-none focus:border-[#d6a52a]">
+                            <select class="edit-subtask-status w-full h-10 px-2.5 rounded-lg border border-[#cbd5e1] text-[12.5px] font-bold outline-none focus:border-[#d6a52a]">
                               <option value="todo" ${s.status === 'todo' ? 'selected' : ''}>Chưa bắt đầu</option>
                               <option value="in_progress" ${s.status === 'in_progress' ? 'selected' : ''}>Đang thực hiện</option>
                               <option value="done" ${isDone ? 'selected' : ''}>Đã hoàn thành</option>
@@ -453,7 +453,7 @@ export class TaskDrawer {
                 <div class="flex justify-end pt-1">
                   <button type="button" id="btnAddSubtask" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[13px] transition-colors shadow-xs flex items-center justify-center gap-1.5 cursor-pointer min-h-[44px]">
                     <span class="material-symbols-outlined text-[19px]">add_circle</span>
-                    <span>＋ Thêm Việc Con Mới</span>
+                    <span>Thêm Việc Con Mới</span>
                   </button>
                 </div>
               </div>

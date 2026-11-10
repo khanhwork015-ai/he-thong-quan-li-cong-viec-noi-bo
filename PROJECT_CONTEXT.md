@@ -179,6 +179,16 @@
   - **Sửa lỗi bo góc quá sâu (`rounded-3xl`):** Thay thế toàn bộ bo góc bong bóng `rounded-3xl` thành `rounded-2xl` và `rounded-xl` sắc nét, tinh tế và đồng bộ chuẩn SHIN AIOS v2.7.
   - **Tối ưu Bottom Nav Mobile 5 mục:** Giữ đúng 5 mục cốt lõi (`Tổng quan`, `Kế hoạch`, `Công việc`, `Nhân sự`, `Cài đặt`) đảm bảo vùng chạm thoải mái > 64px, loại bỏ tràn ngang thanh tab.
   - **Nâng cấp Cache Buster toàn diện `?v=6.3`:** Đẩy Git `origin/main`.
+- [x] **27. Chuẩn Hóa Chi Tiết UI/UX: Nâng Chiều Cao Input Đạt Chuẩn ($\ge 40$–$44$px), Loại Bỏ Nút Trùng Lặp 2 Icon, Sửa Tràn Form Thêm Việc & Chuẩn Hóa Bo Góc Tinh Tế (`planDrawer.js`, `plansView.js`, `planModal.js`, `createTaskModal.js`, `subtasksModal.js`, `taskDrawer.js`, `app.js`, `dashboardView.js`, `departmentView.js`)**:
+  - **Loại bỏ triệt để hiện tượng 2 icon trên một nút bấm (Double-icon redundancy):** Xóa bỏ các ký tự `+` và `＋` nằm dư thừa trong thẻ `<span>` bên cạnh icon Material Symbols (như `[add_task] ＋ Chuyển thành Task`, `[add_circle] + Lập Kế Hoạch`, `[person_add] + Cấp Tài Khoản`, v.v.). Các nút bấm giờ đây chỉ có 1 icon chuyên nghiệp kèm nhãn hành vi trực quan.
+  - **Khắc phục lỗi Input quá nhỏ & tràn Form thêm việc dự kiến (`planDrawer.js`):**
+    + Nâng toàn bộ chiều cao của các trường nhập liệu (tiêu đề, phân công, hạn chót, link tài liệu, bình luận) lên chuẩn công thái học `h-11` (44px) và `h-10` (40px) với viền rõ ràng `border-[#cbd5e1]` trên nền trắng `bg-white`.
+    + Bố trí lại Form thêm đầu việc dự kiến: Dòng 1 là Tiêu đề việc, Dòng 2 chia lưới 2 cột (Người nhận việc ở cột trái, Hạn chót + Nút "Thêm việc" ở cột phải), triệt tiêu hoàn toàn lỗi nút bấm bị đẩy rớt ra khỏi mép màn hình điện thoại.
+  - **Loại bỏ bo góc tròn bong bóng (`rounded-full`):**
+    + Thay thế các badge/pill bo tròn quả nhộng dễ bị gãy 2 dòng xấu xí (như badge `2/4 mốc • 50%`) thành `rounded-lg` / `rounded-md` hiện đại, thanh thoát, cố định dòng với `whitespace-nowrap shrink-0`.
+    + Đồng bộ hóa các card và container thành `rounded-xl` / `rounded-lg` sắc nét, chuẩn phong cách Enterprise SaaS.
+  - **Sửa lỗi Input tìm kiếm bị trùng lặp trong `plansView.js`:** Loại bỏ khối HTML thừa gây ra 2 ô tìm kiếm chồng chéo.
+  - **Nâng cấp Cache Buster toàn diện `?v=6.4`:** Đồng bộ trên toàn bộ hệ thống file và đẩy Git `origin/main`.
 
 ---
 

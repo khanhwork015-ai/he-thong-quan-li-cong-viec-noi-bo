@@ -7,9 +7,9 @@
  * Hỗ trợ chọn Bộ Phận Con (Teams) & Switch Phê Duyệt 1-Chạm (One-Tap Approval)
  */
 
-import { auth } from '../auth.js?v=6.3';
-import { store } from '../store.js?v=6.3';
-import { toast, rung, esc } from '../helpers.js?v=6.3';
+import { auth } from '../auth.js?v=6.4';
+import { store } from '../store.js?v=6.4';
+import { toast, rung, esc } from '../helpers.js?v=6.4';
 
 export class CreateTaskModal {
   constructor(containerId, onTaskCreated) {
@@ -103,19 +103,19 @@ export class CreateTaskModal {
             </div>
 
             <!-- DANH SÁCH VIỆC CON (SUBTASKS) -->
-            <div class="p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#fffbeb]/40 flex flex-col gap-2.5 shadow-2xs">
+            <div class="p-3.5 rounded-xl border border-[#e2e8f0] bg-[#fffbeb]/40 flex flex-col gap-2.5 shadow-2xs">
               <div class="flex items-center justify-between">
                 <label class="block text-[12.5px] font-bold text-[#795900] flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[18px]">account_tree</span>
                   <span>Danh sách việc con (Subtasks)</span>
                 </label>
-                <span class="text-[11px] font-bold text-[#92400e] bg-[#fef3c7] px-2 py-0.5 rounded-full" id="modalSubtaskCountBadge">0 việc con</span>
+                <span class="text-[11px] font-bold text-[#92400e] bg-[#fef3c7] px-2 py-0.5 rounded-md" id="modalSubtaskCountBadge">0 việc con</span>
               </div>
 
-              <!-- Ô NHẬP VIỆC CON NHANH -->
+              <!-- Ô NHẬP VIỆC CON NHANH (INPUT ĐẠT CHUẨN HEIGHT) -->
               <div class="flex gap-2">
-                <input type="text" id="inputModalSubtaskTitle" placeholder="Thêm việc con (VD: Đối soát tài liệu, kiểm kê lô hàng...) rồi bấm ＋" class="flex-1 h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
-                <button type="button" id="btnAddModalSubtask" class="px-4 h-10 rounded-xl bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[12.5px] flex items-center gap-1 shrink-0 cursor-pointer transition-colors shadow-2xs min-h-[40px]">
+                <input type="text" id="inputModalSubtaskTitle" placeholder="Nhập tên việc con (VD: Đối soát tài liệu, kiểm kê...)" class="flex-1 h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
+                <button type="button" id="btnAddModalSubtask" class="px-4 h-11 rounded-lg bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white font-bold text-[13px] flex items-center gap-1 shrink-0 cursor-pointer transition-colors shadow-2xs min-h-[44px]">
                   <span class="material-symbols-outlined text-[18px]">add</span>
                   <span>Thêm</span>
                 </button>
@@ -126,19 +126,19 @@ export class CreateTaskModal {
             </div>
 
             <!-- PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE) -->
-            <div class="p-3.5 rounded-2xl border border-[#e2e8f0] flex flex-col gap-2.5" style="background-color: var(--primary-soft); border-color: var(--border);">
+            <div class="p-3.5 rounded-xl border border-[#e2e8f0] flex flex-col gap-2.5" style="background-color: var(--primary-soft); border-color: var(--border);">
               <div class="flex items-center justify-between">
                 <label class="block text-[12.5px] font-bold flex items-center gap-1.5" style="color: var(--primary);">
                   <span class="material-symbols-outlined text-[18px]">person_add</span>
                   <span>Phân công người thực hiện (Assignee) *</span>
                 </label>
-                <span class="text-[10.5px] font-semibold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-full">Tự động báo chuông</span>
+                <span class="text-[10.5px] font-semibold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-md">Tự động báo chuông</span>
               </div>
 
               <div class="flex items-center gap-3">
                 <img id="newTaskAssigneeAvatar" src="${currentAssigneeUser.avatar}" class="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white shadow-xs" />
                 <div class="flex-1 min-w-0">
-                  <select id="newTaskAssignee" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] font-bold text-[#0d1c2f] outline-none focus:border-[#d6a52a] bg-white cursor-pointer shadow-2xs">
+                  <select id="newTaskAssignee" class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13.5px] font-bold text-[#0d1c2f] outline-none focus:border-[#d6a52a] bg-white cursor-pointer shadow-2xs">
                     ${depts.map(d => {
                       const dUsers = allUsers.filter(u => u.departmentId === d.id || u.departmentId === 'all');
                       if (dUsers.length === 0) return '';
@@ -161,13 +161,13 @@ export class CreateTaskModal {
             </div>
 
             <!-- SWITCH YÊU CẦU PHÊ DUYỆT 1-CHẠM (APPROVAL WORKFLOW) -->
-            <div class="p-3.5 rounded-2xl border border-amber-200 bg-amber-50/60 flex flex-col gap-2.5">
+            <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/60 flex flex-col gap-2.5">
               <div class="flex items-center justify-between">
                 <label for="newTaskRequireApproval" class="flex items-center gap-2.5 cursor-pointer select-none">
                   <input type="checkbox" id="newTaskRequireApproval" ${requiresApproval ? 'checked' : ''} class="w-5 h-5 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer" />
                   <span class="text-[13px] font-bold text-[#0d1c2f]">Yêu cầu phê duyệt (One-Tap Approval)</span>
                 </label>
-                <span class="text-[11px] font-bold text-amber-800 bg-amber-200/70 px-2 py-0.5 rounded-full">Trình ký</span>
+                <span class="text-[11px] font-bold text-amber-800 bg-amber-200/70 px-2 py-0.5 rounded-md">Trình ký</span>
               </div>
               <p class="text-[11.5px] text-[#64748b]">Bật tùy chọn này nếu công việc cần Trưởng phòng hoặc Ban Lãnh Đạo ký duyệt trước khi nghiệm thu.</p>
 

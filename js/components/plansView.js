@@ -6,10 +6,10 @@
  * - Bộ lọc trạng thái trực quan & Tìm kiếm nhanh
  */
 
-import { auth } from '../auth.js?v=6.3';
-import { store } from '../store.js?v=6.3';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.3';
-import { PLAN_STATUSES } from '../models.js?v=6.3';
+import { auth } from '../auth.js?v=6.4';
+import { store } from '../store.js?v=6.4';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=6.4';
+import { PLAN_STATUSES } from '../models.js?v=6.4';
 
 export class PlansView {
   constructor(containerId, onSelectPlan, onOpenCreatePlanModal, onEditPlan) {
@@ -84,70 +84,60 @@ export class PlansView {
             
             <button 
               type="button" 
-              class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold text-[12.5px] shadow-xs hover:shadow-md transition-all min-h-[40px] cursor-pointer" 
+              class="flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg font-bold text-[13px] shadow-xs hover:shadow-md transition-all min-h-[44px] cursor-pointer" 
               id="btnOpenCreatePlanModal"
               style="background-color: var(--primary-container); color: var(--on-primary-container);"
             >
               <span class="material-symbols-outlined text-[18px]">add_circle</span>
-              <span>+ Lập Kế Hoạch Mới</span>
+              <span>Lập Kế Hoạch Mới</span>
             </button>
           </div>
         </div>
 
         <!-- 2. BỘ LỌC TRẠNG THÁI & Ô TÌM KIẾM -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white p-3 sm:p-3.5 rounded-2xl border border-[#e2e8f0] shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white p-3 sm:p-3.5 rounded-xl border border-[#e2e8f0] shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
           
           <!-- TABS TRẠNG THÁI (CUỘN NGANG MOBILE) -->
           <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0 flex-1 min-w-0" id="planStatusTabs">
-            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'all' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'all' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="all">
+            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'all' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'all' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="all">
               <span>Tất cả</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-data font-bold bg-white/40">${countAll}</span>
+              <span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono-data font-bold bg-white/40">${countAll}</span>
             </button>
 
-            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'in_progress' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'in_progress' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="in_progress">
+            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'in_progress' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'in_progress' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="in_progress">
               <span>🚀 Triển khai</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-data font-bold bg-white/40">${countInProgress}</span>
+              <span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono-data font-bold bg-white/40">${countInProgress}</span>
             </button>
 
-            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'pending_approval' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'pending_approval' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="pending_approval">
+            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'pending_approval' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'pending_approval' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="pending_approval">
               <span>⏳ Chờ duyệt</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-data font-bold bg-white/40">${countPending}</span>
+              <span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono-data font-bold bg-white/40">${countPending}</span>
             </button>
 
-            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'planning' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'planning' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="planning">
+            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'planning' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'planning' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="planning">
               <span>📝 Đang lập</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-data font-bold bg-white/40">${countPlanning}</span>
+              <span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono-data font-bold bg-white/40">${countPlanning}</span>
             </button>
 
-            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'completed' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'completed' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="completed">
+            <button type="button" class="btn-plan-status px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 min-h-[36px] cursor-pointer ${this.currentFilterStatus === 'completed' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.currentFilterStatus === 'completed' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-status="completed">
               <span>✅ Hoàn tất</span>
-              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono-data font-bold bg-white/40">${countCompleted}</span>
+              <span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono-data font-bold bg-white/40">${countCompleted}</span>
             </button>
           </div>
 
-          <!-- Ô TÌM KIẾM KẾ HOẠCH -->
-          <div class="relative w-full sm:w-60 shrink-0">
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[17px]">search</span>
+          <!-- Ô TÌM KIẾM KẾ HOẠCH DUY NHẤT VỚI HEIGHT ĐẠT CHUẨN -->
+          <div class="relative w-full sm:w-64 shrink-0">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
             <input 
               type="text" 
               id="inputSearchPlans" 
-              class="w-full h-9 pl-9 pr-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" 
-              style="background-color: var(--background); border-color: var(--border); color: var(--text);"
-              placeholder="Tìm theo tên, mã..." 
+              class="w-full h-11 pl-9 pr-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" 
+              placeholder="Tìm theo tên, mã, người..." 
               value="${esc(this.searchQuery)}"
             />
           </div>
 
         </div>
-            <input 
-              type="text" 
-              id="inputSearchPlans" 
-              class="w-full h-10 pl-9 pr-3 rounded-2xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" 
-              style="background-color: var(--background); border-color: var(--border); color: var(--text);"
-              placeholder="Tìm theo tên, mã, người phụ trách..." 
-              value="${esc(this.searchQuery)}"
-            />
-          </div>
 
         </div>
 
@@ -166,7 +156,7 @@ export class PlansView {
               </div>
               <button type="button" class="btn-empty-create-plan px-5 py-2.5 rounded-xl font-bold text-[13px] shadow-xs flex items-center gap-2 cursor-pointer mt-2" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                 <span class="material-symbols-outlined text-[19px]">add_circle</span>
-                <span>+ Lập Kế Hoạch Ngay</span>
+                <span>Lập Kế Hoạch Ngay</span>
               </button>
             </div>
           ` : filteredPlans.map(plan => {

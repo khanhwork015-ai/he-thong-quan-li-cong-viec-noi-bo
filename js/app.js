@@ -4,30 +4,30 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=6.3';
-import { store } from './store.js?v=6.3';
-import { Sidebar } from './components/sidebar.js?v=6.3';
-import { TopHeader } from './components/topHeader.js?v=6.3';
-import { BottomNav } from './components/bottomNav.js?v=6.3';
-import { DashboardView } from './components/dashboardView.js?v=6.3';
-import { WorkspaceView } from './components/workspaceView.js?v=6.3';
-import { TaskDrawer } from './components/taskDrawer.js?v=6.3';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=6.3';
-import { CreateTaskModal } from './components/createTaskModal.js?v=6.3'
-import { SubtasksModal } from './components/subtasksModal.js?v=6.3';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.3';;
-import { ProfileModal } from './components/profileModal.js?v=6.3';
-import { MemberModal } from './components/memberModal.js?v=6.3';
-import { SettingsModal } from './components/settingsModal.js?v=6.3';
-import { LoginView } from './components/loginView.js?v=6.3';
-import { DepartmentModal } from './components/departmentModal.js?v=6.3';
-import { DepartmentView } from './components/departmentView.js?v=6.3';
-import { PlansView } from './components/plansView.js?v=6.3';
-import { PlanDrawer } from './components/planDrawer.js?v=6.3';
-import { PlanModal } from './components/planModal.js?v=6.3';
-import { appScriptBridge } from './services/appScriptBridge.js?v=6.3';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.3';
-import { shinTheme } from './theme.js?v=6.3';
+import { auth } from './auth.js?v=6.4';
+import { store } from './store.js?v=6.4';
+import { Sidebar } from './components/sidebar.js?v=6.4';
+import { TopHeader } from './components/topHeader.js?v=6.4';
+import { BottomNav } from './components/bottomNav.js?v=6.4';
+import { DashboardView } from './components/dashboardView.js?v=6.4';
+import { WorkspaceView } from './components/workspaceView.js?v=6.4';
+import { TaskDrawer } from './components/taskDrawer.js?v=6.4';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=6.4';
+import { CreateTaskModal } from './components/createTaskModal.js?v=6.4'
+import { SubtasksModal } from './components/subtasksModal.js?v=6.4';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=6.4';;
+import { ProfileModal } from './components/profileModal.js?v=6.4';
+import { MemberModal } from './components/memberModal.js?v=6.4';
+import { SettingsModal } from './components/settingsModal.js?v=6.4';
+import { LoginView } from './components/loginView.js?v=6.4';
+import { DepartmentModal } from './components/departmentModal.js?v=6.4';
+import { DepartmentView } from './components/departmentView.js?v=6.4';
+import { PlansView } from './components/plansView.js?v=6.4';
+import { PlanDrawer } from './components/planDrawer.js?v=6.4';
+import { PlanModal } from './components/planModal.js?v=6.4';
+import { appScriptBridge } from './services/appScriptBridge.js?v=6.4';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan } from './helpers.js?v=6.4';
+import { shinTheme } from './theme.js?v=6.4';
 
 class App {
   constructor() {
@@ -386,23 +386,23 @@ class App {
               ${filteredMembers.length} nhân sự
             </span>
             ${canManage ? `
-              <button type="button" class="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl font-bold text-[12.5px] sm:text-[13px] shadow-xs hover:shadow-md transition-all min-h-[44px] cursor-pointer" id="btnOpenAddMember" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+              <button type="button" class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-[12.5px] sm:text-[13px] shadow-xs hover:shadow-md transition-all min-h-[44px] cursor-pointer" id="btnOpenAddMember" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                 <span class="material-symbols-outlined text-[19px]">person_add</span>
-                <span>+ Cấp Tài Khoản Mới</span>
+                <span>Cấp Tài Khoản Mới</span>
               </button>
             ` : ''}
           </div>
         </div>
 
         <!-- 2. BỘ LỌC TABS PHÒNG BAN (DÀNH CHO ADMIN & LÃNH ĐẠO) + Ô TÌM KIẾM NHÂN SỰ -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-3xl border border-[#e2e8f0] shadow-sm" style="background-color: var(--card); border-color: var(--border);">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-[#e2e8f0] shadow-sm" style="background-color: var(--card); border-color: var(--border);">
           
           <!-- TABS PHÒNG BAN (CUỘN NGANG MƯỢT MÀ TRÊN MOBILE) -->
           <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 flex-1 min-w-0" id="employeeDeptTabs">
             ${canSwitch ? `
               <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${this.employeeDeptFilter === 'all' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.employeeDeptFilter === 'all' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="all">
                 <span>🏥 Tất cả</span>
-                <span class="px-1.5 py-0.2 rounded-full text-[10.5px] font-mono-data font-bold bg-white/40">${allUsers.length}</span>
+                <span class="px-1.5 py-0.2 rounded-md text-[10.5px] font-mono-data font-bold bg-white/40">${allUsers.length}</span>
               </button>
             ` : ''}
 
@@ -413,7 +413,7 @@ class App {
                 <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${isActive ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${isActive ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="${d.id}">
                   <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${d.color || '#D6A52A'};"></span>
                   <span class="truncate max-w-[150px] sm:max-w-none">${esc(d.name)}</span>
-                  <span class="px-1.5 py-0.2 rounded-full text-[10.5px] font-mono-data font-bold bg-black/10">${dCount}</span>
+                  <span class="px-1.5 py-0.2 rounded-md text-[10.5px] font-mono-data font-bold bg-black/10">${dCount}</span>
                 </button>
               `;
             }).join('')}
@@ -422,7 +422,7 @@ class App {
           <!-- Ô TÌM KIẾM NHÂN SỰ -->
           <div class="relative w-full sm:w-64 shrink-0">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">search</span>
-            <input type="text" id="inputEmployeeSearch" value="${esc(this.employeeSearchQuery || '')}" placeholder="Tìm theo tên, chức danh, email..." class="w-full h-10 pl-9 pr-3.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-[#f8f9ff] text-[#0d1c2f] focus:border-[#d6a52a] focus:bg-white transition-all" />
+            <input type="text" id="inputEmployeeSearch" value="${esc(this.employeeSearchQuery || '')}" placeholder="Tìm theo tên, chức danh, email..." class="w-full h-11 pl-9 pr-3.5 rounded-lg border border-[#cbd5e1] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] transition-all" />
           </div>
 
         </div>
@@ -430,7 +430,7 @@ class App {
         <!-- 3. LƯỚI THẺ NHÂN SỰ (RESPONSIVE 1 - 2 - 3 COLS) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="employeeCardsGrid">
           ${filteredMembers.length === 0 ? `
-            <div class="col-span-full p-10 rounded-3xl text-center bg-white border border-dashed border-[#e2e8f0] flex flex-col items-center justify-center gap-3" style="background-color: var(--card); border-color: var(--border);">
+            <div class="col-span-full p-10 rounded-2xl text-center bg-white border border-dashed border-[#e2e8f0] flex flex-col items-center justify-center gap-3" style="background-color: var(--card); border-color: var(--border);">
               <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
                 <span class="material-symbols-outlined text-[30px]">group_off</span>
               </div>
@@ -443,7 +443,7 @@ class App {
               ${canManage ? `
                 <button type="button" class="btn-empty-add-emp-card px-4 py-2.5 rounded-xl font-bold text-[12.5px] shadow-xs flex items-center gap-1.5 cursor-pointer mt-1" style="background-color: var(--primary-container); color: var(--on-primary-container);">
                   <span class="material-symbols-outlined text-[18px]">person_add</span>
-                  <span>+ Cấp Tài Khoản Mới</span>
+                  <span>Cấp Tài Khoản Mới</span>
                 </button>
               ` : ''}
             </div>

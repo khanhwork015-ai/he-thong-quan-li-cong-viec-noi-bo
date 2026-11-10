@@ -4,10 +4,10 @@
  * Ai cũng có thể tạo kế hoạch - Tự động ghi nhận Người tạo và Thời gian tạo
  */
 
-import { auth } from '../auth.js?v=6.3';
-import { store } from '../store.js?v=6.3';
-import { esc, toast, rung } from '../helpers.js?v=6.3';
-import { PLAN_STATUSES } from '../models.js?v=6.3';
+import { auth } from '../auth.js?v=6.4';
+import { store } from '../store.js?v=6.4';
+import { esc, toast, rung } from '../helpers.js?v=6.4';
+import { PLAN_STATUSES } from '../models.js?v=6.4';
 
 export class PlanModal {
   constructor(containerId, onSaved) {
@@ -73,8 +73,7 @@ export class PlanModal {
                 <input 
                   type="text" 
                   id="inputPlanTitle" 
-                  class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] font-bold outline-none focus:border-[#d6a52a] focus:ring-1 focus:ring-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]"
-                  style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                  class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13.5px] font-bold outline-none focus:border-[#d6a52a] focus:ring-1 focus:ring-[#d6a52a] bg-white text-[#0d1c2f]"
                   placeholder="VD: Chiến dịch Khám Sức Khỏe Doanh Nghiệp Quý 1/2027..." 
                   value="${isEdit ? esc(planToEdit.title) : ''}" 
                   required 
@@ -89,8 +88,7 @@ export class PlanModal {
                   </label>
                   <select 
                     id="selectPlanDept" 
-                    class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] font-semibold outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]"
-                    style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                    class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] font-medium outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                     ${!canSelectDept && !isEdit ? 'disabled' : ''}
                   >
                     ${allDepts.map(d => `
@@ -105,8 +103,7 @@ export class PlanModal {
                   </label>
                   <select 
                     id="selectPlanLead" 
-                    class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] font-semibold outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]"
-                    style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                    class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] font-medium outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                   >
                     ${deptMembers.map(u => `
                       <option value="${u.id}" ${u.id === defaultLeadId ? 'selected' : ''}>${esc(u.name)} (${esc(u.title || 'Chuyên viên')})</option>
@@ -125,8 +122,7 @@ export class PlanModal {
                     type="date" 
                     id="inputPlanStartDate" 
                     value="${currentStartDate}" 
-                    class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-mono-data font-bold outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]"
-                    style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                    class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-mono-data font-bold outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                   />
                 </div>
 
@@ -138,8 +134,7 @@ export class PlanModal {
                     type="date" 
                     id="inputPlanDueDate" 
                     value="${currentDueDate}" 
-                    class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-mono-data font-bold outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]"
-                    style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                    class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-mono-data font-bold outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                     required
                   />
                 </div>
@@ -152,8 +147,7 @@ export class PlanModal {
                   </label>
                   <select 
                     id="selectPlanPriority" 
-                    class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-bold outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]"
-                    style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                    class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-bold outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                   >
                     <option value="P1" ${currentPriority === 'P1' ? 'selected' : ''}>P1 • Khẩn</option>
                     <option value="P2" ${currentPriority === 'P2' ? 'selected' : ''}>P2 • Quan trọng</option>
@@ -167,8 +161,7 @@ export class PlanModal {
                   </label>
                   <select 
                     id="selectPlanStatus" 
-                    class="w-full h-10 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] font-bold outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]"
-                    style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                    class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-bold outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                   >
                     <option value="planning" ${currentStatus === 'planning' ? 'selected' : ''}>📝 Đang Lập</option>
                     <option value="pending_approval" ${currentStatus === 'pending_approval' ? 'selected' : ''}>⏳ Chờ Duyệt</option>
@@ -187,8 +180,7 @@ export class PlanModal {
                 <textarea 
                   id="textareaPlanTarget" 
                   rows="2" 
-                  class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f] leading-relaxed resize-none"
-                  style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                  class="w-full p-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f] leading-relaxed resize-none"
                   placeholder="Ghi rõ kết quả mong muốn đạt được, chỉ số định lượng cụ thể..."
                 >${isEdit ? esc(planToEdit.target || '') : ''}</textarea>
               </div>
@@ -201,8 +193,7 @@ export class PlanModal {
                 <textarea 
                   id="textareaPlanNotes" 
                   rows="3" 
-                  class="w-full p-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f] leading-relaxed resize-none"
-                  style="background-color: var(--background); border-color: var(--border); color: var(--text);"
+                  class="w-full p-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f] leading-relaxed resize-none"
                   placeholder="Phân tích tình hình, phương án thực hiện, các phòng ban cần phối hợp..."
                 >${isEdit ? esc(planToEdit.notes || '') : ''}</textarea>
               </div>

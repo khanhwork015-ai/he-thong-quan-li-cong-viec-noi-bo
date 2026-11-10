@@ -8,9 +8,9 @@
  * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
  */
 
-import { auth } from '../auth.js?v=6.3';
-import { store } from '../store.js?v=6.3';
-import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=6.3';
+import { auth } from '../auth.js?v=6.4';
+import { store } from '../store.js?v=6.4';
+import { esc, soVN, ngayVN, loiChao, toast, rung } from '../helpers.js?v=6.4';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {
@@ -143,7 +143,7 @@ export class DashboardView {
           <!-- NÚT GIAO VIỆC 1-CHẠM 100% (PRIMARY CTA CAO >= 48PX) -->
           <button type="button" class="w-full py-3 px-4 rounded-xl font-bold text-[13.5px] transition-all min-h-[48px] flex items-center justify-center gap-2 shadow-xs cursor-pointer" id="btnHeroCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);">
             <span class="material-symbols-outlined text-[20px]">add_circle</span>
-            <span>＋ Giao Việc Mới / Khởi Tạo Đề Xuất 1-Chạm</span>
+            <span>Giao Việc Mới / Khởi Tạo Đề Xuất 1-Chạm</span>
           </button>
         </section>
 
