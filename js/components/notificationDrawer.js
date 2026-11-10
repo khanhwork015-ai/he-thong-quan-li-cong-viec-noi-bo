@@ -4,14 +4,15 @@
  * Đánh dấu đã đọc và Deep-linking mở thẳng Task Detail Drawer
  */
 
-import { auth } from '../auth.js?v=7.7';
-import { store } from '../store.js?v=7.7';
-import { esc, timeAgo, rung, toast, xacNhanXoa } from '../helpers.js?v=7.7';
+import { auth } from '../auth.js?v=7.8';
+import { store } from '../store.js?v=7.8';
+import { esc, timeAgo, rung, toast, xacNhanXoa } from '../helpers.js?v=7.8';
 
 export class NotificationDrawer {
-  constructor(containerId, onSelectTask) {
+  constructor(containerId, onSelectTask, onNotifChanged = null) {
     this.container = document.getElementById(containerId);
     this.onSelectTask = onSelectTask;
+    this.onNotifChanged = onNotifChanged;
     this.isOpen = false;
     this.currentFilter = 'all'; // 'all' | 'unread'
   }
@@ -219,6 +220,7 @@ export class NotificationDrawer {
           store.markAllNotificationsAsRead(currentUser.id);
           toast('Đã đánh dấu toàn bộ thông báo là đã đọc!', 'success');
           this.render();
+          if (this.onNotifChanged) this.onNotifChanged();
         }
       });
     }
@@ -236,6 +238,7 @@ export class NotificationDrawer {
               store.clearUserNotifications(currentUser.id);
               toast('Đã xóa toàn bộ thông báo!', 'info');
               this.render();
+              if (this.onNotifChanged) this.onNotifChanged();
             }
           );
         }

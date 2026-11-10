@@ -4,9 +4,9 @@
  * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
  */
 
-import { auth } from '../auth.js?v=7.7';
-import { store } from '../store.js?v=7.7';
-import { esc, toast, rung } from '../helpers.js?v=7.7';
+import { auth } from '../auth.js?v=7.8';
+import { store } from '../store.js?v=7.8';
+import { esc, toast, rung } from '../helpers.js?v=7.8';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',

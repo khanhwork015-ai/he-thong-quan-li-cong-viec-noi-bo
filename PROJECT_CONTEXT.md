@@ -290,6 +290,16 @@
     + **Tầng 3 - Khung Bounding Box Cố Định 1em (`width: 1em; height: 1em; overflow: hidden`):** Quy định chặt chẽ `.material-symbols-outlined` có `display: inline-flex; width: 1em; height: 1em; overflow: hidden; white-space: nowrap; flex-shrink: 0;`. Kể cả trong trường hợp xấu nhất font bị trễ, văn bản ligature tuyệt đối không bao giờ tràn ra ngoài làm xô lệch bất kỳ nút bấm hay layout nào.
     + **Tầng 4 - Điều phối gỡ Splash chính xác bằng `document.fonts.load`:** Chờ trực tiếp `document.fonts.load('24px "Material Symbols Outlined"')` trước khi ẩn Splash Screen, timeout dự phòng 1200ms.
   - **Nâng cấp Cache Buster toàn diện `?v=7.7`:** Đồng bộ trên toàn bộ 23 files và đẩy Git `origin/main`.
+- [x] **37. Sửa Lỗi UI Không Xóa Ngay Sau Khi Xác Nhận & Triệt Tiêu Khoảng Trống Ghi Chú Kế Hoạch (v7.8)**:
+  - **Khắc phục lỗi xóa task phải F5 mới mất:** Trong `taskDrawer.js:864`, sửa lỗi gọi nhầm `this.onTaskChanged()` (undefined) thành `this.onTaskUpdated()`. Gán cả 2 alias trong constructor để bảo vệ hai chiều. Khi xác nhận xóa, `store.deleteTask(id)` chạy và ngay lập tức gọi `this.refreshCurrentView()`, xóa task biến mất tức thì khỏi Table/Kanban/Cards mà không cần tải lại trang.
+  - **Rà soát toàn diện các hàm xóa/sửa:**
+    + Cập nhật `refreshCurrentView()` trong `app.js` tự động re-render `TaskDrawer` và `PlanDrawer` nếu đang mở, đảm bảo dữ liệu mới nhất được phản ánh tức thì.
+    + Thêm callback `onNotifChanged` cho `NotificationDrawer` giúp biểu tượng chuông thông báo ở Header cập nhật badge ngay khi xóa hoặc đánh dấu đã đọc.
+    + Kiểm tra và xác nhận toàn bộ luồng Xóa Kế hoạch, Xóa Cột mốc, Xóa Việc con, Xóa Phòng ban, Xóa Bộ phận, Xóa Nhân sự đều re-render ngay lập tức.
+  - **Triệt tiêu khoảng trống thừa ở ô Ghi Chú Kế Hoạch (`c907bf9c`):**
+    + Do khai báo `whitespace-pre-wrap` kết hợp xuống dòng và thụt lề 18 spaces trong template literal của `planDrawer.js` (và `subtaskDetailModal.js`), trình duyệt render khoảng cách đó thành 1 dòng trống và khoảng thụt lề lớn.
+    + Chuyển chuỗi nội dung thành cùng dòng và áp dụng `.trim()`, loại bỏ 100% khoảng trắng thừa, văn bản hiển thị sát và ngay ngắn dưới tiêu đề.
+  - **Nâng cấp Cache Buster toàn diện `?v=7.8`:** Đồng bộ trên 23 files và đẩy Git `origin/main`.
 
 ---
 

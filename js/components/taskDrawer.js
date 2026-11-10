@@ -5,14 +5,15 @@
  * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
  */
 
-import { auth } from '../auth.js?v=7.7';
-import { store } from '../store.js?v=7.7';
-import { esc, soVN, ngayVN, toast, timeAgo, rung, xacNhan2Lan, xacNhanXoa, popupTuChoiPheDuyet, kiemTraTreHan } from '../helpers.js?v=7.7';
+import { auth } from '../auth.js?v=7.8';
+import { store } from '../store.js?v=7.8';
+import { esc, soVN, ngayVN, toast, timeAgo, rung, xacNhan2Lan, xacNhanXoa, popupTuChoiPheDuyet, kiemTraTreHan } from '../helpers.js?v=7.8';
 
 export class TaskDrawer {
   constructor(containerId, onTaskUpdated, onEditTask = null, onOpenSubtaskDetail = null) {
     this.container = document.getElementById(containerId);
     this.onTaskUpdated = onTaskUpdated;
+    this.onTaskChanged = onTaskUpdated;
     this.onEditTask = onEditTask;
     this.onOpenSubtaskDetail = onOpenSubtaskDetail;
     this.currentTaskId = null;
@@ -861,7 +862,7 @@ export class TaskDrawer {
             store.deleteTask(task.id);
             toast('Đã xóa công việc thành công!', 'success');
             this.close();
-            if (this.onTaskChanged) this.onTaskChanged();
+            if (this.onTaskUpdated) this.onTaskUpdated();
           }
         );
       });

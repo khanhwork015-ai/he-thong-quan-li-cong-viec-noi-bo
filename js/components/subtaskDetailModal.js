@@ -6,8 +6,8 @@
  * Hỗ trợ Stacked Modal độc lập (z-[120]), không ghi đè SubtasksModal hay TaskDrawer bên dưới.
  */
 
-import { store } from '../store.js?v=7.7';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=7.7';
+import { store } from '../store.js?v=7.8';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=7.8';
 
 export class SubtaskDetailModal {
   constructor(containerId, onUpdated) {
@@ -97,9 +97,7 @@ export class SubtaskDetailModal {
                 <span class="material-symbols-outlined text-[16px] text-[#795900]">description</span>
                 <span>Mô tả &amp; Tiêu chuẩn bàn giao</span>
               </label>
-              <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0] text-[13px] text-[#0d1c2f] leading-relaxed whitespace-pre-wrap">
-                ${subtask.description ? esc(subtask.description) : '<span class="text-gray-400 italic">Chưa có mô tả chi tiết cho việc con này.</span>'}
-              </div>
+              <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0] text-[13px] text-[#0d1c2f] leading-relaxed whitespace-pre-wrap">${subtask.description ? esc(subtask.description.trim()) : '<span class="text-gray-400 italic">Chưa có mô tả chi tiết cho việc con này.</span>'}</div>
             </div>
 
             <!-- GRID: NGƯỜI PHỤ TRÁCH & HẠN HOÀN THÀNH -->

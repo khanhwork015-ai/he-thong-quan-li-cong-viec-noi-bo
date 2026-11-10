@@ -4,11 +4,11 @@
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=7.7';
-import { store } from '../store.js?v=7.7';
-import { USERS } from '../models.js?v=7.7';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=7.7';
-import { shinTheme } from '../theme.js?v=7.7';
+import { auth } from '../auth.js?v=7.8';
+import { store } from '../store.js?v=7.8';
+import { USERS } from '../models.js?v=7.8';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=7.8';
+import { shinTheme } from '../theme.js?v=7.8';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
