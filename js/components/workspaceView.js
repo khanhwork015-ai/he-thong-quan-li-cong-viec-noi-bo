@@ -7,9 +7,9 @@
  * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
  */
 
-import { auth } from '../auth.js?v=7.4';
-import { store } from '../store.js?v=7.4';
-import { esc, soVN, ngayVN, toast, rung, kiemTraTreHan } from '../helpers.js?v=7.4';
+import { auth } from '../auth.js?v=7.5';
+import { store } from '../store.js?v=7.5';
+import { esc, soVN, ngayVN, toast, rung, kiemTraTreHan } from '../helpers.js?v=7.5';
 
 export class WorkspaceView {
   constructor(containerId, onOpenCreateModal, onSelectTask, onOpenSubtasksModal = null, onEditTask = null) {
@@ -247,14 +247,16 @@ export class WorkspaceView {
                 ${esc(t.title)}
               </h4>
 
-              <div class="text-[11.5px] text-[#64748b] mb-1.5 flex items-center gap-1.5 flex-wrap">
-                <span class="text-[#817663]">Tạo bởi:</span>
-                <strong class="text-[#0d1c2f] font-semibold">${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong>
-                <span class="text-gray-300">•</span>
-                <span class="text-[#795900] font-mono-data font-medium inline-flex items-center gap-1">
+              <!-- TÁCH RIÊNG 2 DÒNG: NGƯỜI TẠO & NGÀY TẠO -->
+              <div class="flex flex-col gap-0.5 mb-1.5 text-[11.5px]">
+                <div class="flex items-center gap-1 text-[#817663]">
+                  <span>Tạo bởi:</span>
+                  <strong class="text-[#0d1c2f] font-semibold">${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong>
+                </div>
+                <div class="flex items-center gap-1 text-[#795900] font-mono-data font-medium">
                   <span class="material-symbols-outlined text-[13px] text-[#d6a52a]">calendar_today</span>
-                  ${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}
-                </span>
+                  <span>Ngày tạo: ${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}</span>
+                </div>
               </div>
 
               <p class="text-[12px] text-[#64748b] line-clamp-2 mb-3">
@@ -323,14 +325,16 @@ export class WorkspaceView {
                     </td>
                     <td class="py-3.5 px-4">
                       <div class="font-bold text-[#0d1c2f] line-clamp-1 hover:text-[#795900] transition-colors">${esc(t.title)}</div>
-                      <div class="text-[11.5px] text-[#64748b] flex items-center gap-1.5 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">
-                        <span class="text-[#817663]">Tạo bởi:</span>
-                        <strong class="text-[#0d1c2f] font-semibold">${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong>
-                        <span class="text-gray-300">•</span>
-                        <span class="text-[#795900] font-mono-data font-medium inline-flex items-center gap-1 shrink-0">
+                      <!-- TÁCH RIÊNG 2 DÒNG: NGƯỜI TẠO & NGÀY TẠO -->
+                      <div class="flex flex-col gap-0.5 mt-1 text-[11.5px]">
+                        <div class="flex items-center gap-1 text-[#817663] truncate">
+                          <span>Tạo bởi:</span>
+                          <strong class="text-[#0d1c2f] font-semibold">${creator ? esc(creator.name) : esc(t.creatorName || 'Ban Giám Đốc')}</strong>
+                        </div>
+                        <div class="flex items-center gap-1 text-[#795900] font-mono-data font-medium">
                           <span class="material-symbols-outlined text-[13px] text-[#d6a52a]">calendar_today</span>
-                          ${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}
-                        </span>
+                          <span>Ngày tạo: ${t.createdAt ? ngayVN(t.createdAt) : 'Gần đây'}</span>
+                        </div>
                       </div>
                       ${t.description ? `<div class="text-[11.5px] text-[#64748b] line-clamp-1 mt-0.5">${esc(t.description)}</div>` : ''}
                     </td>

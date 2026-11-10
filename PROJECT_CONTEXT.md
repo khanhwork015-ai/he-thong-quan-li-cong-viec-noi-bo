@@ -272,6 +272,12 @@
     + Hàng đợi duyệt việc (Priority Queue) hiển thị cảnh báo đỏ cạnh ngày hạn.
     + Click thẻ KPI "Quá hạn" chuyển hướng thẳng sang tab "Quá hạn" trên Không gian công việc.
   - **Nâng cấp Cache Buster toàn diện `?v=7.4`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
+- [x] **34. Tách Riêng Người Tạo & Ngày Tạo Thành 2 Hàng Rõ Ràng (v7.5)**:
+  - **Bảng Quản lý công việc (Table View & Mobile Cards View trong `workspaceView.js`):** Thay vì gộp chung một dòng dạng `Tạo bởi: ... • 📅 DD/MM/YYYY`, đã tách thành 2 dòng riêng biệt:
+    + Dòng 1: `Tạo bởi: [Họ và tên người tạo]` (màu xám xanh & chữ đậm dễ nhìn).
+    + Dòng 2: `📅 Ngày tạo: DD/MM/YYYY` (màu vàng kim font mono-data chuyên nghiệp).
+  - Giúp cột Tên công việc thông thoáng, dễ đọc lướt, không bị dài dòng hay tràn dòng ngang.
+  - **Nâng cấp Cache Buster toàn diện `?v=7.5`:** Đồng bộ trên 24 files và đẩy Git `origin/main`.
 
 ---
 
