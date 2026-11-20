@@ -2,7 +2,7 @@ import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { appScriptBridge } from '../services/appScriptBridge.js?v=8.7';
 import { esc, toast, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=8.7';
-import { shinTheme } from '../theme.js?v=8.7';
+import { shinTheme } from '../theme.js?v=9.1';
 
 export class SettingsModal {
   constructor(containerId, onSettingsUpdated) {

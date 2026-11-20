@@ -68,16 +68,20 @@
     };
   </script>
 
-  <link rel="stylesheet" href="css/stitch-theme.css?v=8.8" />
+  <link rel="stylesheet" href="css/stitch-theme.css?v=9.1" />
 </head>
 <body class="antialiased min-h-screen transition-colors duration-200">
 
   <div id="app-splash-loader" style="position: fixed; inset: 0; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #f8f9ff; transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
     <style>
-      [data-theme="dark"] #app-splash-loader { background-color: #0d1522 !important; }
-      [data-theme="dark"] #app-splash-loader .tvm-splash-title { color: #f8fafc !important; }
-      [data-theme="dark"] #app-splash-loader .tvm-splash-sub { color: #94a3b8 !important; }
-      [data-theme="dark"] #app-splash-loader .tvm-splash-status { color: #64748b !important; }
+      [data-theme="dark"] #app-splash-loader,
+      [data-palette="cyber"] #app-splash-loader { background-color: #0d1522 !important; }
+      [data-theme="dark"] #app-splash-loader .tvm-splash-title,
+      [data-palette="cyber"] #app-splash-loader .tvm-splash-title { color: #f8fafc !important; }
+      [data-theme="dark"] #app-splash-loader .tvm-splash-sub,
+      [data-palette="cyber"] #app-splash-loader .tvm-splash-sub { color: #94a3b8 !important; }
+      [data-theme="dark"] #app-splash-loader .tvm-splash-status,
+      [data-palette="cyber"] #app-splash-loader .tvm-splash-status { color: #64748b !important; }
       @keyframes tvm-spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
@@ -146,6 +150,6 @@
 
   <div id="toast-container"></div>
 
-  <script type="module" src="js/app.js?v=9.0"></script>
+  <script type="module" src="js/app.js?v=9.1"></script>
 </body>
 </html>

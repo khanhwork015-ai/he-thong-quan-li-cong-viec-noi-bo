@@ -302,7 +302,7 @@ class ThemeService {
                       <div class="text-[11px] text-[#64748b] truncate">${p.desc}</div>
                     </div>
                   </div>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-1.5" style="background-color: ${isSelected ? p.primary : '#e2e8f0'}; color: ${isSelected ? '#ffffff' : '#475569'};">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ml-1.5" style="background-color: ${isSelected ? 'var(--primary-container)' : 'var(--bg)'}; color: ${isSelected ? 'var(--on-primary-container)' : 'var(--text-muted)'}; border: 1px solid ${isSelected ? 'transparent' : 'var(--border)'};">
                     ${p.tag}
                   </span>
                 </div>

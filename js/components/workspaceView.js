@@ -217,7 +217,7 @@ export class WorkspaceView {
                   <button type="button" class="btn-edit-task p-1 rounded-lg text-amber-700 hover:bg-amber-100/70 min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer" data-task-id="${t.id}" title="Chỉnh sửa công việc">
                     <span class="material-symbols-outlined text-[18px]">edit</span>
                   </button>
-                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background-color: ${statusMeta.bg}; color: ${statusMeta.text};">
+                  <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${statusMeta.cls}">
                     ${statusMeta.label}
                   </span>
                 </div>
@@ -342,7 +342,7 @@ export class WorkspaceView {
                       `}
                     </td>
                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                      <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block" style="background-color: ${statusMeta.bg}; color: ${statusMeta.text};">
+                      <span class="px-2.5 py-1 rounded-full text-[11px] font-bold inline-block ${statusMeta.cls}">
                         ${statusMeta.label}
                       </span>
                     </td>
@@ -463,16 +463,16 @@ export class WorkspaceView {
 
   getStatusMeta(status) {
     const map = {
-      'todo': { label: 'Chưa bắt đầu', bg: '#F1F5F9', text: '#475569' },
-      'in_progress': { label: 'Đang thực hiện', bg: '#DBEAFE', text: '#1D4ED8' },
-      'pending_approval': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
-      'review': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
-      'done': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
-      'completed': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
-      'paused': { label: 'Tạm dừng', bg: '#F3E8FF', text: '#7E22CE' },
-      'overdue': { label: 'Quá hạn', bg: '#FEE2E2', text: '#B91C1C' }
+      'todo': { label: 'Chưa bắt đầu', bg: '#F1F5F9', text: '#475569', cls: 'bg-[#f1f5f9] text-[#475569]' },
+      'in_progress': { label: 'Đang thực hiện', bg: '#DBEAFE', text: '#1D4ED8', cls: 'bg-[#dbeafe] text-[#1d4ed8]' },
+      'pending_approval': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E', cls: 'bg-[#fef3c7] text-[#92400e]' },
+      'review': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E', cls: 'bg-[#fef3c7] text-[#92400e]' },
+      'done': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E', cls: 'bg-[#ccfbf1] text-[#0f766e]' },
+      'completed': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E', cls: 'bg-[#ccfbf1] text-[#0f766e]' },
+      'paused': { label: 'Tạm dừng', bg: '#F3E8FF', text: '#7E22CE', cls: 'bg-[#f3e8ff] text-[#7e22ce]' },
+      'overdue': { label: 'Quá hạn', bg: '#FEE2E2', text: '#B91C1C', cls: 'bg-[#fee2e2] text-[#b91c1c]' }
     };
-    return map[status] || { label: status, bg: '#F1F5F9', text: '#475569' };
+    return map[status] || { label: status, bg: '#F1F5F9', text: '#475569', cls: 'bg-[#f1f5f9] text-[#475569]' };
   }
 
   bindEvents() {

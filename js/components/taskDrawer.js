@@ -253,17 +253,17 @@ export class TaskDrawer {
               </div>
             </div>
 
-            <div class="p-4 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between relative" style="background-color: var(--background); border-color: var(--border);">
+            <div class="p-4 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between relative" style="background-color: var(--bg); border-color: var(--border);">
               <div>
                 <span class="text-[11px] text-[#64748b] font-bold uppercase tracking-wider">Trạng thái hiện tại</span>
-                <div class="text-[13px] font-bold mt-0.5" style="color: ${statusMeta.text};">
+                <div class="text-[13px] font-bold mt-0.5 ${statusMeta.textCls}">
                   ${statusMeta.label}
                 </div>
               </div>
 
               <div class="relative">
-                <button type="button" id="btnCustomStatusToggle" class="h-10 px-3.5 rounded-xl bg-white border border-[#e2e8f0] hover:border-[#d6a52a] text-[12.5px] font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer min-h-[40px]" style="color: ${statusMeta.text};">
-                  <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${statusMeta.text};"></span>
+                <button type="button" id="btnCustomStatusToggle" class="h-10 px-3.5 rounded-xl bg-white border border-[#e2e8f0] hover:border-[#d6a52a] text-[12.5px] font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer min-h-[40px] ${statusMeta.textCls}">
+                  <span class="w-2.5 h-2.5 rounded-full shrink-0 ${statusMeta.dotCls}"></span>
                   <span>${statusMeta.label}</span>
                   <span class="material-symbols-outlined text-[18px] text-[#64748b]">expand_more</span>
                 </button>
@@ -585,16 +585,16 @@ export class TaskDrawer {
 
   getStatusMeta(status) {
     const map = {
-      'todo': { label: 'Chưa bắt đầu', bg: '#F1F5F9', text: '#475569' },
-      'in_progress': { label: 'Đang thực hiện', bg: '#DBEAFE', text: '#1D4ED8' },
-      'pending_approval': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
-      'review': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E' },
-      'done': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
-      'completed': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E' },
-      'paused': { label: 'Tạm dừng', bg: '#F3E8FF', text: '#7E22CE' },
-      'overdue': { label: 'Quá hạn', bg: '#FEE2E2', text: '#B91C1C' }
+      'todo': { label: 'Chưa bắt đầu', bg: '#F1F5F9', text: '#475569', textCls: 'text-[#475569]', dotCls: 'bg-slate-400' },
+      'in_progress': { label: 'Đang thực hiện', bg: '#DBEAFE', text: '#1D4ED8', textCls: 'text-[#1d4ed8]', dotCls: 'bg-blue-500' },
+      'pending_approval': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E', textCls: 'text-[#92400e]', dotCls: 'bg-amber-500' },
+      'review': { label: 'Chờ phê duyệt', bg: '#FEF3C7', text: '#92400E', textCls: 'text-[#92400e]', dotCls: 'bg-amber-500' },
+      'done': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E', textCls: 'text-[#0f766e]', dotCls: 'bg-emerald-500' },
+      'completed': { label: 'Hoàn thành', bg: '#CCFBF1', text: '#0F766E', textCls: 'text-[#0f766e]', dotCls: 'bg-emerald-500' },
+      'paused': { label: 'Tạm dừng', bg: '#F3E8FF', text: '#7E22CE', textCls: 'text-[#7e22ce]', dotCls: 'bg-purple-500' },
+      'overdue': { label: 'Quá hạn', bg: '#FEE2E2', text: '#B91C1C', textCls: 'text-[#b91c1c]', dotCls: 'bg-rose-500' }
     };
-    return map[status] || { label: status, bg: '#F1F5F9', text: '#475569' };
+    return map[status] || { label: status, bg: '#F1F5F9', text: '#475569', textCls: 'text-[#475569]', dotCls: 'bg-slate-400' };
   }
 
   bindEvents(task, isPendingApproval, canUserApproveThisTask) {

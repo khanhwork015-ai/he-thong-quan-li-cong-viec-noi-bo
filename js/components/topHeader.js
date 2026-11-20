@@ -2,7 +2,7 @@ import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { USERS } from '../models.js?v=8.7';
 import { toast, rung, esc, timeAgo } from '../helpers.js?v=8.7';
-import { shinTheme } from '../theme.js?v=8.7';
+import { shinTheme } from '../theme.js?v=9.1';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {
