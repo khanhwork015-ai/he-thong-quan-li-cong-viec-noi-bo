@@ -556,9 +556,12 @@ html {
   background-color: var(--primary-soft) !important;
 }
 
-[data-palette] .border-\[\#fef3c7\],
-[data-palette] .border-\[\#d6a52a\] {
+[data-palette] .border-\[\#fef3c7\] {
   border-color: var(--accent-soft, var(--border)) !important;
+}
+
+[data-palette] .border-\[\#d6a52a\] {
+  border-color: var(--accent) !important;
 }
 
 [data-palette] .focus\:border-\[\#d6a52a\]:focus {

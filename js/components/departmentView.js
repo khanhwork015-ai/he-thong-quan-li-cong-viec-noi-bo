@@ -162,7 +162,7 @@ export class DepartmentView {
                 </div>
               </div>
 
-              <div class="flex flex-col gap-2 max-h-[560px] overflow-y-auto pr-1">
+              <div class="flex flex-col gap-2.5 max-h-[560px] overflow-y-auto">
                 ${filteredDepts.length === 0 ? `
                   <div class="p-6 text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] rounded-2xl border border-dashed border-[#e2e8f0]">
                     Không tìm thấy phòng ban nào khớp từ khóa.
@@ -174,7 +174,7 @@ export class DepartmentView {
                   const userCount = store.getDepartmentUsers(d.id).length;
 
                   return `
-                    <div class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[58px] dept-item-card ${isAct ? 'shadow-md border-[#d6a52a] bg-[#fffbeb]/50 ring-1 ring-[#d6a52a]' : 'hover:bg-gray-50 border-[#e2e8f0]'}" data-dept-id="${d.id}" style="${isAct ? 'background-color: var(--primary-soft); border-color: var(--primary);' : 'background-color: var(--card); border-color: var(--border);'}">
+                    <div class="p-3.5 rounded-2xl border-[1.5px] transition-all cursor-pointer flex items-center justify-between min-h-[58px] dept-item-card ${isAct ? 'border-[#d6a52a] bg-[#fffbeb]/60' : 'hover:bg-gray-50 border-[#e2e8f0] hover:border-[#d6a52a]'}" data-dept-id="${d.id}" style="${isAct ? 'background-color: var(--primary-soft); border-color: var(--accent);' : 'background-color: var(--card); border-color: var(--border);'}">
                       <div class="flex items-center gap-3 min-w-0">
                         <span class="w-4 h-4 rounded-full shrink-0 shadow-2xs ring-2 ring-white" style="background-color: ${d.color || '#D6A52A'};"></span>
                         <div class="min-w-0">
