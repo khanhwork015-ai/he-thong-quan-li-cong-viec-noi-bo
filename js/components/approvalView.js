@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - EXECUTIVE APPROVAL HUB COMPONENT (SHIN AIOS v2.7)
+ * SHIN TASK MANAGEMENT - EXECUTIVE APPROVAL HUB COMPONENT (SHIN AIOS v2.7)
  * Trung Tâm Phê Duyệt 1-Chạm Dành Cho Ban Lãnh Đạo & Cấp Quản Lý
  * - Kết nối trực tiếp với Công Việc (Tasks) và Dự Án & Kế Hoạch (Plans)
  * - Tách bạch 2 Tab: Công việc chờ duyệt & Kế hoạch chờ duyệt (+ Lịch sử đã duyệt)
@@ -8,9 +8,9 @@
  * - Phân quyền thông minh: Lãnh đạo thấy toàn viện, Trưởng phòng thấy khoa mình, Nhân viên theo dõi hồ sơ đã gửi
  */
 
-import { store } from '../store.js?v=8.6';
-import { auth } from '../auth.js?v=8.6';
-import { esc, ngayVN, soVN, toast, rung, popupTuChoiPheDuyet } from '../helpers.js?v=8.6';
+import { store } from '../store.js?v=8.7';
+import { auth } from '../auth.js?v=8.7';
+import { esc, ngayVN, soVN, toast, rung, popupTuChoiPheDuyet } from '../helpers.js?v=8.7';
 
 export class ApprovalView {
   constructor(containerId, onOpenTask, onOpenPlan, onUpdated) {

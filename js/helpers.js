@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - HELPER UTILITIES & SHIN TOOLKIT
+ * SHIN TASK MANAGEMENT - HELPER UTILITIES & SHIN TOOLKIT
  * Hỗ trợ định dạng dữ liệu, toast thông báo, xác nhận 2 lần và bảo mật XSS
  */
 

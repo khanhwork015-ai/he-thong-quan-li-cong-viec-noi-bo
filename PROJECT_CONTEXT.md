@@ -336,6 +336,13 @@
     + **Khóa bảo mật trang Cài Đặt triệt để:** Trừ tài khoản Admin, các tài khoản khác khi vào trang Cài Đặt hoặc mở Popup Settings CHỈ NHÌN THẤY duy nhất giao diện Tùy chỉnh Themes & Màu sắc; ẩn toàn bộ các khối Cổng kết nối Google Sheets, Hướng dẫn 3 bước, Nút popup và Quản trị dữ liệu.
     + **Badge trạng thái đồng bộ:** Bổ sung `#headerSyncBadge` trên TopHeader hiển thị trực quan trạng thái đồng bộ ngầm qua sự kiện `tvm:sync_status`.
     + **Nâng cấp Cache Buster toàn diện `?v=8.6`:** Đồng bộ trên 27 files và đẩy Git `origin/main`.
+  - **Chuyển Đổi Toàn Diện Tên Hệ Thống & Nhận Diện Thương Hiệu Thành Shin Task Management (v8.7):**
+    + **Đổi tên hệ thống:** Chuyển đổi toàn bộ nhận diện từ "Thanh Vũ Medic CS3" sang **"Shin Task Management"** (STM) trên toàn bộ hệ thống giao diện, metadata, manifest và code comments.
+    + **Sidebar Brand:** Logo badge đổi thành `STM`, tên `Shin Task Management`, phụ đề `Hệ Thống Quản Lý Nội Bộ`.
+    + **Màn hình Đăng Nhập:** Đổi icon thành `task_alt` chuyên nghiệp, nhãn `SHIN TASK MANAGEMENT`, tiêu đề `Hệ Thống Quản Lý & Điều Hành`.
+    + **Splash Loader & HTML Metadata:** Cập nhật icon `STM`, tiêu đề splash `SHIN TASK MANAGEMENT`, phụ đề `Hệ thống Quản lý & Điều hành Công việc Nội bộ`. Tiêu đề web: `Shin Task Management | Quản Lý Công Việc & Điều Hành Nội Bộ`.
+    + **PWA Manifest & Package:** Đồng bộ `manifest.json`, `package.json`, `README.md`, `PROJECT_BLUEPRINT.md`.
+    + **Nâng cấp Cache Buster toàn diện `?v=8.7`:** Đồng bộ trên toàn bộ 27 files và đẩy Git `origin/main`.
 
 ---
 

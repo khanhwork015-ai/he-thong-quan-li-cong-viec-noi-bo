@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - STRICT RBAC & DATA ISOLATION ENGINE
+ * SHIN TASK MANAGEMENT - STRICT RBAC & DATA ISOLATION ENGINE
  * Phân quyền 4 cấp độ (SHIN AIOS v2.6.4):
  * 1. ADMIN (Quản trị viên): Toàn quyền toàn viện, CRUD phòng ban & bộ phận con, cấp mọi tài khoản.
  * 2. LEADERSHIP (Ban lãnh đạo): Toàn quyền xem và giám sát tất cả các phòng ban, bộ phận.
@@ -10,8 +10,8 @@
  * Quy tắc giao việc: Bất cứ ai cũng có quyền tạo và assign task cho bất kỳ nhân viên nào.
  */
 
-import { USERS, DEPARTMENTS, ROLES } from './models.js?v=8.6';
-import { toast, rung } from './helpers.js?v=8.6';
+import { USERS, DEPARTMENTS, ROLES } from './models.js?v=8.7';
+import { toast, rung } from './helpers.js?v=8.7';
 
 /**
  * Băm mật khẩu SHA-256 an toàn bằng Web Cryptography API
@@ -184,7 +184,7 @@ export class AuthManager {
     // NẾU CHƯA TÌM THẤY TRONG BỘ NHỚ LOCAL: Tự động sync tức thời từ Google Sheet
     if (!matched) {
       try {
-        const { appScriptBridge } = await import('./services/appScriptBridge.js?v=8.6');
+        const { appScriptBridge } = await import('./services/appScriptBridge.js?v=8.7');
         if (appScriptBridge && appScriptBridge.isConnected()) {
           const cloudData = await appScriptBridge.fetchCloudData();
           if (cloudData && cloudData.success && Array.isArray(cloudData.users) && cloudData.users.length > 0) {
@@ -288,10 +288,10 @@ export class AuthManager {
     if (this.activeDepartmentId === 'all') {
       return {
         id: 'all',
-        name: 'Toàn Phòng Khám CS3 (Tất Cả)',
+        name: 'Toàn Hệ Thống (Tất Cả)',
         code: 'TẤT CẢ',
         badge: 'TẤT CẢ',
-        unit: 'Cơ Sở 3 (Cà Mau)',
+        unit: 'Shin Task Management',
         color: '#D6A52A'
       };
     }

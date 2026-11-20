@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - PLAN DRAWER COMPONENT (SHIN AIOS v2.7)
+ * SHIN TASK MANAGEMENT - PLAN DRAWER COMPONENT (SHIN AIOS v2.7)
  * Ngăn kéo chi tiết toàn diện cho Kế Hoạch / Dự Án
  * - Hiển thị Người tạo và Thời gian tạo nổi bật
  * - Quản lý Mục tiêu chiến lược & Lộ trình Cột mốc (Milestones)
@@ -7,10 +7,10 @@
  * - Ghi chú, Tài liệu đính kèm & Bình luận thảo luận
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=8.6';
-import { PLAN_STATUSES } from '../models.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=8.7';
+import { PLAN_STATUSES } from '../models.js?v=8.7';
 
 export class PlanDrawer {
   constructor(containerId, onPlanChanged, onEditPlan, onOpenTask) {

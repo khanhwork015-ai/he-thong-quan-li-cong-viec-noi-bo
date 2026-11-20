@@ -1,13 +1,13 @@
 /**
- * THANH VŨ MEDIC CS3 - SUBTASK DETAIL MODAL COMPONENT (SHIN AIOS v2.7)
+ * SHIN TASK MANAGEMENT - SUBTASK DETAIL MODAL COMPONENT (SHIN AIOS v2.7)
  * Hiển thị đầy đủ thông tin chi tiết của Việc Con:
  * Mã việc con, Tiêu đề, Tên nhiệm vụ cha, Trạng thái, Checkbox hoàn thành,
  * Mô tả chi tiết & Tiêu chuẩn bàn giao, Người phụ trách (Avatar), Hạn chót, Nút Sửa & Đóng.
  * Hỗ trợ Stacked Modal độc lập (z-[120]), không ghi đè SubtasksModal hay TaskDrawer bên dưới.
  */
 
-import { store } from '../store.js?v=8.6';
-import { esc, ngayVN, toast, rung } from '../helpers.js?v=8.6';
+import { store } from '../store.js?v=8.7';
+import { esc, ngayVN, toast, rung } from '../helpers.js?v=8.7';
 
 export class SubtaskDetailModal {
   constructor(containerId, onUpdated) {

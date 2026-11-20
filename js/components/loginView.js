@@ -1,13 +1,13 @@
 /**
- * THANH VŨ MEDIC CS3 - LOGIN VIEW COMPONENT (SHIN AIOS v2.6.4)
+ * SHIN TASK MANAGEMENT - LOGIN VIEW COMPONENT (SHIN AIOS v2.6.4)
  * Màn hình Đăng Nhập Mobile-First & Quản Lý Phiên Bảo Mật
  * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y Tế (#0D1C2F)
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { appScriptBridge } from '../services/appScriptBridge.js?v=8.6';
-import { toast, rung } from '../helpers.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { appScriptBridge } from '../services/appScriptBridge.js?v=8.7';
+import { toast, rung } from '../helpers.js?v=8.7';
 
 export class LoginView {
   constructor(containerId, onLoginSuccess) {
@@ -31,17 +31,17 @@ export class LoginView {
           <!-- LOGO & BRANDING -->
           <div class="flex flex-col items-center text-center gap-2">
             <div class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border" style="background-color: var(--primary-soft); color: var(--primary); border-color: var(--accent-soft, var(--border));">
-              <span class="material-symbols-outlined text-[36px]">local_hospital</span>
+              <span class="material-symbols-outlined text-[34px]">task_alt</span>
             </div>
             <div>
               <span class="text-[11px] font-bold tracking-widest uppercase font-mono-data px-2.5 py-0.5 rounded-full" style="background-color: var(--primary-soft); color: var(--primary);">
-                THANH VŨ MEDIC • CS3
+                SHIN TASK MANAGEMENT
               </span>
               <h1 class="text-[22px] sm:text-[24px] font-black text-[#0d1c2f] mt-1 tracking-tight" style="color: var(--text);">
                 Hệ Thống Quản Lý &amp; Điều Hành
               </h1>
               <p class="text-[12.5px] text-[#64748b] mt-0.5" style="color: var(--text-muted);">
-                Đăng nhập để truy cập không gian làm việc
+                Đăng nhập để truy cập không gian làm việc nội bộ
               </p>
             </div>
           </div>

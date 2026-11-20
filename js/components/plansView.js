@@ -1,15 +1,15 @@
 /**
- * THANH VŨ MEDIC CS3 - PLANS VIEW COMPONENT (SHIN AIOS v2.7)
+ * SHIN TASK MANAGEMENT - PLANS VIEW COMPONENT (SHIN AIOS v2.7)
  * Giao diện Lưới Thẻ Kế Hoạch (Project Cards Grid)
  * - Thiết kế tối giản, thanh lịch, chuẩn Archetype B
  * - Ai cũng có thể tạo kế hoạch
  * - Bộ lọc trạng thái trực quan & Tìm kiếm nhanh
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=8.6';
-import { PLAN_STATUSES } from '../models.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan } from '../helpers.js?v=8.7';
+import { PLAN_STATUSES } from '../models.js?v=8.7';
 
 export class PlansView {
   constructor(containerId, onSelectPlan, onOpenCreatePlanModal, onEditPlan) {
@@ -26,7 +26,7 @@ export class PlansView {
 
     const prevScrollY = window.scrollY || document.documentElement.scrollTop;
 
-    const currentDept = auth.getActiveDepartment() || { id: 'all', name: 'Toàn Phòng Khám CS3 (Tất Cả)' };
+    const currentDept = auth.getActiveDepartment() || { id: 'all', name: 'Toàn Hệ Thống (Tất Cả)' };
     const allPlans = store.getDepartmentPlans(currentDept.id);
 
     // Lọc theo trạng thái

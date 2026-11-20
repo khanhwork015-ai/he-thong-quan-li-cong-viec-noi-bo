@@ -1,12 +1,12 @@
 /**
- * THANH VŨ MEDIC CS3 - SIDEBAR NAVIGATION COMPONENT (MOBILE RESPONSIVE DRAWER)
+ * SHIN TASK MANAGEMENT - SIDEBAR NAVIGATION COMPONENT (MOBILE RESPONSIVE DRAWER)
  * Khôi phục tông Vàng Hoàng Kim (#D6A52A / #795900) chuẩn Google Stitch
  * Hỗ trợ giao diện ngăn kéo trượt mượt mà cho Mobile/Tablet và cố định trên Desktop (lg)
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { toast, rung } from '../helpers.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { toast, rung } from '../helpers.js?v=8.7';
 
 export class Sidebar {
   constructor(containerId, onNavChange, onModeChange, onLogout) {
@@ -81,15 +81,15 @@ export class Sidebar {
       <!-- SIDEBAR DRAWER CHÍNH -->
       <aside id="appSidebar" class="fixed left-0 top-0 h-full w-72 sm:w-64 bg-white shadow-2xl lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between border-r border-[#e2e8f0] select-none transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
         <div class="flex flex-col">
-          <!-- LOGO & BRAND (THANH VŨ MEDIC CS3) + NÚT ĐÓNG MOBILE -->
+          <!-- LOGO & BRAND (SHIN TASK MANAGEMENT) + NÚT ĐÓNG MOBILE -->
           <div class="h-16 px-4 sm:px-5 flex items-center justify-between border-b border-[#f1f5f9]">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-[#d6a52a] flex items-center justify-center text-white font-extrabold text-[15px] shadow-sm shadow-amber-500/30 shrink-0">
-                TV
+              <div class="w-9 h-9 rounded-xl bg-[#d6a52a] flex items-center justify-center text-white font-extrabold text-[12px] tracking-tight shadow-sm shadow-amber-500/30 shrink-0">
+                STM
               </div>
               <div class="flex flex-col min-w-0">
-                <span class="font-bold text-[15px] text-[#0d1c2f] tracking-wide truncate">Thanh Vũ Medic</span>
-                <span class="text-[11px] text-[#795900] uppercase font-bold tracking-wider truncate">Cơ Sở 3 (Cà Mau)</span>
+                <span class="font-bold text-[14.5px] text-[#0d1c2f] tracking-tight truncate">Shin Task Management</span>
+                <span class="text-[10.5px] text-[#795900] uppercase font-bold tracking-wider truncate">Hệ Thống Quản Lý Nội Bộ</span>
               </div>
             </div>
 
@@ -309,7 +309,7 @@ export class Sidebar {
                 <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background-color: ${d.color || '#D6A52A'};"></span>
                 <div class="min-w-0">
                   <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate">${d.name} ${d.id === activeDept.id ? '✓' : ''}</div>
-                  <div class="text-[11.5px] text-[#64748b] truncate">${d.unit || 'Cơ Sở 3'} • ${store.getDepartmentUsers(d.id).length} nhân sự</div>
+                  <div class="text-[11.5px] text-[#64748b] truncate">${d.unit || 'Shin Task Management'} • ${store.getDepartmentUsers(d.id).length} nhân sự</div>
                 </div>
               </div>
               <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">${d.code}</span>

@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - MEMBER MANAGEMENT MODAL COMPONENT (SHIN AIOS v2.6.4)
+ * SHIN TASK MANAGEMENT - MEMBER MANAGEMENT MODAL COMPONENT (SHIN AIOS v2.6.4)
  * Cấp tài khoản nhân viên mới & phân bổ vào đúng Phòng Ban & Bộ Phận Con
  * 
  * PHÂN QUYỀN BẢO MẬT:
@@ -9,9 +9,9 @@
  * - Nhân viên: Không được phép cấp tài khoản.
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { esc, toast, rung } from '../helpers.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { esc, toast, rung } from '../helpers.js?v=8.7';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -449,7 +449,7 @@ export class MemberModal {
         }
 
         const dept = allDepts.find(d => d.id === departmentId);
-        const deptName = dept ? dept.name : 'Thanh Vũ Medic';
+        const deptName = dept ? dept.name : 'Shin Task Management';
         let badge = 'Chuyên viên';
         if (role === 'LEADERSHIP') badge = 'Ban Lãnh Đạo';
         else if (role === 'MANAGER') badge = 'Trưởng phòng';

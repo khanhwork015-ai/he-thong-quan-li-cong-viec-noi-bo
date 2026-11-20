@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - EXECUTIVE DASHBOARD COMPONENT (SHIN AIOS v2.7)
+ * SHIN TASK MANAGEMENT - EXECUTIVE DASHBOARD COMPONENT (SHIN AIOS v2.7)
  * Thiết kế chuẩn Archetype B:
  * - Compact Bar (40px) chọn phạm vi Toàn viện / Từng phòng ban
  * - 4 Thẻ KPI toàn viện cô đọng (Tổng việc, Tiến độ %, Chờ duyệt khẩn cấp, Quá hạn)
@@ -8,9 +8,9 @@
  * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { esc, soVN, ngayVN, loiChao, toast, rung, kiemTraTreHan } from '../helpers.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { esc, soVN, ngayVN, loiChao, toast, rung, kiemTraTreHan } from '../helpers.js?v=8.7';
 
 export class DashboardView {
   constructor(containerId, onNavigateToTasks, onOpenCreateModal, onSelectTask) {

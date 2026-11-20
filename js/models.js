@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - DATA MODELS & MULTI-DEPARTMENT ARCHITECTURE
+ * SHIN TASK MANAGEMENT - DATA MODELS & MULTI-DEPARTMENT ARCHITECTURE
  * Cấu trúc thực thể hỗ trợ mở rộng không giới hạn phòng ban (Multi-tenant ready)
  * Hỗ trợ phân cấp 4 nhóm quyền (RBAC) & Cơ cấu Phòng ban - Bộ phận con (Teams)
  */
@@ -16,7 +16,7 @@ export const DEPARTMENTS = [
     id: 'dept_ptkh',
     name: 'Phòng Phát Triển Khách Hàng',
     code: 'PTKH-CS3',
-    unit: 'Cơ Sở 3 (Cà Mau)',
+    unit: 'Shin Task Management',
     managerId: 'user_tam_ptkh', // Huỳnh Trường Thanh Tâm
     description: 'Chăm sóc khách hàng, khám sức khỏe doanh nghiệp, marketing và phát triển thị trường y tế',
     badge: 'PTKH',
@@ -31,7 +31,7 @@ export const DEPARTMENTS = [
     id: 'dept_duoc',
     name: 'Kho Dược & Vật Tư Y Tế',
     code: 'DUOC-CS3',
-    unit: 'Cơ Sở 3 (Cà Mau)',
+    unit: 'Shin Task Management',
     managerId: 'user_minh_duoc',
     description: 'Quản lý kho thuốc GSP, kho lạnh vaccine và cung ứng vật tư tiêu hao',
     badge: 'DƯỢC',

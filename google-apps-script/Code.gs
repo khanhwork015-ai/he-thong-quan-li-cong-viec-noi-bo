@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - GOOGLE APPS SCRIPT WEB APP BACKEND (SHIN AIOS BRIDGE v2.7)
+ * SHIN TASK MANAGEMENT - GOOGLE APPS SCRIPT WEB APP BACKEND (SHIN AIOS BRIDGE v2.7)
  * Tự động tạo bảng & đồng bộ 2 chiều dữ liệu thực tế với Google Sheets
  * Hỗ trợ 5 Sheets: TASKS, USERS, DEPARTMENTS, NOTIFICATIONS, PLANS
  * 
@@ -287,7 +287,7 @@ function ensureSheets(ss) {
   });
 }
 
-// Seed dữ liệu thực tế mẫu của Thanh Vũ Medic CS3 lên Google Sheet
+// Seed dữ liệu thực tế mẫu của Shin Task Management lên Google Sheet
 // withDemoData = false: chỉ khởi tạo phòng ban + tài khoản (cài đặt lần đầu)
 // withDemoData = true : nạp thêm công việc & thông báo mẫu (chỉ khi gọi ?action=seed)
 function seedInitialData(ss, withDemoData) {
@@ -305,12 +305,12 @@ function seedInitialData(ss, withDemoData) {
 
   // 1. Departments
   const depts = [
-    { id: 'dept_ptkh', name: 'Phòng Phát Triển Khách Hàng', code: 'PTKH-CS3', unit: 'Cơ Sở 3 (Cà Mau)', managerId: 'user_tam_ptkh', description: 'Khám đoàn doanh nghiệp, bảo hiểm y tế & chăm sóc khách hàng', badge: 'PTKH', color: '#D6A52A', teams: JSON.stringify([
+    { id: 'dept_ptkh', name: 'Phòng Phát Triển Khách Hàng', code: 'PTKH', unit: 'Shin Task Management', managerId: 'user_tam_ptkh', description: 'Khám đoàn doanh nghiệp, bảo hiểm y tế & chăm sóc khách hàng', badge: 'PTKH', color: '#D6A52A', teams: JSON.stringify([
       { id: 'team_cskh', name: 'Chăm Sóc Khách Hàng', code: 'CSKH' },
       { id: 'team_mkt', name: 'Marketing & Truyền Thông', code: 'MKT' },
       { id: 'team_hotro', name: 'Hỗ Trợ & Tiếp Đón', code: 'HOTRO' }
     ]) },
-    { id: 'dept_duoc', name: 'Kho Dược & Vật Tư Y Tế', code: 'DUOC-CS3', unit: 'Cơ Sở 3 (Cà Mau)', managerId: 'user_minh_duoc', description: 'Cung ứng thuốc, quản lý kho lạnh GSP & hóa chất xét nghiệm', badge: 'DƯỢC', color: '#0D9488', teams: JSON.stringify([
+    { id: 'dept_duoc', name: 'Kho Dược & Vật Tư Y Tế', code: 'DUOC', unit: 'Shin Task Management', managerId: 'user_minh_duoc', description: 'Cung ứng thuốc, quản lý kho lạnh GSP & hóa chất xét nghiệm', badge: 'DƯỢC', color: '#0D9488', teams: JSON.stringify([
       { id: 'team_duoc_gsp', name: 'Kho Thuốc GSP', code: 'GSP' },
       { id: 'team_duoc_vaccine', name: 'Kho Lạnh Vaccine', code: 'VAC' }
     ]) },

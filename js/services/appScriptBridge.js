@@ -1,10 +1,10 @@
 /**
- * THANH VŨ MEDIC CS3 - GOOGLE APPS SCRIPT & SHIN AIOS BRIDGE
+ * SHIN TASK MANAGEMENT - GOOGLE APPS SCRIPT & SHIN AIOS BRIDGE
  * Dịch vụ đồng bộ dữ liệu thật 2 chiều với Google Sheets / SHIN AIOS
  * Khắc phục 100% lỗi CORS: Không dùng header tùy biến trong GET, dùng text/plain trong POST
  */
 
-import { toast } from '../helpers.js?v=8.6';
+import { toast } from '../helpers.js?v=8.7';
 
 const GAS_ENDPOINT_KEY = 'tvm_gas_endpoint';
 const LAST_SYNC_KEY = 'tvm_last_sync_time';

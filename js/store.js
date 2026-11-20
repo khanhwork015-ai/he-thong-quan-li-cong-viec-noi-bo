@@ -1,12 +1,12 @@
 /**
- * THANH VŨ MEDIC CS3 - CENTRALIZED REACTIVE STORE (APPS SCRIPT INTEGRATED)
+ * SHIN TASK MANAGEMENT - CENTRALIZED REACTIVE STORE (APPS SCRIPT INTEGRATED)
  * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
  */
 
-import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.6';
-import { auth } from './auth.js?v=8.6';
-import { appScriptBridge } from './services/appScriptBridge.js?v=8.6';
-import { toast } from './helpers.js?v=8.6';
+import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.7';
+import { auth } from './auth.js?v=8.7';
+import { appScriptBridge } from './services/appScriptBridge.js?v=8.7';
+import { toast } from './helpers.js?v=8.7';
 
 const TASKS_STORAGE_KEY = 'tvm_tasks_v3';
 const USERS_STORAGE_KEY = 'tvm_users_v4';
@@ -322,7 +322,7 @@ export class Store {
       id: `dept_${Date.now().toString().slice(-6)}`,
       name: deptData.name.trim(),
       code: (deptData.code || 'PB').trim().toUpperCase(),
-      unit: deptData.unit || 'Cơ Sở 3 (Cà Mau)',
+      unit: deptData.unit || 'Shin Task Management',
       managerId: deptData.managerId || '',
       description: deptData.description || '',
       badge: deptData.badge || deptData.code,
@@ -448,7 +448,7 @@ export class Store {
       departmentId: targetDeptId,
       teamId: userData.teamId || '',
       title: userData.title.trim() || 'Chuyên viên',
-      unit: userData.unit || (this.getDepartmentById(targetDeptId)?.name || 'Thanh Vũ Medic'),
+      unit: userData.unit || (this.getDepartmentById(targetDeptId)?.name || 'Shin Task Management'),
       avatar: userData.avatar?.trim() || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=160&q=80',
       badge: userData.badge || (targetRole === 'MANAGER' ? 'Trưởng phòng' : (targetRole === 'DEPUTY_MANAGER' ? 'Phó phòng' : (targetRole === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Chuyên viên'))),
       phone: userData.phone || '',

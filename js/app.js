@@ -1,34 +1,34 @@
 /**
- * THANH VŨ MEDIC CS3 - MAIN APPLICATION CONTROLLER (MOBILE FIRST & RESPONSIVE)
+ * SHIN TASK MANAGEMENT - MAIN APPLICATION CONTROLLER (MOBILE FIRST & RESPONSIVE)
  * Tích hợp Quản lý nhân viên (Thêm/Sửa/Xóa), Profile Modal, Settings Grid, Bottom Nav & Google Apps Script
  * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
  */
 
-import { auth } from './auth.js?v=8.6';
-import { store } from './store.js?v=8.6';
-import { Sidebar } from './components/sidebar.js?v=8.6';
-import { TopHeader } from './components/topHeader.js?v=8.6';
-import { BottomNav } from './components/bottomNav.js?v=8.6';
-import { DashboardView } from './components/dashboardView.js?v=8.6';
-import { WorkspaceView } from './components/workspaceView.js?v=8.6';
-import { TaskDrawer } from './components/taskDrawer.js?v=8.6';
-import { NotificationDrawer } from './components/notificationDrawer.js?v=8.6';
-import { CreateTaskModal } from './components/createTaskModal.js?v=8.6'
-import { SubtasksModal } from './components/subtasksModal.js?v=8.6';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.6';;
-import { ProfileModal } from './components/profileModal.js?v=8.6';
-import { MemberModal } from './components/memberModal.js?v=8.6';
-import { SettingsModal } from './components/settingsModal.js?v=8.6';
-import { LoginView } from './components/loginView.js?v=8.6';
-import { DepartmentModal } from './components/departmentModal.js?v=8.6';
-import { DepartmentView } from './components/departmentView.js?v=8.6';
-import { PlansView } from './components/plansView.js?v=8.6';
-import { PlanDrawer } from './components/planDrawer.js?v=8.6';
-import { PlanModal } from './components/planModal.js?v=8.6';
-import { ApprovalView } from './components/approvalView.js?v=8.6';
-import { appScriptBridge } from './services/appScriptBridge.js?v=8.6';
-import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=8.6';
-import { shinTheme } from './theme.js?v=8.6';
+import { auth } from './auth.js?v=8.7';
+import { store } from './store.js?v=8.7';
+import { Sidebar } from './components/sidebar.js?v=8.7';
+import { TopHeader } from './components/topHeader.js?v=8.7';
+import { BottomNav } from './components/bottomNav.js?v=8.7';
+import { DashboardView } from './components/dashboardView.js?v=8.7';
+import { WorkspaceView } from './components/workspaceView.js?v=8.7';
+import { TaskDrawer } from './components/taskDrawer.js?v=8.7';
+import { NotificationDrawer } from './components/notificationDrawer.js?v=8.7';
+import { CreateTaskModal } from './components/createTaskModal.js?v=8.7'
+import { SubtasksModal } from './components/subtasksModal.js?v=8.7';
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.7';;
+import { ProfileModal } from './components/profileModal.js?v=8.7';
+import { MemberModal } from './components/memberModal.js?v=8.7';
+import { SettingsModal } from './components/settingsModal.js?v=8.7';
+import { LoginView } from './components/loginView.js?v=8.7';
+import { DepartmentModal } from './components/departmentModal.js?v=8.7';
+import { DepartmentView } from './components/departmentView.js?v=8.7';
+import { PlansView } from './components/plansView.js?v=8.7';
+import { PlanDrawer } from './components/planDrawer.js?v=8.7';
+import { PlanModal } from './components/planModal.js?v=8.7';
+import { ApprovalView } from './components/approvalView.js?v=8.7';
+import { appScriptBridge } from './services/appScriptBridge.js?v=8.7';
+import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=8.7';
+import { shinTheme } from './theme.js?v=8.7';
 
 class App {
   constructor() {
@@ -55,7 +55,7 @@ class App {
   }
 
   init() {
-    console.log('🚀 [THANH VŨ MEDIC CS3] Khởi chạy hệ thống Mobile-First SHIN AIOS Master UI...');
+    console.log('🚀 [SHIN TASK MANAGEMENT] Khởi chạy hệ thống Mobile-First SHIN AIOS Master UI...');
     shinTheme.init();
     shinTheme.subscribe(() => {
       if (this.sidebar) this.sidebar.render();

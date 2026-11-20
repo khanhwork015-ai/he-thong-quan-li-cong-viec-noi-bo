@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT VIEW
+ * SHIN TASK MANAGEMENT - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT VIEW
  * Màn hình quản lý Cơ cấu Phòng Ban & Bộ Phận Con toàn diện (Dành cho Quản Trị Viên)
  * Chuẩn SHIN AIOS v2.7:
  * - Hỗ trợ KÉO THẢ (Drag & Drop) nhân sự vào từng bộ phận con trực quan
@@ -8,9 +8,9 @@
  * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=8.7';
 
 export class DepartmentView {
   constructor(containerId, onUpdated, onOpenMemberModal) {
@@ -103,7 +103,7 @@ export class DepartmentView {
                 </span>
               </div>
               <p class="text-[12.5px] sm:text-[13px] text-[#817663] font-medium mt-0.5" style="color: var(--text-muted);">
-                Quản lý tổ chức đa tầng Bệnh Viện Đa Khoa Thanh Vũ Medic • Thiết lập phòng ban, mã nhận diện, trưởng phòng và tổ chuyên môn
+                Quản lý tổ chức đa tầng Shin Task Management • Thiết lập phòng ban, mã nhận diện, trưởng phòng và tổ chuyên môn
               </p>
             </div>
           </div>
@@ -240,7 +240,7 @@ export class DepartmentView {
                       </h3>
                     </div>
                     <div class="text-[12px] text-[#64748b] mt-1 flex items-center gap-2 flex-wrap" style="color: var(--text-muted);">
-                      <span>${esc(selectedDept.unit || 'Cơ Sở 3 (Cà Mau)')}</span>
+                      <span>${esc(selectedDept.unit || 'Shin Task Management')}</span>
                       <span>•</span>
                       <span>Trưởng phòng: <strong class="text-[#0d1c2f]" style="color: var(--text);">${esc(allUsers.find(u => u.id === selectedDept.managerId)?.name || 'Chưa gán')}</strong></span>
                     </div>
@@ -280,7 +280,7 @@ export class DepartmentView {
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Cơ sở / Chi nhánh</label>
-                      <input type="text" id="editDeptUnitView" value="${esc(selectedDept.unit || 'Cơ Sở 3 (Cà Mau)')}" placeholder="Cơ sở..." class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                      <input type="text" id="editDeptUnitView" value="${esc(selectedDept.unit || 'Shin Task Management')}" placeholder="Cơ sở..." class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                     </div>
 
                     <div>

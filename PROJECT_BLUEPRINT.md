@@ -1,4 +1,4 @@
-# PROJECT BLUEPRINT: HỆ THỐNG QUẢN LÝ CÔNG VIỆC NỘI BỘ THANH VŨ MEDIC CS3
+# PROJECT BLUEPRINT: SHIN TASK MANAGEMENT - HỆ THỐNG QUẢN LÝ CÔNG VIỆC NỘI BỘ
 > **Tiêu chuẩn thiết kế:** SHIN AIOS v2.7.0 (Google Stitch UI, Gold Accent `#D6A52A`, Mobile-First)  
 > **Kiến trúc:** 3 Tầng Clean Architecture (Vanilla ES Modules + Service Worker PWA + Google Apps Script)  
 > **Ngày phê duyệt:** 09/11/2026
@@ -6,7 +6,7 @@
 ---
 
 ## 1. TỔNG QUAN HỆ THỐNG
-Hệ thống Quản lý Công việc & Điều hành Nội bộ dành cho Bệnh viện Đa khoa Thanh Vũ Medic Cơ Sở 3 (Cà Mau), vận hành theo mô hình đa phòng ban (Multi-Department Ready) và đa bộ phận con (Teams/Sub-departments), phân quyền 4 cấp độ nghiêm ngặt, hỗ trợ phê duyệt 1-chạm và trung tâm thông báo thời gian thực.
+Hệ thống Quản lý Công việc & Điều hành Nội bộ Shin Task Management, vận hành theo mô hình đa phòng ban (Multi-Department Ready) và đa bộ phận con (Teams/Sub-departments), phân quyền 4 cấp độ nghiêm ngặt, hỗ trợ phê duyệt 1-chạm và trung tâm thông báo thời gian thực.
 
 ---
 

@@ -1,14 +1,14 @@
 /**
- * THANH VŨ MEDIC CS3 - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT MODAL
+ * SHIN TASK MANAGEMENT - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT MODAL
  * Dành riêng cho Quản Trị Viên (ADMIN):
  * - Toàn quyền Thêm / Sửa / Xóa Phòng Ban
  * - Toàn quyền Thêm / Sửa / Xóa các Bộ Phận Con (Teams) bên trong từng Phòng Ban
  * (Ví dụ: Phòng PTKH gồm các bộ phận Marketing, CSKH, Hỗ trợ)
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=8.7';
 
 export class DepartmentModal {
   constructor(containerId, onUpdated) {
@@ -144,7 +144,7 @@ export class DepartmentModal {
                       </h4>
                     </div>
                     <span class="text-[11.5px] text-[#64748b] mt-0.5 block truncate" style="color: var(--text-muted);">
-                      ${esc(selectedDept.unit || 'Cơ Sở 3 (Cà Mau)')} • Trưởng phòng: <strong>${esc(allUsers.find(u => u.id === selectedDept.managerId)?.name || 'Chưa gán')}</strong>
+                      ${esc(selectedDept.unit || 'Shin Task Management')} • Trưởng phòng: <strong>${esc(allUsers.find(u => u.id === selectedDept.managerId)?.name || 'Chưa gán')}</strong>
                     </span>
                   </div>
                   
@@ -173,7 +173,7 @@ export class DepartmentModal {
                     </div>
                   </div>
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <input type="text" id="editDeptUnit" value="${esc(selectedDept.unit || 'Cơ Sở 3 (Cà Mau)')}" placeholder="Cơ sở / Chi nhánh" class="h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f]" />
+                    <input type="text" id="editDeptUnit" value="${esc(selectedDept.unit || 'Shin Task Management')}" placeholder="Cơ sở / Chi nhánh" class="h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f]" />
                     <select id="editDeptManager" class="h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none bg-white text-[#0d1c2f]">
                       <option value="">-- Chưa gán Trưởng phòng --</option>
                       ${managers.map(m => `<option value="${m.id}" ${m.id === selectedDept.managerId ? 'selected' : ''}>${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}

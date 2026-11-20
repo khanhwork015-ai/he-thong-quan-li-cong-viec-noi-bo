@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - SERVICE WORKER (NETWORK FIRST STRATEGY)
+ * SHIN TASK MANAGEMENT - SERVICE WORKER (NETWORK FIRST STRATEGY)
  * Đảm bảo luôn cập nhật mã nguồn mới nhất, dọn sạch cache cũ
  */
 

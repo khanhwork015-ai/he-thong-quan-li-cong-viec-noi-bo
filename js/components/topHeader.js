@@ -1,14 +1,14 @@
 /**
- * THANH VŨ MEDIC CS3 - TOP HEADER COMPONENT (SHIN AIOS v2.6.4)
+ * SHIN TASK MANAGEMENT - TOP HEADER COMPONENT (SHIN AIOS v2.6.4)
  * Thiết kế công thái học Mobile First: Vùng bấm >= 44x44px
  * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
  */
 
-import { auth } from '../auth.js?v=8.6';
-import { store } from '../store.js?v=8.6';
-import { USERS } from '../models.js?v=8.6';
-import { toast, rung, esc, timeAgo } from '../helpers.js?v=8.6';
-import { shinTheme } from '../theme.js?v=8.6';
+import { auth } from '../auth.js?v=8.7';
+import { store } from '../store.js?v=8.7';
+import { USERS } from '../models.js?v=8.7';
+import { toast, rung, esc, timeAgo } from '../helpers.js?v=8.7';
+import { shinTheme } from '../theme.js?v=8.7';
 
 export class TopHeader {
   constructor(containerId, onSearch, onOpenCreateModal, onOpenProfileModal, onOpenSettingsModal, onToggleMobileSidebar, onOpenDepartmentModal, onLogout, onOpenTask, onOpenNotifications, onNavigateApproval) {

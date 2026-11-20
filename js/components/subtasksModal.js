@@ -1,5 +1,5 @@
 /**
- * THANH VŨ MEDIC CS3 - SUBTASKS LIST MODAL COMPONENT (SHIN AIOS v2.7)
+ * SHIN TASK MANAGEMENT - SUBTASKS LIST MODAL COMPONENT (SHIN AIOS v2.7)
  * Modal hiển thị toàn bộ danh sách việc con của một nhiệm vụ cha được chọn:
  * - Thay thế hoàn toàn dropdown nhỏ khó bấm
  * - Vùng bấm chuẩn Touch Target >= 44px
@@ -8,8 +8,8 @@
  * - Hỗ trợ mở chi tiết đầy đủ từng việc con (SubtaskDetailModal)
  */
 
-import { store } from '../store.js?v=8.6';
-import { esc, ngayVN, toast, rung, xacNhanXoa } from '../helpers.js?v=8.6';
+import { store } from '../store.js?v=8.7';
+import { esc, ngayVN, toast, rung, xacNhanXoa } from '../helpers.js?v=8.7';
 
 export class SubtasksModal {
   constructor(containerId, onTaskUpdated, onOpenTaskDetail = null, onOpenSubtaskDetail = null) {
