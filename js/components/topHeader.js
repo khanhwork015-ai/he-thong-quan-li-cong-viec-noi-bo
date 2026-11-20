@@ -33,11 +33,12 @@ export class TopHeader {
     const pendingApprovalCount = pendingData.totalCount || 0;
 
     let roleBadgeText = '👤 Nhân Viên';
-    if (user.role === 'LEADERSHIP') roleBadgeText = '🏛️ Ban Lãnh Đạo';
+    if (user.role === 'ADMIN') roleBadgeText = '👑 Quản Trị Viên';
+    else if (user.role === 'LEADERSHIP') roleBadgeText = '🏛️ Ban Lãnh Đạo';
     else if (user.role === 'MANAGER') roleBadgeText = '👔 Trưởng Phòng';
     else if (user.role === 'DEPUTY_MANAGER') roleBadgeText = '⭐ Phó Phòng';
 
-    if (auth.isAdmin()) {
+    if (auth.isAdmin() && user.role !== 'ADMIN') {
       roleBadgeText += ' • 👑 Admin';
     }
 

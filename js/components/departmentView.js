@@ -62,9 +62,10 @@ export class DepartmentView {
     selectedDeptUsers.forEach(u => candidateMap.set(u.id, u));
     const assignableManagers = Array.from(candidateMap.values());
 
-    const deptManager = selectedDept ? selectedDeptUsers.find(u => u.id === selectedDept.managerId || store.getUserRoleInDepartment(u, selectedDept.id) === 'MANAGER') : null;
-    const deptDeputies = selectedDept ? selectedDeptUsers.filter(u => store.getUserRoleInDepartment(u, selectedDept.id) === 'DEPUTY_MANAGER' && u.id !== deptManager?.id) : [];
-    const regularStaff = selectedDeptUsers.filter(u => u.id !== deptManager?.id && !deptDeputies.some(d => d.id === u.id));
+    const deptAdmins = selectedDept ? selectedDeptUsers.filter(u => store.getUserRoleInDepartment(u, selectedDept.id) === 'ADMIN') : [];
+    const deptManager = selectedDept ? selectedDeptUsers.find(u => !deptAdmins.some(a => a.id === u.id) && (u.id === selectedDept.managerId || store.getUserRoleInDepartment(u, selectedDept.id) === 'MANAGER')) : null;
+    const deptDeputies = selectedDept ? selectedDeptUsers.filter(u => store.getUserRoleInDepartment(u, selectedDept.id) === 'DEPUTY_MANAGER' && u.id !== deptManager?.id && !deptAdmins.some(a => a.id === u.id)) : [];
+    const regularStaff = selectedDeptUsers.filter(u => u.id !== deptManager?.id && !deptDeputies.some(d => d.id === u.id) && !deptAdmins.some(a => a.id === u.id));
 
     if (deptManager && selectedDept && store.getUserTeamInDepartment(deptManager, selectedDept.id)) {
       store.setUserDepartmentMembership(deptManager.id, selectedDept.id, { role: 'MANAGER', teamId: '' });
@@ -315,6 +316,7 @@ export class DepartmentView {
                       const membersInTeam = selectedDeptUsers.filter(u =>
                         store.getUserTeamInDepartment(u, selectedDept.id) === t.id &&
                         u.id !== deptManager?.id &&
+                        store.getUserRoleInDepartment(u, selectedDept.id) !== 'ADMIN' &&
                         store.getUserRoleInDepartment(u, selectedDept.id) !== 'DEPUTY_MANAGER'
                       );
 
@@ -408,6 +410,44 @@ export class DepartmentView {
                       </button>
                     </div>
                   </div>
+
+                  ${deptAdmins.map(adm => `
+                    <div class="p-4 rounded-2xl border-2 border-[#d6a52a]/80 bg-gradient-to-r from-[#fffbeb] via-white to-[#fef3c7]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                      <div class="flex items-center gap-3.5 min-w-0">
+                        <div class="relative shrink-0">
+                          <img src="${adm.avatar}" alt="${esc(adm.name)}" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-[#d6a52a] shadow-xs" />
+                          <span class="absolute -top-1.5 -right-1.5 bg-[#d6a52a] text-[#533d00] text-[12px] font-black rounded-full px-1.5 py-0.2 shadow-xs">👑</span>
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-[14.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">${esc(adm.name)}</span>
+                            <span class="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#795900] border border-amber-300">
+                              👑 Quản Trị Viên
+                            </span>
+                            <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-amber-100/80 text-amber-900 border border-amber-200">
+                              Toàn quyền hệ thống
+                            </span>
+                          </div>
+                          <div class="text-[12px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
+                            ${esc(adm.title || 'Quản trị viên')} • <span class="font-mono-data">${esc(adm.email || adm.username || '')}</span>
+                            ${adm.phone ? ` • <span class="font-mono-data">${esc(adm.phone)}</span>` : ''}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 self-start sm:self-center shrink-0">
+                        <span class="text-[11.5px] font-bold text-[#795900] bg-white/90 border border-amber-200 px-3 py-1.5 rounded-xl shadow-2xs flex items-center gap-1.5">
+                          <span class="material-symbols-outlined text-[16px] text-[#d6a52a]">admin_panel_settings</span>
+                          <span>Toàn quyền điều hành</span>
+                        </span>
+                        <button type="button" class="btn-edit-dept-member px-3 py-1.5 rounded-xl border border-amber-300 text-amber-800 hover:bg-amber-100/70 font-bold text-[11.5px] flex items-center gap-1 transition-all cursor-pointer shadow-2xs shrink-0" data-user-id="${adm.id}" title="Chỉnh sửa thông tin Quản trị viên">
+                          <span class="material-symbols-outlined text-[16px]">edit</span>
+                          <span>Sửa</span>
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
 
                   ${deptManager ? `
                     <div class="p-4 rounded-2xl border-2 border-[#d6a52a]/60 bg-gradient-to-r from-[#fffbeb] via-white to-[#fffbeb] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
@@ -605,7 +645,7 @@ export class DepartmentView {
     const deptUsers = store.getDepartmentUsers(dept.id);
     const assignableUsers = deptUsers.filter(u => {
       const rInDept = store.getUserRoleInDepartment(u, dept.id);
-      return u.id !== dept.managerId && rInDept !== 'MANAGER' && rInDept !== 'DEPUTY_MANAGER';
+      return u.id !== dept.managerId && rInDept !== 'ADMIN' && rInDept !== 'MANAGER' && rInDept !== 'DEPUTY_MANAGER';
     });
 
     modalBox.innerHTML = `
@@ -795,6 +835,7 @@ export class DepartmentView {
                       <option value="MEMBER" ${roleInDept === 'MEMBER' ? 'selected' : ''}>👤 Chuyên viên</option>
                       <option value="DEPUTY_MANAGER" ${roleInDept === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Phòng</option>
                       <option value="MANAGER" ${roleInDept === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng</option>
+                      <option value="ADMIN" ${roleInDept === 'ADMIN' ? 'selected' : ''}>👑 Quản Trị Viên (Toàn quyền)</option>
                     </select>
 
                     <select class="select-existing-team sm:col-span-4 h-10 px-2.5 rounded-xl border border-[#cbd5e1] text-[12px] font-medium bg-white outline-none focus:border-[#d6a52a] ${roleInDept !== 'MEMBER' ? 'hidden' : ''}" data-user-id="${u.id}">
@@ -805,7 +846,7 @@ export class DepartmentView {
                     </select>
 
                     <div class="existing-whole-label sm:col-span-4 h-10 px-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[#795900] text-[11.5px] font-bold items-center justify-center ${roleInDept === 'MEMBER' ? 'hidden' : 'flex'}">
-                      Toàn phòng
+                      ${roleInDept === 'ADMIN' ? 'Toàn quyền' : 'Toàn phòng'}
                     </div>
 
                     <button type="button" class="btn-save-existing-to-dept sm:col-span-3 h-10 px-3 rounded-xl text-[12px] font-bold shadow-2xs cursor-pointer flex items-center justify-center gap-1" data-user-id="${u.id}" style="background-color: var(--primary-container); color: var(--on-primary-container);">
@@ -869,6 +910,7 @@ export class DepartmentView {
         if (wholeLbl) {
           wholeLbl.classList.toggle('hidden', !isMgr);
           wholeLbl.classList.toggle('flex', isMgr);
+          wholeLbl.textContent = sel.value === 'ADMIN' ? 'Toàn quyền' : 'Toàn phòng';
         }
       });
     });
@@ -882,6 +924,9 @@ export class DepartmentView {
         const teamId = role === 'MEMBER' ? (row?.querySelector('.select-existing-team')?.value || '') : '';
         const updated = store.setUserDepartmentMembership(uId, dept.id, { role, teamId });
         if (updated) {
+          if (role === 'ADMIN' && !updated.isAdmin) {
+            store.updateUser(uId, { isAdmin: true });
+          }
           if (role === 'MANAGER' && (!dept.managerId || dept.managerId === uId)) {
             store.updateDepartment(dept.id, { managerId: uId });
           } else if (role !== 'MANAGER' && dept.managerId === uId) {
@@ -1359,8 +1404,8 @@ export class DepartmentView {
           const team = (currentDept.teams || []).find(t => t.id === targetTeamId);
           if (user && team) {
             const roleInDept = store.getUserRoleInDepartment(user, currentDept.id);
-            if (user.id === currentDept.managerId || roleInDept === 'MANAGER' || roleInDept === 'DEPUTY_MANAGER') {
-              toast('👑 Trưởng phòng phụ trách quản trị Toàn phòng, không phân bổ vào bộ phận con!', 'warning');
+            if (user.id === currentDept.managerId || roleInDept === 'ADMIN' || roleInDept === 'MANAGER' || roleInDept === 'DEPUTY_MANAGER') {
+              toast('👑 Quản trị viên / Trưởng phòng phụ trách bao quát toàn phòng, không phân bổ vào bộ phận con!', 'warning');
               return;
             }
             store.setUserDepartmentMembership(userId, currentDept.id, { teamId: targetTeamId });

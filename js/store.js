@@ -297,7 +297,7 @@ export class Store {
     const memberships = normalizeUserMemberships(user);
     const found = memberships.find(m => m.departmentId === deptId);
     if (found) return found.role;
-    return user.departmentId === deptId ? (user.role === 'ADMIN' ? 'MANAGER' : (user.role || 'MEMBER')) : 'MEMBER';
+    return user.departmentId === deptId ? (user.role || 'MEMBER') : 'MEMBER';
   }
 
   getUserTeamInDepartment(user, deptId) {
@@ -305,7 +305,7 @@ export class Store {
     const memberships = normalizeUserMemberships(user);
     const found = memberships.find(m => m.departmentId === deptId);
     if (found) {
-      const isLeaderOrMgr = found.role === 'MANAGER' || found.role === 'DEPUTY_MANAGER' || found.role === 'LEADERSHIP';
+      const isLeaderOrMgr = found.role === 'ADMIN' || found.role === 'MANAGER' || found.role === 'DEPUTY_MANAGER' || found.role === 'LEADERSHIP';
       return isLeaderOrMgr ? '' : (found.teamId || '');
     }
     return user.departmentId === deptId ? (user.teamId || '') : '';
@@ -316,11 +316,10 @@ export class Store {
     if (!user || !deptId || deptId === 'all') return null;
     const memberships = [...normalizeUserMemberships(user)];
     const idx = memberships.findIndex(m => m.departmentId === deptId);
-    let nextRole = role !== undefined
+    const nextRole = role !== undefined
       ? String(role || 'MEMBER').trim().toUpperCase()
-      : (idx >= 0 ? memberships[idx].role : (user.role === 'ADMIN' ? 'MANAGER' : (user.role || 'MEMBER')));
-    if (nextRole === 'ADMIN') nextRole = 'MANAGER';
-    const isLeaderOrMgr = (nextRole === 'MANAGER' || nextRole === 'DEPUTY_MANAGER' || nextRole === 'LEADERSHIP');
+      : (idx >= 0 ? memberships[idx].role : (user.role || 'MEMBER'));
+    const isLeaderOrMgr = (nextRole === 'ADMIN' || nextRole === 'MANAGER' || nextRole === 'DEPUTY_MANAGER' || nextRole === 'LEADERSHIP');
     const nextTeamId = isLeaderOrMgr
       ? ''
       : (teamId !== undefined ? String(teamId || '').trim() : (idx >= 0 ? (memberships[idx].teamId || '') : ''));
@@ -522,7 +521,7 @@ export class Store {
       title: userData.title.trim() || 'Chuyên viên',
       unit: userData.unit || (this.getDepartmentById(targetDeptId)?.name || 'Shin Task Management'),
       avatar: userData.avatar?.trim() || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=160&q=80',
-      badge: userData.badge || (targetRole === 'MANAGER' ? 'Trưởng phòng' : (targetRole === 'DEPUTY_MANAGER' ? 'Phó phòng' : (targetRole === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Chuyên viên'))),
+      badge: userData.badge || (targetRole === 'ADMIN' ? 'Quản trị viên' : (targetRole === 'MANAGER' ? 'Trưởng phòng' : (targetRole === 'DEPUTY_MANAGER' ? 'Phó phòng' : (targetRole === 'LEADERSHIP' ? 'Ban Lãnh Đạo' : 'Chuyên viên')))),
       phone: userData.phone || '',
       email: userData.email || '',
       dob: userData.dob || '',

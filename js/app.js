@@ -1,21 +1,21 @@
 import { auth } from './auth.js?v=8.7';
 import { store } from './store.js?v=8.7';
-import { Sidebar } from './components/sidebar.js?v=8.8';
-import { TopHeader } from './components/topHeader.js?v=8.7';
+import { Sidebar } from './components/sidebar.js?v=8.9';
+import { TopHeader } from './components/topHeader.js?v=8.9';
 import { BottomNav } from './components/bottomNav.js?v=8.7';
 import { DashboardView } from './components/dashboardView.js?v=8.8';
 import { WorkspaceView } from './components/workspaceView.js?v=8.7';
-import { TaskDrawer } from './components/taskDrawer.js?v=8.8';
+import { TaskDrawer } from './components/taskDrawer.js?v=8.9';
 import { NotificationDrawer } from './components/notificationDrawer.js?v=8.7';
-import { CreateTaskModal } from './components/createTaskModal.js?v=8.8';
+import { CreateTaskModal } from './components/createTaskModal.js?v=8.9';
 import { SubtasksModal } from './components/subtasksModal.js?v=8.7';
 import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.7';
 import { ProfileModal } from './components/profileModal.js?v=8.7';
-import { MemberModal } from './components/memberModal.js?v=8.8';
+import { MemberModal } from './components/memberModal.js?v=8.9';
 import { SettingsModal } from './components/settingsModal.js?v=8.7';
 import { LoginView } from './components/loginView.js?v=8.7';
 import { DepartmentModal } from './components/departmentModal.js?v=8.8';
-import { DepartmentView } from './components/departmentView.js?v=8.8';
+import { DepartmentView } from './components/departmentView.js?v=8.9';
 import { PlansView } from './components/plansView.js?v=8.7';
 import { PlanDrawer } from './components/planDrawer.js?v=8.7';
 import { PlanModal } from './components/planModal.js?v=8.8';
@@ -561,6 +561,7 @@ class App {
             const isUserAdmin = Boolean(u.isAdmin || u.role === 'ADMIN');
 
             const getRoleBadgeMeta = (roleCode) => {
+              if (roleCode === 'ADMIN') return { text: '👑 Quản Trị Viên', color: 'bg-[#fffbeb] text-[#795900] border-amber-300 font-extrabold' };
               if (roleCode === 'LEADERSHIP') return { text: 'Ban Lãnh Đạo', color: 'bg-purple-100 text-purple-900 border-purple-300' };
               if (roleCode === 'MANAGER') return { text: 'Trưởng Phòng', color: 'bg-[#fef3c7] text-[#92400e] border-amber-300 font-extrabold' };
               if (roleCode === 'DEPUTY_MANAGER') return { text: 'Phó Phòng', color: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-extrabold' };
@@ -589,7 +590,7 @@ class App {
                   <div class="flex items-start gap-3.5 pr-20">
                     <div class="relative shrink-0">
                       <img src="${u.avatar}" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-gray-100 shadow-2xs" alt="${esc(u.name)}" />
-                      ${u.role === 'MANAGER' ? '<span class="absolute -top-1.5 -right-1.5 text-[11px]">👑</span>' : ''}
+                      ${(u.role === 'MANAGER' || u.role === 'ADMIN' || isUserAdmin) ? '<span class="absolute -top-1.5 -right-1.5 text-[11px]">👑</span>' : ''}
                     </div>
 
                     <div class="min-w-0 flex-1">
@@ -641,7 +642,7 @@ class App {
                         ` : ''}
                       </div>
                     `}
-                    ${isUserAdmin ? `
+                    ${(isUserAdmin && !userMemberships.some(m => m.role === 'ADMIN') && u.role !== 'ADMIN') ? `
                       <div class="flex items-center gap-1.5 flex-wrap">
                         <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#fffbeb] text-[#795900] border border-[#fef3c7] flex items-center gap-1 shadow-2xs">
                           <span class="material-symbols-outlined text-[13px] text-[#d6a52a]">admin_panel_settings</span>

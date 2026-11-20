@@ -645,7 +645,11 @@ export class TaskDrawer {
         const uTeamId = store.getUserTeamInDepartment(u, task.departmentId);
         const team = currentDeptTeams.find(t => t.id === uTeamId);
         const roleInDept = store.getUserRoleInDepartment(u, task.departmentId);
-        const roleTag = roleInDept === 'MANAGER' ? 'Trưởng phòng' : (roleInDept === 'DEPUTY_MANAGER' ? 'Phó phòng' : (u.badge || roleInDept));
+        const roleTag = roleInDept === 'ADMIN'
+          ? 'Quản trị viên'
+          : (roleInDept === 'LEADERSHIP'
+            ? 'Ban Lãnh Đạo'
+            : (roleInDept === 'MANAGER' ? 'Trưởng phòng' : (roleInDept === 'DEPUTY_MANAGER' ? 'Phó phòng' : (u.badge || roleInDept))));
         return `
           <div
             class="item-select-drawer-member flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer min-h-[48px] ${isSelected ? 'bg-amber-50/80 border-[#d6a52a] shadow-xs' : 'bg-white hover:bg-gray-50 border-[#e2e8f0]'}"

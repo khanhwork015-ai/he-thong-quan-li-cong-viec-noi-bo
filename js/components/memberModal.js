@@ -47,7 +47,7 @@ export class MemberModal {
         membershipMap.set(initialDeptId, { departmentId: initialDeptId, role: 'MEMBER', teamId: '' });
       }
     } else if (membershipMap.size === 0 && this.editingUser.departmentId && this.editingUser.departmentId !== 'all') {
-      const fallbackRole = this.editingUser.role === 'ADMIN' ? 'MANAGER' : (this.editingUser.role || 'MEMBER');
+      const fallbackRole = this.editingUser.role || 'MEMBER';
       membershipMap.set(this.editingUser.departmentId, {
         departmentId: this.editingUser.departmentId,
         role: fallbackRole,
@@ -160,7 +160,7 @@ export class MemberModal {
                   const isChecked = Boolean(m);
                   const mRole = m?.role || 'MEMBER';
                   const mTeamId = m?.teamId || '';
-                  const isLeaderOrMgr = (mRole === 'MANAGER' || mRole === 'DEPUTY_MANAGER' || mRole === 'LEADERSHIP');
+                  const isLeaderOrMgr = (mRole === 'ADMIN' || mRole === 'MANAGER' || mRole === 'DEPUTY_MANAGER' || mRole === 'LEADERSHIP');
                   const isPrimary = d.id === primaryDeptId;
 
                   return `
@@ -187,6 +187,7 @@ export class MemberModal {
                             <option value="DEPUTY_MANAGER" ${mRole === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Phòng</option>
                             <option value="MANAGER" ${mRole === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng</option>
                             <option value="LEADERSHIP" ${mRole === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo</option>
+                            <option value="ADMIN" ${mRole === 'ADMIN' ? 'selected' : ''}>👑 Quản Trị Viên / Toàn Quyền</option>
                           </select>
                         </div>
 
@@ -199,8 +200,8 @@ export class MemberModal {
                             `).join('')}
                           </select>
                           <div class="dept-team-whole-badge ${isLeaderOrMgr ? 'flex' : 'hidden'} h-10 px-3 rounded-xl bg-white/90 border border-amber-200 text-[#795900] text-[12px] font-bold items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[16px] text-[#d6a52a]">domain_verification</span>
-                            <span class="truncate">Quản trị Toàn phòng</span>
+                            <span class="material-symbols-outlined text-[16px] text-[#d6a52a]">${mRole === 'ADMIN' ? 'admin_panel_settings' : 'domain_verification'}</span>
+                            <span class="dept-whole-label truncate">${mRole === 'ADMIN' ? 'Toàn quyền Quản trị' : 'Quản trị Toàn phòng'}</span>
                           </div>
                         </div>
                       </div>
@@ -279,6 +280,7 @@ export class MemberModal {
     const fileInput = this.container.querySelector('#memberFileInput');
     const btnUpload = this.container.querySelector('#btnMemberUploadAvatar');
     const btnOverlay = this.container.querySelector('#btnMemberAvatarOverlay');
+    const chkIsAdmin = this.container.querySelector('#memberIsAdmin');
     const deptCards = Array.from(this.container.querySelectorAll('.member-dept-card'));
 
     const ensurePrimarySelected = () => {
@@ -299,6 +301,8 @@ export class MemberModal {
       const roleSelect = card.querySelector('.select-dept-role');
       const teamSelect = card.querySelector('.select-dept-team');
       const wholeBadge = card.querySelector('.dept-team-whole-badge');
+      const wholeLabel = card.querySelector('.dept-whole-label');
+      const wholeIcon = wholeBadge?.querySelector('.material-symbols-outlined');
 
       const syncCardState = () => {
         const checked = Boolean(chk?.checked);
@@ -320,7 +324,7 @@ export class MemberModal {
         card.style.borderColor = checked ? 'var(--accent)' : 'var(--border)';
 
         const r = roleSelect ? roleSelect.value : 'MEMBER';
-        const isLeaderOrMgr = (r === 'MANAGER' || r === 'DEPUTY_MANAGER' || r === 'LEADERSHIP');
+        const isLeaderOrMgr = (r === 'ADMIN' || r === 'MANAGER' || r === 'DEPUTY_MANAGER' || r === 'LEADERSHIP');
         if (teamSelect) {
           teamSelect.classList.toggle('hidden', isLeaderOrMgr);
           if (isLeaderOrMgr) teamSelect.value = '';
@@ -329,12 +333,45 @@ export class MemberModal {
           wholeBadge.classList.toggle('hidden', !isLeaderOrMgr);
           wholeBadge.classList.toggle('flex', isLeaderOrMgr);
         }
+        if (wholeLabel) {
+          wholeLabel.textContent = r === 'ADMIN' ? 'Toàn quyền Quản trị' : 'Quản trị Toàn phòng';
+        }
+        if (wholeIcon) {
+          wholeIcon.textContent = r === 'ADMIN' ? 'admin_panel_settings' : 'domain_verification';
+        }
+        if (checked && r === 'ADMIN' && chkIsAdmin) {
+          chkIsAdmin.checked = true;
+        }
         ensurePrimarySelected();
       };
 
       if (chk) chk.addEventListener('change', syncCardState);
       if (roleSelect) roleSelect.addEventListener('change', syncCardState);
+      card._syncCardState = syncCardState;
     });
+
+    if (chkIsAdmin) {
+      chkIsAdmin.addEventListener('change', () => {
+        if (!chkIsAdmin.checked) {
+          deptCards.forEach(card => {
+            const roleSelect = card.querySelector('.select-dept-role');
+            if (roleSelect && roleSelect.value === 'ADMIN') {
+              roleSelect.value = 'MEMBER';
+              card._syncCardState?.();
+            }
+          });
+        } else if (!this.editingUser) {
+          deptCards.forEach(card => {
+            const chk = card.querySelector('.chk-member-dept');
+            const roleSelect = card.querySelector('.select-dept-role');
+            if (chk?.checked && roleSelect && roleSelect.value === 'MEMBER') {
+              roleSelect.value = 'ADMIN';
+              card._syncCardState?.();
+            }
+          });
+        }
+      });
+    }
 
     const closeModal = () => {
       rung(10);
@@ -469,7 +506,7 @@ export class MemberModal {
           const deptId = card.dataset.deptId;
           const isPrimary = Boolean(card.querySelector('.radio-primary-dept')?.checked);
           const mRole = card.querySelector('.select-dept-role')?.value || 'MEMBER';
-          const isLeaderOrMgr = (mRole === 'MANAGER' || mRole === 'DEPUTY_MANAGER' || mRole === 'LEADERSHIP');
+          const isLeaderOrMgr = (mRole === 'ADMIN' || mRole === 'MANAGER' || mRole === 'DEPUTY_MANAGER' || mRole === 'LEADERSHIP');
           const mTeamId = isLeaderOrMgr ? '' : (card.querySelector('.select-dept-team')?.value || '');
           const entry = { departmentId: deptId, role: mRole, teamId: mTeamId };
           if (isPrimary) {
@@ -480,7 +517,9 @@ export class MemberModal {
           }
         });
 
-        const allowGlobalKeep = Boolean(this.editingUser && this.editingUser.departmentId === 'all' && (isAdminFlag || this.editingUser.role === 'LEADERSHIP'));
+        const hasAdminMembership = collected.some(m => m.role === 'ADMIN');
+        const finalIsAdmin = isAdminFlag || hasAdminMembership;
+        const allowGlobalKeep = Boolean(this.editingUser && this.editingUser.departmentId === 'all' && (finalIsAdmin || this.editingUser.role === 'LEADERSHIP'));
         if (collected.length === 0 && !allowGlobalKeep) {
           toast('Vui lòng tích chọn ít nhất 1 phòng ban cho nhân sự!', 'warning');
           return;
@@ -501,7 +540,8 @@ export class MemberModal {
           ? collected.map(c => allDepts.find(d => d.id === c.departmentId)?.code || c.departmentId).join(' • ')
           : (dept ? dept.name : 'Shin Task Management');
         let badge = 'Chuyên viên';
-        if (role === 'LEADERSHIP') badge = 'Ban Lãnh Đạo';
+        if (role === 'ADMIN') badge = 'Quản trị viên';
+        else if (role === 'LEADERSHIP') badge = 'Ban Lãnh Đạo';
         else if (role === 'MANAGER') badge = 'Trưởng phòng';
         else if (role === 'DEPUTY_MANAGER') badge = 'Phó phòng';
 
@@ -509,7 +549,7 @@ export class MemberModal {
           name,
           title,
           role,
-          isAdmin: isAdminFlag,
+          isAdmin: finalIsAdmin,
           departmentId,
           teamId,
           memberships: collected,

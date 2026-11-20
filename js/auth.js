@@ -38,9 +38,8 @@ export function normalizeUserMemberships(u) {
       if (!m || !m.departmentId || m.departmentId === 'all') return;
       const dId = String(m.departmentId).trim();
       if (!dId) return;
-      let role = String(m.role || u.role || 'MEMBER').trim().toUpperCase();
-      if (role === 'ADMIN') role = 'MANAGER';
-      const isLeaderOrMgr = (role === 'MANAGER' || role === 'DEPUTY_MANAGER' || role === 'LEADERSHIP');
+      const role = String(m.role || u.role || 'MEMBER').trim().toUpperCase();
+      const isLeaderOrMgr = (role === 'ADMIN' || role === 'MANAGER' || role === 'DEPUTY_MANAGER' || role === 'LEADERSHIP');
       const teamId = isLeaderOrMgr ? '' : String(m.teamId || '').trim();
       if (!map.has(dId)) {
         map.set(dId, { departmentId: dId, role, teamId });
@@ -50,9 +49,8 @@ export function normalizeUserMemberships(u) {
 
   if (map.size === 0 && u.departmentId && u.departmentId !== 'all') {
     const deptParts = String(u.departmentId).split(',').map(s => s.trim()).filter(Boolean);
-    let fallbackRole = String(u.role || 'MEMBER').trim().toUpperCase();
-    if (fallbackRole === 'ADMIN') fallbackRole = 'MANAGER';
-    const isLeaderOrMgr = (fallbackRole === 'MANAGER' || fallbackRole === 'DEPUTY_MANAGER' || fallbackRole === 'LEADERSHIP');
+    const fallbackRole = String(u.role || 'MEMBER').trim().toUpperCase();
+    const isLeaderOrMgr = (fallbackRole === 'ADMIN' || fallbackRole === 'MANAGER' || fallbackRole === 'DEPUTY_MANAGER' || fallbackRole === 'LEADERSHIP');
     const fallbackTeam = isLeaderOrMgr ? '' : String(u.teamId || '').trim();
     deptParts.forEach((dId, idx) => {
       if (dId !== 'all' && !map.has(dId)) {
@@ -67,7 +65,8 @@ export function normalizeUserMemberships(u) {
 export function normalizeUserRecord(u) {
   if (!u || typeof u !== 'object') return u;
   const memberships = normalizeUserMemberships(u);
-  const isAdminFlag = Boolean(u.isAdmin === true || u.isAdmin === 'true' || u.isAdmin === 1 || u.role === 'ADMIN');
+  const hasAdminMembership = memberships.some(m => m.role === 'ADMIN');
+  const isAdminFlag = Boolean(u.isAdmin === true || u.isAdmin === 'true' || u.isAdmin === 1 || u.role === 'ADMIN' || hasAdminMembership);
   let primaryDeptId = u.departmentId || 'dept_ptkh';
   let primaryTeamId = u.teamId || '';
   let primaryRole = String(u.role || 'MEMBER').trim().toUpperCase();
@@ -79,7 +78,7 @@ export function normalizeUserRecord(u) {
     const bestRole = memberships.reduce((best, m) => (
       (ROLE_RANK[m.role] || 1) > (ROLE_RANK[best] || 1) ? m.role : best
     ), memberships[0].role);
-    if (primaryRole !== 'ADMIN' && primaryRole !== 'LEADERSHIP') {
+    if (primaryRole !== 'LEADERSHIP') {
       primaryRole = bestRole;
     }
   }

@@ -264,6 +264,7 @@ export class Sidebar {
     const visibleDepts = isGlobal ? allDepts : allDepts.filter(d => userDeptIds.includes(d.id));
 
     const getRoleLabel = (r) => {
+      if (r === 'ADMIN') return '👑 Quản Trị Viên';
       if (r === 'MANAGER') return 'Trưởng Phòng';
       if (r === 'DEPUTY_MANAGER') return 'Phó Phòng';
       if (r === 'LEADERSHIP') return 'Ban Lãnh Đạo';
