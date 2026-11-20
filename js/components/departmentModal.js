@@ -76,20 +76,20 @@ export class DepartmentModal {
                 </button>
               </div>
 
-              <div id="boxAddDeptForm" class="hidden shrink-0 p-3.5 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/40 flex flex-col gap-2.5 shadow-2xs">
-                <span class="text-[12px] font-bold text-[#795900]">Tạo phòng ban mới</span>
-                <input type="text" id="newDeptName" placeholder="Tên phòng ban *" class="h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f]" />
-                <div class="grid grid-cols-2 gap-2">
-                  <input type="text" id="newDeptCode" placeholder="Mã PB (VD: PTKH)" class="h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] uppercase" />
-                  <input type="color" id="newDeptColor" value="#D6A52A" class="h-9 w-full rounded-xl border border-[#e2e8f0] cursor-pointer" title="Chọn màu nhận diện" />
+              <div id="boxAddDeptForm" class="hidden shrink-0 p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/40 flex flex-col gap-3 shadow-2xs">
+                <span class="text-[14px] font-extrabold text-[#795900]">Tạo phòng ban mới</span>
+                <input type="text" id="newDeptName" placeholder="Tên phòng ban *" class="h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] font-medium outline-none bg-white text-[#0d1c2f]" />
+                <div class="grid grid-cols-2 gap-2.5">
+                  <input type="text" id="newDeptCode" placeholder="Mã PB (VD: PTKH)" class="h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] font-mono-data font-semibold outline-none bg-white text-[#0d1c2f] uppercase" />
+                  <input type="color" id="newDeptColor" value="#D6A52A" class="h-11 w-full p-1 rounded-xl border border-[#cbd5e1] bg-white cursor-pointer" title="Chọn màu nhận diện" />
                 </div>
-                <select id="newDeptManager" class="h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none bg-white text-[#0d1c2f]">
+                <select id="newDeptManager" class="h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] font-medium outline-none bg-white text-[#0d1c2f]">
                   <option value="">-- Chọn Trưởng phòng phụ trách --</option>
                   ${managers.map(m => `<option value="${m.id}">${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}
                 </select>
-                <div class="flex items-center justify-end gap-2 pt-1">
-                  <button type="button" id="btnCancelAddDept" class="px-3 py-1 rounded-lg text-[11.5px] text-gray-500 hover:bg-gray-100">Hủy</button>
-                  <button type="button" id="btnSubmitAddDept" class="px-3 py-1 rounded-lg text-[11.5px] font-bold bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white transition-all shadow-2xs">Lưu PB</button>
+                <div class="flex items-center justify-end gap-2 pt-1.5">
+                  <button type="button" id="btnCancelAddDept" class="min-h-[42px] px-4 py-2 rounded-xl text-[13px] font-semibold text-gray-600 hover:bg-gray-100">Hủy</button>
+                  <button type="button" id="btnSubmitAddDept" class="min-h-[42px] px-5 py-2 rounded-xl text-[13px] font-bold bg-[#d6a52a] text-[#533d00] hover:bg-[#795900] hover:text-white transition-all shadow-2xs">Lưu PB</button>
                 </div>
               </div>
 

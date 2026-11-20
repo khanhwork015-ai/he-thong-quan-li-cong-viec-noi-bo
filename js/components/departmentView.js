@@ -107,58 +107,58 @@ export class DepartmentView {
           <div class="lg:col-span-5 flex flex-col gap-3.5">
             <div class="bg-white rounded-3xl p-4 sm:p-5 border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5" style="background-color: var(--card); border-color: var(--border);">
 
-              <div class="flex items-center justify-between pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
+              <div class="flex items-center justify-between pb-2.5 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                 <div>
-                  <h3 class="font-bold text-[15.5px] text-[#0d1c2f]" style="color: var(--text);">Danh Sách Phòng Ban (${depts.length})</h3>
-                  <span class="text-[11.5px] text-[#64748b]" style="color: var(--text-muted);">Chọn phòng ban để quản lý cấu trúc &amp; bộ phận</span>
+                  <h3 class="font-bold text-[16px] sm:text-[17px] text-[#0d1c2f]" style="color: var(--text);">Danh Sách Phòng Ban (${depts.length})</h3>
+                  <span class="text-[12.5px] text-[#64748b]" style="color: var(--text-muted);">Chọn phòng ban để quản lý cấu trúc &amp; bộ phận</span>
                 </div>
-                <button type="button" id="btnToggleAddDeptSide" class="px-3 py-1.5 rounded-xl text-[12px] font-bold shadow-2xs flex items-center gap-1 min-h-[38px] cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
-                  <span class="material-symbols-outlined text-[16px]">add</span>
+                <button type="button" id="btnToggleAddDeptSide" class="px-3.5 py-2 rounded-xl text-[13px] font-bold shadow-2xs flex items-center gap-1.5 min-h-[42px] cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                  <span class="material-symbols-outlined text-[18px]">add</span>
                   <span>Thêm PB</span>
                 </button>
               </div>
 
               <div class="relative">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
-                <input type="text" id="inputSearchDept" value="${esc(this.searchQuery)}" placeholder="Tìm theo tên hoặc mã phòng ban..." class="w-full h-10 pl-10 pr-3.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
+                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-[20px]">search</span>
+                <input type="text" id="inputSearchDept" value="${esc(this.searchQuery)}" placeholder="Tìm theo tên hoặc mã phòng ban..." class="w-full h-11 pl-10 pr-4 rounded-xl border border-[#cbd5e1] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
               </div>
 
-              <div id="boxAddDeptFormView" class="${this.isAddingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/60 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
+              <div id="boxAddDeptFormView" class="${this.isAddingDept ? '' : 'hidden'} p-4 sm:p-5 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/60 flex flex-col gap-3.5 shadow-xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
                 <div class="flex items-center justify-between">
-                  <span class="text-[12.5px] font-bold" style="color: var(--primary);">Thêm Phòng Ban Mới</span>
-                  <button type="button" id="btnCancelAddDeptTop" class="text-gray-400 hover:text-gray-700 text-lg font-bold min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer">&times;</button>
+                  <span class="text-[14.5px] sm:text-[15px] font-extrabold" style="color: var(--primary);">Thêm Phòng Ban Mới</span>
+                  <button type="button" id="btnCancelAddDeptTop" class="text-gray-400 hover:text-gray-700 text-xl font-bold min-w-[36px] min-h-[36px] rounded-lg hover:bg-black/5 flex items-center justify-center cursor-pointer">&times;</button>
                 </div>
 
                 <div>
-                  <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Tên phòng ban *</label>
-                  <input type="text" id="newDeptNameView" placeholder="Ví dụ: Khoa Dược &amp; VTYT" class="w-full h-9.5 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                  <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Tên phòng ban *</label>
+                  <input type="text" id="newDeptNameView" placeholder="Ví dụ: Khoa Dược &amp; VTYT" class="w-full h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] sm:text-[14px] font-medium outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mã nhận diện (Code) *</label>
-                    <input type="text" id="newDeptCodeView" placeholder="VD: DUOC-CS3" class="w-full h-9.5 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none uppercase bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                    <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Mã nhận diện (Code) *</label>
+                    <input type="text" id="newDeptCodeView" placeholder="VD: DUOC-CS3" class="w-full h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] sm:text-[14px] font-mono-data font-semibold outline-none uppercase bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                   </div>
                   <div>
-                    <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Màu sắc nhận diện</label>
-                    <div class="flex items-center gap-2">
-                      <input type="color" id="newDeptColorView" value="#D6A52A" class="h-9.5 w-10 rounded-xl border border-[#e2e8f0] cursor-pointer" />
-                      <span id="newDeptColorTextView" class="text-[11.5px] font-mono text-gray-500 font-bold">#D6A52A</span>
+                    <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Màu sắc nhận diện</label>
+                    <div class="flex items-center gap-2.5">
+                      <input type="color" id="newDeptColorView" value="#D6A52A" class="h-11 w-14 p-1 rounded-xl border border-[#cbd5e1] bg-white cursor-pointer" />
+                      <span id="newDeptColorTextView" class="text-[13px] font-mono-data text-gray-600 font-bold">#D6A52A</span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label class="block text-[11px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Trưởng phòng phụ trách</label>
-                  <select id="newDeptManagerView" class="w-full h-9.5 px-3 rounded-xl border border-[#e2e8f0] text-[12px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
+                  <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Trưởng phòng phụ trách</label>
+                  <select id="newDeptManagerView" class="w-full h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] sm:text-[14px] font-medium outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
                     <option value="">-- Chưa gán Trưởng phòng --</option>
                     ${managers.map(m => `<option value="${m.id}">${esc(m.name)} (${esc(m.badge || '')})</option>`).join('')}
                   </select>
                 </div>
 
-                <div class="flex items-center justify-end gap-2 pt-1 border-t border-[#f1f5f9]">
-                  <button type="button" id="btnCancelAddDeptView" class="px-3.5 py-1.5 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer">Hủy</button>
-                  <button type="button" id="btnSubmitAddDeptView" class="px-4 py-1.5 rounded-xl text-[12px] font-bold shadow-2xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">Tạo Phòng Ban</button>
+                <div class="flex items-center justify-end gap-2.5 pt-2.5 border-t border-[#f1f5f9]">
+                  <button type="button" id="btnCancelAddDeptView" class="min-h-[42px] px-4 py-2 rounded-xl text-[13px] font-semibold text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer">Hủy</button>
+                  <button type="button" id="btnSubmitAddDeptView" class="min-h-[42px] px-5 py-2 rounded-xl text-[13px] sm:text-[13.5px] font-bold shadow-2xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">Tạo Phòng Ban</button>
                 </div>
               </div>
 
@@ -235,50 +235,50 @@ export class DepartmentView {
                   </div>
                 </div>
 
-                <div id="boxEditDeptFormView" class="${this.isEditingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/50 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
+                <div id="boxEditDeptFormView" class="${this.isEditingDept ? '' : 'hidden'} p-4 sm:p-5 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/50 flex flex-col gap-3.5 shadow-xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
                   <div class="flex items-center justify-between">
-                    <span class="text-[12.5px] font-bold text-[#795900]" style="color: var(--primary);">Cập nhật thông tin phòng ban</span>
-                    <button type="button" id="btnCancelEditDeptTopView" class="text-gray-400 hover:text-gray-700 text-lg font-bold min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer">&times;</button>
+                    <span class="text-[14.5px] sm:text-[15px] font-extrabold text-[#795900]" style="color: var(--primary);">Cập nhật thông tin phòng ban</span>
+                    <button type="button" id="btnCancelEditDeptTopView" class="text-gray-400 hover:text-gray-700 text-xl font-bold min-w-[36px] min-h-[36px] rounded-lg hover:bg-black/5 flex items-center justify-center cursor-pointer">&times;</button>
                   </div>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Tên phòng ban *</label>
-                      <input type="text" id="editDeptNameView" value="${esc(selectedDept.name)}" placeholder="Tên phòng ban *" class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                      <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Tên phòng ban *</label>
+                      <input type="text" id="editDeptNameView" value="${esc(selectedDept.name)}" placeholder="Tên phòng ban *" class="w-full h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] sm:text-[14px] font-medium outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                     </div>
 
                     <div>
-                      <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Mã nhận diện (Code) *</label>
-                      <input type="text" id="editDeptCodeView" value="${esc(selectedDept.code)}" placeholder="Mã PB (VD: PTKH)" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] uppercase focus:border-[#d6a52a]" />
+                      <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Mã nhận diện (Code) *</label>
+                      <input type="text" id="editDeptCodeView" value="${esc(selectedDept.code)}" placeholder="Mã PB (VD: PTKH)" class="w-full h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] sm:text-[14px] font-mono-data font-semibold outline-none bg-white text-[#0d1c2f] uppercase focus:border-[#d6a52a]" />
                     </div>
                   </div>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Cơ sở / Chi nhánh</label>
-                      <input type="text" id="editDeptUnitView" value="${esc(selectedDept.unit || 'Shin Task Management')}" placeholder="Cơ sở..." class="w-full h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
+                      <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Cơ sở / Chi nhánh</label>
+                      <input type="text" id="editDeptUnitView" value="${esc(selectedDept.unit || 'Shin Task Management')}" placeholder="Cơ sở..." class="w-full h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] sm:text-[14px] font-medium outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                     </div>
 
                     <div>
-                      <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Màu sắc nhận diện</label>
-                      <div class="flex items-center gap-2">
-                        <input type="color" id="editDeptColorView" value="${selectedDept.color || '#D6A52A'}" class="h-10 w-12 rounded-xl border border-[#e2e8f0] cursor-pointer" title="Chọn màu nhận diện" />
-                        <span id="editDeptColorTextView" class="text-[12px] font-mono text-gray-500">${selectedDept.color || '#D6A52A'}</span>
+                      <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Màu sắc nhận diện</label>
+                      <div class="flex items-center gap-2.5">
+                        <input type="color" id="editDeptColorView" value="${selectedDept.color || '#D6A52A'}" class="h-11 w-14 p-1 rounded-xl border border-[#cbd5e1] bg-white cursor-pointer" title="Chọn màu nhận diện" />
+                        <span id="editDeptColorTextView" class="text-[13px] font-mono-data text-gray-600 font-bold">${selectedDept.color || '#D6A52A'}</span>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-[11.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Trưởng phòng phụ trách</label>
-                    <select id="editDeptManagerView" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
+                    <label class="block text-[12.5px] sm:text-[13px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">Trưởng phòng phụ trách</label>
+                    <select id="editDeptManagerView" class="w-full h-11 px-3.5 rounded-xl border border-[#cbd5e1] text-[13.5px] sm:text-[14px] font-medium outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
                       <option value="">-- Chưa gán Trưởng phòng --</option>
                       ${assignableManagers.map(m => `<option value="${m.id}" ${m.id === selectedDept.managerId ? 'selected' : ''}>${esc(m.name)} (${esc(m.badge || m.title || '')})</option>`).join('')}
                     </select>
                   </div>
 
-                  <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#f1f5f9]">
-                    <button type="button" id="btnCancelEditDeptView" class="px-4 py-2 rounded-xl text-[12px] text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer">Hủy</button>
-                    <button type="button" id="btnSubmitEditDeptView" class="px-4 py-2 rounded-xl text-[12px] font-bold shadow-2xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">Lưu Thay Đổi</button>
+                  <div class="flex items-center justify-end gap-2.5 pt-2.5 border-t border-[#f1f5f9]">
+                    <button type="button" id="btnCancelEditDeptView" class="min-h-[42px] px-4 py-2 rounded-xl text-[13px] font-semibold text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer">Hủy</button>
+                    <button type="button" id="btnSubmitEditDeptView" class="min-h-[42px] px-5 py-2 rounded-xl text-[13px] sm:text-[13.5px] font-bold shadow-2xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">Lưu Thay Đổi</button>
                   </div>
                 </div>
 
