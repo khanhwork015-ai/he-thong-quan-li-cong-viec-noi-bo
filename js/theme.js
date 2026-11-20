@@ -1,9 +1,3 @@
-﻿/**
- * SHIN AIOS v2.6.4 - THEME & COLOR PALETTE MANAGER
- * Quản lý 8 bảng màu (8 Palettes), 4 chế độ hiển thị (Theme Modes),
- * 3 mức cỡ chữ (Font Scales) và công tắc Bottom Navigation chuẩn SHIN.
- */
-
 import { rung } from './helpers.js?v=8.7';
 
 export const PALETTES = [
@@ -128,7 +122,6 @@ class ThemeService {
   }
 
   setupListeners() {
-    // 1. Đồng bộ hệ điều hành khi ở chế độ auto
     if (window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       mediaQuery.addEventListener('change', () => {
@@ -138,14 +131,12 @@ class ThemeService {
       });
     }
 
-    // 2. Kiểm tra chu kỳ ngày/đêm mỗi 5 phút nếu ở chế độ time
     setInterval(() => {
       if (this.themeMode === 'time') {
         this.apply();
       }
     }, 5 * 60 * 1000);
 
-    // 3. Quy tắc bắt buộc: Tự động ẩn bottom navigation khi người dùng chạm gõ ô input
     window.addEventListener('focusin', (e) => {
       const tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
@@ -179,7 +170,6 @@ class ThemeService {
     const docEl = document.documentElement;
     const body = document.body;
 
-    // Thiết lập thuộc tính lên root
     docEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
     docEl.setAttribute('data-theme-mode', this.themeMode);
     docEl.setAttribute('data-palette', this.palette);
@@ -193,7 +183,6 @@ class ThemeService {
     }
     docEl.classList.toggle('an-navbar', !this.isNavBarEnabled);
 
-    // Cập nhật thẻ meta theme-color trên thiết bị di động
     const currentPal = PALETTES.find(p => p.id === this.palette) || PALETTES[0];
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
@@ -232,7 +221,6 @@ class ThemeService {
   }
 
   toggleThemeQuick() {
-    // Chuyển đổi nhanh Sáng <-> Tối từ Topbar
     const isDark = this.resolveIsDark();
     this.setThemeMode(isDark ? 'light' : 'dark');
   }
@@ -242,10 +230,8 @@ class ThemeService {
     const isDark = this.resolveIsDark();
 
     return `
-      <!-- KHỐI QUẢN TRỊ GIAO DIỆN SHIN AIOS (CHẾ ĐỘ HIỂN THỊ, 8 PALETTES, CỠ CHỮ, BOTTOM NAV) -->
       <div class="flex flex-col gap-5 p-4 sm:p-5 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm theme-settings-wrapper">
-        
-        <!-- TIÊU ĐỀ SECTION -->
+
         <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9]">
           <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold" style="background-color: var(--primary-soft); color: var(--primary);">
@@ -261,7 +247,6 @@ class ThemeService {
           </span>
         </div>
 
-        <!-- 1. CHỌN CHẾ ĐỘ HIỂN THỊ (4 MODES) -->
         <div>
           <label class="block text-[12px] font-bold text-[#64748b] mb-2 uppercase tracking-wider">
             1. Chế Độ Hiển Thị (Display Theme)
@@ -270,8 +255,8 @@ class ThemeService {
             ${THEME_MODES.map(m => {
               const isActive = this.themeMode === m.id;
               return `
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   class="btn-theme-mode p-2.5 rounded-xl border text-left transition-all min-h-[44px] flex flex-col justify-center ${isActive ? 'ring-2 font-bold shadow-xs' : 'bg-[#f8f9ff] border-[#e2e8f0] hover:bg-white text-[#64748b]'}"
                   data-theme-mode="${m.id}"
                   style="${isActive ? 'background-color: var(--card); border-color: var(--primary); color: var(--primary); --tw-ring-color: var(--primary);' : ''}"
@@ -287,7 +272,6 @@ class ThemeService {
           </div>
         </div>
 
-        <!-- 2. MA TRẬN 8 BẢNG MÀU CHUẨN SHIN AIOS (8 PALETTES) -->
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="block text-[12px] font-bold text-[#64748b] uppercase tracking-wider">
@@ -295,18 +279,17 @@ class ThemeService {
             </label>
             <span class="text-[11px] text-[#64748b]">Chạm 1-chạm đổi toàn bộ màu</span>
           </div>
-          
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             ${PALETTES.map(p => {
               const isSelected = this.palette === p.id;
               return `
-                <div 
+                <div
                   class="palette-card-item p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between min-h-[52px] ${isSelected ? 'ring-2 shadow-sm font-bold' : 'hover:border-gray-400'}"
                   data-palette-id="${p.id}"
                   style="${isSelected ? 'background-color: var(--card); border-color: ' + p.primary + '; --tw-ring-color: ' + p.primary + ';' : 'background-color: var(--bg-sub); border-color: var(--border);'}"
                 >
                   <div class="flex items-center gap-2.5 min-w-0">
-                    <!-- SWATCH COLOR DOTS -->
                     <div class="flex items-center -space-x-1 shrink-0">
                       <span class="w-5 h-5 rounded-full border-2 border-white shadow-xs inline-block" style="background-color: ${p.primary};"></span>
                       <span class="w-4 h-4 rounded-full border border-white shadow-xs inline-block" style="background-color: ${p.accent};"></span>
@@ -328,7 +311,6 @@ class ThemeService {
           </div>
         </div>
 
-        <!-- 3. CỠ CHỮ TOÀN ỨNG DỤNG (3 MỨC CÔNG THÁI HỌC) -->
         <div>
           <label class="block text-[12px] font-bold text-[#64748b] mb-2 uppercase tracking-wider">
             3. Cỡ Chữ Hiển Thị (Font Scaling)
@@ -337,8 +319,8 @@ class ThemeService {
             ${FONT_SCALES.map(f => {
               const isActive = this.fontScale === f.id;
               return `
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   class="btn-font-scale p-2.5 rounded-xl border text-center transition-all min-h-[44px] flex flex-col items-center justify-center ${isActive ? 'ring-2 font-bold shadow-xs' : 'bg-[#f8f9ff] border-[#e2e8f0] hover:bg-white text-[#64748b]'}"
                   data-font-scale="${f.id}"
                   style="${isActive ? 'background-color: var(--card); border-color: var(--primary); color: var(--primary); --tw-ring-color: var(--primary);' : ''}"
@@ -351,7 +333,6 @@ class ThemeService {
           </div>
         </div>
 
-        <!-- 4. CÔNG TẮC BẬT/TẮT BOTTOM NAVIGATION TRÊN DI ĐỘNG -->
         <div class="pt-3 border-t border-[#f1f5f9] flex items-center justify-between">
           <div class="flex items-center gap-2.5">
             <span class="material-symbols-outlined text-[20px] text-[#64748b]">dock_to_bottom</span>
@@ -360,7 +341,7 @@ class ThemeService {
               <div class="text-[11px] text-[#64748b]">Bật để truy cập nhanh 4 menu; tắt để xem toàn màn hình</div>
             </div>
           </div>
-          
+
           <label class="relative inline-flex items-center cursor-pointer min-w-[44px] min-h-[44px] justify-center">
             <input type="checkbox" id="chkNavBarToggle" class="sr-only peer" ${this.isNavBarEnabled ? 'checked' : ''}>
             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[12px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all" style="--tw-bg-opacity: 1;" id="navBarTrack"></div>
@@ -374,7 +355,6 @@ class ThemeService {
   bindEvents(containerEl, onAfterChange = null) {
     if (!containerEl) return;
 
-    // 1. Theme mode buttons
     containerEl.querySelectorAll('[data-theme-mode]').forEach(btn => {
       btn.addEventListener('click', () => {
         const mode = btn.dataset.themeMode;
@@ -383,7 +363,6 @@ class ThemeService {
       });
     });
 
-    // 2. Palette cards
     containerEl.querySelectorAll('[data-palette-id]').forEach(card => {
       card.addEventListener('click', () => {
         const palId = card.dataset.paletteId;
@@ -392,7 +371,6 @@ class ThemeService {
       });
     });
 
-    // 3. Font scale buttons
     containerEl.querySelectorAll('[data-font-scale]').forEach(btn => {
       btn.addEventListener('click', () => {
         const scale = btn.dataset.fontScale;
@@ -401,7 +379,6 @@ class ThemeService {
       });
     });
 
-    // 4. Nav bar toggle switch
     const chkNav = containerEl.querySelector('#chkNavBarToggle');
     if (chkNav) {
       chkNav.addEventListener('change', () => {
@@ -413,5 +390,3 @@ class ThemeService {
 }
 
 export const shinTheme = new ThemeService();
-
-

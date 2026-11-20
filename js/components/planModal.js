@@ -1,9 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - PLAN MODAL COMPONENT (SHIN AIOS v2.7)
- * Soạn thảo & Chỉnh sửa Kế hoạch / Dự án
- * Ai cũng có thể tạo kế hoạch - Tự động ghi nhận Người tạo và Thời gian tạo
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, toast, rung } from '../helpers.js?v=8.7';
@@ -29,8 +23,8 @@ export class PlanModal {
     const canSelectDept = auth.isAdmin() || auth.isLeadership();
 
     const planDeptId = isEdit ? planToEdit.departmentId : (activeDept.id === 'all' ? 'dept_ptkh' : activeDept.id);
-    const deptMembers = (planDeptId && planDeptId !== 'all') 
-      ? store.getDepartmentUsers(planDeptId) 
+    const deptMembers = (planDeptId && planDeptId !== 'all')
+      ? store.getDepartmentUsers(planDeptId)
       : store.getAllUsers();
 
     const defaultLeadId = isEdit ? planToEdit.leadId : currentUser.id;
@@ -42,8 +36,7 @@ export class PlanModal {
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 active" id="planModalOverlay">
         <div class="modal-card bg-white rounded-t-2xl sm:rounded-2xl rounded-b-none sm:rounded-b-2xl w-full max-w-xl max-h-[90vh] sm:max-h-[88vh] flex flex-col shadow-2xl border border-[#e2e8f0] overflow-hidden" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- MODAL HEADER -->
+
           <div class="p-4 sm:p-5 border-b border-[#f1f5f9] flex items-center justify-between shrink-0" style="border-color: var(--border);">
             <div class="flex items-center gap-2.5 min-w-0">
               <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
@@ -61,33 +54,30 @@ export class PlanModal {
             <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer shrink-0" id="btnClosePlanModal" aria-label="Đóng">&times;</button>
           </div>
 
-          <!-- FORM SOẠN THẢO VỚI BODY CUỘN VÀ FOOTER CỐ ĐỊNH -->
           <form id="formPlan" class="flex flex-col flex-1 overflow-hidden">
-            
+
             <div class="p-4 sm:p-5 flex-1 overflow-y-auto flex flex-col gap-3.5 text-left">
-              <!-- 1. TIÊU ĐỀ KẾ HOẠCH -->
               <div>
                 <label for="inputPlanTitle" class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1.5" style="color: var(--text);">
                   Tên Kế Hoạch / Dự Án <span class="text-red-500">*</span>
                 </label>
-                <input 
-                  type="text" 
-                  id="inputPlanTitle" 
+                <input
+                  type="text"
+                  id="inputPlanTitle"
                   class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13.5px] font-bold outline-none focus:border-[#d6a52a] focus:ring-1 focus:ring-[#d6a52a] bg-white text-[#0d1c2f]"
-                  placeholder="VD: Chiến dịch Khám Sức Khỏe Doanh Nghiệp Quý 1/2027..." 
-                  value="${isEdit ? esc(planToEdit.title) : ''}" 
-                  required 
+                  placeholder="VD: Chiến dịch Khám Sức Khỏe Doanh Nghiệp Quý 1/2027..."
+                  value="${isEdit ? esc(planToEdit.title) : ''}"
+                  required
                 />
               </div>
 
-              <!-- 2. PHÒNG BAN & NGƯỜI CHỦ TRÌ (PROJECT LEAD) -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label for="selectPlanDept" class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
                     Phòng ban trực thuộc
                   </label>
-                  <select 
-                    id="selectPlanDept" 
+                  <select
+                    id="selectPlanDept"
                     class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] font-medium outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                     ${!canSelectDept && !isEdit ? 'disabled' : ''}
                   >
@@ -101,8 +91,8 @@ export class PlanModal {
                   <label for="selectPlanLead" class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
                     Người phụ trách chính (Lead) <span class="text-red-500">*</span>
                   </label>
-                  <select 
-                    id="selectPlanLead" 
+                  <select
+                    id="selectPlanLead"
                     class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] font-medium outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                   >
                     ${deptMembers.map(u => `
@@ -112,16 +102,15 @@ export class PlanModal {
                 </div>
               </div>
 
-              <!-- 3. THỜI GIAN & ĐỘ ƯU TIÊN & TRẠNG THÁI (CHỐNG TRÀN VÀ CẮT CHỮ TRÊN MOBILE) -->
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label for="inputPlanStartDate" class="block text-[11.5px] font-bold text-[#64748b] mb-1">
                     Bắt đầu
                   </label>
-                  <input 
-                    type="date" 
-                    id="inputPlanStartDate" 
-                    value="${currentStartDate}" 
+                  <input
+                    type="date"
+                    id="inputPlanStartDate"
+                    value="${currentStartDate}"
                     class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-mono-data font-bold outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                   />
                 </div>
@@ -130,10 +119,10 @@ export class PlanModal {
                   <label for="inputPlanDueDate" class="block text-[11.5px] font-bold text-[#64748b] mb-1">
                     Hạn chót <span class="text-red-500">*</span>
                   </label>
-                  <input 
-                    type="date" 
-                    id="inputPlanDueDate" 
-                    value="${currentDueDate}" 
+                  <input
+                    type="date"
+                    id="inputPlanDueDate"
+                    value="${currentDueDate}"
                     class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-mono-data font-bold outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                     required
                   />
@@ -145,8 +134,8 @@ export class PlanModal {
                   <label for="selectPlanPriority" class="block text-[11.5px] font-bold text-[#64748b] mb-1">
                     Mức ưu tiên
                   </label>
-                  <select 
-                    id="selectPlanPriority" 
+                  <select
+                    id="selectPlanPriority"
                     class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-bold outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                   >
                     <option value="P1" ${currentPriority === 'P1' ? 'selected' : ''}>P1 • Khẩn</option>
@@ -159,8 +148,8 @@ export class PlanModal {
                   <label for="selectPlanStatus" class="block text-[11.5px] font-bold text-[#64748b] mb-1">
                     Trạng thái
                   </label>
-                  <select 
-                    id="selectPlanStatus" 
+                  <select
+                    id="selectPlanStatus"
                     class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-bold outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                   >
                     <option value="planning" ${currentStatus === 'planning' ? 'selected' : ''}>📝 Đang Lập</option>
@@ -172,51 +161,47 @@ export class PlanModal {
                 </div>
               </div>
 
-              <!-- 4. MỤC TIÊU CỐT LÕI (STRATEGIC TARGET) -->
               <div>
                 <label for="textareaPlanTarget" class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
                   🎯 Mục Tiêu Cốt Lõi (Đích đến của dự án)
                 </label>
-                <textarea 
-                  id="textareaPlanTarget" 
-                  rows="2" 
+                <textarea
+                  id="textareaPlanTarget"
+                  rows="2"
                   class="w-full p-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f] leading-relaxed resize-none"
                   placeholder="Ghi rõ kết quả mong muốn đạt được, chỉ số định lượng cụ thể..."
                 >${isEdit ? esc(planToEdit.target || '') : ''}</textarea>
               </div>
 
-              <!-- 5. GHI CHÚ & CHI TIẾT KẾ HOẠCH (NOTES) -->
               <div>
                 <label for="textareaPlanNotes" class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
                   📝 Ghi Chú &amp; Nội Dung Kế Hoạch Chi Tiết
                 </label>
-                <textarea 
-                  id="textareaPlanNotes" 
-                  rows="3" 
+                <textarea
+                  id="textareaPlanNotes"
+                  rows="3"
                   class="w-full p-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f] leading-relaxed resize-none"
                   placeholder="Phân tích tình hình, phương án thực hiện, các phòng ban cần phối hợp..."
                 >${isEdit ? esc(planToEdit.notes || '') : ''}</textarea>
               </div>
 
-              <!-- HỘP THÔNG TIN TỰ ĐỘNG GHI NHẬN NGƯỜI TẠO -->
               <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-[11.5px] text-amber-900 flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px] text-amber-600 shrink-0">verified_user</span>
                 <span>Hệ thống tự động lưu người tạo <strong>${currentUser.name || 'Bạn'}</strong> và đóng dấu thời gian tạo vào kế hoạch.</span>
               </div>
             </div>
 
-            <!-- NÚT HÀNH ĐỘNG FOOTER CỐ ĐỊNH (STICKY ACTION BAR) -->
             <div class="p-3.5 sm:p-4 border-t border-[#f1f5f9] bg-[#f8f9ff]/70 flex items-center justify-end gap-2.5 shrink-0" style="border-color: var(--border);">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 class="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-bold text-[13px] min-h-[44px] hover:bg-gray-100 transition-colors cursor-pointer"
                 id="btnCancelPlanModal"
               >
                 Hủy
               </button>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 class="px-6 py-2.5 rounded-xl font-bold text-[13px] min-h-[44px] shadow-xs hover:shadow-md transition-all cursor-pointer flex items-center gap-2"
                 style="background-color: var(--primary-container); color: var(--on-primary-container);"
               >

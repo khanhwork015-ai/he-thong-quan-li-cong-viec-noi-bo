@@ -1,11 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT MODAL
- * Dành riêng cho Quản Trị Viên (ADMIN):
- * - Toàn quyền Thêm / Sửa / Xóa Phòng Ban
- * - Toàn quyền Thêm / Sửa / Xóa các Bộ Phận Con (Teams) bên trong từng Phòng Ban
- * (Ví dụ: Phòng PTKH gồm các bộ phận Marketing, CSKH, Hỗ trợ)
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=8.7';
@@ -15,8 +7,8 @@ export class DepartmentModal {
     this.container = document.getElementById(containerId);
     this.onUpdated = onUpdated;
     this.selectedDeptId = null;
-    this.editingTeamId = null; // Quản lý ID của team đang mở inline edit
-    this.isEditingDept = false; // Quản lý trạng thái mở form sửa phòng ban
+    this.editingTeamId = null;
+    this.isEditingDept = false;
   }
 
   show(deptIdToSelect = null) {
@@ -53,8 +45,7 @@ export class DepartmentModal {
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="deptModalOverlay">
         <div class="modal-card bg-white rounded-3xl p-4 sm:p-6 max-w-4xl w-full shadow-2xl border border-[#e2e8f0] h-[85vh] min-h-[580px] max-h-[720px] flex flex-col overflow-hidden gap-4 sm:gap-5" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- HEADER: shrink-0 -->
+
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] shrink-0" style="border-color: var(--border);">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
@@ -72,10 +63,8 @@ export class DepartmentModal {
             <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors shrink-0" id="btnCloseDeptModal" aria-label="Đóng">&times;</button>
           </div>
 
-          <!-- MAIN GRID: LEFT (LIST PHÒNG BAN) & RIGHT (CHI TIẾT & BỘ PHẬN CON) -->
           <div class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-5 overflow-y-auto md:overflow-hidden">
-            
-            <!-- CỘT TRÁI (5 COLS): DANH SÁCH PHÒNG BAN & NÚT THÊM -->
+
             <div class="md:col-span-5 flex flex-col gap-3 md:h-full md:min-h-0">
               <div class="flex items-center justify-between shrink-0">
                 <span class="text-[12.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">
@@ -87,7 +76,6 @@ export class DepartmentModal {
                 </button>
               </div>
 
-              <!-- FORM THÊM PHÒNG BAN MỚI (ẨN/HIỆN): shrink-0 -->
               <div id="boxAddDeptForm" class="hidden shrink-0 p-3.5 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/40 flex flex-col gap-2.5 shadow-2xs">
                 <span class="text-[12px] font-bold text-[#795900]">Tạo phòng ban mới</span>
                 <input type="text" id="newDeptName" placeholder="Tên phòng ban *" class="h-9 px-3 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f]" />
@@ -105,7 +93,6 @@ export class DepartmentModal {
                 </div>
               </div>
 
-              <!-- LIST CARDS PHÒNG BAN: md:flex-1 md:min-h-0 max-h-[240px] md:max-h-none overflow-y-auto -->
               <div class="flex flex-col gap-2 md:flex-1 md:min-h-0 max-h-[240px] md:max-h-none overflow-y-auto pr-1">
                 ${depts.map(d => {
                   const isAct = selectedDept && selectedDept.id === d.id;
@@ -129,10 +116,8 @@ export class DepartmentModal {
               </div>
             </div>
 
-            <!-- CỘT PHẢI (7 COLS): CHI TIẾT PHÒNG BAN & BỘ PHẬN CON (TEAMS) -->
             <div class="md:col-span-7 flex flex-col gap-4 p-4 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff]/50 md:h-full md:min-h-0 overflow-y-auto md:overflow-hidden" style="background-color: var(--background); border-color: var(--border);">
               ${selectedDept ? `
-                <!-- THÔNG TIN PHÒNG BAN ĐANG CHỌN (HEADER): shrink-0 -->
                 <div class="flex items-center justify-between pb-3 border-b border-[#e2e8f0] shrink-0" style="border-color: var(--border);">
                   <div class="min-w-0 pr-2">
                     <div class="flex items-center gap-2 flex-wrap">
@@ -147,7 +132,7 @@ export class DepartmentModal {
                       ${esc(selectedDept.unit || 'Shin Task Management')} • Trưởng phòng: <strong>${esc(allUsers.find(u => u.id === selectedDept.managerId)?.name || 'Chưa gán')}</strong>
                     </span>
                   </div>
-                  
+
                   <div class="flex items-center gap-1 shrink-0">
                     <button type="button" id="btnToggleEditDept" class="p-2 text-amber-600 hover:bg-amber-50 rounded-xl transition-colors min-w-[38px] min-h-[38px] flex items-center justify-center" title="Chỉnh sửa thông tin phòng ban">
                       <span class="material-symbols-outlined text-[19px]">edit</span>
@@ -158,7 +143,6 @@ export class DepartmentModal {
                   </div>
                 </div>
 
-                <!-- FORM CHỈNH SỬA PHÒNG BAN (ẨN/HIỆN): shrink-0 -->
                 <div id="boxEditDeptForm" class="${this.isEditingDept ? '' : 'hidden'} shrink-0 p-3.5 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/50 flex flex-col gap-2.5 shadow-2xs">
                   <div class="flex items-center justify-between">
                     <span class="text-[12px] font-bold text-[#795900]">Chỉnh sửa thông tin phòng ban</span>
@@ -185,7 +169,6 @@ export class DepartmentModal {
                   </div>
                 </div>
 
-                <!-- DANH SÁCH BỘ PHẬN CON (TEAMS) CONTAINER: md:flex-1 md:min-h-0 md:overflow-hidden -->
                 <div class="flex flex-col gap-3 md:flex-1 md:min-h-0 md:overflow-hidden">
                   <div class="shrink-0 flex items-center justify-between">
                     <div>
@@ -198,7 +181,6 @@ export class DepartmentModal {
                     </div>
                   </div>
 
-                  <!-- THÊM BỘ PHẬN CON NHANH: shrink-0 -->
                   <div class="shrink-0 p-3 rounded-xl bg-white border border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
                     <input type="text" id="inputNewTeamName" placeholder="Tên bộ phận (VD: CSKH, Marketing, Hỗ trợ...)" class="flex-1 h-9 px-3 rounded-lg border border-[#e2e8f0] text-[12.5px] outline-none bg-white text-[#0d1c2f]" />
                     <input type="text" id="inputNewTeamCode" placeholder="Mã (VD: CSKH)" class="w-full sm:w-28 h-9 px-3 rounded-lg border border-[#e2e8f0] text-[12.5px] outline-none uppercase bg-white text-[#0d1c2f]" />
@@ -208,7 +190,6 @@ export class DepartmentModal {
                     </button>
                   </div>
 
-                  <!-- DANH SÁCH CÁC BỘ PHẬN CON HIỆN CÓ: md:flex-1 md:min-h-0 max-h-[280px] md:max-h-none overflow-y-auto -->
                   <div class="flex flex-col gap-2 md:flex-1 md:min-h-0 max-h-[280px] md:max-h-none overflow-y-auto pr-1">
                     ${(!selectedDept.teams || selectedDept.teams.length === 0) ? `
                       <div class="p-4 rounded-xl text-center text-[12px] text-[#817663] bg-white border border-[#e2e8f0]" style="background-color: var(--card); border-color: var(--border);">
@@ -242,7 +223,7 @@ export class DepartmentModal {
                               <div class="text-[11px] text-[#64748b] truncate" style="color: var(--text-muted);">${membersInTeam.length} nhân viên trực thuộc</div>
                             </div>
                           </div>
-                          
+
                           <div class="flex items-center gap-1 shrink-0">
                             <button type="button" class="btn-edit-team text-gray-400 hover:text-amber-600 p-1.5 rounded-lg transition-colors" data-team-id="${t.id}" title="Chỉnh sửa bộ phận này">
                               <span class="material-symbols-outlined text-[18px]">edit</span>
@@ -265,7 +246,6 @@ export class DepartmentModal {
 
           </div>
 
-          <!-- FOOTER: shrink-0 -->
           <div class="flex items-center justify-end pt-3 border-t border-[#f1f5f9] shrink-0" style="border-color: var(--border);">
             <button type="button" class="px-5 py-2.5 rounded-xl border border-[#e2e8f0] text-[13px] font-semibold text-[#64748b] hover:bg-gray-50 min-h-[44px]" id="btnCloseDeptBottom">
               Đóng Cửa Sổ
@@ -299,7 +279,6 @@ export class DepartmentModal {
       });
     }
 
-    // Chọn phòng ban từ danh sách
     this.container.querySelectorAll('.dept-item-card').forEach(card => {
       card.addEventListener('click', () => {
         const dId = card.dataset.deptId;
@@ -309,7 +288,6 @@ export class DepartmentModal {
       });
     });
 
-    // Toggle Form thêm PB
     const btnToggleAdd = this.container.querySelector('#btnToggleAddDept');
     const boxAdd = this.container.querySelector('#boxAddDeptForm');
     const btnCancelAdd = this.container.querySelector('#btnCancelAddDept');
@@ -320,7 +298,6 @@ export class DepartmentModal {
       btnCancelAdd.addEventListener('click', () => boxAdd.classList.add('hidden'));
     }
 
-    // Submit Thêm Phòng Ban
     const btnSubmitAdd = this.container.querySelector('#btnSubmitAddDept');
     if (btnSubmitAdd) {
       btnSubmitAdd.addEventListener('click', () => {
@@ -353,7 +330,6 @@ export class DepartmentModal {
       });
     }
 
-    // Toggle & Cancel Form Chỉnh sửa Phòng Ban
     const btnToggleEditDept = this.container.querySelector('#btnToggleEditDept');
     const boxEditDept = this.container.querySelector('#boxEditDeptForm');
     const btnCancelEditDept = this.container.querySelector('#btnCancelEditDept');
@@ -382,7 +358,6 @@ export class DepartmentModal {
     if (btnCancelEditDept) btnCancelEditDept.addEventListener('click', closeEditDept);
     if (btnCancelEditDeptTop) btnCancelEditDeptTop.addEventListener('click', closeEditDept);
 
-    // Submit Chỉnh sửa Phòng Ban
     const btnSubmitEditDept = this.container.querySelector('#btnSubmitEditDept');
     if (btnSubmitEditDept && currentDept) {
       btnSubmitEditDept.addEventListener('click', () => {
@@ -418,7 +393,6 @@ export class DepartmentModal {
       });
     }
 
-    // Submit Thêm Bộ Phận Con (Team)
     const btnAddTeam = this.container.querySelector('#btnAddTeamSubmit');
     if (btnAddTeam && currentDept) {
       btnAddTeam.addEventListener('click', () => {
@@ -446,7 +420,6 @@ export class DepartmentModal {
       });
     }
 
-    // Nút Bật Chỉnh sửa Inline cho Bộ Phận Con (.btn-edit-team)
     this.container.querySelectorAll('.btn-edit-team').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -456,7 +429,6 @@ export class DepartmentModal {
       });
     });
 
-    // Nút Lưu Chỉnh sửa Inline cho Bộ Phận Con (.btn-save-edit-team)
     this.container.querySelectorAll('.btn-save-edit-team').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -490,7 +462,6 @@ export class DepartmentModal {
       });
     });
 
-    // Nút Hủy Chỉnh sửa Inline cho Bộ Phận Con (.btn-cancel-edit-team)
     this.container.querySelectorAll('.btn-cancel-edit-team').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -499,7 +470,6 @@ export class DepartmentModal {
       });
     });
 
-    // Phím tắt Enter / Escape khi đang sửa inline team
     if (this.editingTeamId && currentDept) {
       const activeNameInput = this.container.querySelector(`#inputEditTeamName_${this.editingTeamId}`);
       const activeCodeInput = this.container.querySelector(`#inputEditTeamCode_${this.editingTeamId}`);
@@ -523,7 +493,6 @@ export class DepartmentModal {
       }
     }
 
-    // Xóa Bộ Phận Con (Team)
     this.container.querySelectorAll('.btn-delete-team').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -540,7 +509,6 @@ export class DepartmentModal {
       });
     });
 
-    // Xóa Phòng Ban (Admin)
     const btnDeleteDept = this.container.querySelector('#btnDeleteDept');
     if (btnDeleteDept && currentDept) {
       btnDeleteDept.addEventListener('click', () => {
@@ -557,5 +525,3 @@ export class DepartmentModal {
     }
   }
 }
-
-

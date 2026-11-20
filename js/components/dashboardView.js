@@ -1,13 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - EXECUTIVE DASHBOARD COMPONENT (SHIN AIOS v2.7)
- * Thiết kế chuẩn Archetype B:
- * - Compact Bar (40px) chọn phạm vi Toàn viện / Từng phòng ban
- * - 4 Thẻ KPI toàn viện cô đọng (Tổng việc, Tiến độ %, Chờ duyệt khẩn cấp, Quá hạn)
- * - Biểu đồ so sánh tiến độ đa phòng ban (Horizontal Progress Grid)
- * - Hàng đợi phê duyệt khẩn cấp 1-chạm (Quick Approval Queue)
- * Chuẩn công thái học Mobile-First, Touch Target >= 44px, an toàn DOM với esc()
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, soVN, ngayVN, loiChao, toast, rung, kiemTraTreHan } from '../helpers.js?v=8.7';
@@ -18,7 +8,7 @@ export class DashboardView {
     this.onNavigateToTasks = onNavigateToTasks;
     this.onOpenCreateModal = onOpenCreateModal;
     this.onSelectTask = onSelectTask;
-    this.selectedDeptScope = 'all'; // 'all' hoặc deptId
+    this.selectedDeptScope = 'all';
   }
 
   render() {
@@ -32,35 +22,30 @@ export class DashboardView {
     const allTasksRaw = store.getAllTasksRaw();
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // Xác định phòng ban hiển thị theo scope
     let activeDeptId = this.selectedDeptScope;
     if (!isLeadershipOrAdmin) {
       activeDeptId = currentUser.departmentId || allDepartments[0]?.id || 'dept_ptkh';
     }
 
-    // Lọc công việc theo phạm vi được chọn
-    const scopedTasks = activeDeptId === 'all' 
-      ? allTasksRaw 
+    const scopedTasks = activeDeptId === 'all'
+      ? allTasksRaw
       : allTasksRaw.filter(t => t.departmentId === activeDeptId);
 
-    // Tính 4 chỉ số KPI cốt lõi
     const totalCount = scopedTasks.length;
     const doneTasks = scopedTasks.filter(t => t.status === 'done');
     const doneCount = doneTasks.length;
     const completionRate = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
-    
+
     const pendingApprovalTasks = scopedTasks.filter(t => t.status === 'pending_approval' || t.status === 'review');
     const pendingCount = pendingApprovalTasks.length;
 
     const overdueTasks = scopedTasks.filter(t => t.dueDate < todayStr && t.status !== 'done');
     const overdueCount = overdueTasks.length;
 
-    // Danh sách hàng đợi phê duyệt khẩn cấp (Ưu tiên P1, P2)
     const approvalQueue = scopedTasks
       .filter(t => t.status === 'pending_approval' || t.status === 'review')
       .sort((a, b) => (a.priority === 'P1' ? -1 : 1));
 
-    // Thống kê tiến độ theo từng phòng ban cho biểu đồ so sánh
     const deptStats = allDepartments.map(dept => {
       const dTasks = allTasksRaw.filter(t => t.departmentId === dept.id);
       const dDone = dTasks.filter(t => t.status === 'done').length;
@@ -80,8 +65,7 @@ export class DashboardView {
 
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto pb-12 overflow-x-hidden">
-        
-        <!-- 1. COMPACT BAR CHUẨN ARCHETYPE B (CAO 40PX) & CHỌN PHẠM VI TOÀN VIỆN -->
+
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:px-4 rounded-2xl bg-white border border-[#e2e8f0] shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
           <div class="flex items-center gap-2.5 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[#16a34a] shrink-0 animate-pulse"></span>
@@ -91,7 +75,6 @@ export class DashboardView {
             <span class="text-[11px] text-[#64748b] hidden md:inline truncate">• Cập nhật trực tiếp ${ngayVN(new Date())}</span>
           </div>
 
-          <!-- BỘ CHỌN PHẠM VI XEM TẤT CẢ HOẶC TỪNG PHÒNG -->
           ${isLeadershipOrAdmin ? `
             <div class="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2 min-w-0">
               <label for="selectDashboardScope" class="text-[12px] font-bold text-[#64748b] shrink-0">Phạm vi:</label>
@@ -109,7 +92,6 @@ export class DashboardView {
           `}
         </div>
 
-        <!-- 2. HERO GREETING CARD (CHƯƠNG 1 NGUYÊN TẮC 5) -->
         <section class="hn-hero">
           <div class="hn-hero-top">
             <div>
@@ -124,7 +106,6 @@ export class DashboardView {
             </div>
           </div>
 
-          <!-- 3 SỐ LIỆU TỔNG QUAN HERO -->
           <div class="tq-3so">
             <div class="tq-o cursor-pointer" data-filter-tab="all" title="Bấm để xem danh sách công việc">
               <div class="tq-so" style="color: var(--primary);">${totalCount}</div>
@@ -140,17 +121,14 @@ export class DashboardView {
             </div>
           </div>
 
-          <!-- NÚT GIAO VIỆC 1-CHẠM 100% (PRIMARY CTA CAO >= 48PX) -->
           <button type="button" class="w-full py-3 px-4 rounded-xl font-bold text-[13.5px] transition-all min-h-[48px] flex items-center justify-center gap-2 shadow-xs cursor-pointer" id="btnHeroCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);">
             <span class="material-symbols-outlined text-[20px]">add_circle</span>
             <span>Tạo Việc Mới</span>
           </button>
         </section>
 
-        <!-- 3. 4 THẺ KPI TOÀN VIỆN CỐT LÕI (CARDS KPI GRID) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          
-          <!-- THẺ 1: TỔNG CÔNG VIỆC -->
+
           <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-2xs hover:border-[#d6a52a] active:bg-[#fffbeb]/20 transition-all cursor-pointer card-kpi" data-filter-tab="all" style="background-color: var(--card); border-color: var(--border);">
             <div class="flex items-center justify-between text-[#795900]" style="color: var(--primary);">
               <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">Tổng khối lượng</span>
@@ -160,7 +138,6 @@ export class DashboardView {
             <span class="text-[11px] text-[#64748b] mt-0.5 truncate block">Đang vận hành tất cả</span>
           </div>
 
-          <!-- THẺ 2: TỶ LỆ HOÀN THÀNH ĐÚNG HẠN -->
           <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-2xs hover:border-emerald-300 active:bg-emerald-50/20 transition-all cursor-pointer card-kpi" data-filter-tab="completed" style="background-color: var(--card); border-color: var(--border);">
             <div class="flex items-center justify-between text-[#16a34a]">
               <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">Tiến độ hoàn tất</span>
@@ -170,7 +147,6 @@ export class DashboardView {
             <span class="text-[11px] text-[#64748b] mt-0.5 truncate block">${doneCount}/${totalCount} công việc đã xong</span>
           </div>
 
-          <!-- THẺ 3: VIỆC CHỜ DUYỆT KHẨN CẤP (HIGHLIGHT VÀNG CAM CẢNH BÁO) -->
           <div class="bg-white p-4 sm:p-5 rounded-2xl border-2 border-amber-400 bg-amber-50/30 shadow-xs hover:border-amber-500 active:bg-amber-100/40 transition-all cursor-pointer card-kpi" data-filter-tab="pending_approval">
             <div class="flex items-center justify-between text-amber-800">
               <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider flex items-center gap-1">
@@ -183,7 +159,6 @@ export class DashboardView {
             <span class="text-[11px] text-amber-800 mt-0.5 font-bold truncate block">Cần lãnh đạo ký 1-chạm</span>
           </div>
 
-          <!-- THẺ 4: VIỆC QUÁ HẠN (HIGHLIGHT ĐỎ CẦN CAN THIỆP) -->
           <div class="bg-white p-4 sm:p-5 rounded-2xl border border-rose-200 shadow-2xs hover:border-rose-400 active:bg-rose-50/30 transition-all cursor-pointer card-kpi" data-filter-tab="overdue">
             <div class="flex items-center justify-between text-rose-600">
               <span class="text-[11.5px] sm:text-[12px] font-bold uppercase tracking-wider">Quá hạn</span>
@@ -195,7 +170,6 @@ export class DashboardView {
 
         </div>
 
-        <!-- 4. BIỂU ĐỒ SO SÁNH TIẾN ĐỘ CÁC PHÒNG BAN (HORIZONTAL PROGRESS GRID) -->
         <div class="bg-white p-5 sm:p-6 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
             <div>
@@ -210,7 +184,6 @@ export class DashboardView {
             </span>
           </div>
 
-          <!-- LƯỚI TIẾN ĐỘ TỪNG PHÒNG BAN -->
           <div class="flex flex-col gap-4 pt-1">
             ${deptStats.map(dept => `
               <div class="flex flex-col gap-1.5 p-3 sm:p-4 rounded-2xl border border-gray-100 hover:border-[#d6a52a] hover:bg-[#fffbeb]/20 transition-all cursor-pointer btn-select-dept-row" data-dept-id="${dept.id}">
@@ -231,7 +204,6 @@ export class DashboardView {
                   </div>
                 </div>
 
-                <!-- THANH TIẾN ĐỘ CO GIÃN TỪ 320PX ĐẾN DESKTOP -->
                 <div class="w-full bg-[#e2e8f0] h-3 rounded-full overflow-hidden p-0.5">
                   <div class="h-full rounded-full transition-all duration-700 ease-out" style="width: ${dept.rate}%; background-color: ${dept.color || '#D6A52A'};"></div>
                 </div>
@@ -240,7 +212,6 @@ export class DashboardView {
           </div>
         </div>
 
-        <!-- 5. HÀNG ĐỢI PHÊ DUYỆT KHẨN CẤP (QUICK APPROVAL QUEUE - 1-CHẠM) -->
         <div class="bg-white p-5 sm:p-6 rounded-3xl border-2 border-amber-300 shadow-sm flex flex-col gap-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-amber-100">
             <div>
@@ -264,7 +235,6 @@ export class DashboardView {
             </button>
           </div>
 
-          <!-- DANH SÁCH VIỆC CHỜ DUYỆT -->
           <div class="flex flex-col gap-3">
             ${approvalQueue.length === 0 ? `
               <div class="py-10 text-center flex flex-col items-center justify-center gap-2 text-gray-400">
@@ -305,7 +275,6 @@ export class DashboardView {
                       ${esc(task.title)}
                     </h4>
 
-                    <!-- THÔNG TIN THỰC HIỆN VÀ HẠN TÁCH RIÊNG 2 HÀNG RÕ RÀNG TRÊN MOBILE -->
                     <div class="flex flex-col gap-1 mt-2.5 text-[12px] text-[#64748b]">
                       <div class="flex items-center gap-1.5 min-w-0">
                         <span class="text-[#817663] shrink-0">Thực hiện:</span>
@@ -321,7 +290,6 @@ export class DashboardView {
                     </div>
                   </div>
 
-                  <!-- NÚT PHÊ DUYỆT 1-CHẠM TRÊN DASHBOARD CHUẨN TOUCH TARGET >= 44PX -->
                   <div class="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-amber-200">
                     <button type="button" class="px-4 py-2.5 rounded-xl border border-amber-300 text-[#795900] bg-white hover:bg-amber-50 font-bold text-[12.5px] min-h-[44px] flex items-center justify-center gap-1 transition-all cursor-pointer shadow-2xs btn-open-task-from-queue" data-task-id="${task.id}">
                       <span class="material-symbols-outlined text-[17px]">visibility</span>
@@ -346,7 +314,6 @@ export class DashboardView {
   }
 
   bindEvents() {
-    // 1. Chuyển phạm vi xem (Toàn viện / Từng phòng ban)
     const selectScope = this.container.querySelector('#selectDashboardScope');
     if (selectScope) {
       selectScope.addEventListener('change', (e) => {
@@ -356,7 +323,6 @@ export class DashboardView {
       });
     }
 
-    // 2. Nút tạo việc Hero
     const btnHeroCreate = this.container.querySelector('#btnHeroCreateTask');
     if (btnHeroCreate) {
       btnHeroCreate.addEventListener('click', () => {
@@ -365,7 +331,6 @@ export class DashboardView {
       });
     }
 
-    // 3. Click vào 3 ô Hero để lọc danh sách
     this.container.querySelectorAll('.tq-o[data-filter-tab]').forEach(o => {
       o.addEventListener('click', () => {
         rung(10);
@@ -374,7 +339,6 @@ export class DashboardView {
       });
     });
 
-    // 4. Click vào 4 thẻ KPI để lọc
     this.container.querySelectorAll('.card-kpi').forEach(card => {
       card.addEventListener('click', () => {
         rung(10);
@@ -383,7 +347,6 @@ export class DashboardView {
       });
     });
 
-    // 5. Nút xem toàn bộ hàng chờ duyệt
     const btnViewPending = this.container.querySelector('#btnViewAllPendingTasks');
     if (btnViewPending) {
       btnViewPending.addEventListener('click', () => {
@@ -392,7 +355,6 @@ export class DashboardView {
       });
     }
 
-    // 6. Click vào dòng phòng ban trong biểu đồ để chuyển sang xem phòng đó
     this.container.querySelectorAll('.btn-select-dept-row').forEach(row => {
       row.addEventListener('click', () => {
         rung(10);
@@ -404,7 +366,6 @@ export class DashboardView {
       });
     });
 
-    // 7. Click mở xem task từ hàng chờ
     this.container.querySelectorAll('.btn-open-task-from-queue').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -416,7 +377,6 @@ export class DashboardView {
       });
     });
 
-    // 8. DUYỆT 1-CHẠM NGAY TRÊN DASHBOARD
     this.container.querySelectorAll('.btn-quick-approve-task').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -431,5 +391,3 @@ export class DashboardView {
     });
   }
 }
-
-

@@ -1,10 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - SETTINGS MODAL COMPONENT (SHIN AIOS v2.7)
- * Hộp thoại cài đặt hệ thống & Cấu hình Google Apps Script / SHIN AIOS
- * Đổi màu giao diện (8 Palettes, 4 Theme Modes, 3 Cỡ chữ, Bottom Nav)
- * Bảo mật: Chỉ ADMIN mới được xem, cấu hình và đồng bộ Google Apps Script Web App
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { appScriptBridge } from '../services/appScriptBridge.js?v=8.7';
@@ -30,8 +23,7 @@ export class SettingsModal {
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="settingsOverlay">
         <div class="modal-card bg-white rounded-3xl p-4 sm:p-6 max-w-xl w-full shadow-2xl border border-[#e2e8f0] max-h-[92vh] overflow-y-auto overflow-x-hidden" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- HEADER -->
+
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] mb-4" style="border-color: var(--border);">
             <div class="flex items-center gap-2.5">
               <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
@@ -45,13 +37,10 @@ export class SettingsModal {
             <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer" id="btnCloseSettingsModal" aria-label="Đóng">&times;</button>
           </div>
 
-          <!-- BODY SECTIONS -->
           <div class="flex flex-col gap-5">
-            <!-- 1. MỤC ĐỔI MÀU GIAO DIỆN & DARK MODE TRONG SHIN AIOS (TẤT CẢ USER ĐỀU ĐƯỢC CHỈNH) -->
             ${shinTheme.renderSettingsUI()}
 
             ${isAdmin ? `
-            <!-- 2. GOOGLE APPS SCRIPT / CLOUD SYNC (CHỈ ADMIN MỚI ĐƯỢC THẤY VÀ CẤU HÌNH) -->
             <div class="p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col gap-3.5 shadow-xs" style="background-color: var(--card); border-color: var(--border);">
               <div class="flex items-center justify-between flex-wrap gap-2">
                 <div class="flex items-center gap-2">
@@ -79,7 +68,6 @@ export class SettingsModal {
                 </div>
               </div>
 
-              <!-- KHỐI ĐỒNG BỘ CHÍNH (SMART 2-WAY SYNC) -->
               <div class="pt-3 border-t border-[#f1f5f9] flex flex-col gap-3" style="border-color: var(--border);">
                 <div class="flex items-center justify-between text-[11.5px] text-[#64748b]">
                   <span>Lần đồng bộ gần nhất:</span>
@@ -88,7 +76,6 @@ export class SettingsModal {
                   </strong>
                 </div>
 
-                <!-- NÚT ĐỒNG BỘ 2 CHIỀU CHÍNH (DUY NHẤT & TỰ ĐỘNG) -->
                 <button type="button" class="w-full py-3 px-4 rounded-xl text-[13.5px] font-bold shadow-xs transition-all min-h-[44px] flex items-center justify-center gap-2 cursor-pointer" id="btnModalSync2Way" style="background-color: var(--primary-container); color: var(--on-primary-container);" title="Đồng bộ 2 chiều thông minh giữa Client và Google Sheets">
                   <span class="material-symbols-outlined text-[19px]">sync</span>
                   <span>🔄 Đồng Bộ 2 Chiều Ngay</span>
@@ -97,7 +84,6 @@ export class SettingsModal {
                   Tự động tải dữ liệu mới nhất từ Google Sheets về và cập nhật các thay đổi từ máy lên Cloud.
                 </p>
 
-                <!-- TÙY CHỌN NÂNG CAO CHO ADMIN (PULL / PUSH RIÊNG BIỆT) -->
                 <div class="pt-2 border-t border-dashed border-[#e2e8f0] flex flex-col gap-2">
                   <span class="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">Tùy chọn kỹ thuật nâng cao:</span>
                   <div class="grid grid-cols-2 gap-2">
@@ -116,7 +102,6 @@ export class SettingsModal {
             ` : ''}
 
             ${isAdmin ? `
-            <!-- 3. HỆ THỐNG VÀ THÔNG TIN PHIÊN BẢN (CHỈ ADMIN) -->
             <div class="p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col gap-2.5 shadow-xs" style="background-color: var(--card); border-color: var(--border);">
               <span class="text-[13.5px] font-bold text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
                 <span class="material-symbols-outlined text-[#64748b] text-[20px]">info</span>
@@ -163,7 +148,6 @@ export class SettingsModal {
       });
     }
 
-    // Binds Theme & Palette events
     shinTheme.bindEvents(this.container, () => {
       this.show();
       if (this.onSettingsUpdated) this.onSettingsUpdated();
@@ -182,7 +166,6 @@ export class SettingsModal {
       });
     }
 
-    // Nút ĐỒNG BỘ 2 CHIỀU CHÍNH (Smart 2-Way Sync)
     const btnSync2Way = this.container.querySelector('#btnModalSync2Way');
     if (btnSync2Way) {
       btnSync2Way.addEventListener('click', async () => {
@@ -196,9 +179,7 @@ export class SettingsModal {
         btnSync2Way.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span><span>Đang đồng bộ 2 chiều...</span>';
         toast('Đang đồng bộ 2 chiều với Google Sheets...', 'info');
 
-        // B1: Đẩy dữ liệu mới trên máy lên Google Sheets
         const pushResult = await store.pushAllToCloud();
-        // B2: Tải dữ liệu mới nhất từ Google Sheets về
         const pullResult = await store.syncFromCloudIfAvailable();
 
         btnSync2Way.disabled = false;
@@ -214,7 +195,6 @@ export class SettingsModal {
       });
     }
 
-    // Nút tải dữ liệu từ Google Sheet về (Pull riêng biệt)
     const btnSync = this.container.querySelector('#btnModalSyncNow');
     if (btnSync) {
       btnSync.addEventListener('click', async () => {
@@ -242,7 +222,6 @@ export class SettingsModal {
       });
     }
 
-    // Nút đẩy dữ liệu từ Web App lên Google Sheet (Push riêng biệt)
     const btnPush = this.container.querySelector('#btnModalPushAll');
     if (btnPush) {
       btnPush.addEventListener('click', async () => {
@@ -265,7 +244,6 @@ export class SettingsModal {
       });
     }
 
-    // Nút khôi phục dữ liệu gốc: Áp dụng Bấm 2 lần trong 5 giây (SHIN Zero-Bug Law 6 & 10)
     const btnReset = this.container.querySelector('#btnModalResetData');
     if (btnReset) {
       btnReset.addEventListener('click', () => {
@@ -285,5 +263,3 @@ export class SettingsModal {
     }
   }
 }
-
-

@@ -1,13 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - EXECUTIVE APPROVAL HUB COMPONENT (SHIN AIOS v2.7)
- * Trung Tâm Phê Duyệt 1-Chạm Dành Cho Ban Lãnh Đạo & Cấp Quản Lý
- * - Kết nối trực tiếp với Công Việc (Tasks) và Dự Án & Kế Hoạch (Plans)
- * - Tách bạch 2 Tab: Công việc chờ duyệt & Kế hoạch chờ duyệt (+ Lịch sử đã duyệt)
- * - Nút Duyệt 1-Chạm (One-Tap Approval) tức thì và Yêu Cầu Làm Lại (kèm thông báo)
- * - Hỗ trợ Duyệt Hàng Loạt (Batch Approval)
- * - Phân quyền thông minh: Lãnh đạo thấy toàn viện, Trưởng phòng thấy khoa mình, Nhân viên theo dõi hồ sơ đã gửi
- */
-
 import { store } from '../store.js?v=8.7';
 import { auth } from '../auth.js?v=8.7';
 import { esc, ngayVN, soVN, toast, rung, popupTuChoiPheDuyet } from '../helpers.js?v=8.7';
@@ -19,7 +9,7 @@ export class ApprovalView {
     this.onOpenPlan = onOpenPlan;
     this.onUpdated = onUpdated;
 
-    this.activeTab = 'tasks'; // 'tasks' | 'plans' | 'history'
+    this.activeTab = 'tasks';
     this.searchQuery = '';
     this.filterPriority = 'all';
     this.filterDept = 'all';
@@ -43,7 +33,6 @@ export class ApprovalView {
     const history = store.getApprovedHistoryForUser(currentUser);
     const allDepts = store.getAllDepartments();
 
-    // Lọc công việc theo tìm kiếm & bộ lọc
     const filteredTasks = tasks.filter(t => {
       if (this.filterPriority !== 'all' && t.priority !== this.filterPriority) return false;
       if (this.filterDept !== 'all' && t.departmentId !== this.filterDept) return false;
@@ -58,7 +47,6 @@ export class ApprovalView {
       return true;
     });
 
-    // Lọc kế hoạch theo tìm kiếm & bộ lọc
     const filteredPlans = plans.filter(p => {
       if (this.filterPriority !== 'all' && p.priority !== this.filterPriority) return false;
       if (this.filterDept !== 'all' && p.departmentId !== this.filterDept) return false;
@@ -73,7 +61,6 @@ export class ApprovalView {
       return true;
     });
 
-    // Lịch sử
     const historyItems = [
       ...history.tasks.map(t => ({ ...t, _type: 'task' })),
       ...history.plans.map(p => ({ ...p, _type: 'plan' }))
@@ -81,8 +68,7 @@ export class ApprovalView {
 
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto pb-12 overflow-x-hidden">
-        
-        <!-- 1. HERO BANNER TRUNG TÂM PHÊ DUYỆT (EXECUTIVE APPROVAL HUB) -->
+
         <div class="p-5 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-2xs relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4" style="background: linear-gradient(135deg, var(--card) 0%, var(--primary-soft) 100%); border-color: var(--border);">
           <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
             <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center font-bold text-white shadow-md shadow-amber-500/20 shrink-0" style="background-color: var(--primary);">
@@ -101,14 +87,13 @@ export class ApprovalView {
                 ${isApprover ? 'Trung Tâm Phê Duyệt 1-Chạm' : 'Hồ Sơ Của Tôi Đang Chờ Duyệt'}
               </h1>
               <p class="text-[12px] sm:text-[12.5px] text-[#817663] mt-0.5 leading-relaxed">
-                ${isApprover 
-                  ? 'Ký duyệt nghiệm thu công việc, thông qua chủ trương kế hoạch chiến lược nhanh chóng và chuẩn xác.' 
+                ${isApprover
+                  ? 'Ký duyệt nghiệm thu công việc, thông qua chủ trương kế hoạch chiến lược nhanh chóng và chuẩn xác.'
                   : 'Danh sách các nhiệm vụ và kế hoạch do bạn khởi tạo đang chờ cấp trên phê duyệt.'}
               </p>
             </div>
           </div>
 
-          <!-- BADGE TỔNG SỐ HỒ SƠ & BATCH APPROVAL BUTTON -->
           <div class="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
             <div class="px-3.5 py-2 rounded-xl bg-white border border-[#e2e8f0] shadow-2xs flex items-center gap-2">
               <span class="w-2.5 h-2.5 rounded-full ${totalCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}"></span>
@@ -118,9 +103,9 @@ export class ApprovalView {
             </div>
 
             ${isApprover && (this.selectedTaskIds.size > 0 || this.selectedPlanIds.size > 0) ? `
-              <button 
-                type="button" 
-                class="px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm hover:shadow-md transition-all min-h-[44px] flex items-center gap-1.5 cursor-pointer animate-bounce" 
+              <button
+                type="button"
+                class="px-4 py-2.5 rounded-xl font-bold text-[13px] shadow-sm hover:shadow-md transition-all min-h-[44px] flex items-center gap-1.5 cursor-pointer animate-bounce"
                 id="btnBatchApprove"
                 style="background-color: var(--primary-container); color: var(--on-primary-container);"
               >
@@ -131,10 +116,9 @@ export class ApprovalView {
           </div>
         </div>
 
-        <!-- 2. TABS ĐIỀU HƯỚNG CHÍNH (3 TABS CHUẨN SHIN AIOS) -->
         <div class="flex items-center gap-2 border-b border-[#e2e8f0] pb-2 overflow-x-auto no-scrollbar">
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="btn-approval-tab px-4 py-2.5 rounded-xl text-[13px] font-bold flex items-center gap-2 transition-all min-h-[42px] cursor-pointer whitespace-nowrap ${this.activeTab === 'tasks' ? 'shadow-xs' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}"
             style="${this.activeTab === 'tasks' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}"
             data-tab="tasks"
@@ -146,8 +130,8 @@ export class ApprovalView {
             </span>
           </button>
 
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="btn-approval-tab px-4 py-2.5 rounded-xl text-[13px] font-bold flex items-center gap-2 transition-all min-h-[42px] cursor-pointer whitespace-nowrap ${this.activeTab === 'plans' ? 'shadow-xs' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}"
             style="${this.activeTab === 'plans' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}"
             data-tab="plans"
@@ -159,8 +143,8 @@ export class ApprovalView {
             </span>
           </button>
 
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="btn-approval-tab px-4 py-2.5 rounded-xl text-[13px] font-bold flex items-center gap-2 transition-all min-h-[42px] cursor-pointer whitespace-nowrap ${this.activeTab === 'history' ? 'shadow-xs' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}"
             style="${this.activeTab === 'history' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}"
             data-tab="history"
@@ -173,23 +157,20 @@ export class ApprovalView {
           </button>
         </div>
 
-        <!-- 3. BỘ LỌC & TÌM KIẾM THÍCH ỨNG -->
         ${this.activeTab !== 'history' ? `
           <div class="p-3 sm:p-4 rounded-xl bg-white border border-[#e2e8f0] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3" style="background-color: var(--card); border-color: var(--border);">
-            
-            <!-- Ô TÌM KIẾM -->
+
             <div class="relative flex-1 min-w-0">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
-              <input 
-                type="text" 
-                id="inputApprovalSearch" 
-                class="w-full h-11 pl-9 pr-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" 
-                placeholder="Tìm theo mã, tiêu đề, người phụ trách..." 
+              <input
+                type="text"
+                id="inputApprovalSearch"
+                class="w-full h-11 pl-9 pr-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
+                placeholder="Tìm theo mã, tiêu đề, người phụ trách..."
                 value="${esc(this.searchQuery)}"
               />
             </div>
 
-            <!-- CỤM LỌC: ĐỘ ƯU TIÊN & PHÒNG BAN & CHỌN TẤT CẢ -->
             <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
               <select id="selectApprovalPriority" class="h-11 px-3 rounded-lg border border-[#cbd5e1] text-[12.5px] font-bold bg-white outline-none cursor-pointer">
                 <option value="all" ${this.filterPriority === 'all' ? 'selected' : ''}>Tất cả mức độ</option>
@@ -207,9 +188,9 @@ export class ApprovalView {
               ` : ''}
 
               ${isApprover ? `
-                <button 
-                  type="button" 
-                  id="btnSelectAllApprovalItems" 
+                <button
+                  type="button"
+                  id="btnSelectAllApprovalItems"
                   class="h-11 px-3 rounded-lg border border-[#cbd5e1] text-[12px] font-bold bg-gray-50 hover:bg-gray-100 text-gray-700 flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
                 >
                   <span class="material-symbols-outlined text-[17px]">select_all</span>
@@ -221,12 +202,10 @@ export class ApprovalView {
           </div>
         ` : ''}
 
-        <!-- 4. DANH SÁCH THẺ DỮ LIỆU (THEO TAB) -->
         ${this.activeTab === 'tasks' ? this.renderTasksTab(filteredTasks, isApprover) : ''}
         ${this.activeTab === 'plans' ? this.renderPlansTab(filteredPlans, isApprover) : ''}
         ${this.activeTab === 'history' ? this.renderHistoryTab(historyItems) : ''}
 
-        <!-- MODAL YÊU CẦU LÀM LẠI (REJECT MODAL) -->
         <div id="approvalRejectModalContainer"></div>
 
       </div>
@@ -242,7 +221,6 @@ export class ApprovalView {
     }
   }
 
-  // --- RENDER TAB 1: CÔNG VIỆC CHỜ DUYỆT ---
   renderTasksTab(tasks, isApprover) {
     if (tasks.length === 0) {
       return `
@@ -272,14 +250,13 @@ export class ApprovalView {
 
           return `
             <div class="bg-white p-4 sm:p-5 rounded-2xl border ${isSelected ? 'border-amber-500 ring-2 ring-amber-200' : 'border-[#e2e8f0]'} shadow-2xs hover:border-[#d6a52a] hover:shadow-md transition-all flex flex-col justify-between gap-3.5 relative" style="background-color: var(--card); border-color: ${isSelected ? '#d6a52a' : 'var(--border)'};">
-              
-              <!-- HEADER THẺ: CHECKBOX CHỌN, MÃ VIỆC, ƯU TIÊN, PHÒNG BAN -->
+
               <div class="flex items-center justify-between gap-2 flex-wrap">
                 <div class="flex items-center gap-2">
                   ${isApprover ? `
-                    <input 
-                      type="checkbox" 
-                      class="chk-select-task w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer" 
+                    <input
+                      type="checkbox"
+                      class="chk-select-task w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer"
                       data-task-id="${task.id}"
                       ${isSelected ? 'checked' : ''}
                     />
@@ -298,7 +275,6 @@ export class ApprovalView {
                 </div>
               </div>
 
-              <!-- TIÊU ĐỀ NHIỆM VỤ & PHÒNG BAN -->
               <div class="cursor-pointer btn-open-task-drawer" data-task-id="${task.id}">
                 ${dept ? `
                   <div class="text-[11px] font-semibold text-gray-500 mb-1 flex items-center gap-1">
@@ -316,7 +292,6 @@ export class ApprovalView {
                 ` : ''}
               </div>
 
-              <!-- THÔNG TIN TIẾN ĐỘ VIỆC CON & CHI PHÍ -->
               <div class="p-2.5 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between gap-2 text-[11.5px]">
                 <div class="flex items-center gap-1.5 text-[#4f4635]">
                   <span class="material-symbols-outlined text-[16px] text-[#795900]">account_tree</span>
@@ -329,7 +304,6 @@ export class ApprovalView {
                 ` : ''}
               </div>
 
-              <!-- NGƯỜI THỰC HIỆN & NGƯỜI TRÌNH DUYỆT -->
               <div class="flex items-center justify-between gap-2 pt-2 border-t border-[#f1f5f9] text-[11.5px] text-[#64748b]">
                 <div class="flex items-center gap-1.5 min-w-0">
                   <img src="${assignee ? assignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-5 h-5 rounded-full object-cover shrink-0 ring-1 ring-[#e2e8f0]" />
@@ -340,11 +314,10 @@ export class ApprovalView {
                 </div>
               </div>
 
-              <!-- HÀNG NÚT THAO TÁC 1-CHẠM (ACTION BAR) -->
               <div class="flex items-center gap-2 pt-1 border-t border-[#f1f5f9]">
-                <button 
-                  type="button" 
-                  class="px-3 py-2 rounded-xl border border-[#cbd5e1] hover:bg-gray-100 text-gray-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-open-task-drawer" 
+                <button
+                  type="button"
+                  class="px-3 py-2 rounded-xl border border-[#cbd5e1] hover:bg-gray-100 text-gray-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-open-task-drawer"
                   data-task-id="${task.id}"
                 >
                   <span class="material-symbols-outlined text-[16px]">visibility</span>
@@ -352,9 +325,9 @@ export class ApprovalView {
                 </button>
 
                 ${isApprover ? `
-                  <button 
-                    type="button" 
-                    class="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-reject-task-modal" 
+                  <button
+                    type="button"
+                    class="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-reject-task-modal"
                     data-task-id="${task.id}"
                     data-task-title="${esc(task.title)}"
                   >
@@ -362,9 +335,9 @@ export class ApprovalView {
                     <span>Cần Sửa</span>
                   </button>
 
-                  <button 
-                    type="button" 
-                    class="flex-1 px-4 py-2 rounded-xl font-bold text-[12.5px] min-h-[42px] flex items-center justify-center gap-1.5 shadow-2xs hover:shadow-sm transition-all cursor-pointer btn-approve-task-quick" 
+                  <button
+                    type="button"
+                    class="flex-1 px-4 py-2 rounded-xl font-bold text-[12.5px] min-h-[42px] flex items-center justify-center gap-1.5 shadow-2xs hover:shadow-sm transition-all cursor-pointer btn-approve-task-quick"
                     data-task-id="${task.id}"
                     style="background-color: var(--primary-container); color: var(--on-primary-container);"
                   >
@@ -385,7 +358,6 @@ export class ApprovalView {
     `;
   }
 
-  // --- RENDER TAB 2: KẾ HOẠCH CHỜ DUYỆT ---
   renderPlansTab(plans, isApprover) {
     if (plans.length === 0) {
       return `
@@ -415,14 +387,13 @@ export class ApprovalView {
 
           return `
             <div class="bg-white p-4 sm:p-5 rounded-2xl border ${isSelected ? 'border-amber-500 ring-2 ring-amber-200' : 'border-[#e2e8f0]'} shadow-2xs hover:border-[#d6a52a] hover:shadow-md transition-all flex flex-col justify-between gap-3.5 relative" style="background-color: var(--card); border-color: ${isSelected ? '#d6a52a' : 'var(--border)'};">
-              
-              <!-- HEADER THẺ KẾ HOẠCH -->
+
               <div class="flex items-center justify-between gap-2 flex-wrap">
                 <div class="flex items-center gap-2">
                   ${isApprover ? `
-                    <input 
-                      type="checkbox" 
-                      class="chk-select-plan w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer" 
+                    <input
+                      type="checkbox"
+                      class="chk-select-plan w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer"
                       data-plan-id="${plan.id}"
                       ${isSelected ? 'checked' : ''}
                     />
@@ -441,7 +412,6 @@ export class ApprovalView {
                 </div>
               </div>
 
-              <!-- TÊN KẾ HOẠCH & MỤC TIÊU CỐT LÕI -->
               <div class="cursor-pointer btn-open-plan-drawer" data-plan-id="${plan.id}">
                 ${dept ? `
                   <div class="text-[11px] font-semibold text-gray-500 mb-1 flex items-center gap-1">
@@ -459,7 +429,6 @@ export class ApprovalView {
                 ` : ''}
               </div>
 
-              <!-- LỘ TRÌNH CỘT MỐC & ĐẦU VIỆC DỰ KIẾN -->
               <div class="p-2.5 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between gap-2 text-[11.5px] text-[#4f4635]">
                 <div class="flex items-center gap-1">
                   <span class="material-symbols-outlined text-[16px] text-blue-600">flag</span>
@@ -471,7 +440,6 @@ export class ApprovalView {
                 </div>
               </div>
 
-              <!-- PHỤ TRÁCH CHÍNH & NGƯỜI LẬP KẾ HOẠCH -->
               <div class="flex items-center justify-between gap-2 pt-2 border-t border-[#f1f5f9] text-[11.5px] text-[#64748b]">
                 <div class="flex items-center gap-1.5 min-w-0">
                   <img src="${lead ? lead.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-5 h-5 rounded-full object-cover shrink-0 ring-1 ring-[#e2e8f0]" />
@@ -482,11 +450,10 @@ export class ApprovalView {
                 </div>
               </div>
 
-              <!-- ACTION BAR CHO KẾ HOẠCH -->
               <div class="flex items-center gap-2 pt-1 border-t border-[#f1f5f9]">
-                <button 
-                  type="button" 
-                  class="px-3 py-2 rounded-xl border border-[#cbd5e1] hover:bg-gray-100 text-gray-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-open-plan-drawer" 
+                <button
+                  type="button"
+                  class="px-3 py-2 rounded-xl border border-[#cbd5e1] hover:bg-gray-100 text-gray-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-open-plan-drawer"
                   data-plan-id="${plan.id}"
                 >
                   <span class="material-symbols-outlined text-[16px]">visibility</span>
@@ -494,9 +461,9 @@ export class ApprovalView {
                 </button>
 
                 ${isApprover ? `
-                  <button 
-                    type="button" 
-                    class="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-reject-plan-modal" 
+                  <button
+                    type="button"
+                    class="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-[12px] min-h-[42px] flex items-center justify-center gap-1 transition-colors cursor-pointer btn-reject-plan-modal"
                     data-plan-id="${plan.id}"
                     data-plan-name="${esc(plan.title || plan.name)}"
                   >
@@ -504,9 +471,9 @@ export class ApprovalView {
                     <span>Cần Sửa</span>
                   </button>
 
-                  <button 
-                    type="button" 
-                    class="flex-1 px-4 py-2 rounded-xl font-bold text-[12.5px] min-h-[42px] flex items-center justify-center gap-1.5 shadow-2xs hover:shadow-sm transition-all cursor-pointer btn-approve-plan-quick" 
+                  <button
+                    type="button"
+                    class="flex-1 px-4 py-2 rounded-xl font-bold text-[12.5px] min-h-[42px] flex items-center justify-center gap-1.5 shadow-2xs hover:shadow-sm transition-all cursor-pointer btn-approve-plan-quick"
                     data-plan-id="${plan.id}"
                     style="background-color: var(--primary-container); color: var(--on-primary-container);"
                   >
@@ -527,7 +494,6 @@ export class ApprovalView {
     `;
   }
 
-  // --- RENDER TAB 3: LỊCH SỬ ĐÃ DUYỆT ---
   renderHistoryTab(items) {
     if (items.length === 0) {
       return `
@@ -584,9 +550,9 @@ export class ApprovalView {
 
               <div class="flex items-center justify-between sm:justify-end gap-3 text-[11.5px] text-[#64748b] shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0">
                 <span class="font-mono-data">${actionDate ? ngayVN(actionDate) : ''}</span>
-                <button 
-                  type="button" 
-                  class="px-3 py-1.5 rounded-lg border border-[#cbd5e1] hover:bg-gray-100 text-[11.5px] font-bold text-gray-700 cursor-pointer ${isTask ? 'btn-open-task-drawer' : 'btn-open-plan-drawer'}" 
+                <button
+                  type="button"
+                  class="px-3 py-1.5 rounded-lg border border-[#cbd5e1] hover:bg-gray-100 text-[11.5px] font-bold text-gray-700 cursor-pointer ${isTask ? 'btn-open-task-drawer' : 'btn-open-plan-drawer'}"
                   data-task-id="${item.id}"
                   data-plan-id="${item.id}"
                 >
@@ -600,7 +566,6 @@ export class ApprovalView {
     `;
   }
 
-  // --- MODAL POPUP YÊU CẦU LÀM LẠI (POPUP CHUẨN SHIN AIOS v2.7) ---
   openRejectModal(type, id, title) {
     popupTuChoiPheDuyet({
       tieuDe: type === 'task' ? 'Yêu Cầu Làm Lại Nhiệm Vụ' : 'Yêu Cầu Hoàn Thiện Kế Hoạch',
@@ -620,9 +585,7 @@ export class ApprovalView {
     });
   }
 
-  // --- BINDING EVENTS ---
   bindEvents(isApprover, filteredTasks, filteredPlans) {
-    // 1. Chuyển Tab (Tasks / Plans / History)
     this.container.querySelectorAll('.btn-approval-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(10);
@@ -631,7 +594,6 @@ export class ApprovalView {
       });
     });
 
-    // 2. Tìm kiếm
     const inputSearch = this.container.querySelector('#inputApprovalSearch');
     if (inputSearch) {
       inputSearch.addEventListener('input', (e) => {
@@ -640,7 +602,6 @@ export class ApprovalView {
       });
     }
 
-    // 3. Lọc theo độ ưu tiên
     const selectPriority = this.container.querySelector('#selectApprovalPriority');
     if (selectPriority) {
       selectPriority.addEventListener('change', (e) => {
@@ -650,7 +611,6 @@ export class ApprovalView {
       });
     }
 
-    // 4. Lọc theo phòng ban
     const selectDept = this.container.querySelector('#selectApprovalDept');
     if (selectDept) {
       selectDept.addEventListener('change', (e) => {
@@ -660,7 +620,6 @@ export class ApprovalView {
       });
     }
 
-    // 5. Mở Drawer xem Task
     this.container.querySelectorAll('.btn-open-task-drawer').forEach(el => {
       el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -670,7 +629,6 @@ export class ApprovalView {
       });
     });
 
-    // 6. Mở Drawer xem Plan
     this.container.querySelectorAll('.btn-open-plan-drawer').forEach(el => {
       el.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -680,7 +638,6 @@ export class ApprovalView {
       });
     });
 
-    // 7. DUYỆT 1-CHẠM TASK
     this.container.querySelectorAll('.btn-approve-task-quick').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -693,7 +650,6 @@ export class ApprovalView {
       });
     });
 
-    // 8. DUYỆT 1-CHẠM PLAN
     this.container.querySelectorAll('.btn-approve-plan-quick').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -706,7 +662,6 @@ export class ApprovalView {
       });
     });
 
-    // 9. YÊU CẦU LÀM LẠI TASK (MỞ MODAL)
     this.container.querySelectorAll('.btn-reject-task-modal').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -716,7 +671,6 @@ export class ApprovalView {
       });
     });
 
-    // 10. YÊU CẦU LÀM LẠI PLAN (MỞ MODAL)
     this.container.querySelectorAll('.btn-reject-plan-modal').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -726,7 +680,6 @@ export class ApprovalView {
       });
     });
 
-    // 11. CHECKBOX CHỌN ITEM CHO BATCH
     this.container.querySelectorAll('.chk-select-task').forEach(chk => {
       chk.addEventListener('change', (e) => {
         e.stopPropagation();
@@ -747,7 +700,6 @@ export class ApprovalView {
       });
     });
 
-    // 12. CHỌN TẤT CẢ
     const btnSelectAll = this.container.querySelector('#btnSelectAllApprovalItems');
     if (btnSelectAll) {
       btnSelectAll.addEventListener('click', () => {
@@ -769,7 +721,6 @@ export class ApprovalView {
       });
     }
 
-    // 13. NÚT DUYỆT HÀNG LOẠT (BATCH APPROVE)
     const btnBatch = this.container.querySelector('#btnBatchApprove');
     if (btnBatch) {
       btnBatch.addEventListener('click', () => {

@@ -1,10 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - MOBILE BOTTOM NAVIGATION COMPONENT (SHIN AIOS v2.6.4)
- * Thanh điều hướng đáy dành riêng cho thiết bị di động (Mobile First)
- * Chuẩn công thái học: Vùng bấm >= 44x44px, phản hồi xúc giác rung(10)
- * Đổi màu đồng bộ theo 8 Palettes của SHIN AIOS
- */
-
 import { rung } from '../helpers.js?v=8.7';
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
@@ -13,7 +6,7 @@ export class BottomNav {
   constructor(containerId, onNavChange) {
     this.container = document.getElementById(containerId);
     this.onNavChange = onNavChange;
-    this.activeNav = 'tong-quan'; // 'tong-quan' | 'cong-viec' | 'nhan-vien' | 'cai-dat'
+    this.activeNav = 'tong-quan';
   }
 
   setNav(navId) {
@@ -41,9 +34,9 @@ export class BottomNav {
         ${navItems.map(item => {
           const isActive = this.activeNav === item.id;
           return `
-            <button 
-              type="button" 
-              class="flex flex-col items-center justify-center flex-1 h-full min-h-[48px] py-1 transition-all relative ${isActive ? 'font-bold' : 'text-[#64748b] hover:text-[#0d1c2f]'}" 
+            <button
+              type="button"
+              class="flex flex-col items-center justify-center flex-1 h-full min-h-[48px] py-1 transition-all relative ${isActive ? 'font-bold' : 'text-[#64748b] hover:text-[#0d1c2f]'}"
               style="${isActive ? 'color: var(--primary);' : ''}"
               data-bottom-nav="${item.id}"
               aria-label="${item.label}"
@@ -83,5 +76,3 @@ export class BottomNav {
     });
   }
 }
-
-

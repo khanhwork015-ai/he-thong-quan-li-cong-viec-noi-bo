@@ -1,11 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - SUBTASK DETAIL MODAL COMPONENT (SHIN AIOS v2.7)
- * Hiển thị đầy đủ thông tin chi tiết của Việc Con:
- * Mã việc con, Tiêu đề, Tên nhiệm vụ cha, Trạng thái, Checkbox hoàn thành,
- * Mô tả chi tiết & Tiêu chuẩn bàn giao, Người phụ trách (Avatar), Hạn chót, Nút Sửa & Đóng.
- * Hỗ trợ Stacked Modal độc lập (z-[120]), không ghi đè SubtasksModal hay TaskDrawer bên dưới.
- */
-
 import { store } from '../store.js?v=8.7';
 import { esc, ngayVN, toast, rung } from '../helpers.js?v=8.7';
 
@@ -50,8 +42,7 @@ export class SubtaskDetailModal {
 
     overlay.innerHTML = `
       <div class="modal-card bg-white rounded-t-2xl sm:rounded-2xl rounded-b-none sm:rounded-b-2xl p-4 sm:p-6 max-w-lg w-full shadow-2xl border border-[#e2e8f0] max-h-[90vh] sm:max-h-[88vh] overflow-y-auto overflow-x-hidden flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
-        
-        <!-- HEADER -->
+
         <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9]" style="border-color: var(--border);">
           <div class="flex items-center gap-2 min-w-0">
             <span class="font-mono-data text-[12px] font-bold px-2.5 py-1 rounded-lg bg-[#fffbeb] text-[#795900] border border-[#fef3c7] shrink-0">
@@ -64,7 +55,6 @@ export class SubtaskDetailModal {
           <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors cursor-pointer" id="btnCloseSubtaskDetail" aria-label="Đóng">&times;</button>
         </div>
 
-        <!-- THÔNG TIN NHIỆM VỤ CHA -->
         <div class="p-2.5 px-3 rounded-xl bg-[#fffbeb]/60 border border-[#fef3c7] flex items-center gap-2 text-[12px] text-[#795900]">
           <span class="material-symbols-outlined text-[17px] text-[#d6a52a] shrink-0">subdirectory_arrow_right</span>
           <div class="min-w-0 truncate">
@@ -75,10 +65,8 @@ export class SubtaskDetailModal {
         </div>
 
         ${!this.isEditing ? `
-          <!-- CHẾ ĐỘ XEM CHI TIẾT -->
           <div class="flex flex-col gap-4">
-            
-            <!-- TIÊU ĐỀ & CHECKBOX HOÀN THÀNH -->
+
             <div class="p-3.5 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-start gap-3">
               <input type="checkbox" id="chkSubtaskDetailComplete" class="w-5 h-5 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0 mt-0.5" ${isDone ? 'checked' : ''} />
               <div class="flex-1 min-w-0">
@@ -91,7 +79,6 @@ export class SubtaskDetailModal {
               </div>
             </div>
 
-            <!-- MÔ TẢ CHI TIẾT & TIÊU CHUẨN BÀN GIAO -->
             <div>
               <label class="block text-[12px] font-bold text-[#64748b] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[16px] text-[#795900]">description</span>
@@ -100,7 +87,6 @@ export class SubtaskDetailModal {
               <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0] text-[13px] text-[#0d1c2f] leading-relaxed whitespace-pre-wrap">${subtask.description ? esc(subtask.description.trim()) : '<span class="text-gray-400 italic">Chưa có mô tả chi tiết cho việc con này.</span>'}</div>
             </div>
 
-            <!-- GRID: NGƯỜI PHỤ TRÁCH & HẠN HOÀN THÀNH -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div class="p-3.5 rounded-2xl bg-white border border-[#e2e8f0]">
                 <span class="text-[11px] font-bold text-[#64748b] uppercase tracking-wider block mb-2">Người phụ trách</span>
@@ -122,7 +108,6 @@ export class SubtaskDetailModal {
               </div>
             </div>
 
-            <!-- ACTIONS -->
             <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-1">
               <button type="button" id="btnStartEditSubtask" class="px-4 py-2.5 rounded-xl border border-[#d6a52a] text-[#795900] bg-[#fffbeb] hover:bg-[#fde68a] font-bold text-[12.5px] min-h-[42px] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs">
                 <span class="material-symbols-outlined text-[17px]">edit</span>
@@ -134,7 +119,6 @@ export class SubtaskDetailModal {
             </div>
           </div>
         ` : `
-          <!-- CHẾ ĐỘ CHỈNH SỬA VIỆC CON TRỰC TIẾP -->
           <form id="formEditSubtaskModal" class="flex flex-col gap-3.5">
             <div>
               <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1">Tiêu đề việc con *</label>
@@ -213,7 +197,6 @@ export class SubtaskDetailModal {
       if (e.target === overlay) closeModal();
     });
 
-    // TOGGLE CHECKBOX HOÀN THÀNH
     const chkComplete = overlay.querySelector('#chkSubtaskDetailComplete');
     if (chkComplete) {
       chkComplete.addEventListener('change', () => {
@@ -225,7 +208,6 @@ export class SubtaskDetailModal {
       });
     }
 
-    // CHUYỂN SANG CHẾ ĐỘ SỬA
     const btnStartEdit = overlay.querySelector('#btnStartEditSubtask');
     if (btnStartEdit) {
       btnStartEdit.addEventListener('click', () => {
@@ -235,7 +217,6 @@ export class SubtaskDetailModal {
       });
     }
 
-    // HỦY SỬA
     const btnCancelEdit = overlay.querySelector('#btnCancelEditSubtaskModal');
     if (btnCancelEdit) {
       btnCancelEdit.addEventListener('click', () => {
@@ -245,7 +226,6 @@ export class SubtaskDetailModal {
       });
     }
 
-    // SUBMIT FORM SỬA
     const formEdit = overlay.querySelector('#formEditSubtaskModal');
     if (formEdit) {
       formEdit.addEventListener('submit', (e) => {
@@ -279,4 +259,3 @@ export class SubtaskDetailModal {
     }
   }
 }
-

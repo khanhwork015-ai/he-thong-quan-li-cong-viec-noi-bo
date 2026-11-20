@@ -1,23 +1,6 @@
-/**
- * SHIN TASK MANAGEMENT - STRICT RBAC & DATA ISOLATION ENGINE
- * Phân quyền 4 cấp độ (SHIN AIOS v2.6.4):
- * 1. ADMIN (Quản trị viên): Toàn quyền toàn viện, CRUD phòng ban & bộ phận con, cấp mọi tài khoản.
- * 2. LEADERSHIP (Ban lãnh đạo): Toàn quyền xem và giám sát tất cả các phòng ban, bộ phận.
- * 3. MANAGER / DEPUTY_MANAGER (Trưởng / Phó phòng): Quản lý toàn bộ nhân viên và các bộ phận con của phòng mình,
- *    chỉ được cấp tài khoản cho Nhân viên thuộc phòng mình (Không thể cấp cho Admin / Ban lãnh đạo).
- * 4. MEMBER (Nhân viên): Không được phép cấp tài khoản, thực hiện và cập nhật tiến độ công việc.
- * 
- * Quy tắc giao việc: Bất cứ ai cũng có quyền tạo và assign task cho bất kỳ nhân viên nào.
- */
-
 import { USERS, DEPARTMENTS, ROLES } from './models.js?v=8.7';
 import { toast, rung } from './helpers.js?v=8.7';
 
-/**
- * Băm mật khẩu SHA-256 an toàn bằng Web Cryptography API
- * @param {string} plainText
- * @returns {Promise<string>} Chuỗi hex 64 ký tự
- */
 export async function hashPassword(plainText) {
   if (plainText === null || plainText === undefined || String(plainText).trim() === '') return '';
   try {
@@ -31,7 +14,6 @@ export async function hashPassword(plainText) {
     return String(plainText).trim();
   }
 }
-
 
 const AUTH_KEY = 'tvm_auth_user_v3';
 const ACTIVE_DEPT_KEY = 'tvm_active_dept_v3';
@@ -57,7 +39,6 @@ export class AuthManager {
     } catch (e) {}
 
     if (users.length === 0) {
-      // Tự động nâng cấp và hợp nhất danh sách USERS mặc định kèm dữ liệu cũ
       let merged = [...USERS];
       try {
         const oldSaved = localStorage.getItem('tvm_users_v3');
@@ -85,7 +66,6 @@ export class AuthManager {
       } catch (_) {}
     }
 
-    // Chuẩn hóa an toàn cho toàn bộ user: password luôn là chuỗi string, username lowercase trimmed, isAdmin tách biệt
     return users.map(u => ({
       ...u,
       isAdmin: Boolean(u.isAdmin === true || u.isAdmin === 'true' || u.role === 'ADMIN'),
@@ -111,7 +91,6 @@ export class AuthManager {
       if (!raw) return null;
       const sess = JSON.parse(raw);
       if (sess && sess.expiresAt && sess.expiresAt > Date.now() && sess.user) {
-        // Đồng bộ lại thông tin mới nhất của user từ tvm_user_profile_ hoặc tvm_users_v4
         const users = this.getStoredUsers();
         let latestUser = users.find(u => u.id === sess.user.id) || sess.user;
         const custom = localStorage.getItem('tvm_user_profile_' + latestUser.id);
@@ -135,9 +114,8 @@ export class AuthManager {
     if (!this.currentUser) return depts[0]?.id || 'dept_ptkh';
 
     if ((this.isAdmin() || this.isLeadership()) && savedDept) {
-      return savedDept; // Admin & Lãnh đạo có thể chọn bất kỳ phòng ban nào
+      return savedDept;
     }
-    // Trưởng phòng & Nhân viên gắn với phòng ban của mình
     if (this.currentUser.departmentId && this.currentUser.departmentId !== 'all') {
       return this.currentUser.departmentId;
     }
@@ -157,7 +135,6 @@ export class AuthManager {
     const trimmedPass = String(password).trim();
     let users = this.getStoredUsers();
 
-    // Hàm so khớp tài khoản thông minh & linh hoạt
     const findMatch = (list) => {
       return list.find(u => {
         const uName = String(u.username || '').trim().toLowerCase();
@@ -181,14 +158,12 @@ export class AuthManager {
 
     let matched = findMatch(users);
 
-    // NẾU CHƯA TÌM THẤY TRONG BỘ NHỚ LOCAL: Tự động sync tức thời từ Google Sheet
     if (!matched) {
       try {
         const { appScriptBridge } = await import('./services/appScriptBridge.js?v=8.7');
         if (appScriptBridge && appScriptBridge.isConnected()) {
           const cloudData = await appScriptBridge.fetchCloudData();
           if (cloudData && cloudData.success && Array.isArray(cloudData.users) && cloudData.users.length > 0) {
-            // Hợp nhất dữ liệu mới từ Sheet vào bộ nhớ
             const userMap = new Map();
             users.forEach(u => userMap.set(u.id, u));
             cloudData.users.forEach(su => {
@@ -213,14 +188,13 @@ export class AuthManager {
     }
 
     if (!matched) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         code: 'USER_NOT_FOUND',
-        message: 'Tên đăng nhập hoặc email không tồn tại trong hệ thống!' 
+        message: 'Tên đăng nhập hoặc email không tồn tại trong hệ thống!'
       };
     }
 
-    // Kiểm tra mật khẩu (So sánh String chuẩn & băm SHA-256 bảo mật)
     const validPassword = String(matched.password !== undefined && matched.password !== null && String(matched.password).trim() !== '' ? matched.password : '123').trim();
     let isPasswordCorrect = (trimmedPass === validPassword);
     if (!isPasswordCorrect && typeof crypto !== 'undefined' && crypto.subtle) {
@@ -231,21 +205,19 @@ export class AuthManager {
     }
 
     if (!isPasswordCorrect) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         code: 'WRONG_PASSWORD',
-        message: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!' 
+        message: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại!'
       };
     }
 
-    // Đọc thêm profile cá nhân lưu riêng nếu có
     let fullUser = { ...matched };
     try {
       const custom = localStorage.getItem('tvm_user_profile_' + matched.id);
       if (custom) fullUser = { ...fullUser, ...JSON.parse(custom) };
     } catch (_) {}
 
-    // Tạo phiên làm việc (Session) 7 ngày
     const session = {
       token: 'sess_' + Math.random().toString(36).slice(2) + Date.now().toString(36),
       userId: fullUser.id,
@@ -300,8 +272,6 @@ export class AuthManager {
     return dept || depts[0] || DEPARTMENTS[0];
   }
 
-  // --- PHÂN QUYỀN VAI TRÒ (RBAC) ---
-  // Tách riêng Admin thành đặc quyền hệ thống: Một người có thể vừa là Trưởng phòng/Nhân viên vừa là Admin
   isAdmin() {
     return Boolean(this.currentUser && (this.currentUser.isAdmin === true || this.currentUser.role === 'ADMIN'));
   }
@@ -319,44 +289,31 @@ export class AuthManager {
     return this.currentUser?.role === 'MEMBER';
   }
 
-  // Quyền chuyển đổi phòng ban (Admin và Ban lãnh đạo)
   canSwitchDepartment() {
     return this.isAdmin() || this.isLeadership();
   }
 
-  // Quyền CRUD phòng ban & bộ phận con (CHỈ ADMIN)
   canCRUDDepartments() {
     return this.isAdmin();
   }
 
-  // Quyền cấp tài khoản nhân sự mới (Phân quyền bảo mật chặt chẽ):
-  // - Admin: Toàn quyền cấp mọi role cho mọi phòng ban
-  // - Ban lãnh đạo: Giám sát toàn viện, có thể phê duyệt
-  // - Trưởng/Phó phòng: CHỈ cấp được tài khoản cho Nhân viên thuộc phòng ban mình quản lý. KHÔNG THỂ cấp cho Admin/Ban Lãnh Đạo!
-  // - Nhân viên: Tuyệt đối KHÔNG được cấp tài khoản!
   canProvisionAccount(targetRole = 'MEMBER', targetDeptId = null) {
     if (!this.isAuthenticated()) return false;
-    // DUY NHẤT ADMIN CÓ QUYỀN CẤP TÀI KHOẢN VÀ PHÂN QUYỀN (SET ROLE)
     return this.isAdmin();
   }
 
-  // Quyền tạo & giao việc: "Bất cứ ai cũng có quyền tạo và assign task cho bất kì nhân viên nào"
   canCreateTask() {
     return this.isAuthenticated();
   }
 
-  // Quyền phê duyệt nhiệm vụ (Admin, Ban lãnh đạo hoặc Trưởng/Phó phòng)
   canApproveTask() {
     return this.isAdmin() || this.isLeadership() || this.isManager();
   }
 
-  // Quyền quản lý nhân sự & phân bổ bộ phận con
   canManageMembers() {
-    // DUY NHẤT ADMIN CÓ QUYỀN THÊM / SỬA / XÓA TÀI KHOẢN NHÂN VIÊN
     return this.isAdmin();
   }
 
-  // Cập nhật thông tin hồ sơ cá nhân
   updateProfile(data) {
     if (!this.currentUser) return null;
     this.currentUser = { ...this.currentUser, ...data };
@@ -374,7 +331,6 @@ export class AuthManager {
       console.warn('Không thể lưu profile:', e);
     }
 
-    // Đồng bộ vào danh sách users trong localStorage nếu có
     try {
       const saved = localStorage.getItem('tvm_users_v4');
       if (saved) {
@@ -393,7 +349,6 @@ export class AuthManager {
     return this.currentUser;
   }
 
-  // Đăng nhập nhanh dạng Switch User (Dành cho kiểm thử RBAC)
   loginAs(userId) {
     const users = this.getStoredUsers();
     const user = users.find(u => u.id === userId);
@@ -401,7 +356,6 @@ export class AuthManager {
     return this.login(user.username || user.id, user.password || '123');
   }
 
-  // Chuyển phòng ban đang xem (Dành cho Admin & Ban Lãnh Đạo)
   switchDepartment(deptId) {
     if (!this.canSwitchDepartment()) {
       toast('Chỉ Ban Lãnh Đạo & Quản Trị Viên mới có quyền chuyển phòng ban!', 'warning');
@@ -427,5 +381,3 @@ export class AuthManager {
 }
 
 export const auth = new AuthManager();
-
-

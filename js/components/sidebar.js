@@ -1,9 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - SIDEBAR NAVIGATION COMPONENT (MOBILE RESPONSIVE DRAWER)
- * Khôi phục tông Vàng Hoàng Kim (#D6A52A / #795900) chuẩn Google Stitch
- * Hỗ trợ giao diện ngăn kéo trượt mượt mà cho Mobile/Tablet và cố định trên Desktop (lg)
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { toast, rung } from '../helpers.js?v=8.7';
@@ -14,8 +8,8 @@ export class Sidebar {
     this.onNavChange = onNavChange;
     this.onModeChange = onModeChange;
     this.onLogout = onLogout;
-    this.activeNav = 'tong-quan'; // 'tong-quan' | 'cong-viec' | 'nhan-vien' | 'phong-ban' | 'cai-dat'
-    this.viewMode = 'quan-ly'; // 'quan-ly' | 'ca-nhan'
+    this.activeNav = 'tong-quan';
+    this.viewMode = 'quan-ly';
     this.isOpenMobile = false;
   }
 
@@ -75,13 +69,10 @@ export class Sidebar {
     const pendingApprovalCount = pendingData.totalCount || 0;
 
     this.container.innerHTML = `
-      <!-- BACKDROP CHO MOBILE / TABLET -->
       <div id="sidebarBackdrop" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 transition-opacity duration-300 hidden lg:hidden"></div>
 
-      <!-- SIDEBAR DRAWER CHÍNH -->
       <aside id="appSidebar" class="fixed left-0 top-0 h-full w-72 sm:w-64 bg-white shadow-2xl lg:shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between border-r border-[#e2e8f0] select-none transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
         <div class="flex flex-col">
-          <!-- LOGO & BRAND (SHIN TASK MANAGEMENT) + NÚT ĐÓNG MOBILE -->
           <div class="h-16 px-4 sm:px-5 flex items-center justify-between border-b border-[#f1f5f9]">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-xl bg-[#d6a52a] flex items-center justify-center text-white font-extrabold text-[12px] tracking-tight shadow-sm shadow-amber-500/30 shrink-0">
@@ -93,13 +84,11 @@ export class Sidebar {
               </div>
             </div>
 
-            <!-- NÚT ĐÓNG SIDEBAR TRÊN MOBILE -->
             <button type="button" class="lg:hidden p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center" id="btnCloseSidebarMobile" aria-label="Đóng menu">
               <span class="material-symbols-outlined text-[22px]">close</span>
             </button>
           </div>
 
-          <!-- PHÒNG BAN SELECTOR (HỖ TRỢ ĐA PHÒNG BAN CHO ADMIN) -->
           <div class="px-3 sm:px-4 py-3">
             <div class="px-3 py-2 bg-[#f8f9ff] hover:bg-[#fffbeb] border border-[#e2e8f0] hover:border-[#d6a52a] rounded-xl flex items-center justify-between cursor-pointer transition-all" id="btnSelectDepartment" title="${canSwitchDept ? 'Bấm để đổi phòng ban (Quyền Admin)' : currentDept.name}">
               <div class="flex items-center gap-2 min-w-0">
@@ -113,7 +102,6 @@ export class Sidebar {
             </div>
           </div>
 
-          <!-- NAVIGATION LINKS -->
           <nav class="flex flex-col gap-1 px-3 mt-1">
             <button type="button" class="flex items-center gap-3 px-3.5 py-3 rounded-xl text-left transition-all min-h-[44px] ${this.activeNav === 'tong-quan' ? 'bg-[#d6a52a] text-[#533d00] font-bold shadow-xs' : 'text-[#4f4635] hover:bg-[#fffbeb] hover:text-[#795900]'}" data-nav="tong-quan">
               <span class="material-symbols-outlined text-[20px]">grid_view</span>
@@ -164,7 +152,6 @@ export class Sidebar {
           </nav>
         </div>
 
-        <!-- FOOTER: CHẾ ĐỘ HIỂN THỊ [QUẢN LÝ | CÁ NHÂN] & TRẠNG THÁI -->
         <div class="p-4 flex flex-col gap-3 bg-white border-t border-[#f1f5f9] mb-14 lg:mb-0">
           <div class="p-2 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col gap-1.5">
             <div class="flex items-center justify-between px-1">
@@ -212,7 +199,7 @@ export class Sidebar {
         const nav = btn.dataset.nav;
         rung(10);
         this.activeNav = nav;
-        this.close(); // Tự động đóng sidebar trên mobile khi bấm chọn tab
+        this.close();
         this.render();
         if (this.onNavChange) this.onNavChange(nav);
       });
@@ -291,7 +278,6 @@ export class Sidebar {
         </p>
 
         <div class="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-1">
-          <!-- TÙY CHỌN TẤT CẢ DÀNH CHO ADMIN & BAN LÃNH ĐẠO -->
           <div class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${activeDept.id === 'all' ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="all">
             <div class="flex items-center gap-3 min-w-0">
               <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] shrink-0"></span>
@@ -332,5 +318,3 @@ export class Sidebar {
     });
   }
 }
-
-

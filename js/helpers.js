@@ -1,8 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - HELPER UTILITIES & SHIN TOOLKIT
- * Hỗ trợ định dạng dữ liệu, toast thông báo, xác nhận 2 lần và bảo mật XSS
- */
-
 export function esc(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -27,11 +22,11 @@ export function ngayVN(dateStr, includeTime = false) {
   if (!dateStr) return '--/--/----';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  
+
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();
-  
+
   if (includeTime) {
     const hours = String(d.getHours()).padStart(2, '0');
     const mins = String(d.getMinutes()).padStart(2, '0');
@@ -54,7 +49,6 @@ export function timeAgo(dateStr) {
   return `${diffDays} ngày trước`;
 }
 
-/** Lời chào thông minh theo giờ Việt Nam chuẩn SHIN */
 export function loiChao(hoTen) {
   const g = new Date().getHours();
   const buoi = g < 11 ? 'buổi sáng' : g < 14 ? 'buổi trưa' : g < 18 ? 'buổi chiều' : 'buổi tối';
@@ -62,7 +56,6 @@ export function loiChao(hoTen) {
   return `Chào ${buoi}${tenGoi ? ', ' + tenGoi : ''} ☀️`;
 }
 
-/** Toast thông báo chống giật lag */
 export function toast(message, type = 'info') {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -74,7 +67,7 @@ export function toast(message, type = 'info') {
 
   const toastEl = document.createElement('div');
   toastEl.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 transform translate-y-4 opacity-0`;
-  
+
   if (type === 'success') {
     toastEl.classList.add('bg-[#DCFCE7]', 'border-[#86EFAC]', 'text-[#16A34A]');
     toastEl.innerHTML = `<span class="material-symbols-outlined text-[20px]">check_circle</span><span>${esc(message)}</span>`;
@@ -100,22 +93,12 @@ export function toast(message, type = 'info') {
   }, 4000);
 }
 
-/** Phản hồi xúc giác rung haptic */
 export function rung(ms = 35) {
   if (typeof window !== 'undefined' && 'vibrate' in navigator) {
     try { navigator.vibrate(ms); } catch (_) {}
   }
 }
 
-/**
- * Modal Popup Xác Nhận Xóa Chuẩn SHIN AIOS v2.7 (Thay thế hoàn toàn cơ chế nhấn 2 lần)
- * Hiển thị dialog modal xác thực trực quan với icon cảnh báo, thông điệp chi tiết, nút Hủy và nút Xác nhận xóa.
- * 
- * @param {string} tieuDe - Tiêu đề popup (ví dụ: 'Xác Nhận Xóa Công Việc')
- * @param {string} noiDung - Nội dung mô tả (ví dụ: 'Bạn có chắc chắn muốn xóa nhiệm vụ này? Hành động không thể hoàn tác.')
- * @param {Function} onConfirm - Callback thực thi hành động xóa
- * @param {Object} [options] - Tuỳ chọn { btnConfirmText, btnCancelText, isDanger }
- */
 export function xacNhanXoa(tieuDe, noiDung, onConfirm, options = {}) {
   rung(20);
   const {
@@ -124,14 +107,13 @@ export function xacNhanXoa(tieuDe, noiDung, onConfirm, options = {}) {
     isDanger = true
   } = options;
 
-  // Xóa modal cũ nếu đang tồn tại
   const existing = document.getElementById('shinConfirmModalOverlay');
   if (existing) existing.remove();
 
   const overlay = document.createElement('div');
   overlay.id = 'shinConfirmModalOverlay';
   overlay.className = 'fixed inset-0 z-[10000] bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 opacity-0 transition-opacity duration-200';
-  
+
   overlay.innerHTML = `
     <div class="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-gray-100 transform scale-95 transition-transform duration-200 flex flex-col gap-4 select-none" style="background-color: var(--card, #ffffff); border-color: var(--border, #e2e8f0);">
       <div class="flex items-start gap-3.5">
@@ -149,8 +131,8 @@ export function xacNhanXoa(tieuDe, noiDung, onConfirm, options = {}) {
       </div>
 
       <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-gray-100 mt-1" style="border-color: var(--border, #f1f5f9);">
-        <button 
-          type="button" 
+        <button
+          type="button"
           id="btnShinConfirmCancel"
           class="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-[13px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer"
           style="background-color: var(--bg-sub, #f8fafc); border-color: var(--border, #cbd5e1); color: var(--text, #334155);"
@@ -158,8 +140,8 @@ export function xacNhanXoa(tieuDe, noiDung, onConfirm, options = {}) {
           ${esc(btnCancelText)}
         </button>
 
-        <button 
-          type="button" 
+        <button
+          type="button"
           id="btnShinConfirmOk"
           class="px-5 py-2.5 rounded-xl ${isDanger ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20' : 'bg-[#d6a52a] text-[#533d00]'} font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
         >
@@ -172,7 +154,6 @@ export function xacNhanXoa(tieuDe, noiDung, onConfirm, options = {}) {
 
   document.body.appendChild(overlay);
 
-  // Kích hoạt animation hiện mượt
   requestAnimationFrame(() => {
     overlay.classList.remove('opacity-0');
     const card = overlay.firstElementChild;
@@ -219,14 +200,12 @@ export function xacNhanXoa(tieuDe, noiDung, onConfirm, options = {}) {
     });
   }
 
-  // Đóng khi click backdrop ngoài thẻ
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
       closeModal();
     }
   });
 
-  // Hỗ trợ phím Escape
   const onKeyDown = (e) => {
     if (e.key === 'Escape') {
       window.removeEventListener('keydown', onKeyDown);
@@ -236,24 +215,10 @@ export function xacNhanXoa(tieuDe, noiDung, onConfirm, options = {}) {
   window.addEventListener('keydown', onKeyDown);
 }
 
-/**
- * Cầu nối tương thích: Chuyển toàn bộ các lệnh gọi xacNhan2Lan sang Popup Modal Xác Nhận Xóa chuẩn SHIN AIOS v2.7
- */
 export function xacNhan2Lan(khoa, msg, viec) {
   xacNhanXoa('Xác Nhận Xóa', msg, viec);
 }
 
-/**
- * Modal Popup Yêu Cầu Làm Lại / Từ Chối Phê Duyệt Chuẩn SHIN AIOS v2.7
- * Thay thế hoàn toàn alert/prompt bằng giao diện modal popup cao cấp đồng bộ với xacNhanXoa.
- * Cho phép để trống lý do hoặc nhập nội dung góp ý gửi cho người thực hiện.
- * 
- * @param {Object} params
- * @param {string} [params.tieuDe] - Tiêu đề popup (mặc định: 'Yêu Cầu Làm Lại / Từ Chối Phê Duyệt')
- * @param {string} [params.tenDoiTuong] - Tên hoặc mã của công việc / kế hoạch
- * @param {string} [params.defaultReason] - Lý do mặc định
- * @param {Function} params.onConfirm - Callback (reason) => { ... }
- */
 export function popupTuChoiPheDuyet({
   tieuDe = 'Yêu Cầu Làm Lại / Từ Chối Phê Duyệt',
   tenDoiTuong = '',
@@ -270,8 +235,7 @@ export function popupTuChoiPheDuyet({
 
   overlay.innerHTML = `
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-rose-100 transform scale-95 transition-transform duration-200 flex flex-col gap-4 select-none" style="background-color: var(--card, #ffffff); border-color: var(--border, #e2e8f0);">
-      
-      <!-- HEADER -->
+
       <div class="flex items-start gap-3.5 pb-3 border-b border-gray-100" style="border-color: var(--border, #f1f5f9);">
         <div class="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-[24px]">assignment_return</span>
@@ -288,16 +252,15 @@ export function popupTuChoiPheDuyet({
         </div>
       </div>
 
-      <!-- BODY: TEXTAREA -->
       <div class="flex flex-col gap-1.5">
         <label for="txtShinRejectReason" class="text-[12.5px] font-bold text-gray-700 flex items-center justify-between" style="color: var(--text, #334155);">
           <span>Ghi chú lý do / Góp ý cho người thực hiện:</span>
           <span class="text-[11px] text-gray-400 font-normal">(không bắt buộc)</span>
         </label>
-        <textarea 
-          id="txtShinRejectReason" 
-          rows="3" 
-          class="w-full p-3 rounded-xl border border-gray-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 text-[13px] text-gray-800 outline-none resize-none transition-all" 
+        <textarea
+          id="txtShinRejectReason"
+          rows="3"
+          class="w-full p-3 rounded-xl border border-gray-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 text-[13px] text-gray-800 outline-none resize-none transition-all"
           style="background-color: var(--bg, #f8f9ff); border-color: var(--border, #cbd5e1); color: var(--text, #0d1c2f);"
           placeholder="Nhập nội dung cần điều chỉnh (có thể để trống, hệ thống sẽ tự động dùng lý do chuẩn)..."
         >${esc(defaultReason)}</textarea>
@@ -306,10 +269,9 @@ export function popupTuChoiPheDuyet({
         </p>
       </div>
 
-      <!-- ACTIONS -->
       <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100" style="border-color: var(--border, #f1f5f9);">
-        <button 
-          type="button" 
+        <button
+          type="button"
           id="btnShinRejectCancel"
           class="px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-[13px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer"
           style="background-color: var(--bg-sub, #f8fafc); border-color: var(--border, #cbd5e1); color: var(--text, #334155);"
@@ -317,8 +279,8 @@ export function popupTuChoiPheDuyet({
           Hủy Bỏ
         </button>
 
-        <button 
-          type="button" 
+        <button
+          type="button"
           id="btnShinRejectConfirm"
           class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
         >
@@ -386,12 +348,6 @@ export function popupTuChoiPheDuyet({
   window.addEventListener('keydown', onKeyDown);
 }
 
-/**
- * Kiểm tra xem công việc / nhiệm vụ có bị trễ hạn (overdue) hay không
- * @param {string} dueDateStr - Chuỗi ngày hạn chót (YYYY-MM-DD hoặc ISO date)
- * @param {string} status - Trạng thái công việc ('done', 'completed' là đã xong, không coi là trễ)
- * @returns {{ isOverdue: boolean, daysLate: number }}
- */
 export function kiemTraTreHan(dueDateStr, status) {
   if (!dueDateStr || status === 'done' || status === 'completed') {
     return { isOverdue: false, daysLate: 0 };
@@ -411,5 +367,3 @@ export function kiemTraTreHan(dueDateStr, status) {
 
   return { isOverdue: false, daysLate: 0 };
 }
-
-

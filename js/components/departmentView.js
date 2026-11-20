@@ -1,13 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - DEPARTMENT & SUB-DEPARTMENT (TEAMS) MANAGEMENT VIEW
- * Màn hình quản lý Cơ cấu Phòng Ban & Bộ Phận Con toàn diện (Dành cho Quản Trị Viên)
- * Chuẩn SHIN AIOS v2.7:
- * - Hỗ trợ KÉO THẢ (Drag & Drop) nhân sự vào từng bộ phận con trực quan
- * - Nút 1-chạm "+ Thêm nhân sự" trên từng bộ phận con (mở popup gán nhanh)
- * - Bộ chọn nhanh bộ phận (Quick Team Selector) trực tiếp trên từng thẻ nhân viên
- * - Vùng bấm Touch Target >= 44px, Responsive Mobile-First
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, toast, rung, xacNhan2Lan } from '../helpers.js?v=8.7';
@@ -22,7 +12,7 @@ export class DepartmentView {
     this.isEditingDept = false;
     this.isAddingDept = false;
     this.searchQuery = '';
-    this.quickAssignTeamId = null; // ID của team đang mở modal thêm nhân sự
+    this.quickAssignTeamId = null;
   }
 
   render(deptIdToSelect = null) {
@@ -59,7 +49,6 @@ export class DepartmentView {
       this.selectedDeptId = selectedDept.id;
     }
 
-    // Filter depts nếu có tìm kiếm
     const filteredDepts = depts.filter(d => {
       if (!this.searchQuery) return true;
       const q = this.searchQuery.toLowerCase();
@@ -67,8 +56,7 @@ export class DepartmentView {
     });
 
     const selectedDeptUsers = selectedDept ? store.getDepartmentUsers(selectedDept.id) : [];
-    
-    // Danh sách ứng viên cho chức danh Trưởng phòng của phòng ban này
+
     const candidateMap = new Map();
     managers.forEach(m => candidateMap.set(m.id, m));
     selectedDeptUsers.forEach(u => candidateMap.set(u.id, u));
@@ -78,7 +66,6 @@ export class DepartmentView {
     const deptDeputies = selectedDept ? selectedDeptUsers.filter(u => u.role === 'DEPUTY_MANAGER' && u.id !== deptManager?.id) : [];
     const regularStaff = selectedDeptUsers.filter(u => u.id !== deptManager?.id && !deptDeputies.some(d => d.id === u.id));
 
-    // Tự động giải phóng nếu Trưởng phòng từng bị kéo nhầm vào bộ phận con -> Trả về Quản lý Toàn phòng
     if (deptManager && deptManager.teamId) {
       deptManager.teamId = '';
       store.updateUser(deptManager.id, { teamId: '' });
@@ -86,8 +73,7 @@ export class DepartmentView {
 
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto pb-12 overflow-x-hidden">
-        
-        <!-- 1. HERO BANNER MỞ MÀN CHUẨN SHIN AIOS -->
+
         <div class="p-5 sm:p-6 rounded-3xl border border-[#e2e8f0] shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4" style="background: linear-gradient(135deg, var(--card) 0%, var(--primary-soft) 100%); border-color: var(--border);">
           <div class="flex items-center gap-3.5 sm:gap-4 min-w-0">
             <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center font-bold shadow-sm shrink-0" style="background-color: var(--primary-container); color: var(--on-primary-container);">
@@ -116,14 +102,11 @@ export class DepartmentView {
           </div>
         </div>
 
-        <!-- 2. BỐ CỤC 2 CỘT CHÍNH (CỘT TRÁI: DANH SÁCH PB • CỘT PHẢI: BỘ PHẬN CON & NHÂN SỰ) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
-          
-          <!-- CỘT TRÁI (5 COLS TRÊN LG): DANH SÁCH PHÒNG BAN -->
+
           <div class="lg:col-span-5 flex flex-col gap-3.5">
             <div class="bg-white rounded-3xl p-4 sm:p-5 border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5" style="background-color: var(--card); border-color: var(--border);">
-              
-              <!-- TIÊU ĐỀ & TÌM KIẾM -->
+
               <div class="flex items-center justify-between pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                 <div>
                   <h3 class="font-bold text-[15.5px] text-[#0d1c2f]" style="color: var(--text);">Danh Sách Phòng Ban (${depts.length})</h3>
@@ -135,13 +118,11 @@ export class DepartmentView {
                 </button>
               </div>
 
-              <!-- Ô TÌM KIẾM PHÒNG BAN -->
               <div class="relative">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
                 <input type="text" id="inputSearchDept" value="${esc(this.searchQuery)}" placeholder="Tìm theo tên hoặc mã phòng ban..." class="w-full h-10 pl-10 pr-3.5 rounded-xl border border-[#e2e8f0] text-[12.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
               </div>
 
-              <!-- FORM THÊM PHÒNG BAN MỚI (ẨN/HIỆN) -->
               <div id="boxAddDeptFormView" class="${this.isAddingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/60 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
                 <div class="flex items-center justify-between">
                   <span class="text-[12.5px] font-bold" style="color: var(--primary);">Thêm Phòng Ban Mới</span>
@@ -181,7 +162,6 @@ export class DepartmentView {
                 </div>
               </div>
 
-              <!-- DANH SÁCH CÁC PHÒNG BAN -->
               <div class="flex flex-col gap-2 max-h-[560px] overflow-y-auto pr-1">
                 ${filteredDepts.length === 0 ? `
                   <div class="p-6 text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] rounded-2xl border border-dashed border-[#e2e8f0]">
@@ -221,14 +201,11 @@ export class DepartmentView {
             </div>
           </div>
 
-          <!-- CỘT PHẢI (7 COLS TRÊN LG): CHI TIẾT PHÒNG BAN & BỘ PHẬN CON (TEAMS) -->
           <div class="lg:col-span-7 flex flex-col gap-4">
             ${selectedDept ? `
-              
-              <!-- THẺ CHI TIẾT & CHỈNH SỬA PHÒNG BAN -->
+
               <div class="bg-white rounded-3xl p-5 sm:p-6 border border-[#e2e8f0] shadow-sm flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
-                
-                <!-- HEADER CHI TIẾT PHÒNG BAN -->
+
                 <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                   <div class="min-w-0 pr-2">
                     <div class="flex items-center gap-2 flex-wrap">
@@ -258,7 +235,6 @@ export class DepartmentView {
                   </div>
                 </div>
 
-                <!-- FORM CHỈNH SỬA PHÒNG BAN (ẨN / HIỆN) -->
                 <div id="boxEditDeptFormView" class="${this.isEditingDept ? '' : 'hidden'} p-4 rounded-2xl border border-dashed border-[#d6a52a] bg-[#fffbeb]/50 flex flex-col gap-3 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--primary);">
                   <div class="flex items-center justify-between">
                     <span class="text-[12.5px] font-bold text-[#795900]" style="color: var(--primary);">Cập nhật thông tin phòng ban</span>
@@ -306,7 +282,6 @@ export class DepartmentView {
                   </div>
                 </div>
 
-                <!-- BỘ PHẬN CON (TEAMS) TRỰC THUỘC (HỖ TRỢ KÉO THẢ & NÚT THÊM NHÂN SỰ) -->
                 <div class="flex flex-col gap-3 mt-1">
                   <div class="flex items-center justify-between flex-wrap gap-2">
                     <div>
@@ -322,7 +297,6 @@ export class DepartmentView {
                     </div>
                   </div>
 
-                  <!-- THÊM BỘ PHẬN CON NHANH -->
                   <div class="p-3.5 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shadow-2xs" style="background-color: var(--background); border-color: var(--border);">
                     <input type="text" id="inputNewTeamNameView" placeholder="Tên bộ phận (VD: CSKH, Marketing, Hỗ trợ...)" class="flex-1 h-10 px-3.5 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
                     <input type="text" id="inputNewTeamCodeView" placeholder="Mã (VD: CSKH)" class="w-full sm:w-32 h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none uppercase bg-white text-[#0d1c2f] focus:border-[#d6a52a]" />
@@ -332,7 +306,6 @@ export class DepartmentView {
                     </button>
                   </div>
 
-                  <!-- DANH SÁCH BỘ PHẬN CON (CÁC VÙNG DROP-ZONE KÉO THẢ) -->
                   <div class="flex flex-col gap-2.5 mt-1" id="teamDropZonesContainer">
                     ${(!selectedDept.teams || selectedDept.teams.length === 0) ? `
                       <div class="p-6 rounded-2xl text-center text-[12.5px] text-[#817663] bg-[#f8f9ff] border border-dashed border-[#e2e8f0]" style="background-color: var(--background); border-color: var(--border);">
@@ -356,9 +329,8 @@ export class DepartmentView {
                       }
 
                       return `
-                        <!-- DROPZONE BỘ PHẬN CON: NHẬN THẢ NHÂN VIÊN VÀ CÓ NÚT THÊM NHÂN SỰ -->
                         <div class="team-drop-card p-3.5 sm:p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col gap-2.5 shadow-2xs hover:border-[#d6a52a] transition-all relative" data-team-id="${t.id}" style="background-color: var(--card); border-color: var(--border);">
-                          
+
                           <div class="flex items-center justify-between flex-wrap gap-2">
                             <div class="flex items-center gap-3 min-w-0">
                               <span class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-[11.5px] font-mono-data shrink-0 shadow-2xs" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--border);">
@@ -375,9 +347,8 @@ export class DepartmentView {
                                 </div>
                               </div>
                             </div>
-                            
+
                             <div class="flex items-center gap-1.5 shrink-0">
-                              <!-- NÚT 1-CHẠM THÊM NHÂN SỰ VÀO BỘ PHẬN NÀY -->
                               <button type="button" class="btn-quick-add-member px-3 py-1.5 rounded-xl border border-amber-200 text-amber-800 bg-amber-50 hover:bg-amber-100 font-bold text-[11.5px] flex items-center gap-1 min-h-[36px] transition-colors shadow-2xs cursor-pointer" data-team-id="${t.id}" title="Thêm nhân sự vào bộ phận ${esc(t.name)}">
                                 <span class="material-symbols-outlined text-[16px]">person_add</span>
                                 <span>Thêm nhân viên</span>
@@ -392,7 +363,6 @@ export class DepartmentView {
                             </div>
                           </div>
 
-                          <!-- DANH SÁCH NHÂN SỰ ĐANG TRỰC THUỘC BỘ PHẬN NÀY (CÓ NÚT GỠ RA NHANH) -->
                           <div class="pt-2 border-t border-[#f1f5f9] flex items-center gap-2 flex-wrap" style="border-color: var(--border);">
                             ${membersInTeam.length === 0 ? `
                               <span class="text-[11.5px] text-[#94a3b8] italic">Chưa có nhân sự nào trong bộ phận này.</span>
@@ -413,7 +383,6 @@ export class DepartmentView {
                   </div>
                 </div>
 
-                <!-- DANH SÁCH NHÂN SỰ ĐANG LÀM VIỆC TẠI PHÒNG NÀY (HỖ TRỢ DRAGGABLE & SELECTOR TRỰC TIẾP) -->
                 <div class="flex flex-col gap-3 pt-4 border-t border-[#f1f5f9]" style="border-color: var(--border);">
                   <div class="flex items-center justify-between flex-wrap gap-2">
                     <div>
@@ -431,7 +400,6 @@ export class DepartmentView {
                     </button>
                   </div>
 
-                  <!-- 1. THẺ TRƯỞNG PHÒNG ĐẶC BIỆT (QUẢN TRỊ TOÀN PHÒNG - CỐ ĐỊNH, KHÔNG KÉO THẢ VÀO BỘ PHẬN NHỎ) -->
                   ${deptManager ? `
                     <div class="p-4 rounded-2xl border-2 border-[#d6a52a]/60 bg-gradient-to-r from-[#fffbeb] via-white to-[#fffbeb] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                       <div class="flex items-center gap-3.5 min-w-0">
@@ -470,7 +438,6 @@ export class DepartmentView {
                     </div>
                   ` : ''}
 
-                  <!-- 2. THẺ PHÓ TRƯỞNG PHÒNG (NẾU CÓ) -->
                   ${deptDeputies.map(deputy => `
                     <div class="p-4 rounded-2xl border-2 border-indigo-200/80 bg-gradient-to-r from-indigo-50/60 via-white to-indigo-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                       <div class="flex items-center gap-3.5 min-w-0">
@@ -509,7 +476,6 @@ export class DepartmentView {
                     </div>
                   `).join('')}
 
-                  <!-- 3. TIÊU ĐỀ CHUYÊN VIÊN TRỰC THUỘC (CÓ THỂ KÉO THẢ VÀO BỘ PHẬN) -->
                   <div class="flex items-center justify-between flex-wrap gap-2 pt-2">
                     <span class="text-[13px] font-bold text-[#0d1c2f] flex items-center gap-2" style="color: var(--text);">
                       <span>Chuyên Viên / Nhân Sự Trực Thuộc (${regularStaff.length})</span>
@@ -519,7 +485,6 @@ export class DepartmentView {
                     </span>
                   </div>
 
-                  <!-- LƯỚI THẺ CHUYÊN VIÊN (DRAGGABLE = TRUE) -->
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="departmentUsersGrid">
                     ${(selectedDeptUsers.length === 0) ? `
                       <div class="col-span-1 sm:col-span-2 p-8 rounded-3xl text-center bg-gradient-to-b from-[#fffbeb]/60 to-white border border-dashed border-[#d6a52a] flex flex-col items-center justify-center gap-3 shadow-xs">
@@ -544,9 +509,8 @@ export class DepartmentView {
                     ` : regularStaff.map(u => {
                       const team = (selectedDept.teams || []).find(t => t.id === u.teamId);
                       return `
-                        <!-- THẺ NHÂN VIÊN CÓ THỂ KÉO THẢ (DRAGGABLE) -->
                         <div class="member-drag-card p-3.5 rounded-2xl border border-[#e2e8f0] bg-white flex flex-col gap-2.5 shadow-2xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:border-[#d6a52a]" draggable="true" data-user-id="${u.id}" style="background-color: var(--card); border-color: var(--border);">
-                          
+
                           <div class="flex items-center justify-between gap-2">
                             <div class="flex items-center gap-3 min-w-0">
                               <div class="relative shrink-0">
@@ -567,7 +531,6 @@ export class DepartmentView {
                             </button>
                           </div>
 
-                          <!-- BỘ CHỌN NHANH BỘ PHẬN NGAY TRÊN THẺ NHÂN VIÊN -->
                           <div class="pt-2 border-t border-[#f1f5f9] flex items-center justify-between gap-2" style="border-color: var(--border);">
                             <span class="text-[11px] font-bold text-[#64748b] shrink-0" style="color: var(--text-muted);">Bộ phận:</span>
                             <select class="select-user-team-direct h-8 px-2.5 rounded-xl border border-[#e2e8f0] text-[11.5px] font-bold outline-none bg-[#f8f9ff] text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer max-w-[190px] truncate" data-user-id="${u.id}">
@@ -594,7 +557,6 @@ export class DepartmentView {
 
         </div>
 
-        <!-- 3. MODAL GÁN NHÂN SỰ NHANH VÀO BỘ PHẬN (KHI BẤM NÚT "THÊM NHÂN VIÊN") -->
         <div id="quickAssignModalContainer"></div>
 
       </div>
@@ -610,7 +572,6 @@ export class DepartmentView {
     }
   }
 
-  // Mở popup gán nhân sự nhanh vào bộ phận con
   openQuickAssignModal(teamId, dept) {
     const modalBox = this.container.querySelector('#quickAssignModalContainer');
     if (!modalBox || !dept) return;
@@ -625,8 +586,7 @@ export class DepartmentView {
     modalBox.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[110] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="quickAssignOverlay">
         <div class="modal-card bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl border border-[#e2e8f0] max-h-[85vh] overflow-y-auto" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- HEADER -->
+
           <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9] mb-4" style="border-color: var(--border);">
             <div class="flex items-center gap-2.5">
               <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
@@ -640,7 +600,6 @@ export class DepartmentView {
             <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl hover:bg-gray-100 cursor-pointer" id="btnCloseQuickAssignModal">&times;</button>
           </div>
 
-          <!-- DANH SÁCH NHÂN SỰ PHÒNG BAN -->
           <p class="text-[12px] text-[#64748b] mb-3" style="color: var(--text-muted);">
             Bấm nút <strong>"+ Gán vào bộ phận"</strong> để đưa nhân viên vào <strong>${esc(targetTeam.name)}</strong>:
           </p>
@@ -691,7 +650,6 @@ export class DepartmentView {
       </div>
     `;
 
-    // Bind events cho modal
     const overlay = modalBox.querySelector('#quickAssignOverlay');
     const btnClose = modalBox.querySelector('#btnCloseQuickAssignModal');
     const btnDone = modalBox.querySelector('#btnDoneQuickAssign');
@@ -711,31 +669,28 @@ export class DepartmentView {
       });
     }
 
-    // Nút gán vào
     modalBox.querySelectorAll('.btn-modal-assign-user').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(15);
         const uId = btn.dataset.userId;
         store.updateUser(uId, { teamId: targetTeam.id });
         toast(`Đã thêm nhân viên vào ${targetTeam.name}!`, 'success');
-        this.openQuickAssignModal(teamId, dept); // Re-render modal
+        this.openQuickAssignModal(teamId, dept);
       });
     });
 
-    // Nút gỡ ra
     modalBox.querySelectorAll('.btn-modal-unassign-user').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(10);
         const uId = btn.dataset.userId;
         store.updateUser(uId, { teamId: '' });
         toast(`Đã chuyển nhân viên về Toàn phòng!`, 'info');
-        this.openQuickAssignModal(teamId, dept); // Re-render modal
+        this.openQuickAssignModal(teamId, dept);
       });
     });
   }
 
   bindEvents(currentDept) {
-    // 1. Chuyển đổi chọn phòng ban
     this.container.querySelectorAll('.dept-item-card').forEach(card => {
       card.addEventListener('click', () => {
         const dId = card.dataset.deptId;
@@ -749,7 +704,6 @@ export class DepartmentView {
       });
     });
 
-    // 2. Tìm kiếm phòng ban
     const inputSearch = this.container.querySelector('#inputSearchDept');
     if (inputSearch) {
       inputSearch.addEventListener('input', (e) => {
@@ -758,7 +712,6 @@ export class DepartmentView {
       });
     }
 
-    // 3. Toggle Form Thêm Phòng Ban
     const btnHeroAdd = this.container.querySelector('#btnHeroAddDept');
     const btnSideAdd = this.container.querySelector('#btnToggleAddDeptSide');
     const btnCancelAddTop = this.container.querySelector('#btnCancelAddDeptTop');
@@ -791,7 +744,6 @@ export class DepartmentView {
     if (btnCancelAddTop) btnCancelAddTop.addEventListener('click', closeAddForm);
     if (btnCancelAddView) btnCancelAddView.addEventListener('click', closeAddForm);
 
-    // 4. Submit Thêm Phòng Ban
     const btnSubmitAdd = this.container.querySelector('#btnSubmitAddDeptView');
     if (btnSubmitAdd) {
       btnSubmitAdd.addEventListener('click', () => {
@@ -825,7 +777,6 @@ export class DepartmentView {
       });
     }
 
-    // 5. Toggle & Cancel Form Chỉnh sửa Phòng Ban
     const btnToggleEditDept = this.container.querySelector('#btnToggleEditDeptView');
     const boxEditDept = this.container.querySelector('#boxEditDeptFormView');
     const btnCancelEditTop = this.container.querySelector('#btnCancelEditDeptTopView');
@@ -854,7 +805,6 @@ export class DepartmentView {
     if (btnCancelEditTop) btnCancelEditTop.addEventListener('click', closeEditDept);
     if (btnCancelEditView) btnCancelEditView.addEventListener('click', closeEditDept);
 
-    // 6. Submit Chỉnh sửa Phòng Ban
     const btnSubmitEdit = this.container.querySelector('#btnSubmitEditDeptView');
     if (btnSubmitEdit && currentDept) {
       btnSubmitEdit.addEventListener('click', () => {
@@ -879,7 +829,6 @@ export class DepartmentView {
           color: color || currentDept.color
         });
 
-        // Nếu chọn một nhân sự làm Trưởng phòng mà người đó chưa có role MANAGER -> Tự động cập nhật chức danh
         if (managerId) {
           const selectedManagerUser = store.getUserById(managerId);
           if (selectedManagerUser && selectedManagerUser.role !== 'MANAGER') {
@@ -898,7 +847,6 @@ export class DepartmentView {
       });
     }
 
-    // 7. Xóa Phòng Ban
     const btnDeleteDept = this.container.querySelector('#btnDeleteDeptView');
     if (btnDeleteDept && currentDept) {
       btnDeleteDept.addEventListener('click', () => {
@@ -914,7 +862,6 @@ export class DepartmentView {
       });
     }
 
-    // 8. Submit Thêm Bộ Phận Con (Team)
     const btnAddTeam = this.container.querySelector('#btnAddTeamSubmitView');
     const inputTeamName = this.container.querySelector('#inputNewTeamNameView');
     const inputTeamCode = this.container.querySelector('#inputNewTeamCodeView');
@@ -945,7 +892,6 @@ export class DepartmentView {
         toast(`Đã thêm bộ phận "${teamName}" vào ${currentDept.name}!`, 'success');
         if (inputTeamName) inputTeamName.value = '';
         if (inputTeamCode) inputTeamCode.value = '';
-        // Re-render đúng phòng ban này và duy trì vị trí cuộn
         this.render(currentDept.id);
       } else {
         toast(res.message, 'warning');
@@ -972,7 +918,6 @@ export class DepartmentView {
       });
     }
 
-    // 9. Bật Chỉnh sửa Inline cho Team
     this.container.querySelectorAll('.btn-edit-team-view').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -982,7 +927,6 @@ export class DepartmentView {
       });
     });
 
-    // 10. Lưu Chỉnh sửa Inline cho Team
     this.container.querySelectorAll('.btn-save-edit-team-view').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1016,7 +960,6 @@ export class DepartmentView {
       });
     });
 
-    // 11. Hủy Chỉnh sửa Inline cho Team
     this.container.querySelectorAll('.btn-cancel-edit-team-view').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1025,7 +968,6 @@ export class DepartmentView {
       });
     });
 
-    // 12. Phím tắt Enter / Escape khi đang sửa inline team
     if (this.editingTeamId && currentDept) {
       const activeNameInput = this.container.querySelector(`#inputEditTeamNameView_${this.editingTeamId}`);
       const activeCodeInput = this.container.querySelector(`#inputEditTeamCodeView_${this.editingTeamId}`);
@@ -1049,7 +991,6 @@ export class DepartmentView {
       }
     }
 
-    // 13. Xóa Team
     this.container.querySelectorAll('.btn-delete-team-view').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1066,7 +1007,6 @@ export class DepartmentView {
       });
     });
 
-    // 14. Nút Cấp tài khoản mới cho phòng này
     const btnAddMember = this.container.querySelector('#btnAddMemberToDept');
     if (btnAddMember && currentDept) {
       btnAddMember.addEventListener('click', () => {
@@ -1075,7 +1015,6 @@ export class DepartmentView {
       });
     }
 
-    // 14b. Nút Cấp tài khoản khi phòng chưa có nhân sự (Empty State)
     this.container.querySelectorAll('.btn-empty-add-member').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(10);
@@ -1083,7 +1022,6 @@ export class DepartmentView {
       });
     });
 
-    // 14c. Nút Chỉnh sửa thông tin nhân sự / thăng chức trực tiếp
     this.container.querySelectorAll('.btn-edit-dept-member').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1095,7 +1033,6 @@ export class DepartmentView {
       });
     });
 
-    // 15. NÚT "+ THÊM NHÂN VIÊN" TRÊN TỪNG BỘ PHẬN CON (MỞ MODAL GÁN NHANH)
     this.container.querySelectorAll('.btn-quick-add-member').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1106,7 +1043,6 @@ export class DepartmentView {
       });
     });
 
-    // 16. NÚT GỠ NHÂN VIÊN KHỎI BỘ PHẬN (TRÊN THẺ BỘ PHẬN CON)
     this.container.querySelectorAll('.btn-remove-user-from-team').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1122,7 +1058,6 @@ export class DepartmentView {
       });
     });
 
-    // 17. BỘ CHỌN NHANH BỘ PHẬN TRỰC TIẾP TRÊN THẺ NHÂN VIÊN (<select>)
     this.container.querySelectorAll('.select-user-team-direct').forEach(sel => {
       sel.addEventListener('change', (e) => {
         e.stopPropagation();
@@ -1140,7 +1075,6 @@ export class DepartmentView {
       });
     });
 
-    // 18. TÍNH NĂNG KÉO THẢ (DRAG & DROP) NHÂN VIÊN VÀO BỘ PHẬN CON
     const dragCards = this.container.querySelectorAll('.member-drag-card');
     const dropZones = this.container.querySelectorAll('.team-drop-card');
 
@@ -1195,5 +1129,3 @@ export class DepartmentView {
     });
   }
 }
-
-

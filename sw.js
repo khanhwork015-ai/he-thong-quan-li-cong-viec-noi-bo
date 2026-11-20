@@ -1,8 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - SERVICE WORKER (NETWORK FIRST STRATEGY)
- * Đảm bảo luôn cập nhật mã nguồn mới nhất, dọn sạch cache cũ
- */
-
 const CACHE_NAME = 'tvm-gold-stitch-v3.8';
 
 self.addEventListener('install', (e) => {
@@ -19,7 +14,6 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Network First Strategy
   e.respondWith(
     fetch(e.request)
       .then(response => {

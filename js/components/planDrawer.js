@@ -1,12 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - PLAN DRAWER COMPONENT (SHIN AIOS v2.7)
- * Ngăn kéo chi tiết toàn diện cho Kế Hoạch / Dự Án
- * - Hiển thị Người tạo và Thời gian tạo nổi bật
- * - Quản lý Mục tiêu chiến lược & Lộ trình Cột mốc (Milestones)
- * - Phân rã đầu việc & 1-Chạm chuyển thành Task Workspace
- * - Ghi chú, Tài liệu đính kèm & Bình luận thảo luận
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, ngayVN, timeAgo, toast, rung, xacNhan2Lan, xacNhanXoa } from '../helpers.js?v=8.7';
@@ -48,8 +39,8 @@ export class PlanDrawer {
     const creator = store.getUserById(plan.creatorId);
     const lead = store.getUserById(plan.leadId);
     const dept = store.getDepartmentById(plan.departmentId);
-    const deptMembers = (plan.departmentId && plan.departmentId !== 'all') 
-      ? store.getDepartmentUsers(plan.departmentId) 
+    const deptMembers = (plan.departmentId && plan.departmentId !== 'all')
+      ? store.getDepartmentUsers(plan.departmentId)
       : store.getAllUsers();
 
     const isCreator = currentUser.id === plan.creatorId;
@@ -73,8 +64,7 @@ export class PlanDrawer {
     this.container.innerHTML = `
       <div class="drawer-backdrop fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end active" id="planDrawerBackdrop">
         <div class="drawer-panel w-full max-w-2xl h-full bg-white shadow-2xl flex flex-col justify-between overflow-hidden border-l border-[#e2e8f0]" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- 1. DRAWER TOP BAR (CHỐNG TRÀN VÀ ĐÈ NÚT TRÊN MOBILE) -->
+
           <div class="h-16 px-4 sm:px-6 border-b border-[#e2e8f0] flex items-center justify-between shrink-0 bg-[#f8f9ff]" style="background-color: var(--primary-soft); border-color: var(--border);">
             <div class="flex items-center gap-2">
               <span class="font-mono-data text-[12.5px] font-bold px-2.5 py-1 rounded-md bg-[#fffbeb] border border-[#fef3c7] text-[#795900] shrink-0 shadow-2xs">
@@ -101,16 +91,13 @@ export class PlanDrawer {
             </div>
           </div>
 
-          <!-- 2. DRAWER SCROLLABLE BODY -->
           <div class="p-4 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4" id="planDrawerScrollBody">
-            
-            <!-- THÔNG TIN TIÊU ĐỀ & NGƯỜI TẠO -->
+
             <div class="flex flex-col gap-2.5">
               <h1 class="text-[18px] sm:text-[21px] font-extrabold text-[#0d1c2f] leading-snug tracking-tight break-words" style="color: var(--text);">
                 ${esc(plan.title)}
               </h1>
 
-              <!-- DẢI TRẠNG THÁI CHUYÊN BIỆT (DỄ BẤM VÀ KHÔNG ĐÈ NÚT HEADER) -->
               <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#f8f9ff] border border-[#cbd5e1]" style="background-color: var(--background); border-color: var(--border);">
                 <div class="flex items-center gap-1.5 text-[12.5px] font-bold text-[#64748b]">
                   <span class="material-symbols-outlined text-[18px] text-[#795900]">sync</span>
@@ -123,7 +110,6 @@ export class PlanDrawer {
                 </select>
               </div>
 
-              <!-- DÒNG ĐÓNG DẤU NGƯỜI TẠO VÀ THỜI GIAN TẠO -->
               <div class="flex items-center gap-2 flex-wrap text-[11.5px] text-[#64748b] p-2.5 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0]" style="background-color: var(--background); border-color: var(--border);">
                 <div class="flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[15px] text-amber-600">person</span>
@@ -137,7 +123,6 @@ export class PlanDrawer {
               </div>
             </div>
 
-            <!-- CARD META THÔNG TIN ĐƠN VỊ & TIẾN ĐỘ -->
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-white border border-[#e2e8f0] shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
               <div>
                 <span class="text-[10.5px] font-bold text-[#64748b] uppercase block">Phòng ban</span>
@@ -162,7 +147,6 @@ export class PlanDrawer {
               </div>
             </div>
 
-            <!-- PHẦN 1: MỤC TIÊU CHIẾN LƯỢC (STRATEGIC TARGET) -->
             <div class="p-4 rounded-xl bg-[#fffbeb]/60 border border-amber-200 shadow-2xs flex flex-col gap-2">
               <div class="flex items-center gap-2 text-amber-900 font-bold text-[13px]">
                 <span class="material-symbols-outlined text-[19px] text-[#d6a52a]">flag</span>
@@ -173,7 +157,6 @@ export class PlanDrawer {
               </p>
             </div>
 
-            <!-- PHẦN 2: LỘ TRÌNH CỘT MỐC (MILESTONES & ROADMAP) -->
             <div class="p-4 sm:p-5 rounded-xl bg-white border border-[#e2e8f0] shadow-2xs flex flex-col gap-3" style="background-color: var(--card); border-color: var(--border);">
               <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                 <div class="flex items-center gap-2 min-w-0">
@@ -187,12 +170,10 @@ export class PlanDrawer {
                 </span>
               </div>
 
-              <!-- PROGRESS BAR -->
               <div class="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
                 <div class="h-full bg-gradient-to-r from-[#d6a52a] to-emerald-500 transition-all duration-300" id="planMilestonesProgressBar" style="width: ${milestoneProgress}%;"></div>
               </div>
 
-              <!-- DANH SÁCH MILESTONES (CHỐNG TRÀN VÀ CẮT CHỮ TRÊN MOBILE) -->
               <div class="flex flex-col gap-2 pt-1" id="milestonesListContainer">
                 ${milestones.length === 0 ? `
                   <span class="text-[12px] text-gray-400 italic py-1">Chưa có cột mốc nào. Thêm mốc bên dưới để theo dõi tiến độ.</span>
@@ -221,7 +202,6 @@ export class PlanDrawer {
                 `).join('')}
               </div>
 
-              <!-- FORM THÊM MỐC TIẾN ĐỘ NHANH (RESPONSIVE TRÊN MOBILE, INPUT ĐẠT CHUẨN) -->
               ${canManagePlan ? `
                 <form id="formAddMilestone" class="flex flex-col gap-2 pt-2.5 border-t border-[#f1f5f9] mt-1" style="border-color: var(--border);">
                   <input type="text" id="inputNewMilestoneTitle" placeholder="Nhập tên cột mốc mới..." class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" required />
@@ -236,7 +216,6 @@ export class PlanDrawer {
               ` : ''}
             </div>
 
-            <!-- PHẦN 3: PHÂN RÃ CÔNG VIỆC DỰ KIẾN & 1-CHẠM CHUYỂN THÀNH TASK WORKSPACE -->
             <div class="p-4 sm:p-5 rounded-xl bg-white border border-[#e2e8f0] shadow-2xs flex flex-col gap-3" style="background-color: var(--card); border-color: var(--border);">
               <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                 <div>
@@ -253,7 +232,6 @@ export class PlanDrawer {
                 </span>
               </div>
 
-              <!-- DANH SÁCH CÔNG VIỆC DỰ KIẾN -->
               <div class="flex flex-col gap-2.5 pt-1" id="planTasksListContainer">
                 ${tasksList.length === 0 ? `
                   <span class="text-[12px] text-gray-400 italic py-1">Chưa có đầu việc dự kiến nào. Thêm các đầu việc bên dưới để bóc tách kế hoạch.</span>
@@ -306,11 +284,10 @@ export class PlanDrawer {
                 }).join('')}
               </div>
 
-              <!-- FORM THÊM ĐẦU VIỆC DỰ KIẾN (RESPONSIVE TRÊN MOBILE, INPUT ĐẠT CHUẨN 44PX, CHỐNG TRÀN) -->
               ${canManagePlan ? `
                 <form id="formAddPlanTask" class="p-3 sm:p-3.5 rounded-xl bg-[#f8f9ff] border border-dashed border-[#cbd5e1] flex flex-col gap-2.5 mt-1" style="background-color: var(--background); border-color: var(--border);">
                   <input type="text" id="inputNewTaskTitle" placeholder="Nhập tên việc cần làm..." class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13.5px] outline-none bg-white focus:border-[#d6a52a] text-[#0d1c2f]" required />
-                  
+
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <select id="selectNewTaskAssignee" class="w-full h-11 px-3 rounded-lg border border-[#cbd5e1] text-[13px] font-semibold outline-none bg-white text-[#0d1c2f]">
                       ${deptMembers.map(u => `
@@ -329,10 +306,8 @@ export class PlanDrawer {
               ` : ''}
             </div>
 
-            <!-- PHẦN 4: GHI CHÚ CHI TIẾT & TÀI LIỆU LIÊN KẾT (GOOGLE DOCS / SHEETS / DRIVE) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
-              <!-- GHI CHÚ NỘI BỘ -->
+
               <div class="p-4 rounded-xl bg-white border border-[#e2e8f0] shadow-2xs flex flex-col gap-2" style="background-color: var(--card); border-color: var(--border);">
                 <div class="flex items-center justify-between pb-1.5 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                   <span class="font-bold text-[13px] text-[#0d1c2f] flex items-center gap-1.5" style="color: var(--text);">
@@ -343,7 +318,6 @@ export class PlanDrawer {
                 <div class="text-[12.5px] text-[#4f4635] leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto pt-1">${esc((plan.notes || 'Chưa có ghi chú bổ sung.').trim())}</div>
               </div>
 
-              <!-- TÀI LIỆU LIÊN KẾT ĐÍNH KÈM -->
               <div class="p-4 rounded-xl bg-white border border-[#e2e8f0] shadow-2xs flex flex-col gap-2" style="background-color: var(--card); border-color: var(--border);">
                 <div class="flex items-center justify-between pb-1.5 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                   <span class="font-bold text-[13px] text-[#0d1c2f] flex items-center gap-1.5" style="color: var(--text);">
@@ -370,7 +344,6 @@ export class PlanDrawer {
                   `).join('')}
                 </div>
 
-                <!-- FORM THÊM LINK NHANH (RESPONSIVE TRÊN MOBILE, INPUT ĐẠT CHUẨN 44PX) -->
                 ${canManagePlan ? `
                   <form id="formAddLink" class="flex flex-col gap-2 pt-2.5 border-t border-[#f1f5f9] mt-1" style="border-color: var(--border);">
                     <input type="text" id="inputLinkTitle" placeholder="Tên tài liệu (VD: Báo cáo, Kế hoạch...)" class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] outline-none bg-white focus:border-[#d6a52a] text-[#0d1c2f]" required />
@@ -387,7 +360,6 @@ export class PlanDrawer {
 
             </div>
 
-            <!-- PHẦN 5: THẢO LUẬN & BÌNH LUẬN (COMMENTS FEED) -->
             <div class="p-4 sm:p-5 rounded-xl bg-white border border-[#e2e8f0] shadow-2xs flex flex-col gap-3" style="background-color: var(--card); border-color: var(--border);">
               <div class="flex items-center justify-between pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
                 <div class="flex items-center gap-2">
@@ -398,7 +370,6 @@ export class PlanDrawer {
                 </div>
               </div>
 
-              <!-- DANH SÁCH BÌNH LUẬN -->
               <div class="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
                 ${comments.length === 0 ? `
                   <span class="text-[12px] text-gray-400 italic py-2 text-center">Chưa có bình luận nào. Hãy gửi ý kiến đóng góp cho bản kế hoạch này!</span>
@@ -423,7 +394,6 @@ export class PlanDrawer {
                 `).join('')}
               </div>
 
-              <!-- FORM GỬI BÌNH LUẬN -->
               <form id="formSendPlanComment" class="flex items-center gap-2 pt-2 border-t border-[#f1f5f9]" style="border-color: var(--border);">
                 <img src="${currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-9 h-9 rounded-full object-cover shrink-0 ring-1 ring-amber-300" />
                 <input type="text" id="inputPlanCommentText" placeholder="Viết ý kiến phản hồi hoặc đề xuất cho dự án..." class="flex-1 h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-white" required />
@@ -466,7 +436,6 @@ export class PlanDrawer {
       });
     }
 
-    // Đổi trạng thái kế hoạch trực tiếp
     if (selectStatus) {
       selectStatus.addEventListener('change', () => {
         const newStatus = selectStatus.value;
@@ -477,7 +446,6 @@ export class PlanDrawer {
       });
     }
 
-    // Sửa kế hoạch
     if (btnEdit) {
       btnEdit.addEventListener('click', () => {
         const plan = store.getPlanById(this.currentPlanId);
@@ -488,7 +456,6 @@ export class PlanDrawer {
       });
     }
 
-    // Xóa kế hoạch
     if (btnDelete) {
       btnDelete.addEventListener('click', () => {
         const plan = store.getPlanById(this.currentPlanId);
@@ -507,7 +474,6 @@ export class PlanDrawer {
       });
     }
 
-    // Checkbox toggle milestone (Cập nhật trực tiếp tại chỗ, tuyệt đối không nhảy scroll)
     this.container.querySelectorAll('.chk-milestone').forEach(chk => {
       chk.addEventListener('change', () => {
         const mId = chk.dataset.milestoneId;
@@ -515,7 +481,6 @@ export class PlanDrawer {
         store.togglePlanMilestone(this.currentPlanId, mId);
         rung(10);
 
-        // Cập nhật DOM trực tiếp trên mốc
         const row = chk.closest('div.p-2.5');
         if (row) {
           const title = row.querySelector('.milestone-title-text');
@@ -537,7 +502,6 @@ export class PlanDrawer {
           }
         }
 
-        // Cập nhật thanh tiến độ cột mốc
         const allChecks = this.container.querySelectorAll('.chk-milestone');
         const doneCount = Array.from(allChecks).filter(c => c.checked).length;
         const totalCount = allChecks.length;
@@ -556,7 +520,6 @@ export class PlanDrawer {
       });
     });
 
-    // Xóa milestone
     this.container.querySelectorAll('.btn-delete-milestone').forEach(btn => {
       btn.addEventListener('click', () => {
         const mId = btn.dataset.milestoneId;
@@ -576,7 +539,6 @@ export class PlanDrawer {
       });
     });
 
-    // Form thêm milestone
     const formAddMilestone = this.container.querySelector('#formAddMilestone');
     if (formAddMilestone) {
       formAddMilestone.addEventListener('submit', (e) => {
@@ -596,7 +558,6 @@ export class PlanDrawer {
       });
     }
 
-    // Nút 1-chạm chuyển thành Task Workspace!
     this.container.querySelectorAll('.btn-convert-plan-task').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.taskIdx, 10);
@@ -610,7 +571,6 @@ export class PlanDrawer {
       });
     });
 
-    // Bấm xem task đã tạo
     this.container.querySelectorAll('.btn-open-converted-task').forEach(btn => {
       btn.addEventListener('click', () => {
         const taskId = btn.dataset.taskId;
@@ -621,7 +581,6 @@ export class PlanDrawer {
       });
     });
 
-    // Form thêm đầu việc dự kiến
     const formAddPlanTask = this.container.querySelector('#formAddPlanTask');
     if (formAddPlanTask) {
       formAddPlanTask.addEventListener('submit', (e) => {
@@ -643,7 +602,6 @@ export class PlanDrawer {
       });
     }
 
-    // Xóa đầu việc dự kiến
     this.container.querySelectorAll('.btn-delete-plan-task').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -664,7 +622,6 @@ export class PlanDrawer {
       });
     });
 
-    // Form thêm link tài liệu
     const formAddLink = this.container.querySelector('#formAddLink');
     if (formAddLink) {
       formAddLink.addEventListener('submit', (e) => {
@@ -681,7 +638,6 @@ export class PlanDrawer {
       });
     }
 
-    // Xóa link
     this.container.querySelectorAll('.btn-delete-link').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.linkIdx, 10);
@@ -690,7 +646,6 @@ export class PlanDrawer {
       });
     });
 
-    // Xóa bình luận
     this.container.querySelectorAll('.btn-delete-plan-comment').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -701,7 +656,6 @@ export class PlanDrawer {
       });
     });
 
-    // Form gửi bình luận
     const formSendComment = this.container.querySelector('#formSendPlanComment');
     if (formSendComment) {
       formSendComment.addEventListener('submit', (e) => {

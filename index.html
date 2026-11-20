@@ -6,8 +6,7 @@
   <title>Shin Task Management | Quản Lý Công Việc & Điều Hành Nội Bộ</title>
   <meta name="description" content="Shin Task Management - Hệ thống Quản lý Công việc & Điều Hành Nội Bộ" />
   <meta name="theme-color" content="#d6a52a" />
-  
-  <!-- SCRIPT CHỐNG CHỚP MÀN HÌNH (ANTI-FLICKER) THEO CHUẨN SHIN AIOS (CHẠY TRƯỚC CSS) -->
+
   <script>
     (function() {
       try {
@@ -33,16 +32,13 @@
     })();
   </script>
 
-  <!-- PRELOAD PHÔNG CHỮ BIỂU TƯỢNG CỤC BỘ (TRIỆT TIÊU FOUC / FOUT TỨC THÌ) -->
   <link rel="preload" href="fonts/material-symbols-outlined.woff2" as="font" type="font/woff2" crossorigin />
 
-  <!-- FONTS & ICONS (PLUS JAKARTA SANS, JETBRAINS MONO & MATERIAL SYMBOLS OUTLINED) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-  <!-- TAILWIND CSS CDN DYNAMICALLY CONFIGURED WITH SHIN AIOS PALETTES -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -72,12 +68,10 @@
     };
   </script>
 
-  <!-- SHIN AIOS MASTER UX/UI STYLESHEET -->
   <link rel="stylesheet" href="css/stitch-theme.css?v=8.7" />
 </head>
 <body class="antialiased min-h-screen transition-colors duration-200">
 
-  <!-- APP SPLASH LOADER: TRIỆT TIÊU FOUC / FOUT (GIẬT ICON & VỠ LAYOUT) KHI TẢI TRANG BAN ĐẦU -->
   <div id="app-splash-loader" style="position: fixed; inset: 0; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #f8f9ff; transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.35s; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
     <style>
       [data-theme="dark"] #app-splash-loader { background-color: #0d1522 !important; }
@@ -130,41 +124,28 @@
     </div>
   </div>
 
-  <!-- 0. LOGIN CONTAINER (HIỂN THỊ KHI CHƯA ĐĂNG NHẬP) -->
   <div id="login-container" class="hidden" style="display: none; pointer-events: none;"></div>
 
-  <!-- 1. SIDEBAR CONTAINER (OFF-CANVAS MOBILE DRAWER & CỐ ĐỊNH TRÊN DESKTOP LG) -->
   <div id="sidebar-container"></div>
 
-  <!-- TOP HEADER CONTAINER (CỐ ĐỊNH PHÍA TRÊN VIEWPORT) -->
   <div id="header-container"></div>
 
-  <!-- 2. MAIN APP SHELL (lg:pl-64 CHO DESKTOP, pl-0 CHO MOBILE) -->
   <div id="main-app-shell" class="lg:pl-64 pl-0 min-h-screen flex flex-col transition-[padding] duration-200">
-    <!-- MAIN SCROLLABLE CANVAS - CÔNG THÁI HỌC MOBILE FIRST VỚI pt-20 lg:pt-24 VÀ pb-24 lg:pb-12 -->
     <main class="pt-20 lg:pt-24 px-3.5 sm:px-6 lg:px-8 pb-24 lg:pb-12 flex-1 w-full max-w-[1600px] mx-auto overflow-x-hidden">
       <div id="main-content-canvas" class="view-transition"></div>
     </main>
   </div>
 
-  <!-- 3. MOBILE BOTTOM NAVIGATION (HIỂN THỊ TRÊN MÀN HÌNH NHỎ LG:HIDDEN) -->
   <div id="mobile-nav-container"></div>
 
-  <!-- 4. SLIDE-OVER TASK DETAIL DRAWER -->
   <div id="drawer-container"></div>
 
-  <!-- 4.1 NOTIFICATION SLIDE-OVER DRAWER -->
   <div id="notification-drawer-container"></div>
 
-  <!-- 5. MODALS (CREATE TASK / PROFILE / MEMBER / SETTINGS) -->
   <div id="modal-container"></div>
 
-  <!-- 6. TOAST NOTIFICATIONS CONTAINER -->
   <div id="toast-container"></div>
 
-  <!-- CORE APPLICATION LOGIC (ES MODULE) -->
   <script type="module" src="js/app.js?v=8.7"></script>
 </body>
 </html>
-
-

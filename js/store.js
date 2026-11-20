@@ -1,8 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - CENTRALIZED REACTIVE STORE (APPS SCRIPT INTEGRATED)
- * Hỗ trợ CRUD Nhân viên, Hồ sơ cá nhân và Đồng bộ Google Sheets / SHIN AIOS
- */
-
 import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.7';
 import { auth } from './auth.js?v=8.7';
 import { appScriptBridge } from './services/appScriptBridge.js?v=8.7';
@@ -34,7 +29,6 @@ export class Store {
   }
 
   init() {
-    // DỮ LIỆU VẬN HÀNH (công việc / kế hoạch / thông báo) BẮT ĐẦU RỖNG - dữ liệu thật lấy từ Google Sheet
     if (!localStorage.getItem(TASKS_STORAGE_KEY)) {
       localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify([]));
     }
@@ -52,7 +46,6 @@ export class Store {
     }
   }
 
-  // Tải dữ liệu từ Google Sheet về (Google Sheets là Source of Truth trung tâm)
   async syncFromCloudIfAvailable() {
     if (!appScriptBridge.isConnected()) {
       return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
@@ -71,10 +64,9 @@ export class Store {
       let planCount = 0;
       const deletedIds = this.getDeletedIds();
 
-      // 1. TASKS: Google Sheets là nguồn dữ liệu chuẩn tuyệt đối
       if (Array.isArray(cloudData.tasks)) {
         const validCloudTasks = cloudData.tasks.filter(ct => ct && ct.id && !deletedIds.has(String(ct.id)));
-        
+
         const sanitizedTasks = validCloudTasks.map(ct => {
           let subtasks = ct.subtasks;
           if (typeof subtasks === 'string' && subtasks.trim().startsWith('[')) {
@@ -126,12 +118,10 @@ export class Store {
         taskCount = sanitizedTasks.length;
       }
 
-      // 2. USERS: Google Sheets là nguồn dữ liệu chuẩn tuyệt đối (14 nhân sự)
       if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
         const userMap = new Map();
         cloudData.users.forEach(su => {
           if (!su || !su.id || deletedIds.has(String(su.id))) return;
-          // Loại bỏ bản ghi test rác
           if (String(su.name).includes('BÃ¡c') || String(su.id).includes('test') || String(su.username).includes('testuser')) return;
 
           userMap.set(su.id, {
@@ -161,7 +151,6 @@ export class Store {
         userCount = cleanUsers.length;
       }
 
-      // 3. DEPARTMENTS: Google Sheets là nguồn dữ liệu chuẩn tuyệt đối (3 phòng ban chuẩn)
       if (Array.isArray(cloudData.depts) && cloudData.depts.length > 0) {
         const deptMap = new Map();
         cloudData.depts.forEach(cd => {
@@ -183,7 +172,6 @@ export class Store {
         localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(cleanDepts));
       }
 
-      // 4. PLANS: Google Sheets là nguồn dữ liệu chuẩn tuyệt đối
       if (Array.isArray(cloudData.plans)) {
         const deletedPlanIds = this.getDeletedIds();
         const cleanPlans = cloudData.plans.filter(cp => cp && cp.id && !deletedPlanIds.has(String(cp.id)));
@@ -191,7 +179,6 @@ export class Store {
         planCount = cleanPlans.length;
       }
 
-      // 5. NOTIFICATIONS
       if (Array.isArray(cloudData.notifications)) {
         const cloudNotifs = cloudData.notifications.filter(n => n && n.id && !deletedIds.has(String(n.id))).map(n => ({
           ...n,
@@ -220,7 +207,6 @@ export class Store {
     }
   }
 
-  // Đẩy toàn bộ dữ liệu mẫu / hiện tại từ Web App lên Google Sheet
   async pushAllToCloud() {
     if (!appScriptBridge.isConnected()) {
       return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
@@ -237,13 +223,12 @@ export class Store {
       taskCount: tasks.length,
       userCount: users.length,
       deptCount: depts.length,
-      message: success 
-        ? `Đã đẩy ${tasks.length} công việc, ${plans.length} kế hoạch, ${users.length} nhân sự và ${depts.length} phòng ban lên Google Sheet thành công!` 
+      message: success
+        ? `Đã đẩy ${tasks.length} công việc, ${plans.length} kế hoạch, ${users.length} nhân sự và ${depts.length} phòng ban lên Google Sheet thành công!`
         : 'Gửi dữ liệu lên Google Sheet thất bại'
     };
   }
 
-  // Khởi tạo bảng dữ liệu mẫu trên Google Sheet
   async seedCloudData() {
     if (!appScriptBridge.isConnected()) {
       return { success: false, message: 'Chưa cấu hình URL Google Apps Script' };
@@ -262,7 +247,6 @@ export class Store {
     return { success: false, message: 'Không thể khởi tạo trên Google Sheet' };
   }
 
-  // --- QUẢN LÝ NHÂN SỰ (CRUD USERS) ---
   getAllUsers() {
     try {
       return JSON.parse(localStorage.getItem(USERS_STORAGE_KEY)) || USERS;
@@ -287,7 +271,6 @@ export class Store {
     return this.getAllUsers().filter(u => u.departmentId === deptId || (includeGlobal && u.departmentId === 'all'));
   }
 
-  // --- QUẢN LÝ PHÒNG BAN & BỘ PHẬN CON (CRUD DEPARTMENTS & TEAMS) ---
   getAllDepartments() {
     try {
       const saved = localStorage.getItem(DEPTS_STORAGE_KEY);
@@ -303,7 +286,6 @@ export class Store {
     localStorage.setItem(DEPTS_STORAGE_KEY, JSON.stringify(depts));
     window.dispatchEvent(new CustomEvent('tvm:departments_changed', { detail: { departments: depts } }));
     window.dispatchEvent(new CustomEvent('tvm:data_changed'));
-    // Tự động đồng bộ lên Google Sheets (nếu có kết nối)
     if (appScriptBridge.isConnected()) {
       appScriptBridge.pushDepartments(depts);
     }
@@ -481,14 +463,12 @@ export class Store {
     this.saveAllUsers(users);
     appScriptBridge.pushUser(users[idx]);
 
-    // Luôn lưu bản sao profile độc lập để auth.loadUser() có thể nạp ngay
     try {
       localStorage.setItem('tvm_user_profile_' + users[idx].id, JSON.stringify(users[idx]));
     } catch (e) {
       console.warn('Lỗi lưu tvm_user_profile_:', e);
     }
 
-    // Nếu sửa thông tin của chính người đang đăng nhập -> Cập nhật Auth
     const current = auth.getCurrentUser();
     if (current && current.id === users[idx].id) {
       auth.updateProfile(users[idx]);
@@ -502,7 +482,6 @@ export class Store {
     const userToDelete = users.find(u => u.id === userId);
     if (!userToDelete) return false;
 
-    // Không cho phép xóa Quản Trị Viên (Admin) nếu là Admin duy nhất
     if (userToDelete.isAdmin || userToDelete.role === 'ADMIN') {
       const adminCount = users.filter(u => u.isAdmin || u.role === 'ADMIN').length;
       if (adminCount <= 1) {
@@ -517,7 +496,6 @@ export class Store {
     return true;
   }
 
-  // Cập nhật hồ sơ cá nhân của chính mình
   updateCurrentUserProfile(profileData) {
     const current = auth.getCurrentUser();
     return this.updateUser({
@@ -531,7 +509,6 @@ export class Store {
     });
   }
 
-  // --- QUẢN LÝ CÔNG VIỆC (CRUD TASKS) ---
   getAllTasksRaw() {
     try {
       const savedStr = localStorage.getItem(TASKS_STORAGE_KEY);
@@ -564,9 +541,9 @@ export class Store {
           }
           if (!Array.isArray(comments)) comments = [];
 
-          return { 
-            ...t, 
-            subtasks, 
+          return {
+            ...t,
+            subtasks,
             comments,
             creatorName: t.creatorName || (this.getUserById(t.creatorId)?.name || 'Hệ thống')
           };
@@ -624,7 +601,7 @@ export class Store {
 
     if (options.searchQuery && options.searchQuery.trim()) {
       const q = options.searchQuery.toLowerCase().trim();
-      filtered = filtered.filter(t => 
+      filtered = filtered.filter(t =>
         t.title.toLowerCase().includes(q) ||
         t.id.toLowerCase().includes(q) ||
         (t.category && t.category.toLowerCase().includes(q))
@@ -643,8 +620,8 @@ export class Store {
     const activeDept = auth.getActiveDepartment() || { id: 'dept_ptkh', code: 'PTKH-CS3' };
     const currentUser = auth.getCurrentUser() || { id: 'user_admin', name: 'Ban Giám Đốc' };
 
-    const targetDeptId = (taskData.departmentId && taskData.departmentId !== 'all') 
-      ? taskData.departmentId 
+    const targetDeptId = (taskData.departmentId && taskData.departmentId !== 'all')
+      ? taskData.departmentId
       : (activeDept.id === 'all' ? (this.getAllDepartments()[0]?.id || 'dept_ptkh') : activeDept.id);
     const dept = this.getDepartmentById(targetDeptId) || activeDept;
     const prefix = dept?.code ? dept.code.split('-')[0] : 'TASK';
@@ -713,7 +690,6 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(newTask);
 
-    // Gửi thông báo cho Assignee
     if (newTask.assigneeId && newTask.assigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: newTask.assigneeId,
@@ -725,7 +701,6 @@ export class Store {
       });
     }
 
-    // Nếu công việc cần phê duyệt, gửi thông báo khẩn cho Người phê duyệt
     if (newTask.requiresApproval && newTask.approverId && newTask.approverId !== currentUser.id) {
       this.addNotification({
         recipientId: newTask.approverId,
@@ -756,7 +731,6 @@ export class Store {
     if (updates.cost !== undefined) task.cost = parseInt(updates.cost, 10) || 0;
     if (updates.departmentId !== undefined) task.departmentId = updates.departmentId;
 
-    // Phân công người thực hiện
     const oldAssigneeId = task.assigneeId;
     if (updates.assigneeId !== undefined) {
       task.assigneeId = updates.assigneeId;
@@ -772,7 +746,6 @@ export class Store {
       }
     }
 
-    // Yêu cầu phê duyệt
     if (updates.requiresApproval !== undefined) {
       task.requiresApproval = Boolean(updates.requiresApproval);
       if (task.requiresApproval && (!task.approvalStatus || task.approvalStatus === 'NONE')) {
@@ -781,7 +754,6 @@ export class Store {
     }
     if (updates.approverId !== undefined) task.approverId = updates.approverId || null;
 
-    // Trạng thái công việc
     if (updates.status !== undefined) {
       task.status = updates.status;
       if (updates.status === 'done' || updates.status === 'completed') {
@@ -790,7 +762,6 @@ export class Store {
       }
     }
 
-    // Đồng bộ và tính toán subtasks nếu có truyền vào
     if (Array.isArray(updates.subtasks)) {
       task.subtasks = updates.subtasks.map((s, idx) => {
         const isCompleted = s.status === 'done' || Boolean(s.completed);
@@ -852,7 +823,6 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // Gửi thông báo cho người được assign mới
     if (newAssigneeId && newAssigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: newAssigneeId,
@@ -864,7 +834,6 @@ export class Store {
       });
     }
 
-    // Nếu người cũ khác người thao tác, thông báo chuyển giao
     if (oldAssigneeId && oldAssigneeId !== currentUser.id && oldAssigneeId !== newAssigneeId) {
       this.addNotification({
         recipientId: oldAssigneeId,
@@ -907,7 +876,6 @@ export class Store {
     const sLabel = statusLabels[newStatus] || newStatus;
     const currentUser = auth.getCurrentUser();
 
-    // Thông báo cho Assignee
     if (task.assigneeId && task.assigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: task.assigneeId,
@@ -919,7 +887,6 @@ export class Store {
       });
     }
 
-    // Thông báo cho Creator
     if (task.creatorId && task.creatorId !== currentUser.id && task.creatorId !== task.assigneeId) {
       this.addNotification({
         recipientId: task.creatorId,
@@ -958,7 +925,6 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // Gửi thông báo cho Assignee và Creator
     const targets = new Set([task.assigneeId, task.creatorId].filter(Boolean));
     targets.forEach(userId => {
       if (userId !== currentUser.id) {
@@ -1001,7 +967,6 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // Gửi thông báo cho Assignee và Creator
     const targets = new Set([task.assigneeId, task.creatorId].filter(Boolean));
     targets.forEach(userId => {
       if (userId !== currentUser.id) {
@@ -1054,7 +1019,6 @@ export class Store {
       this.saveAllTasks(tasks);
       appScriptBridge.pushTask(task);
 
-      // Thông báo cập nhật tiến độ
       const currentUser = auth.getCurrentUser();
       if (task.assigneeId && task.assigneeId !== currentUser.id) {
         this.addNotification({
@@ -1090,7 +1054,6 @@ export class Store {
     };
     task.subtasks.push(newSubtask);
 
-    // Đồng bộ sang checklist cho tương thích ngược
     task.checklist = task.subtasks.map(s => ({
       id: s.id,
       text: s.title,
@@ -1106,7 +1069,6 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // Gửi thông báo cho người được assign việc con nếu khác currentUser
     const currentUser = auth.getCurrentUser();
     if (newSubtask.assigneeId && newSubtask.assigneeId !== currentUser.id) {
       this.addNotification({
@@ -1204,7 +1166,6 @@ export class Store {
     this.saveAllTasks(tasks);
     appScriptBridge.pushTask(task);
 
-    // Thông báo cho Assignee
     if (task.assigneeId && task.assigneeId !== currentUser.id) {
       this.addNotification({
         recipientId: task.assigneeId,
@@ -1215,7 +1176,6 @@ export class Store {
         taskId: task.id
       });
     }
-    // Thông báo cho Creator
     if (task.creatorId && task.creatorId !== currentUser.id && task.creatorId !== task.assigneeId) {
       this.addNotification({
         recipientId: task.creatorId,
@@ -1228,7 +1188,6 @@ export class Store {
     }
   }
 
-  // --- HỆ THỐNG THÔNG BÁO (NOTIFICATIONS SYSTEM) ---
   getAllNotifications() {
     try {
       const saved = localStorage.getItem(NOTIF_STORAGE_KEY);
@@ -1261,7 +1220,7 @@ export class Store {
       id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       recipientId: notifData.recipientId,
       senderId: notifData.senderId || (auth.getCurrentUser()?.id || 'system'),
-      type: notifData.type || 'info', // 'task_assigned' | 'status_change' | 'comment' | 'approval' | 'update'
+      type: notifData.type || 'info',
       title: notifData.title || 'Thông báo mới',
       content: notifData.content || '',
       taskId: notifData.taskId || null,
@@ -1269,7 +1228,6 @@ export class Store {
       createdAt: new Date().toISOString()
     };
     notifs.unshift(newNotif);
-    // Giữ tối đa 100 thông báo gần nhất
     if (notifs.length > 100) notifs.length = 100;
     this.saveAllNotifications(notifs);
     appScriptBridge.pushNotification(newNotif);
@@ -1308,7 +1266,6 @@ export class Store {
     appScriptBridge.clearUserNotifications(userId);
   }
 
-  // XÓA DỮ LIỆU MẪU - BẮT ĐẦU DỮ LIỆU THẬT: dọn công việc, kế hoạch, thông báo (giữ nguyên nhân sự & phòng ban)
   async clearOperationalData() {
     const existingTaskIds = this.getAllTasksRaw().map(t => t.id);
     const existingPlanIds = this.getAllPlansRaw().map(p => p.id);
@@ -1333,7 +1290,7 @@ export class Store {
     const inProgress = deptTasks.filter(t => t.status === 'in_progress').length;
     const done = deptTasks.filter(t => t.status === 'done').length;
     const pendingApproval = deptTasks.filter(t => t.status === 'review').length;
-    
+
     const todayStr = new Date().toISOString().split('T')[0];
     const overdue = deptTasks.filter(t => t.dueDate < todayStr && t.status !== 'done').length;
 
@@ -1349,11 +1306,6 @@ export class Store {
     };
   }
 
-  // =========================================================================
-  // MODULE QUẢN LÝ DỰ ÁN & KẾ HOẠCH (PLANS - SHIN AIOS v2.7)
-  // Ai cũng có thể tạo kế hoạch; Lưu người tạo và thời gian tạo tự động
-  // =========================================================================
-
   getAllPlansRaw() {
     try {
       const data = localStorage.getItem(PLANS_STORAGE_KEY);
@@ -1364,7 +1316,6 @@ export class Store {
   }
 
   saveAllPlans(plans) {
-    // So sánh với bản đang lưu để chỉ đẩy các kế hoạch thay đổi / xóa lên Google Sheet
     let previous = [];
     try { previous = JSON.parse(localStorage.getItem(PLANS_STORAGE_KEY)) || []; } catch (_) { previous = []; }
     const prevMap = new Map(previous.map(p => [p.id, JSON.stringify(p)]));
@@ -1549,7 +1500,6 @@ export class Store {
 
     const creator = this.getUserById(plan.creatorId);
 
-    // Tạo Task thật trong Workspace thông qua this.createTask
     const newTask = this.createTask({
       title: `[${plan.code}] ${item.title}`,
       description: `Đầu việc bóc tách từ Kế hoạch: "${plan.title}"\n- Mục tiêu: ${plan.target || 'N/A'}\n- Người lập kế hoạch: ${creator?.name || 'N/A'}`,
@@ -1610,7 +1560,6 @@ export class Store {
     return this.updatePlan(planId, { comments });
   }
 
-  // --- EXECUTIVE APPROVAL HUB METHODS (SHIN AIOS v2.7) ---
   approvePlan(planId, note = '') {
     const plan = this.getPlanById(planId);
     if (!plan) return false;
@@ -1640,7 +1589,6 @@ export class Store {
     const updatedPlan = this.getPlanById(planId);
     if (updatedPlan) appScriptBridge.pushPlan(updatedPlan);
 
-    // Gửi thông báo cho Creator và Lead của Plan
     const targets = new Set([plan.creatorId, plan.leadId].filter(Boolean));
     targets.forEach(userId => {
       if (userId !== currentUser.id) {
@@ -1727,20 +1675,20 @@ export class Store {
       pendingTasks = allTasks.filter(t => t.status === 'pending_approval' || t.status === 'review');
       pendingPlans = allPlans.filter(p => p.status === 'pending_approval');
     } else if (isManager) {
-      pendingTasks = allTasks.filter(t => 
+      pendingTasks = allTasks.filter(t =>
         (t.status === 'pending_approval' || t.status === 'review') &&
         (t.departmentId === currentUser.departmentId || t.approverId === currentUser.id)
       );
-      pendingPlans = allPlans.filter(p => 
-        p.status === 'pending_approval' && 
+      pendingPlans = allPlans.filter(p =>
+        p.status === 'pending_approval' &&
         (p.departmentId === currentUser.departmentId || p.departmentId === 'all')
       );
     } else {
-      pendingTasks = allTasks.filter(t => 
+      pendingTasks = allTasks.filter(t =>
         (t.status === 'pending_approval' || t.status === 'review') &&
         (t.creatorId === currentUser.id || t.assigneeId === currentUser.id)
       );
-      pendingPlans = allPlans.filter(p => 
+      pendingPlans = allPlans.filter(p =>
         p.status === 'pending_approval' &&
         (p.creatorId === currentUser.id || p.leadId === currentUser.id)
       );
@@ -1784,5 +1732,3 @@ export class Store {
 }
 
 export const store = new Store();
-
-

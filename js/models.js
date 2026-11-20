@@ -1,9 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - DATA MODELS & MULTI-DEPARTMENT ARCHITECTURE
- * Cấu trúc thực thể hỗ trợ mở rộng không giới hạn phòng ban (Multi-tenant ready)
- * Hỗ trợ phân cấp 4 nhóm quyền (RBAC) & Cơ cấu Phòng ban - Bộ phận con (Teams)
- */
-
 export const ROLES = {
   LEADERSHIP: { key: 'LEADERSHIP', name: 'Ban Lãnh Đạo', badge: 'Ban Lãnh Đạo', level: 1 },
   MANAGER: { key: 'MANAGER', name: 'Trưởng Phòng', badge: 'Trưởng Phòng', level: 2 },
@@ -17,10 +11,10 @@ export const DEPARTMENTS = [
     name: 'Phòng Phát Triển Khách Hàng',
     code: 'PTKH-CS3',
     unit: 'Shin Task Management',
-    managerId: 'user_tam_ptkh', // Huỳnh Trường Thanh Tâm
+    managerId: 'user_tam_ptkh',
     description: 'Chăm sóc khách hàng, khám sức khỏe doanh nghiệp, marketing và phát triển thị trường y tế',
     badge: 'PTKH',
-    color: '#D6A52A', // Primary Gold Stitch
+    color: '#D6A52A',
     teams: [
       { id: 'team_mkt', name: 'Marketing & Truyền Thông', code: 'MKT' },
       { id: 'team_cskh', name: 'Chăm Sóc Khách Hàng (CSKH)', code: 'CSKH' },
@@ -59,7 +53,6 @@ export const DEPARTMENTS = [
 ];
 
 export const USERS = [
-  // 1. ADMIN TOÀN HỆ THỐNG (ĐẶC QUYỀN QUẢN TRỊ VIÊN)
   {
     id: 'user_admin',
     username: 'admin',
@@ -78,7 +71,6 @@ export const USERS = [
     dob: '1980-01-01',
     hometown: 'Cà Mau'
   },
-  // 2. BAN LÃNH ĐẠO (Toàn quyền giám sát các phòng ban)
   {
     id: 'user_lanhdao',
     username: 'lanhdao',
@@ -96,7 +88,6 @@ export const USERS = [
     dob: '1975-10-15',
     hometown: 'Cà Mau'
   },
-  // 3. TRƯỞNG PHÒNG PTKH: Huỳnh Trường Thanh Tâm (Quản lý toàn bộ MKT / CSKH / Hỗ trợ)
   {
     id: 'user_tam_ptkh',
     username: 'thanhtam',
@@ -104,7 +95,7 @@ export const USERS = [
     name: 'Huỳnh Trường Thanh Tâm',
     role: 'MANAGER',
     departmentId: 'dept_ptkh',
-    teamId: 'all', // Quản lý toàn bộ các bộ phận con của phòng PTKH
+    teamId: 'all',
     title: 'Trưởng phòng Phát Triển Khách Hàng',
     unit: 'Phòng Phát Triển Khách Hàng • CS3',
     avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=160&q=80',
@@ -114,7 +105,6 @@ export const USERS = [
     dob: '1986-06-20',
     hometown: 'Cà Mau'
   },
-  // 4. NHÂN VIÊN PHÒNG PTKH - BỘ PHẬN CSKH
   {
     id: 'user_mai_ptkh',
     username: 'tuyetmai',
@@ -132,7 +122,6 @@ export const USERS = [
     dob: '1992-04-15',
     hometown: 'Bạc Liêu'
   },
-  // 5. NHÂN VIÊN PHÒNG PTKH - BỘ PHẬN MARKETING
   {
     id: 'user_nam_ptkh',
     username: 'hoangnam',
@@ -150,7 +139,6 @@ export const USERS = [
     dob: '1990-11-30',
     hometown: 'Cần Thơ'
   },
-  // 6. NHÂN VIÊN PHÒNG PTKH - BỘ PHẬN HỖ TRỢ
   {
     id: 'user_khang_ptkh',
     username: 'minhkhang',
@@ -168,7 +156,6 @@ export const USERS = [
     dob: '1994-08-10',
     hometown: 'Cà Mau'
   },
-  // 7. TRƯỞNG PHÒNG DƯỢC
   {
     id: 'user_minh_duoc',
     username: 'minhhn',
@@ -186,7 +173,6 @@ export const USERS = [
     dob: '1982-08-12',
     hometown: 'Cà Mau'
   },
-  // 8. CHỈ HUY TRƯỞNG QLDA
   {
     id: 'user_nghia_qlda',
     username: 'nghiath',
@@ -207,15 +193,14 @@ export const USERS = [
 ];
 
 export const INITIAL_TASKS = [
-  // --- CÔNG VIỆC PHÒNG PHÁT TRIỂN KHÁCH HÀNG (dept_ptkh) ---
   {
     id: 'PTKH-101',
     departmentId: 'dept_ptkh',
     teamId: 'team_cskh',
     title: 'Chuẩn bị tài liệu & báo cáo tiếp đón Đoàn kiểm tra Sở Y Tế Cà Mau',
     description: 'Tổng hợp số liệu khám chữa bệnh BHYT, quy trình đón tiếp bệnh nhân VIP tại CS3 và hồ sơ đánh giá chất lượng dịch vụ trước 14:00 tại Hội trường B.',
-    priority: 'P1', // P1: Khẩn, P2: Quan trọng, P3: Tiêu chuẩn
-    status: 'in_progress', // in_progress | pending_approval | completed
+    priority: 'P1',
+    status: 'in_progress',
     assigneeId: 'user_mai_ptkh',
     creatorId: 'user_tam_ptkh',
     approverId: 'user_tam_ptkh',
@@ -312,7 +297,6 @@ export const INITIAL_TASKS = [
     updatedAt: '2026-11-04T16:00:00.000Z'
   },
 
-  // --- CÔNG VIỆC KHOA DƯỢC & VẬT TƯ Y TẾ (dept_duoc) ---
   {
     id: 'DUOC-201',
     departmentId: 'dept_duoc',
@@ -337,7 +321,6 @@ export const INITIAL_TASKS = [
     updatedAt: '2026-11-06T09:00:00.000Z'
   },
 
-  // --- CÔNG VIỆC BAN QLDA CẢI TẠO (dept_qlda) ---
   {
     id: 'QLDA-301',
     departmentId: 'dept_qlda',
@@ -531,5 +514,3 @@ export const INITIAL_PLANS = [
     updatedAt: '2026-11-09T16:00:00.000Z'
   }
 ];
-
-

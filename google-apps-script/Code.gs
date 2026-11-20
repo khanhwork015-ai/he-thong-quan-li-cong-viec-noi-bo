@@ -1,30 +1,10 @@
-/**
- * SHIN TASK MANAGEMENT - GOOGLE APPS SCRIPT WEB APP BACKEND (SHIN AIOS BRIDGE v2.7)
- * Tự động tạo bảng & đồng bộ 2 chiều dữ liệu thực tế với Google Sheets
- * Hỗ trợ 5 Sheets: TASKS, USERS, DEPARTMENTS, NOTIFICATIONS, PLANS
- * 
- * HƯỚNG DẪN TRIỂN KHAI TRÊN GOOGLE SHEETS:
- * 1. Mở một Google Spreadsheet mới, đặt tên: "TVM_CS3_Task_Database"
- * 2. Vào Extensions (Tiện ích mở rộng) -> Apps Script
- * 3. Xóa hết code cũ, dán TOÀN BỘ file này vào Code.gs và bấm Lưu (Ctrl+S)
- * 4. Bấm nút "Deploy" (Triển khai) góc trên bên phải -> "New deployment" (Triển khai mới)
- * 5. Bấm icon bánh răng cưa -> chọn "Web app"
- *    - Description: "TVM CS3 Task & Notification Sync v2.7"
- *    - Execute as: "Me" (Tôi)
- *    - Who has access: "Anyone" (Bất kỳ ai)  <-- CỰC KỲ QUAN TRỌNG ĐỂ KHÔNG BỊ CHẶN QUYỀN
- * 6. Bấm "Deploy" -> Cấp quyền cho Google Tài khoản -> Copy URL Web App (đuôi /exec)
- * 7. Dán URL vào ô "Cài đặt" trong ứng dụng và bấm "Đồng bộ ngay"!
- */
-
 const SHEET_TASKS = 'TASKS';
 const SHEET_USERS = 'USERS';
 const SHEET_DEPTS = 'DEPARTMENTS';
 const SHEET_NOTIFS = 'NOTIFICATIONS';
 const SHEET_PLANS = 'PLANS';
 
-// Các cột ngày/giờ luôn lưu dạng văn bản để Google Sheets không tự đổi thành Date (gây lệch múi giờ)
 const TEXT_COLUMNS = ['dueDate', 'startDate', 'dob', 'createdAt', 'updatedAt'];
-// Các cột lưu JSON (mảng/đối tượng lồng nhau)
 const PLAN_JSON_FIELDS = ['links', 'milestones', 'tasksList', 'comments'];
 
 function doGet(e) {
@@ -33,9 +13,6 @@ function doGet(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     ensureSheets(ss);
 
-    // Cài đặt lần đầu: chỉ khởi tạo CƠ CẤU (phòng ban + tài khoản) khi sheet USERS còn trống.
-    // TUYỆT ĐỐI KHÔNG tự đổ công việc/kế hoạch mẫu vào Sheet thật.
-    // Muốn nạp dữ liệu mẫu để trải nghiệm: gọi thủ công ?action=seed
     const userSheet = ss.getSheetByName(SHEET_USERS);
     if (action === 'seed') {
       seedInitialData(ss, true);
@@ -92,7 +69,6 @@ function doGet(e) {
       });
     }
 
-    // Hỗ trợ lưu task nhanh qua GET (phòng trường hợp POST bị hạn chế mạng)
     if (action === 'saveTaskGet' && e.parameter.data) {
       const task = JSON.parse(decodeURIComponent(e.parameter.data));
       saveOrUpdateRow(ss.getSheetByName(SHEET_TASKS), task, 'id');
@@ -117,7 +93,6 @@ function doPost(e) {
 
     const action = body.action || (e && e.parameter && e.parameter.action);
 
-    // 1. Đẩy toàn bộ dữ liệu từ Web App lên Google Sheet (Batch Sync)
     if (action === 'pushAll') {
       if (body.tasks && Array.isArray(body.tasks)) {
         const taskSheet = ss.getSheetByName(SHEET_TASKS);
@@ -150,7 +125,6 @@ function doPost(e) {
       return responseJSON({ success: true, message: 'Đã đồng bộ toàn bộ dữ liệu (Tasks, Users, Departments, Notifications, Plans) lên Google Sheets' });
     }
 
-    // 2. Thao tác đơn lẻ
     if (action === 'saveTask') {
       saveOrUpdateRow(ss.getSheetByName(SHEET_TASKS), body.task, 'id');
       return responseJSON({ success: true, message: 'Task saved' });
@@ -243,7 +217,6 @@ function doPost(e) {
   }
 }
 
-// Xóa các dòng data (giữ lại dòng header 1)
 function clearDataRows(sheet) {
   if (!sheet) return;
   const lastRow = sheet.getLastRow();
@@ -252,28 +225,27 @@ function clearDataRows(sheet) {
   }
 }
 
-// Helper: Đảm bảo các sheet cần thiết đã được tạo với header màu Vàng Gold
 function ensureSheets(ss) {
   const sheets = [
-    { 
-      name: SHEET_TASKS, 
-      headers: ['id', 'departmentId', 'teamId', 'title', 'description', 'priority', 'status', 'requiresApproval', 'approvalStatus', 'approverId', 'assigneeId', 'creatorId', 'dueDate', 'category', 'progress', 'cost', 'subtasks', 'comments', 'createdAt', 'updatedAt'] 
+    {
+      name: SHEET_TASKS,
+      headers: ['id', 'departmentId', 'teamId', 'title', 'description', 'priority', 'status', 'requiresApproval', 'approvalStatus', 'approverId', 'assigneeId', 'creatorId', 'dueDate', 'category', 'progress', 'cost', 'subtasks', 'comments', 'createdAt', 'updatedAt']
     },
-    { 
-      name: SHEET_USERS, 
-      headers: ['id', 'username', 'password', 'name', 'role', 'departmentId', 'teamId', 'title', 'unit', 'avatar', 'badge', 'phone', 'email', 'dob', 'hometown', 'createdAt', 'updatedAt'] 
+    {
+      name: SHEET_USERS,
+      headers: ['id', 'username', 'password', 'name', 'role', 'departmentId', 'teamId', 'title', 'unit', 'avatar', 'badge', 'phone', 'email', 'dob', 'hometown', 'createdAt', 'updatedAt']
     },
-    { 
-      name: SHEET_DEPTS, 
-      headers: ['id', 'name', 'code', 'unit', 'managerId', 'description', 'badge', 'color'] 
+    {
+      name: SHEET_DEPTS,
+      headers: ['id', 'name', 'code', 'unit', 'managerId', 'description', 'badge', 'color']
     },
-    { 
-      name: SHEET_NOTIFS, 
-      headers: ['id', 'recipientId', 'senderId', 'title', 'content', 'taskId', 'type', 'isRead', 'createdAt'] 
+    {
+      name: SHEET_NOTIFS,
+      headers: ['id', 'recipientId', 'senderId', 'title', 'content', 'taskId', 'type', 'isRead', 'createdAt']
     },
-    { 
-      name: SHEET_PLANS, 
-      headers: ['id', 'code', 'title', 'departmentId', 'creatorId', 'leadId', 'status', 'priority', 'startDate', 'dueDate', 'target', 'notes', 'links', 'milestones', 'tasksList', 'comments', 'approvalStatus', 'createdAt', 'updatedAt'] 
+    {
+      name: SHEET_PLANS,
+      headers: ['id', 'code', 'title', 'departmentId', 'creatorId', 'leadId', 'status', 'priority', 'startDate', 'dueDate', 'target', 'notes', 'links', 'milestones', 'tasksList', 'comments', 'approvalStatus', 'createdAt', 'updatedAt']
     }
   ];
 
@@ -287,9 +259,6 @@ function ensureSheets(ss) {
   });
 }
 
-// Seed dữ liệu thực tế mẫu của Shin Task Management lên Google Sheet
-// withDemoData = false: chỉ khởi tạo phòng ban + tài khoản (cài đặt lần đầu)
-// withDemoData = true : nạp thêm công việc & thông báo mẫu (chỉ khi gọi ?action=seed)
 function seedInitialData(ss, withDemoData) {
   const deptSheet = ss.getSheetByName(SHEET_DEPTS);
   const userSheet = ss.getSheetByName(SHEET_USERS);
@@ -303,7 +272,6 @@ function seedInitialData(ss, withDemoData) {
     clearDataRows(notifSheet);
   }
 
-  // 1. Departments
   const depts = [
     { id: 'dept_ptkh', name: 'Phòng Phát Triển Khách Hàng', code: 'PTKH', unit: 'Shin Task Management', managerId: 'user_tam_ptkh', description: 'Khám đoàn doanh nghiệp, bảo hiểm y tế & chăm sóc khách hàng', badge: 'PTKH', color: '#D6A52A', teams: JSON.stringify([
       { id: 'team_cskh', name: 'Chăm Sóc Khách Hàng', code: 'CSKH' },
@@ -321,7 +289,6 @@ function seedInitialData(ss, withDemoData) {
   ];
   depts.forEach(d => saveOrUpdateRow(deptSheet, d, 'id'));
 
-  // 2. Users (RBAC 4 cấp: ADMIN, LEADERSHIP, MANAGER, MEMBER)
   const users = [
     { id: 'user_admin', username: 'admin', password: '123', name: 'Quản Trị Viên Hệ Thống', role: 'ADMIN', departmentId: 'all', teamId: 'all', title: 'Quản Trị Viên Cấp Cao', unit: 'Phòng CNTT & Quản Trị Hệ Thống', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80', badge: 'Admin Hệ Thống', phone: '0913 888 999', email: 'admin@thanhvumedic.vn', dob: '1980-01-01', hometown: 'Cà Mau' },
     { id: 'user_lanhdao', username: 'lanhdao', password: '123', name: 'ThS.BS Nguyễn Thanh Vũ', role: 'LEADERSHIP', departmentId: 'all', teamId: 'all', title: 'Chủ Tịch HĐQT / Ban Lãnh Đạo', unit: 'Ban Lãnh Đạo CS3', avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=160&q=80', badge: 'Ban Lãnh Đạo', phone: '0913 777 888', email: 'lanhdao@thanhvumedic.vn', dob: '1975-10-15', hometown: 'Cà Mau' },
@@ -334,7 +301,6 @@ function seedInitialData(ss, withDemoData) {
 
   if (!withDemoData) return;
 
-  // 3. Initial Tasks
   const tasks = [
     { id: 'PTKH-101', departmentId: 'dept_ptkh', teamId: 'team_cskh', title: 'Chuẩn bị tài liệu & báo cáo tiếp đón Đoàn kiểm tra Sở Y Tế Cà Mau', description: 'Tổng hợp số liệu khám chữa bệnh BHYT, quy trình đón tiếp bệnh nhân VIP tại CS3.', priority: 'P1', status: 'in_progress', requiresApproval: false, approvalStatus: 'NONE', approverId: 'user_tam_ptkh', assigneeId: 'user_mai_ptkh', creatorId: 'user_tam_ptkh', dueDate: '2026-11-06', category: 'Báo cáo & Kiểm tra', progress: 50, cost: 2500000, createdAt: new Date().toISOString() },
     { id: 'PTKH-102', departmentId: 'dept_ptkh', teamId: 'team_cskh', title: 'Đàm phán hợp đồng khám sức khỏe định kỳ Cty Thủy Sản Minh Phú (1.200 CBCNV)', description: 'Khảo sát nhu cầu khám lưu động tại Nhà máy Chế biến Thủy sản Giá Rai. Trình duyệt bảng giá ưu đãi.', priority: 'P2', status: 'pending_approval', requiresApproval: true, approvalStatus: 'PENDING', approverId: 'user_tam_ptkh', assigneeId: 'user_mai_ptkh', creatorId: 'user_mai_ptkh', dueDate: '2026-11-08', category: 'Khám Đoàn', progress: 100, cost: 180000000, createdAt: new Date().toISOString() },
@@ -342,14 +308,12 @@ function seedInitialData(ss, withDemoData) {
   ];
   tasks.forEach(t => saveOrUpdateRow(taskSheet, t, 'id'));
 
-  // 4. Initial Notifications
   const notifs = [
     { id: 'notif_init_1', recipientId: 'user_tam_ptkh', senderId: 'user_mai_ptkh', title: '⏳ Đề xuất cần phê duyệt 1-chạm', content: 'CN. Nguyễn Thị Tuyết Mai đã gửi đề xuất phê duyệt hợp đồng khám Minh Phú (1.200 CBCNV).', taskId: 'PTKH-102', type: 'approval_request', isRead: false, createdAt: new Date().toISOString() }
   ];
   notifs.forEach(n => saveOrUpdateRow(notifSheet, n, 'id'));
 }
 
-// Chuẩn hóa ô kiểu Date (Google Sheets tự đổi '2026-11-06' thành Date) về chuỗi, KHÔNG lệch múi giờ
 function normalizeCell(val) {
   if (val instanceof Date) {
     const tz = Session.getScriptTimeZone();
@@ -377,7 +341,6 @@ function getSheetData(sheet) {
   return data;
 }
 
-// Giải mã các cột JSON của kế hoạch
 function parsePlanRow(plan) {
   PLAN_JSON_FIELDS.forEach(function (f) {
     let v = plan[f];
@@ -389,7 +352,6 @@ function parsePlanRow(plan) {
   return plan;
 }
 
-// Xóa mọi dòng thỏa điều kiện (duyệt từ dưới lên để không lệch chỉ số)
 function deleteRowsWhere(sheet, predicate) {
   if (!sheet) return;
   const rows = sheet.getDataRange().getValues();
@@ -437,7 +399,6 @@ function saveOrUpdateRow(sheet, item, keyField) {
     return '';
   });
 
-  // Ép các cột ngày/giờ về định dạng văn bản trước khi ghi để Sheets không tự chuyển thành Date
   const targetRow = foundRowIdx > 0 ? foundRowIdx : sheet.getLastRow() + 1;
   headers.forEach((h, idx) => {
     if (TEXT_COLUMNS.indexOf(h) >= 0) {

@@ -1,9 +1,3 @@
-﻿/**
- * SHIN TASK MANAGEMENT - USER PROFILE EDIT MODAL COMPONENT (MOBILE FIRST)
- * Cập nhật thông tin cá nhân: Họ tên, Avatar (Tải ảnh từ máy / Base64), Ngày sinh, Quê quán, Chức danh, Liên hệ
- * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, toast, rung } from '../helpers.js?v=8.7';
@@ -34,7 +28,6 @@ export class ProfileModal {
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="profileOverlay">
         <div class="modal-card bg-white rounded-2xl p-4 sm:p-6 max-w-xl w-full shadow-2xl border border-[#e2e8f0] max-h-[92vh] overflow-y-auto">
-          <!-- HEADER -->
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9] mb-4">
             <div class="flex items-center gap-2.5">
               <div class="w-9 h-9 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shrink-0">
@@ -48,9 +41,7 @@ export class ProfileModal {
             <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors" id="btnCloseProfileModal" aria-label="Đóng">&times;</button>
           </div>
 
-          <!-- FORM -->
           <form id="formEditProfile" class="flex flex-col gap-3.5 sm:gap-4">
-            <!-- AVATAR UPLOAD & PREVIEW -->
             <div class="flex flex-col items-center gap-3 p-3.5 sm:p-4 bg-[#f8f9ff] rounded-2xl border border-[#e2e8f0]">
               <div class="relative group cursor-pointer">
                 <img id="avatarPreview" src="${user.avatar}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover ring-4 ring-[#fffbeb] shadow-md transition-all" />
@@ -60,9 +51,8 @@ export class ProfileModal {
                 </button>
               </div>
 
-              <!-- INPUT FILE ẨN ĐỂ CHỌN ẢNH TỪ MÁY -->
               <input type="file" id="fileAvatarInput" accept="image/*" class="hidden" />
-              
+
               <div class="flex flex-wrap items-center justify-center gap-2">
                 <button type="button" class="px-3.5 sm:px-4 py-2 rounded-xl bg-[#d6a52a] text-[#533d00] font-bold text-[12px] sm:text-[12.5px] hover:bg-[#795900] hover:text-white transition-all flex items-center gap-1.5 shadow-xs min-h-[38px]" id="btnUploadAvatar">
                   <span class="material-symbols-outlined text-[18px]">upload</span>
@@ -73,13 +63,11 @@ export class ProfileModal {
                 </button>
               </div>
 
-              <!-- Ô NHẬP LINK URL (MẶC ĐỊNH ẨN HOẶC HIỆN KHI CẦN) -->
               <div id="urlInputContainer" class="hidden w-full pt-1">
                 <label class="block text-[11px] font-bold text-[#64748b] mb-1 text-center">Hoặc dán trực tiếp đường dẫn URL ảnh:</label>
                 <input type="url" id="inputAvatarUrl" value="${esc(user.avatar)}" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]" />
               </div>
 
-              <!-- PRESET AVATARS -->
               <div class="w-full pt-2 border-t border-[#e2e8f0]/60 flex flex-col items-center gap-1.5">
                 <span class="text-[10px] sm:text-[10.5px] font-bold text-[#817663] uppercase tracking-wider">Hoặc chọn ảnh y tế có sẵn:</span>
                 <div class="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full pb-1">
@@ -90,7 +78,6 @@ export class ProfileModal {
               </div>
             </div>
 
-            <!-- NAME & TITLE -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Họ và tên *</label>
@@ -103,7 +90,6 @@ export class ProfileModal {
               </div>
             </div>
 
-            <!-- NGÀY SINH & QUÊ QUÁN -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Ngày tháng năm sinh</label>
@@ -116,7 +102,6 @@ export class ProfileModal {
               </div>
             </div>
 
-            <!-- CONTACT -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1">Số điện thoại liên hệ</label>
@@ -134,7 +119,6 @@ export class ProfileModal {
               <input type="text" id="profileUnit" value="${esc(user.unit)}" class="w-full h-11 px-3.5 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white" />
             </div>
 
-            <!-- BUTTONS (RESPONSIVE) -->
             <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-[#f1f5f9] mt-2">
               <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50 min-h-[44px]" id="btnCancelProfile">
                 Hủy bỏ
@@ -177,14 +161,12 @@ export class ProfileModal {
       });
     }
 
-    // Toggle hiện ô URL
     if (btnToggleUrl && urlContainer) {
       btnToggleUrl.addEventListener('click', () => {
         urlContainer.classList.toggle('hidden');
       });
     }
 
-    // Nút tải ảnh từ máy kích hoạt file input ẩn
     if (btnUpload && fileInput) {
       btnUpload.addEventListener('click', () => fileInput.click());
     }
@@ -192,7 +174,6 @@ export class ProfileModal {
       btnOverlay.addEventListener('click', () => fileInput.click());
     }
 
-    // Xử lý khi người dùng chọn file ảnh từ thiết bị (Nén ảnh về tối đa 300x300 tránh tràn localStorage)
     if (fileInput && avatarPreview) {
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -247,14 +228,12 @@ export class ProfileModal {
       });
     }
 
-    // Cập nhật khi gõ link URL ảnh
     if (inputAvatar && avatarPreview) {
       inputAvatar.addEventListener('input', () => {
         avatarPreview.src = inputAvatar.value;
       });
     }
 
-    // Chọn avatar có sẵn
     this.container.querySelectorAll('.preset-avatar-item').forEach(img => {
       img.addEventListener('click', () => {
         rung(10);
@@ -265,7 +244,6 @@ export class ProfileModal {
       });
     });
 
-    // Submit form lưu hồ sơ
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -286,7 +264,6 @@ export class ProfileModal {
           return;
         }
 
-        // Cập nhật vào store & auth
         const updated = store.updateUser(user.id, {
           name,
           title,
@@ -305,5 +282,3 @@ export class ProfileModal {
     }
   }
 }
-
-

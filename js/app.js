@@ -1,9 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - MAIN APPLICATION CONTROLLER (MOBILE FIRST & RESPONSIVE)
- * Tích hợp Quản lý nhân viên (Thêm/Sửa/Xóa), Profile Modal, Settings Grid, Bottom Nav & Google Apps Script
- * Chuẩn màu Vàng Hoàng Kim Google Stitch: Gold #D6A52A, Deep Gold #795900, Warm #FFFBEB
- */
-
 import { auth } from './auth.js?v=8.7';
 import { store } from './store.js?v=8.7';
 import { Sidebar } from './components/sidebar.js?v=8.7';
@@ -32,7 +26,7 @@ import { shinTheme } from './theme.js?v=8.7';
 
 class App {
   constructor() {
-    this.currentNav = 'tong-quan'; // 'tong-quan' | 'cong-viec' | 'nhan-vien' | 'cai-dat'
+    this.currentNav = 'tong-quan';
     this.sidebar = null;
     this.header = null;
     this.bottomNav = null;
@@ -70,7 +64,7 @@ class App {
     this.departmentModal = new DepartmentModal('modal-container', () => this.refreshCurrentView());
     this.departmentView = new DepartmentView('main-content-canvas', () => this.refreshCurrentView(), (deptId, userId = null) => this.memberModal.show(userId, deptId));
 
-    this.sidebar = new Sidebar('sidebar-container', 
+    this.sidebar = new Sidebar('sidebar-container',
       (navId) => this.switchNav(navId),
       (mode) => this.onModeChange(mode),
       () => this.onLogout()
@@ -177,7 +171,6 @@ class App {
     this.bindGlobalEvents();
     this.render();
 
-    // TỰ ĐỘNG ĐỒNG BỘ MƯỢT MÀ TỪ GOOGLE SHEETS KHI MỞ TRANG (ZERO CLICK NEEDED)
     this.initAutoSync();
   }
 
@@ -200,17 +193,14 @@ class App {
       }
     };
 
-    // 1. Tự động đồng bộ ngầm ngay lập tức khi mở trang (0s trễ)
     runSync();
 
-    // 2. Tự động đồng bộ khi chuyển tab quay lại web (Visibility change)
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         runSync();
       }
     });
 
-    // 3. Tự động đồng bộ ngầm định kỳ mỗi 30 giây trong nền
     setInterval(() => {
       if (document.visibilityState === 'visible') {
         runSync();
@@ -233,7 +223,6 @@ class App {
     const sidebarContainer = document.getElementById('sidebar-container');
     const mobileNav = document.getElementById('mobile-nav-container');
 
-    // NẾU CHƯA ĐĂNG NHẬP HOẶC HẾT HẠN PHIÊN -> HIỆN LOGIN VIEW
     if (!auth.isAuthenticated()) {
       if (loginContainer) {
         loginContainer.className = 'fixed inset-0 z-[100] overflow-y-auto';
@@ -248,7 +237,6 @@ class App {
       return;
     }
 
-    // ĐÃ ĐĂNG NHẬP HỢP LỆ -> HỦY HOÀN TOÀN LOGIN CONTAINER ĐỂ KHÔNG CHẶN CUỘN TRANG
     if (loginContainer) {
       loginContainer.className = 'hidden';
       loginContainer.style.display = 'none';
@@ -332,7 +320,6 @@ class App {
       return;
     }
 
-    // 1. Nếu là Kế hoạch (Plan)
     if (targetId.startsWith('PLN-') || store.getPlanById(targetId)) {
       if (this.currentNav !== 'ke-hoach') {
         this.switchNav('ke-hoach');
@@ -343,7 +330,6 @@ class App {
       return;
     }
 
-    // 2. Nếu là Công việc (Task)
     const task = store.getTaskById(targetId);
     if (task) {
       if (this.taskDrawer) {
@@ -352,7 +338,6 @@ class App {
       return;
     }
 
-    // 3. Fallback
     toast('Hạng mục liên kết không tồn tại hoặc đã được gỡ bỏ.', 'warning');
   }
 
@@ -442,7 +427,6 @@ class App {
     });
   }
 
-  // --- MÀN HÌNH QUẢN LÝ NHÂN SỰ TOÀN VIỆN & TỪNG PHÒNG BAN (SHIN AIOS v2.7) ---
   renderEmployeesView() {
     const prevScrollY = window.scrollY || document.documentElement.scrollTop;
     const canvas = document.getElementById('main-content-canvas');
@@ -453,22 +437,19 @@ class App {
     const allDepts = store.getAllDepartments();
     const allUsers = store.getAllUsers();
 
-    // Khởi tạo bộ lọc phòng ban cho màn hình nhân sự (Admin mặc định xem Toàn viện 'all')
     if (!canSwitch) {
       this.employeeDeptFilter = auth.getActiveDepartment().id;
     } else if (!this.employeeDeptFilter) {
       this.employeeDeptFilter = 'all';
     }
 
-    // Lọc danh sách theo phòng ban
-    let filteredMembers = (this.employeeDeptFilter === 'all') 
-      ? allUsers 
+    let filteredMembers = (this.employeeDeptFilter === 'all')
+      ? allUsers
       : store.getDepartmentUsers(this.employeeDeptFilter);
 
-    // Lọc tiếp theo từ khóa tìm kiếm
     if (this.employeeSearchQuery) {
       const q = this.employeeSearchQuery.toLowerCase().trim();
-      filteredMembers = filteredMembers.filter(u => 
+      filteredMembers = filteredMembers.filter(u =>
         (u.name && u.name.toLowerCase().includes(q)) ||
         (u.title && u.title.toLowerCase().includes(q)) ||
         (u.email && u.email.toLowerCase().includes(q)) ||
@@ -482,8 +463,7 @@ class App {
 
     canvas.innerHTML = `
       <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl mx-auto pb-12 overflow-x-hidden">
-        
-        <!-- 1. HEADER BANNER QUẢN LÝ NHÂN SỰ -->
+
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-white p-5 rounded-3xl border border-[#e2e8f0] shadow-sm" style="background-color: var(--card); border-color: var(--border);">
           <div>
             <div class="flex items-center gap-2 mb-1">
@@ -513,10 +493,8 @@ class App {
           </div>
         </div>
 
-        <!-- 2. BỘ LỌC TABS PHÒNG BAN (DÀNH CHO ADMIN & LÃNH ĐẠO) + Ô TÌM KIẾM NHÂN SỰ -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-[#e2e8f0] shadow-sm" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- TABS PHÒNG BAN (CUỘN NGANG MƯỢT MÀ TRÊN MOBILE) -->
+
           <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 flex-1 min-w-0" id="employeeDeptTabs">
             ${canSwitch ? `
               <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${this.employeeDeptFilter === 'all' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.employeeDeptFilter === 'all' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="all">
@@ -538,7 +516,6 @@ class App {
             }).join('')}
           </div>
 
-          <!-- Ô TÌM KIẾM NHÂN SỰ -->
           <div class="relative w-full sm:w-64 shrink-0">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">search</span>
             <input type="text" id="inputEmployeeSearch" value="${esc(this.employeeSearchQuery || '')}" placeholder="Tìm theo tên, chức danh, email..." class="w-full h-11 pl-9 pr-3.5 rounded-lg border border-[#cbd5e1] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] transition-all" />
@@ -546,7 +523,6 @@ class App {
 
         </div>
 
-        <!-- 3. LƯỚI THẺ NHÂN SỰ (RESPONSIVE 1 - 2 - 3 COLS) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="employeeCardsGrid">
           ${filteredMembers.length === 0 ? `
             <div class="col-span-full p-10 rounded-2xl text-center bg-white border border-dashed border-[#e2e8f0] flex flex-col items-center justify-center gap-3" style="background-color: var(--card); border-color: var(--border);">
@@ -582,7 +558,7 @@ class App {
 
             return `
               <div class="bg-white p-4 sm:p-5 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] hover:shadow-md transition-all relative group" style="background-color: var(--card); border-color: var(--border);">
-                
+
                 ${canManage ? `
                   <div class="absolute top-3.5 right-3.5 flex items-center gap-1 z-10">
                     <button type="button" class="p-2 rounded-xl hover:bg-[#f1f5f9] text-[#64748b] hover:text-[#0d1c2f] btn-edit-member min-w-[38px] min-h-[38px] flex items-center justify-center transition-colors cursor-pointer" data-member-id="${u.id}" title="Sửa thông tin nhân viên">
@@ -596,10 +572,8 @@ class App {
                   </div>
                 ` : ''}
 
-                <!-- THÔNG TIN ĐỊNH DANH NHÂN SỰ -->
                 <div class="flex flex-col gap-3">
-                  
-                  <!-- AVATAR & HỌ TÊN (ĐẨY LÊN ĐẦU ĐỂ KHÔNG BỊ LỆCH HÀNG KHI NHIỀU BADGE) -->
+
                   <div class="flex items-start gap-3.5 pr-20">
                     <div class="relative shrink-0">
                       <img src="${u.avatar}" class="w-12 h-12 rounded-2xl object-cover ring-2 ring-gray-100 shadow-2xs" alt="${esc(u.name)}" />
@@ -620,7 +594,6 @@ class App {
                     </div>
                   </div>
 
-                  <!-- BADGES: PHÒNG BAN & VAI TRÒ & BỘ PHẬN ĐƯA XUỐNG DƯỚI EMAIL -->
                   <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
                     <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono-data uppercase text-white shadow-2xs" style="background-color: ${userDept?.color || '#D6A52A'};">
                       ${esc(userDept?.code || 'TẤT CẢ')}
@@ -643,7 +616,6 @@ class App {
 
                 </div>
 
-                <!-- CHỈ SỐ CÔNG VIỆC -->
                 <div class="grid grid-cols-2 gap-2 pt-3.5 border-t border-[#f1f5f9] text-center mt-3" style="border-color: var(--border);">
                   <div class="p-2 rounded-xl bg-[#f8f9ff]" style="background-color: var(--background);">
                     <span class="text-[10px] text-[#64748b] uppercase font-bold" style="color: var(--text-muted);">Đang thực hiện</span>
@@ -663,7 +635,6 @@ class App {
       </div>
     `;
 
-    // Bind events
     const btnAdd = canvas.querySelector('#btnOpenAddMember');
     if (btnAdd) {
       btnAdd.addEventListener('click', () => {
@@ -682,13 +653,11 @@ class App {
       });
     }
 
-    // Tabs chuyển đổi phòng ban
     canvas.querySelectorAll('.btn-emp-dept-filter').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(10);
         const deptId = btn.dataset.deptFilter;
         this.employeeDeptFilter = deptId;
-        // Nếu chọn phòng cụ thể, đồng bộ active department cho hệ thống
         if (deptId !== 'all' && auth.canSwitchDepartment()) {
           auth.switchDepartment(deptId);
         }
@@ -696,7 +665,6 @@ class App {
       });
     });
 
-    // Ô tìm kiếm nhân sự
     const inputSearch = canvas.querySelector('#inputEmployeeSearch');
     if (inputSearch) {
       inputSearch.addEventListener('input', (e) => {
@@ -705,7 +673,6 @@ class App {
       });
     }
 
-    // Nút sửa nhân viên
     canvas.querySelectorAll('.btn-edit-member').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(10);
@@ -714,7 +681,6 @@ class App {
       });
     });
 
-    // Nút xóa nhân viên
     canvas.querySelectorAll('.btn-delete-member').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(20);
@@ -736,7 +702,6 @@ class App {
     }
   }
 
-  // --- MÀN HÌNH CÀI ĐẶT 2 CỘT CÂN XỨNG (GRID LAYOUT RESPONSIVE - PHÂN QUYỀN ADMIN) ---
   renderSettingsView() {
     const canvas = document.getElementById('main-content-canvas');
     const endpoint = appScriptBridge.getEndpoint();
@@ -746,7 +711,6 @@ class App {
 
     canvas.innerHTML = `
       <div class="flex flex-col gap-5 sm:gap-6 animate-fade-in w-full max-w-7xl mx-auto pb-12 overflow-x-hidden">
-        <!-- 1. HEADER BANNER CÀI ĐẶT -->
         <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div class="flex items-center gap-3.5">
             <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shadow-xs shrink-0">
@@ -771,13 +735,10 @@ class App {
         </div>
 
         ${isAdmin ? `
-        <!-- 2. BỐ CỤC 2 CỘT DÀNH RIÊNG CHO ADMIN (GRID 12 CỘT: 7 CỘT TRÁI & 5 CỘT PHẢI) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
-          
-          <!-- CỘT TRÁI (COL-SPAN-7): TÍCH HỢP CLOUD GOOGLE APPS SCRIPT -->
+
           <div class="lg:col-span-7 flex flex-col gap-5 sm:gap-6">
-            
-            <!-- THẺ KẾT NỐI CLOUD -->
+
             <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-[#f1f5f9] gap-2">
                 <div class="flex items-center gap-3">
@@ -802,14 +763,13 @@ class App {
                     Lưu URL
                   </button>
                 </div>
-                
+
                 <div class="mt-3 p-3 rounded-xl bg-[#fffbeb] border border-[#fef3c7] text-[12px] text-[#795900] leading-relaxed flex items-start gap-2">
                   <span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">info</span>
                   <span><strong>Lưu ý quan trọng khi triển khai:</strong> Trong cài đặt Deploy của Apps Script, mục <em>"Who has access (Ai có quyền truy cập)"</em> BẮT BUỘC chọn là <strong>"Anyone (Bất kỳ ai)"</strong> để trình duyệt không bị lỗi chặn bảo mật CORS.</span>
                 </div>
               </div>
 
-              <!-- HÀNG THAO TÁC ĐỒNG BỘ 2 CHIỀU -->
               <div class="p-3.5 sm:p-4 rounded-xl bg-[#f8f9ff] border border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <div class="text-[12px] sm:text-[12.5px] text-[#0d1c2f]">
                   Lần đồng bộ gần nhất: <br />
@@ -829,7 +789,6 @@ class App {
               </div>
             </div>
 
-            <!-- THẺ HƯỚNG DẪN TRIỂN KHAI 3 BƯỚC -->
             <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
               <h3 class="text-[15px] font-bold text-[#0d1c2f] flex items-center gap-2">
                 <span class="material-symbols-outlined text-[#795900] text-[20px]">terminal</span>
@@ -856,13 +815,10 @@ class App {
 
           </div>
 
-          <!-- CỘT PHẢI (COL-SPAN-5): THƯƠNG HIỆU, PHÂN QUYỀN & SAO LƯU -->
           <div class="lg:col-span-5 flex flex-col gap-5 sm:gap-6">
-            
-            <!-- MỤC ĐỔI MÀU GIAO DIỆN SHIN AIOS -->
+
             ${shinTheme.renderSettingsUI()}
 
-            <!-- THẺ PHÂN QUYỀN RBAC 3 CẤP -->
             <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
               <div class="flex items-center gap-2.5 pb-3 border-b border-[#f1f5f9]">
                 <span class="material-symbols-outlined text-[#795900] text-[22px]">verified_user</span>
@@ -896,7 +852,6 @@ class App {
               </div>
             </div>
 
-            <!-- THẺ QUẢN TRỊ DỮ LIỆU & SAO LƯU BACKUP -->
             <div class="bg-white p-4 sm:p-6 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-3.5">
               <div class="flex items-center gap-2.5 pb-3 border-b border-[#f1f5f9]">
                 <span class="material-symbols-outlined text-[#795900] text-[22px]">database</span>
@@ -919,7 +874,6 @@ class App {
           </div>
         </div>
         ` : `
-        <!-- 2. BỐ CỤC GỌN GÀNG CHO TÀI KHOẢN THƯỜNG (CHỈ HIỂN THỊ ĐỔI THEMES GIAO DIỆN) -->
         <div class="w-full max-w-2xl mx-auto">
           ${shinTheme.renderSettingsUI()}
         </div>
@@ -927,7 +881,6 @@ class App {
       </div>
     `;
 
-    // Bind event handlers
     shinTheme.bindEvents(canvas, () => {
       this.renderSettingsView();
     });
@@ -1041,13 +994,11 @@ class App {
   }
 }
 
-// Khởi chạy khi DOM sẵn sàng
 document.addEventListener('DOMContentLoaded', () => {
   const app = new App();
   app.init();
   window.TVM_APP = app;
 
-  // GỠ BỎ SPLASH LOADER KHI FONTS VÀ GIAO DIỆN SẴN SÀNG (TRIỆT TIÊU FOUC / FOUT)
   const dismissSplash = () => {
     const splash = document.getElementById('app-splash-loader');
     if (splash && !splash.dataset.dismissed) {
@@ -1061,7 +1012,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Đảm bảo font Material Symbols Outlined đã được nạp trước khi gỡ Splash
   if (document.fonts && document.fonts.load) {
     Promise.all([
       document.fonts.load('24px "Material Symbols Outlined"'),
@@ -1077,8 +1027,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(dismissSplash, 120);
   }
 
-  // Fallback an toàn: Tối đa 1200ms phòng khi thiết bị quá tải
   setTimeout(dismissSplash, 1200);
 });
-
-

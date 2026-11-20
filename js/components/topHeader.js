@@ -1,9 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - TOP HEADER COMPONENT (SHIN AIOS v2.6.4)
- * Thiết kế công thái học Mobile First: Vùng bấm >= 44x44px
- * Hỗ trợ nút Chuyển Theme (Dark/Light) và Nút Đổi Bảng Màu Giao Diện (8 Palettes)
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { USERS } from '../models.js?v=8.7';
@@ -49,65 +43,56 @@ export class TopHeader {
 
     this.container.innerHTML = `
       <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.03)] border-b border-[#e2e8f0] z-30 flex items-center justify-between px-3 sm:px-6" style="background-color: var(--card); border-color: var(--border);">
-        
-        <!-- 1. LEFT: HAMBURGER & SEARCH BAR -->
+
         <div class="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-xl">
-          <!-- HAMBURGER BUTTON (MOBILE / TABLET ONLY - VÙNG BẤM >= 44PX) -->
-          <button 
-            type="button" 
-            class="lg:hidden p-2 rounded-xl text-[#0d1c2f] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0 -ml-1 transition-colors" 
-            id="btnToggleMobileSidebar" 
+          <button
+            type="button"
+            class="lg:hidden p-2 rounded-xl text-[#0d1c2f] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0 -ml-1 transition-colors"
+            id="btnToggleMobileSidebar"
             aria-label="Mở Menu Điều Hướng"
             style="color: var(--text);"
           >
             <span class="material-symbols-outlined text-[24px]">menu</span>
           </button>
 
-          <!-- DESKTOP SEARCH SPOTLIGHT BAR (ẨN TRÊN MOBILE ĐỂ TRÁNH ĐÈ NÚT) -->
           <div class="hidden sm:flex relative items-center w-full max-w-xs lg:w-96">
             <span class="material-symbols-outlined absolute left-2.5 sm:left-3 text-[18px] text-[#817663]">search</span>
-            <input 
-              type="text" 
+            <input
+              type="text"
               id="topSearchInput"
-              class="w-full h-10 pl-8 sm:pl-9 pr-3 sm:pr-12 rounded-xl bg-[#f8f9ff] text-[#0d1c2f] text-[13.5px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 outline-none transition-all" 
-              placeholder="Tìm kiếm công việc..." 
+              class="w-full h-10 pl-8 sm:pl-9 pr-3 sm:pr-12 rounded-xl bg-[#f8f9ff] text-[#0d1c2f] text-[13.5px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20 outline-none transition-all"
+              placeholder="Tìm kiếm công việc..."
               style="color: var(--text); border-color: var(--border);"
             />
             <kbd class="hidden sm:inline-block absolute right-2.5 px-1.5 py-0.5 rounded bg-[#e6eeff] font-mono-data text-[10px] text-[#4f4635] font-semibold">⌘K</kbd>
           </div>
         </div>
 
-        <!-- 2. RIGHT ACTIONS & USER PROFILE -->
         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
 
-          <!-- BADGE TỰ ĐỘNG ĐỒNG BỘ CLOUD (ZERO CLICK) -->
           <div id="headerSyncBadge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all select-none bg-emerald-50 text-emerald-700 border border-emerald-200" title="Google Sheets Auto-Sync: Dữ liệu tự động đồng bộ theo thời gian thực">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
             <span class="sync-text">Google Sheets</span>
           </div>
-          
-          <!-- NÚT TÌM KIẾM CHO MOBILE (CHỈ HIỂN THỊ DƯỚI SM - 1 CHẠM MỞ FULL OVERLAY) -->
-          <button 
-            type="button" 
-            class="sm:hidden p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer text-[#64748b]" 
-            title="Tìm kiếm" 
+
+          <button
+            type="button"
+            class="sm:hidden p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer text-[#64748b]"
+            title="Tìm kiếm"
             id="btnMobileSearchToggle"
             aria-label="Tìm kiếm"
           >
             <span class="material-symbols-outlined text-[21px]">search</span>
           </button>
 
-          <!-- NÚT CHUYỂN NHANH DARK / LIGHT MODE (CHỈ HIỂN THỊ TỪ SM TRỞ LÊN, MOBILE DÙNG TRONG USER MENU) -->
           <button type="button" class="hidden sm:flex p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] items-center justify-center transition-colors" title="${isDark ? 'Chuyển sang chế độ Sáng' : 'Chuyển sang chế độ Tối (Dark Mode)'}" id="btnQuickThemeToggle">
             <span class="material-symbols-outlined text-[20px] text-[#64748b]">${isDark ? 'light_mode' : 'dark_mode'}</span>
           </button>
 
-          <!-- NÚT ĐỔI MÀU GIAO DIỆN (CHỈ HIỂN THỊ TỪ MD TRỞ LÊN, MOBILE DÙNG TRONG USER MENU) -->
           <button type="button" class="hidden md:flex p-2 rounded-xl hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] items-center justify-center transition-colors" title="Đổi màu giao diện (8 Palettes SHIN AIOS)" id="btnQuickPalette">
             <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">palette</span>
           </button>
 
-          <!-- NÚT PHÊ DUYỆT 1-CHẠM NHANH (APPROVAL HUB SHORTCUT - CÓ BADGE SỐ LƯỢNG) -->
           <button type="button" class="relative p-2 rounded-xl text-[#4f4635] hover:bg-[#fffbeb] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer" title="Trung tâm phê duyệt 1-chạm (${pendingApprovalCount} đang chờ)" id="btnTopApproval">
             <span class="material-symbols-outlined text-[22px]" style="${pendingApprovalCount > 0 ? 'color: #b45309;' : 'color: #64748b;'}">verified</span>
             ${pendingApprovalCount > 0 ? `
@@ -117,7 +102,6 @@ export class TopHeader {
             ` : ''}
           </button>
 
-          <!-- NOTIFICATIONS BELL & DROPDOWN -->
           <div class="relative">
             <button type="button" class="relative p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors cursor-pointer" title="Thông báo (${unreadCount} chưa đọc)" id="btnNotifications">
               <span class="material-symbols-outlined text-[22px]" style="${unreadCount > 0 ? 'color: var(--primary);' : ''}">notifications</span>
@@ -128,10 +112,8 @@ export class TopHeader {
               ` : ''}
             </button>
 
-            <!-- DROPDOWN THÔNG BÁO -->
             <div id="notificationsDropdown" class="hidden absolute right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 top-12 w-[calc(100vw-24px)] max-w-[360px] sm:w-[380px] bg-white rounded-2xl shadow-2xl border border-[#e2e8f0] overflow-hidden z-50 flex flex-col" style="background-color: var(--card); border-color: var(--border);">
-              
-              <!-- HEADER DROPDOWN -->
+
               <div class="p-3.5 px-4 border-b border-[#f1f5f9] flex items-center justify-between bg-[#f8f9ff]/60 shrink-0" style="border-color: var(--border); background-color: var(--primary-soft);">
                 <div class="flex items-center gap-2">
                   <span class="material-symbols-outlined text-[20px]" style="color: var(--primary);">notifications_active</span>
@@ -150,7 +132,6 @@ export class TopHeader {
                 ` : ''}
               </div>
 
-              <!-- LIST THÔNG BÁO -->
               <div class="max-h-[360px] overflow-y-auto flex flex-col divide-y divide-[#f1f5f9]" style="border-color: var(--border);">
                 ${userNotifs.length === 0 ? `
                   <div class="p-8 text-center flex flex-col items-center justify-center gap-2 text-gray-400">
@@ -209,7 +190,6 @@ export class TopHeader {
                 }).join('')}
               </div>
 
-              <!-- FOOTER DROPDOWN -->
               ${userNotifs.length > 0 ? `
                 <div class="p-2.5 px-3 border-t border-[#f1f5f9] flex items-center justify-between bg-gray-50/50 shrink-0 text-[11px]" style="border-color: var(--border);">
                   <span class="text-gray-400">${userNotifs.length} thông báo</span>
@@ -222,12 +202,10 @@ export class TopHeader {
             </div>
           </div>
 
-          <!-- QUICK SETTINGS BUTTON (DESKTOP) -->
           <button type="button" class="hidden sm:flex p-2 rounded-xl text-[#4f4635] hover:bg-[#f1f5f9] min-w-[44px] min-h-[44px] items-center justify-center transition-colors" title="Cài đặt hệ thống & Tích hợp Cloud" id="btnQuickSettings">
             <span class="material-symbols-outlined text-[22px]">settings</span>
           </button>
 
-          <!-- PRIMARY ACTION: TẠO CÔNG VIỆC (CHỈ HIỂN THỊ TỪ SM TRỞ LÊN ĐỂ TRÁNH QUÁ TẢI MOBILE) -->
           ${canCreate ? `
             <button type="button" class="hidden sm:flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold shadow-xs transition-all min-h-[44px]" id="btnHeaderCreateTask" style="background-color: var(--primary-container); color: var(--on-primary-container);" title="Tạo việc mới">
               <span class="material-symbols-outlined text-[18px]">add</span>
@@ -235,7 +213,6 @@ export class TopHeader {
             </button>
           ` : ''}
 
-          <!-- USER MENU DROPDOWN TRIGGER -->
           <div class="relative">
             <div class="flex items-center gap-1.5 sm:gap-2 pl-1 sm:pl-2 cursor-pointer p-1 rounded-xl hover:bg-[#f8f9ff] transition-colors border border-transparent hover:border-[#e2e8f0] min-h-[44px]" id="btnUserMenuTrigger">
               <div class="relative shrink-0">
@@ -249,7 +226,6 @@ export class TopHeader {
               <span class="material-symbols-outlined text-[16px] text-[#817663]">expand_more</span>
             </div>
 
-            <!-- POPUP USER MENU -->
             <div id="userMenuDropdown" class="hidden absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-2xl border border-[#e2e8f0] py-2 z-50" style="background-color: var(--card); border-color: var(--border);">
               <div class="px-4 py-2.5 border-b border-[#f1f5f9] mb-1" style="border-color: var(--border);">
                 <div class="text-[13px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${user.name}</div>
@@ -259,7 +235,6 @@ export class TopHeader {
                 </span>
               </div>
 
-              <!-- CHUYỂN DARK / LIGHT MODE TRỰC TIẾP TRONG MENU (TIỆN LỢI CHO MOBILE) -->
               <button type="button" class="w-full px-4 py-2.5 text-left text-[13px] font-semibold hover:bg-[#f8f9ff] flex items-center justify-between min-h-[44px] cursor-pointer" id="btnUserMenuThemeToggle" style="color: var(--text);">
                 <div class="flex items-center gap-2.5">
                   <span class="material-symbols-outlined text-[18px]" style="color: var(--primary);">${isDark ? 'light_mode' : 'dark_mode'}</span>
@@ -295,14 +270,13 @@ export class TopHeader {
           </div>
         </div>
 
-        <!-- 3. MOBILE SEARCH FULL-WIDTH OVERLAY (TRƯỢT MỞ 1-CHẠM KHI NHẤN NÚT TÌM KIẾM TRÊN MOBILE) -->
         <div id="mobileSearchOverlay" class="hidden sm:!hidden absolute inset-0 bg-white z-40 flex items-center px-3 gap-2 border-b border-[#e2e8f0] shadow-sm animate-fade-in" style="background-color: var(--card); border-color: var(--border);">
           <span class="material-symbols-outlined text-[20px] text-[#817663] shrink-0">search</span>
-          <input 
-            type="text" 
+          <input
+            type="text"
             id="mobileSearchInput"
-            class="flex-1 h-11 px-2 text-[14px] bg-transparent outline-none text-[#0d1c2f] placeholder:text-[#817663]" 
-            placeholder="Tìm kiếm công việc, kế hoạch..." 
+            class="flex-1 h-11 px-2 text-[14px] bg-transparent outline-none text-[#0d1c2f] placeholder:text-[#817663]"
+            placeholder="Tìm kiếm công việc, kế hoạch..."
             style="color: var(--text);"
           />
           <button type="button" id="btnCloseMobileSearch" class="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#64748b] hover:text-[#0d1c2f] cursor-pointer shrink-0" aria-label="Đóng tìm kiếm">
@@ -340,7 +314,6 @@ export class TopHeader {
       });
     }
 
-    // TÌM KIẾM DÀNH RIÊNG CHO MOBILE (FULL-WIDTH OVERLAY)
     const btnMobileSearch = this.container.querySelector('#btnMobileSearchToggle');
     const mobileSearchOverlay = this.container.querySelector('#mobileSearchOverlay');
     const mobileSearchInput = this.container.querySelector('#mobileSearchInput');
@@ -383,7 +356,6 @@ export class TopHeader {
       });
     }
 
-    // Quick toggle theme (Dark/Light) trên Desktop
     const btnQuickTheme = this.container.querySelector('#btnQuickThemeToggle');
     if (btnQuickTheme) {
       btnQuickTheme.addEventListener('click', () => {
@@ -392,7 +364,6 @@ export class TopHeader {
       });
     }
 
-    // Quick toggle theme (Dark/Light) bên trong User Menu (tiện lợi cho Mobile)
     const btnUserMenuTheme = this.container.querySelector('#btnUserMenuThemeToggle');
     if (btnUserMenuTheme) {
       btnUserMenuTheme.addEventListener('click', () => {
@@ -401,7 +372,6 @@ export class TopHeader {
       });
     }
 
-    // Quick open palette in settings
     const btnQuickPalette = this.container.querySelector('#btnQuickPalette');
     const btnHeaderOpenPalette = this.container.querySelector('#btnHeaderOpenPalette');
     const openPalette = () => {
@@ -538,7 +508,6 @@ export class TopHeader {
       });
     });
 
-    // Lắng nghe trạng thái tự động đồng bộ ngầm Google Sheets để cập nhật badge
     window.addEventListener('tvm:sync_status', (e) => {
       const badge = this.container.querySelector('#headerSyncBadge');
       if (!badge) return;
@@ -616,7 +585,6 @@ export class TopHeader {
       });
     });
 
-    // Lắng nghe trạng thái tự động đồng bộ ngầm Google Sheets để cập nhật badge
     window.addEventListener('tvm:sync_status', (e) => {
       const badge = this.container.querySelector('#headerSyncBadge');
       if (!badge) return;
@@ -631,5 +599,3 @@ export class TopHeader {
     });
   }
 }
-
-

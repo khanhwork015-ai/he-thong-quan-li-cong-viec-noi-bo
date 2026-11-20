@@ -1,9 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - GOOGLE APPS SCRIPT & SHIN AIOS BRIDGE
- * Dịch vụ đồng bộ dữ liệu thật 2 chiều với Google Sheets / SHIN AIOS
- * Khắc phục 100% lỗi CORS: Không dùng header tùy biến trong GET, dùng text/plain trong POST
- */
-
 import { toast } from '../helpers.js?v=8.7';
 
 const GAS_ENDPOINT_KEY = 'tvm_gas_endpoint';
@@ -48,7 +42,6 @@ export class AppScriptBridge {
     return Boolean(this.endpoint && this.endpoint.includes('script.google.com/macros/s/'));
   }
 
-  // Tải dữ liệu thật từ Google Sheet về Web App (GET Request - Không Preflight CORS)
   async fetchCloudData() {
     if (!this.isConnected()) {
       return { success: false, message: 'Chưa cấu hình URL Google Apps Script Endpoint' };
@@ -58,7 +51,6 @@ export class AppScriptBridge {
       const sep = this.endpoint.includes('?') ? '&' : '?';
       const url = `${this.endpoint}${sep}action=getData&_t=${Date.now()}`;
 
-      // GET request không kèm headers tùy biến để tránh CORS preflight OPTIONS
       const response = await fetch(url, {
         method: 'GET',
         redirect: 'follow'
@@ -94,7 +86,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Khởi tạo bảng dữ liệu mẫu trực tiếp trên Google Sheet qua GET
   async seedCloudData() {
     if (!this.isConnected()) return false;
     try {
@@ -113,11 +104,9 @@ export class AppScriptBridge {
     return null;
   }
 
-  // Đẩy toàn bộ dữ liệu từ LocalStorage lên Google Sheet (Batch Sync qua POST text/plain)
   async pushAllToCloud(tasks, users, notifications = [], departments = [], plans = []) {
     if (!this.isConnected()) return false;
     try {
-      // Dùng text/plain để không bị CORS preflight OPTIONS
       await fetch(this.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -142,8 +131,6 @@ export class AppScriptBridge {
     }
   }
 
-
-  // Gửi danh sách phòng ban & bộ phận con lên Google Sheet
   async pushDepartments(departments) {
     if (!this.isConnected()) return false;
     try {
@@ -162,7 +149,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Gửi 1 công việc đơn lẻ lên Google Sheet
   async pushTask(task) {
     if (!this.isConnected()) return false;
     try {
@@ -178,7 +164,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Xóa 1 công việc khỏi Google Sheet
   async deleteTask(taskId) {
     if (!this.isConnected()) return false;
     try {
@@ -194,7 +179,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Gửi 1 nhân viên lên Google Sheet
   async pushUser(user) {
     if (!this.isConnected()) return false;
     try {
@@ -210,7 +194,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Xóa 1 nhân viên khỏi Google Sheet
   async deleteUser(userId) {
     if (!this.isConnected()) return false;
     try {
@@ -226,7 +209,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Gửi 1 thông báo lên Google Sheet
   async pushNotification(notification) {
     if (!this.isConnected()) return false;
     try {
@@ -242,7 +224,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Đánh dấu thông báo đã đọc trên Google Sheet
   async markNotificationRead(notifId) {
     if (!this.isConnected()) return false;
     try {
@@ -258,12 +239,10 @@ export class AppScriptBridge {
     }
   }
 
-  // Xóa toàn bộ thông báo của 1 người dùng trên Google Sheet
   async clearUserNotifications(userId) {
     return this._post({ action: 'clearUserNotifications', userId });
   }
 
-  // Đánh dấu đã đọc toàn bộ thông báo của 1 người dùng trên Google Sheet
   async markAllNotificationsRead(userId) {
     return this._post({ action: 'markAllNotificationsRead', userId });
   }
@@ -283,7 +262,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Đẩy 1 kế hoạch lên Google Sheet
   async pushPlan(plan) {
     if (!this.isConnected()) return false;
     try {
@@ -299,7 +277,6 @@ export class AppScriptBridge {
     }
   }
 
-  // Xóa 1 kế hoạch trên Google Sheet
   async deletePlan(planId) {
     if (!this.isConnected()) return false;
     try {
@@ -317,5 +294,3 @@ export class AppScriptBridge {
 }
 
 export const appScriptBridge = new AppScriptBridge();
-
-

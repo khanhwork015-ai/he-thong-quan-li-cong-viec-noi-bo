@@ -1,9 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - LOGIN VIEW COMPONENT (SHIN AIOS v2.6.4)
- * Màn hình Đăng Nhập Mobile-First & Quản Lý Phiên Bảo Mật
- * Chuẩn màu Vàng Hoàng Kim Google Stitch (#D6A52A / #795900) & Xanh Navy Y Tế (#0D1C2F)
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { appScriptBridge } from '../services/appScriptBridge.js?v=8.7';
@@ -19,7 +13,6 @@ export class LoginView {
   render() {
     if (!this.container) return;
 
-    // Tự động đồng bộ ngầm dữ liệu từ Google Sheets để cập nhật danh sách tài khoản mới nhất
     try {
       store.syncFromCloudIfAvailable().catch(() => {});
     } catch (_) {}
@@ -27,8 +20,7 @@ export class LoginView {
     this.container.innerHTML = `
       <div class="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-[#f8f9ff] via-[#f1f5f9] to-[#fffbeb]" style="background-color: var(--background);">
         <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-[#e2e8f0] p-6 sm:p-8 flex flex-col gap-6 animate-fade-in" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- LOGO & BRANDING -->
+
           <div class="flex flex-col items-center text-center gap-2">
             <div class="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border" style="background-color: var(--primary-soft); color: var(--primary); border-color: var(--accent-soft, var(--border));">
               <span class="material-symbols-outlined text-[34px]">task_alt</span>
@@ -46,10 +38,8 @@ export class LoginView {
             </div>
           </div>
 
-          <!-- FORM LOGIN -->
           <form id="formLogin" class="flex flex-col gap-4">
-            
-            <!-- HỘP THÔNG BÁO LỖI ĐĂNG NHẬP TRỰC QUAN (INLINE ERROR BANNER) -->
+
             <div id="loginAlertBox" class="hidden p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-[13px] font-semibold flex items-start gap-2.5 animate-shake shadow-xs">
               <span class="material-symbols-outlined text-[20px] text-rose-600 shrink-0 mt-0.5">error</span>
               <div class="flex-1 min-w-0 leading-snug" id="loginAlertText"></div>
@@ -62,10 +52,10 @@ export class LoginView {
               </label>
               <div class="relative flex items-center">
                 <span class="material-symbols-outlined absolute left-3.5 text-[20px] text-[#817663]">person</span>
-                <input 
-                  type="text" 
-                  id="loginUsername" 
-                  required 
+                <input
+                  type="text"
+                  id="loginUsername"
+                  required
                   autocomplete="username"
                   placeholder="Nhập tên đăng nhập hoặc email..."
                   class="w-full h-12 pl-11 pr-4 rounded-xl border border-[#e2e8f0] text-[14px] outline-none transition-all bg-[#f8f9ff] focus:bg-white focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20"
@@ -80,18 +70,18 @@ export class LoginView {
               </label>
               <div class="relative flex items-center">
                 <span class="material-symbols-outlined absolute left-3.5 text-[20px] text-[#817663]">lock</span>
-                <input 
-                  type="password" 
-                  id="loginPassword" 
-                  required 
+                <input
+                  type="password"
+                  id="loginPassword"
+                  required
                   autocomplete="current-password"
                   placeholder="Nhập mật khẩu..."
                   class="w-full h-12 pl-11 pr-12 rounded-xl border border-[#e2e8f0] text-[14px] outline-none transition-all bg-[#f8f9ff] focus:bg-white focus:border-[#d6a52a] focus:ring-2 focus:ring-[#d6a52a]/20"
                   style="background-color: var(--card); border-color: var(--border); color: var(--text);"
                 />
-                <button 
-                  type="button" 
-                  id="btnTogglePassword" 
+                <button
+                  type="button"
+                  id="btnTogglePassword"
                   class="absolute right-2.5 p-2 text-gray-400 hover:text-gray-700 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg transition-colors"
                   aria-label="Ẩn / Hiện mật khẩu"
                 >
@@ -100,9 +90,8 @@ export class LoginView {
               </div>
             </div>
 
-            <!-- NÚT ĐĂNG NHẬP (MIN-HEIGHT 48PX SHIN CHUẨN) -->
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               id="btnLoginSubmit"
               class="w-full py-3.5 px-4 rounded-xl font-bold text-[14px] shadow-md transition-all min-h-[48px] flex items-center justify-center gap-2 mt-2 cursor-pointer"
               style="background-color: var(--primary-container); color: var(--on-primary-container);"
@@ -136,7 +125,7 @@ export class LoginView {
         alertText.innerHTML = msg;
         alertBox.classList.remove('hidden');
         alertBox.classList.remove('animate-shake');
-        void alertBox.offsetWidth; // Reflow để khởi chạy lại hiệu ứng rung
+        void alertBox.offsetWidth;
         alertBox.classList.add('animate-shake');
       }
       toast(msg.replace(/<[^>]+>/g, ''), 'error');
@@ -191,7 +180,6 @@ export class LoginView {
         try {
           let res = await auth.login(username, password);
 
-          // Nếu chưa tìm thấy cục bộ và có kết nối Cloud, kích hoạt cập nhật ngầm và thử lại
           if (!res.success && res.code === 'USER_NOT_FOUND') {
             try {
               if (appScriptBridge.isConnected()) {
@@ -229,5 +217,3 @@ export class LoginView {
     }
   }
 }
-
-

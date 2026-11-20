@@ -1,10 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - TASK DETAIL SLIDE-OVER DRAWER COMPONENT
- * Ngăn trượt chi tiết công việc từ bên phải phong cách Linear / Notion chuẩn Google Stitch
- * Chuẩn màu Vàng Hoàng Kim Gold #D6A52A / #795900, Badges theo quy chuẩn 6 màu
- * Hỗ trợ Cơ chế Phê Duyệt 1-Chạm (Duyệt ngay / Từ chối kèm lý do) & Touch Target >= 44px
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, soVN, ngayVN, toast, timeAgo, rung, xacNhan2Lan, xacNhanXoa, popupTuChoiPheDuyet, kiemTraTreHan } from '../helpers.js?v=8.7';
@@ -50,7 +43,6 @@ export class TaskDrawer {
     const prevBody = this.container.querySelector('#taskDrawerScrollBody');
     const prevScrollTop = prevBody ? prevBody.scrollTop : 0;
 
-    // Đảm bảo subtasks và comments luôn là Mảng chuẩn an toàn
     if (!Array.isArray(task.subtasks)) {
       if (typeof task.subtasks === 'string' && task.subtasks.trim().startsWith('[')) {
         try { task.subtasks = JSON.parse(task.subtasks); } catch (_) { task.subtasks = []; }
@@ -88,13 +80,12 @@ export class TaskDrawer {
 
     const isPendingApproval = task.status === 'pending_approval' || task.status === 'review';
     const canManageTask = auth.isAdmin() || auth.isLeadership() || (auth.isManager() && currentUser.departmentId === task.departmentId) || (currentUser.id === task.creatorId);
-    
-    // Phân quyền phê duyệt: Người duyệt chỉ định, Admin, Lãnh đạo hoặc Trưởng phòng cùng khoa
-    const canUserApproveThisTask = auth.isAdmin() || 
-      auth.isLeadership() || 
-      (task.approverId && task.approverId === currentUser.id) || 
+
+    const canUserApproveThisTask = auth.isAdmin() ||
+      auth.isLeadership() ||
+      (task.approverId && task.approverId === currentUser.id) ||
       (auth.isManager() && currentUser.departmentId === task.departmentId);
-    
+
     const { isOverdue, daysLate } = kiemTraTreHan(task.dueDate, task.status);
 
     const statusMeta = this.getStatusMeta(task.status);
@@ -102,8 +93,7 @@ export class TaskDrawer {
     this.container.innerHTML = `
       <div class="drawer-backdrop fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end active" id="drawerBackdrop">
         <div class="drawer-panel w-full max-w-xl h-full bg-white shadow-2xl flex flex-col justify-between overflow-hidden border-l border-[#e2e8f0]" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- DRAWER HEADER -->
+
           <div class="h-16 px-5 sm:px-6 border-b border-[#e2e8f0] flex items-center justify-between shrink-0 bg-[#f8f9ff]" style="background-color: var(--primary-soft); border-color: var(--border);">
             <div class="flex items-center gap-2.5 min-w-0">
               <span class="font-mono-data text-[13px] font-bold px-2.5 py-1 rounded-lg bg-[#fffbeb] border border-[#fef3c7] text-[#795900] shrink-0">
@@ -135,11 +125,9 @@ export class TaskDrawer {
             </div>
           </div>
 
-          <!-- DRAWER SCROLLABLE BODY -->
           <div class="p-5 sm:p-6 flex-1 overflow-y-auto flex flex-col gap-4 sm:gap-5" id="taskDrawerScrollBody">
-            
+
             ${isOverdue ? `
-              <!-- 0. CẢNH BÁO QUÁ HẠN DEADLINE (OVERDUE ALERT BANNER) -->
               <div class="p-3.5 sm:p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 text-rose-900 flex items-start gap-3 shadow-2xs animate-fade-in">
                 <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 border border-rose-200 flex items-center justify-center shrink-0">
                   <span class="material-symbols-outlined text-[24px]">alarm_on</span>
@@ -156,7 +144,6 @@ export class TaskDrawer {
               </div>
             ` : ''}
 
-            <!-- 1. BANNER CẢNH BÁO PHÊ DUYỆT 1-CHẠM -->
             ${isPendingApproval ? `
               <div class="p-4 rounded-2xl bg-amber-50 border border-amber-300 flex items-start gap-3 text-amber-900 shadow-2xs animate-fade-in">
                 <span class="material-symbols-outlined text-[24px] text-amber-600 shrink-0 mt-0.5">pending_actions</span>
@@ -173,7 +160,6 @@ export class TaskDrawer {
               </div>
             ` : ''}
 
-            <!-- 2. TITLE & DESCRIPTION -->
             <div>
               <h2 class="text-[18px] sm:text-[19px] font-bold text-[#0d1c2f] leading-snug" style="color: var(--text);">${esc(task.title)}</h2>
               <p class="text-[13.5px] text-[#4f4635] mt-2.5 leading-relaxed bg-[#f8f9ff] p-4 rounded-2xl border border-[#e2e8f0]" style="background-color: var(--background); border-color: var(--border); color: var(--text-muted);">
@@ -181,7 +167,6 @@ export class TaskDrawer {
               </p>
             </div>
 
-            <!-- THÔNG TIN NGƯỜI TẠO & THỜI GIAN TẠO -->
             <div class="p-3 px-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between text-[12px] text-[#795900]">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="material-symbols-outlined text-[18px] text-[#795900] shrink-0">edit_note</span>
@@ -193,7 +178,6 @@ export class TaskDrawer {
               </div>
             </div>
 
-            <!-- 3. KHU VỰC PHÂN CÔNG NGƯỜI THỰC HIỆN (ASSIGNEE) -->
             <div class="p-4 rounded-2xl border border-[#e2e8f0] flex flex-col gap-2.5 shadow-2xs" style="background-color: var(--primary-soft); border-color: var(--border);">
               <div class="flex items-center justify-between">
                 <span class="text-[12px] font-bold flex items-center gap-1.5" style="color: var(--primary);">
@@ -203,8 +187,7 @@ export class TaskDrawer {
                 <span class="text-[10.5px] font-semibold text-[#817663]">Đổi người phụ trách tại đây</span>
               </div>
 
-              <!-- THẺ HIỂN THỊ VÀ ĐỔI NGƯỜI PHỤ TRÁCH (CUSTOM MEMBER CARD TOÀN HỆ THỐNG) -->
-              <div 
+              <div
                 id="btnOpenDrawerAssigneePicker"
                 class="flex items-center justify-between p-3 rounded-xl bg-white border border-[#cbd5e1] hover:border-[#d6a52a] transition-all cursor-pointer shadow-2xs group min-h-[56px]"
                 style="background-color: var(--card); border-color: var(--border);"
@@ -245,7 +228,6 @@ export class TaskDrawer {
               </div>
             </div>
 
-            <!-- 4. METADATA GRID -->
             <div class="grid grid-cols-2 gap-3.5 p-4 rounded-2xl bg-white border ${isOverdue ? 'border-rose-200 bg-rose-50/15' : 'border-[#e2e8f0]'}" style="background-color: var(--card); border-color: var(--border);">
               <div>
                 <span class="text-[11px] ${isOverdue ? 'text-rose-600 font-bold' : 'text-[#64748b] font-medium'} uppercase tracking-wider flex items-center gap-1">
@@ -271,7 +253,6 @@ export class TaskDrawer {
               </div>
             </div>
 
-            <!-- 5. STATUS SELECTOR (CUSTOM STYLED DROPDOWN) -->
             <div class="p-4 rounded-2xl bg-[#f8f9ff] border border-[#e2e8f0] flex items-center justify-between relative" style="background-color: var(--background); border-color: var(--border);">
               <div>
                 <span class="text-[11px] text-[#64748b] font-bold uppercase tracking-wider">Trạng thái hiện tại</span>
@@ -287,7 +268,6 @@ export class TaskDrawer {
                   <span class="material-symbols-outlined text-[18px] text-[#64748b]">expand_more</span>
                 </button>
 
-                <!-- STATUS DROPDOWN POPUP -->
                 <div id="statusCustomMenu" class="hidden absolute right-0 top-12 w-48 bg-white rounded-2xl shadow-xl border border-[#e2e8f0] p-1.5 z-30 flex flex-col gap-1 animate-fade-in" style="background-color: var(--card); border-color: var(--border);">
                   <button type="button" class="btn-select-status w-full px-3 py-2.5 rounded-xl text-left text-[12.5px] font-bold flex items-center gap-2 hover:bg-[#fffbeb] hover:text-[#795900] transition-colors cursor-pointer min-h-[40px] ${task.status === 'todo' ? 'bg-[#f1f5f9] text-[#475569]' : 'text-[#475569]'}" data-status="todo">
                     <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
@@ -313,7 +293,6 @@ export class TaskDrawer {
               </div>
             </div>
 
-            <!-- 6. SUBTASKS / CHECKLIST (TASK CON CHUYÊN SÂU CHUẨN CÔNG THÁI HỌC) -->
             <div class="p-4 rounded-2xl bg-white border border-[#e2e8f0] flex flex-col gap-3.5 shadow-2xs" style="background-color: var(--card); border-color: var(--border);">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -333,12 +312,10 @@ export class TaskDrawer {
                 </div>
               </div>
 
-              <!-- PROGRESS BAR -->
               <div class="w-full bg-[#e2e8f0] h-2 rounded-full overflow-hidden">
                 <div class="bg-[#d6a52a] h-2 rounded-full transition-all duration-300" id="drawerSubtaskProgressBar" style="width: ${task.progress || 0}%"></div>
               </div>
 
-              <!-- SUBTASK ITEMS LIST -->
               <div class="flex flex-col gap-2.5 mt-1">
                 ${(!task.subtasks || task.subtasks.length === 0) ? `
                   <div class="text-[12.5px] text-[#64748b] italic py-3 px-4 text-center bg-[#f8f9ff] rounded-2xl border border-dashed border-[#e2e8f0]">
@@ -349,7 +326,6 @@ export class TaskDrawer {
                   const isDone = s.completed || s.status === 'done';
                   return `
                     <div class="subtask-card p-3 sm:p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff] flex flex-col gap-2.5 hover:border-[#d6a52a] hover:shadow-xs transition-all cursor-pointer" data-subtask-id="${s.id}">
-                      <!-- Hàng 1: Checkbox, Mã việc con, Trạng thái & Nút thao tác (Sửa, Xóa) -->
                       <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2 flex-wrap">
                           <input type="checkbox" class="chk-subtask w-4 h-4 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0" data-subtask-id="${s.id}" ${isDone ? 'checked' : ''} />
@@ -369,19 +345,16 @@ export class TaskDrawer {
                         </div>
                       </div>
 
-                      <!-- Hàng 2: Tiêu đề việc con chiếm toàn bộ chiều rộng, không bị cắt chữ (break-words) -->
                       <div class="subtask-title-text text-[13.5px] sm:text-[14px] font-bold text-[#0d1c2f] leading-snug break-words ${isDone ? 'line-through text-gray-400' : 'hover:text-[#795900]'} transition-colors">
                         ${esc(s.title || s.text)}
                       </div>
 
-                      <!-- Hàng 3: Mô tả việc con (nếu có) -->
                       ${s.description ? `
                         <div class="text-[12px] text-[#4f4635] bg-white p-2.5 rounded-xl border border-[#e2e8f0] leading-relaxed break-words">
                           ${esc(s.description)}
                         </div>
                       ` : ''}
 
-                      <!-- Hàng 4: Người phụ trách & Hạn chót -->
                       <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#e2e8f0] text-[11.5px] text-[#64748b]">
                         <div class="flex items-center gap-1.5 min-w-0">
                           <img src="${sAssignee ? sAssignee.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80'}" class="w-4 h-4 rounded-full object-cover shrink-0 ring-1 ring-[#e2e8f0]" />
@@ -393,13 +366,12 @@ export class TaskDrawer {
                         </div>
                       </div>
 
-                      <!-- FORM CHỈNH SỬA VIỆC CON (INLINE EDIT FORM - MẶC ĐỊNH ẨN) -->
                       <div class="edit-subtask-form-box hidden p-3 mt-1 bg-white rounded-xl border border-[#d6a52a] flex flex-col gap-2.5 animate-fade-in shadow-xs" data-subtask-form-id="${esc(s.id)}">
                         <div class="text-[11.5px] font-bold text-[#795900] flex items-center gap-1">
                           <span class="material-symbols-outlined text-[16px]">edit_note</span>
                           <span>Chỉnh sửa việc con ${esc(s.id)}</span>
                         </div>
-                        
+
                         <div>
                           <label class="block text-[11px] font-bold text-[#0d1c2f] mb-0.5">Tiêu đề việc con *</label>
                           <input type="text" class="edit-subtask-title w-full h-10 px-3 rounded-lg border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a]" value="${esc(s.title || s.text)}" />
@@ -446,7 +418,6 @@ export class TaskDrawer {
                 }).join('')}
               </div>
 
-              <!-- FORM THÊM VIỆC CON MỚI CHUYÊN NGHIỆP -->
               <div class="p-3.5 sm:p-4 rounded-2xl border border-[#d6a52a]/40 bg-[#fffbeb]/50 flex flex-col gap-3 mt-1 shadow-2xs">
                 <div class="flex items-center justify-between">
                   <span class="text-[12.5px] font-bold text-[#795900] flex items-center gap-1.5">
@@ -501,7 +472,6 @@ export class TaskDrawer {
               </div>
             </div>
 
-            <!-- 7. COMMENTS & INTERNAL AUDIT LOGS (TĂNG CHIỀU CAO KHUNG NHẬP) -->
             <div class="pt-2 border-t border-[#f1f5f9] flex flex-col gap-3" style="border-color: var(--border);">
               <span class="text-[13px] font-bold text-[#0d1c2f] flex items-center gap-1.5" style="color: var(--text);">
                 <span class="material-symbols-outlined text-[18px] text-[#795900]">chat</span>
@@ -527,7 +497,6 @@ export class TaskDrawer {
                 }).join('')}
               </div>
 
-              <!-- ADD COMMENT INPUT (LARGE TEXTAREA >= 90PX) -->
               <div class="flex flex-col gap-2">
                 <textarea id="inputComment" rows="3" placeholder="Để lại chỉ đạo, phản hồi nghiệm thu hoặc ghi chú..." class="w-full min-h-[90px] p-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f] resize-y shadow-2xs"></textarea>
                 <div class="flex justify-end">
@@ -540,17 +509,14 @@ export class TaskDrawer {
             </div>
           </div>
 
-          <!-- DRAWER FOOTER: PHÊ DUYỆT 1-CHẠM CHUẨN TOUCH TARGET >= 44PX -->
           <div class="p-4 sm:px-6 border-t border-[#e2e8f0] flex items-center justify-between shrink-0 bg-white gap-2.5" style="background-color: var(--card); border-color: var(--border);">
             ${isPendingApproval ? `
               ${canUserApproveThisTask ? `
-                <!-- NÚT TỪ CHỐI -->
                 <button type="button" class="px-4 py-2.5 rounded-xl border border-rose-300 text-rose-700 bg-rose-50/50 hover:bg-rose-100 font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs" id="btnRejectTask">
                   <span class="material-symbols-outlined text-[18px]">close</span>
                   <span>Từ Chối</span>
                 </button>
 
-                <!-- NÚT DUYỆT 1-CHẠM -->
                 <button type="button" class="flex-1 py-2.5 rounded-xl font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);" id="btnApproveTask">
                   <span class="material-symbols-outlined text-[19px]">verified</span>
                   <span>Phê Duyệt 1-Chạm</span>
@@ -575,7 +541,6 @@ export class TaskDrawer {
           </div>
         </div>
 
-        <!-- POPUP ĐỔI NGƯỜI PHỤ TRÁCH (CHỈ HIỂN THỊ THÀNH VIÊN TRONG PHÒNG BAN) -->
         <div id="drawerAssigneePickerModal" class="hidden fixed inset-0 z-[120] bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
           <div class="bg-white rounded-t-2xl sm:rounded-2xl max-w-md w-full p-4 sm:p-5 flex flex-col gap-3 shadow-2xl border border-[#cbd5e1] max-h-[82vh] overflow-hidden" style="background-color: var(--card); border-color: var(--border);">
             <div class="flex items-center justify-between pb-2 border-b border-[#f1f5f9]" style="border-color: var(--border);">
@@ -588,21 +553,18 @@ export class TaskDrawer {
               </button>
             </div>
 
-            <!-- Ô TÌM KIẾM NHANH NHÂN SỰ -->
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-gray-400">search</span>
-              <input 
-                type="text" 
-                id="inputSearchDrawerAssignee" 
-                placeholder="Tìm theo tên nhân viên hoặc chức danh..." 
-                class="w-full h-11 pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" 
+              <input
+                type="text"
+                id="inputSearchDrawerAssignee"
+                placeholder="Tìm theo tên nhân viên hoặc chức danh..."
+                class="w-full h-11 pl-9 pr-3 rounded-xl border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]"
                 style="color: var(--text); border-color: var(--border);"
               />
             </div>
 
-            <!-- DANH SÁCH THẺ NHÂN VIÊN TRONG PHÒNG BAN (SCROLLABLE) -->
             <div id="drawerAssigneeMemberList" class="flex flex-col gap-1.5 overflow-y-auto max-h-72 pr-1">
-              <!-- Rendered dynamically -->
             </div>
           </div>
         </div>
@@ -646,7 +608,6 @@ export class TaskDrawer {
       });
     }
 
-    // QUẢN LÝ CHUYỂN GIAO ASSIGNEE TRONG TASK DRAWER
     const btnOpenPicker = this.container.querySelector('#btnOpenDrawerAssigneePicker');
     const pickerModal = this.container.querySelector('#drawerAssigneePickerModal');
     const btnClosePicker = this.container.querySelector('#btnCloseDrawerAssigneeModal');
@@ -656,14 +617,13 @@ export class TaskDrawer {
     const renderDrawerMemberList = (searchQuery = '') => {
       if (!memberListContainer) return;
       const dept = store.getDepartmentById(task.departmentId);
-      // CHỈ LẤY NHÂN SỰ THUỘC PHÒNG BAN CỦA TASK
       const members = store.getAllUsers().filter(u => u.departmentId === task.departmentId || u.departmentId === 'all');
-      
+
       let filtered = members;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        filtered = filtered.filter(u => 
-          u.name.toLowerCase().includes(q) || 
+        filtered = filtered.filter(u =>
+          u.name.toLowerCase().includes(q) ||
           (u.title && u.title.toLowerCase().includes(q)) ||
           (u.badge && u.badge.toLowerCase().includes(q))
         );
@@ -684,7 +644,7 @@ export class TaskDrawer {
         const isSelected = u.id === task.assigneeId;
         const team = currentDeptTeams.find(t => t.id === u.teamId);
         return `
-          <div 
+          <div
             class="item-select-drawer-member flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer min-h-[48px] ${isSelected ? 'bg-amber-50/80 border-[#d6a52a] shadow-xs' : 'bg-white hover:bg-gray-50 border-[#e2e8f0]'}"
             data-user-id="${u.id}"
             style="background-color: ${isSelected ? 'var(--primary-soft)' : 'var(--card)'}; border-color: ${isSelected ? 'var(--primary)' : 'var(--border)'};"
@@ -763,7 +723,6 @@ export class TaskDrawer {
       });
     }
 
-    // CUSTOM STATUS DROPDOWN
     const btnCustomStatusToggle = this.container.querySelector('#btnCustomStatusToggle');
     const statusCustomMenu = this.container.querySelector('#statusCustomMenu');
     if (btnCustomStatusToggle && statusCustomMenu) {
@@ -787,7 +746,6 @@ export class TaskDrawer {
         });
       });
 
-      // Đóng dropdown khi bấm ra ngoài
       document.addEventListener('click', (e) => {
         if (!statusCustomMenu.classList.contains('hidden') && !statusCustomMenu.contains(e.target) && e.target !== btnCustomStatusToggle) {
           statusCustomMenu.classList.add('hidden');
@@ -795,7 +753,6 @@ export class TaskDrawer {
       }, { once: true });
     }
 
-    // CHECKBOX VIỆC CON (SUBTASKS) - In-place DOM update để không giật nhảy scroll
     this.container.querySelectorAll('.chk-subtask').forEach(chk => {
       chk.addEventListener('change', (e) => {
         e.stopPropagation();
@@ -826,7 +783,6 @@ export class TaskDrawer {
           }
         }
 
-        // Cập nhật progress bar & count ở header
         const totalSubs = (freshTask.subtasks || []).length;
         const doneSubs = (freshTask.subtasks || []).filter(s => s.completed || s.status === 'done').length;
         const countEl = this.container.querySelector('#drawerSubtaskCountText');
@@ -840,7 +796,6 @@ export class TaskDrawer {
       });
     });
 
-    // CHỈNH SỬA NHIỆM VỤ CHA
     const btnDrawerEditTask = this.container.querySelector('#btnDrawerEditTask');
     if (btnDrawerEditTask) {
       btnDrawerEditTask.addEventListener('click', () => {
@@ -851,7 +806,6 @@ export class TaskDrawer {
       });
     }
 
-    // XÓA NHIỆM VỤ CHA
     const btnDrawerDeleteTask = this.container.querySelector('#btnDrawerDeleteTask');
     if (btnDrawerDeleteTask) {
       btnDrawerDeleteTask.addEventListener('click', () => {
@@ -868,10 +822,8 @@ export class TaskDrawer {
       });
     }
 
-    // XEM ĐẦY ĐỦ CHI TIẾT VIỆC CON BẰNG CÁCH BẤM VÀO THẺ (BỎ ICON OPEN_IN_NEW)
     this.container.querySelectorAll('.subtask-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        // Không kích hoạt khi bấm vào checkbox, nút bấm hoặc trong form sửa
         if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select') || e.target.closest('textarea') || e.target.closest('.edit-subtask-form-box')) {
           return;
         }
@@ -883,7 +835,6 @@ export class TaskDrawer {
       });
     });
 
-    // MỞ / ĐÓNG FORM SỬA VIỆC CON (AN TOÀN SELECTOR CÓ DẤU CHẤM)
     this.container.querySelectorAll('.btn-toggle-edit-subtask').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -894,7 +845,6 @@ export class TaskDrawer {
       });
     });
 
-    // HỦY SỬA VIỆC CON
     this.container.querySelectorAll('.btn-cancel-edit-subtask').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -904,7 +854,6 @@ export class TaskDrawer {
       });
     });
 
-    // LƯU SỬA VIỆC CON
     this.container.querySelectorAll('.btn-save-edit-subtask').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -938,7 +887,6 @@ export class TaskDrawer {
       });
     });
 
-    // XÓA VIỆC CON (POPUP XÁC NHẬN CHUẨN SHIN)
     this.container.querySelectorAll('.btn-delete-subtask').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -958,7 +906,6 @@ export class TaskDrawer {
       });
     });
 
-    // THÊM VIỆC CON MỚI (ĐẦY ĐỦ CÁC TRƯỜNG THÔNG TIN)
     const btnAddSubtask = this.container.querySelector('#btnAddSubtask');
     const inputNewSubtaskTitle = this.container.querySelector('#inputNewSubtaskTitle');
     const inputNewSubtaskDesc = this.container.querySelector('#inputNewSubtaskDesc');
@@ -1004,7 +951,6 @@ export class TaskDrawer {
       });
     }
 
-    // BÌNH LUẬN & CHỈ ĐẠO
     const btnSend = this.container.querySelector('#btnSendComment');
     const inputComment = this.container.querySelector('#inputComment');
     if (btnSend && inputComment) {
@@ -1021,7 +967,6 @@ export class TaskDrawer {
       btnSend.addEventListener('click', submitComment);
     }
 
-    // NÚT PHÊ DUYỆT 1-CHẠM
     const btnApprove = this.container.querySelector('#btnApproveTask');
     if (btnApprove) {
       btnApprove.addEventListener('click', () => {
@@ -1033,7 +978,6 @@ export class TaskDrawer {
       });
     }
 
-    // NÚT TỪ CHỐI KÈM LÝ DO (POPUP XÁC NHẬN CHUẨN SHIN AIOS)
     const btnReject = this.container.querySelector('#btnRejectTask');
     if (btnReject) {
       btnReject.addEventListener('click', () => {
@@ -1051,7 +995,6 @@ export class TaskDrawer {
       });
     }
 
-    // NÚT GỬI TRÌNH DUYỆT
     const btnMarkReview = this.container.querySelector('#btnMarkReview');
     if (btnMarkReview) {
       btnMarkReview.addEventListener('click', () => {
@@ -1064,5 +1007,3 @@ export class TaskDrawer {
     }
   }
 }
-
-

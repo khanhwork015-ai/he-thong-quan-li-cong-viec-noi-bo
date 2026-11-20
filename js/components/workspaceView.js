@@ -1,12 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - WORKSPACE TASK MANAGEMENT COMPONENT (MOBILE FIRST)
- * Khôi phục tông Vàng Hoàng Kim Google Stitch (#D6A52A / #795900)
- * Giao diện Thẻ Task chạm thông minh trên Mobile (md:hidden) & Bảng chi tiết trên Desktop (md:block)
- * Nút Show Việc Con riêng biệt chuẩn Touch Target >= 44px (bỏ hoàn toàn dropdown nhỏ kẹp tiêu đề)
- * Thêm nút Chỉnh sửa Task cha trực tiếp trên cả Mobile Card và Table Row
- * Giữ nguyên 6 Màu trạng thái công việc chuẩn mực
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, soVN, ngayVN, toast, rung, kiemTraTreHan } from '../helpers.js?v=8.7';
@@ -18,8 +9,8 @@ export class WorkspaceView {
     this.onSelectTask = onSelectTask;
     this.onOpenSubtasksModal = onOpenSubtasksModal;
     this.onEditTask = onEditTask;
-    this.activeTab = 'assigned_to_me'; // 'assigned_to_me' | 'created_by_me' | 'pending_approval' | 'completed' | 'all'
-    this.viewMode = 'table'; // 'table' | 'kanban'
+    this.activeTab = 'assigned_to_me';
+    this.viewMode = 'table';
     this.priorityFilter = 'ALL';
     this.searchQuery = '';
     this.teamFilter = 'ALL';
@@ -44,7 +35,6 @@ export class WorkspaceView {
     const canCreate = auth.canCreateTask();
     const currentUser = auth.getCurrentUser();
 
-    // Lọc danh sách công việc
     const tasks = store.getDepartmentTasks({
       tab: this.activeTab,
       priority: this.priorityFilter,
@@ -62,9 +52,7 @@ export class WorkspaceView {
 
     this.container.innerHTML = `
       <div class="flex flex-col w-full gap-5 sm:gap-6 animate-fade-in max-w-7xl mx-auto pb-12 overflow-x-hidden">
-        <!-- TOP CONTROLS & LINEAR/NOTION TABS BAR -->
         <div class="bg-white p-4 sm:p-5 rounded-2xl border border-[#e2e8f0] shadow-sm flex flex-col gap-4">
-          <!-- TITLE ROW RESPONSIVE -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-[#fffbeb] text-[#795900] flex items-center justify-center font-bold border border-[#fef3c7] shrink-0">
@@ -79,7 +67,6 @@ export class WorkspaceView {
               </div>
             </div>
 
-            <!-- VIEW MODE TOGGLE & CREATE TASK BUTTON -->
             <div class="flex items-center justify-between sm:justify-end gap-2.5">
               <div class="flex items-center p-1 bg-[#f8f9ff] border border-[#e2e8f0] rounded-xl shrink-0">
                 <button type="button" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all min-h-[36px] ${this.viewMode === 'table' ? 'bg-white text-[#0d1c2f] font-bold shadow-xs' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnSwitchTable">
@@ -101,7 +88,6 @@ export class WorkspaceView {
             </div>
           </div>
 
-          <!-- NOTION STYLE TABS (SWIPEABLE NO-SCROLLBAR ON MOBILE) -->
           <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 border-b border-[#f1f5f9] -mx-1 px-1">
             <button type="button" class="px-3 py-2 rounded-xl text-[12.5px] sm:text-[13px] font-semibold flex items-center gap-2 shrink-0 transition-all min-h-[40px] cursor-pointer ${this.activeTab === 'assigned_to_me' ? 'bg-[#fffbeb] text-[#795900] font-bold border border-[#fef3c7]' : 'text-[#64748b] hover:bg-[#f8f9ff] hover:text-[#0d1c2f]'}" data-tab="assigned_to_me">
               <span>Được giao cho tôi</span>
@@ -135,20 +121,18 @@ export class WorkspaceView {
             </button>
           </div>
 
-          <!-- SEARCH & PRIORITY FILTER TOOLBAR (RESPONSIVE) -->
           <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
             <div class="relative flex-1">
               <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-[#817663]">search</span>
-              <input 
-                type="text" 
-                id="workspaceSearchInput" 
+              <input
+                type="text"
+                id="workspaceSearchInput"
                 value="${esc(this.searchQuery)}"
-                class="w-full h-10 pl-9 pr-3 rounded-xl bg-[#f8f9ff] text-[#0d1c2f] text-[13.5px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] outline-none" 
-                placeholder="Lọc mã việc, tiêu đề, người làm..." 
+                class="w-full h-10 pl-9 pr-3 rounded-xl bg-[#f8f9ff] text-[#0d1c2f] text-[13.5px] placeholder:text-[#817663] border border-[#e2e8f0] focus:bg-white focus:border-[#d6a52a] outline-none"
+                placeholder="Lọc mã việc, tiêu đề, người làm..."
               />
             </div>
 
-            <!-- Priority filter pills -->
             <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
               ${['ALL', 'P1', 'P2', 'P3'].map(p => `
                 <button type="button" class="px-3 py-2 rounded-lg text-[11.5px] font-bold shrink-0 transition-all min-h-[36px] cursor-pointer ${this.priorityFilter === p ? 'bg-[#d6a52a] text-[#533d00] shadow-xs' : 'bg-[#f8f9ff] text-[#64748b] hover:bg-[#f1f5f9]'}" data-priority="${p}">
@@ -158,7 +142,6 @@ export class WorkspaceView {
             </div>
           </div>
 
-          <!-- BỘ LỌC BỘ PHẬN CON (TEAMS) TRONG PHÒNG BAN -->
           ${deptTeams.length > 0 ? `
             <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-[#f1f5f9]">
               <span class="text-[11px] font-bold text-[#817663] shrink-0">Bộ phận:</span>
@@ -177,7 +160,6 @@ export class WorkspaceView {
           ` : ''}
         </div>
 
-        <!-- MAIN DATA: TABLE (DESKTOP) & TOUCH CARDS (MOBILE) OR KANBAN -->
         ${this.viewMode === 'table' ? this.renderTableView(tasks) : this.renderKanbanView(tasks)}
       </div>
     `;
@@ -192,7 +174,6 @@ export class WorkspaceView {
     }
   }
 
-  // DẠNG DANH SÁCH (HỖ TRỢ THẺ TRÊN MOBILE & BẢNG TRÊN DESKTOP)
   renderTableView(tasks) {
     if (tasks.length === 0) {
       return `
@@ -207,7 +188,6 @@ export class WorkspaceView {
     }
 
     return `
-      <!-- 1. MOBILE CARDS VIEW (MÀN HÌNH NHỎ DƯỚI MD) -->
       <div class="md:hidden flex flex-col gap-3">
         ${tasks.map(t => {
           const assignee = store.getUserById(t.assigneeId);
@@ -247,7 +227,6 @@ export class WorkspaceView {
                 ${esc(t.title)}
               </h4>
 
-              <!-- TÁCH RIÊNG 2 DÒNG: NGƯỜI TẠO & NGÀY TẠO -->
               <div class="flex flex-col gap-0.5 mb-1.5 text-[11.5px]">
                 <div class="flex items-center gap-1 text-[#817663]">
                   <span>Tạo bởi:</span>
@@ -274,7 +253,6 @@ export class WorkspaceView {
                 </span>
               </div>
 
-              <!-- NÚT RIÊNG MỞ MODAL VIỆC CON TRÊN MOBILE (CHUẨN TOUCH TARGET >= 44PX) -->
               ${hasSubtasks ? `
                 <button type="button" class="btn-open-subtasks-modal w-full py-2.5 px-3.5 rounded-xl bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a] font-bold text-[13px] flex items-center justify-between transition-colors min-h-[44px] cursor-pointer mt-2.5" data-task-id="${t.id}">
                   <div class="flex items-center gap-2">
@@ -289,7 +267,6 @@ export class WorkspaceView {
         }).join('')}
       </div>
 
-      <!-- 2. DESKTOP TABLE VIEW (MÀN HÌNH TỪ MD TRỞ LÊN) -->
       <div class="hidden md:block bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
@@ -325,7 +302,6 @@ export class WorkspaceView {
                     </td>
                     <td class="py-3.5 px-4">
                       <div class="font-bold text-[#0d1c2f] break-words whitespace-normal leading-snug hover:text-[#795900] transition-colors">${esc(t.title)}</div>
-                      <!-- TÁCH RIÊNG 2 DÒNG: NGƯỜI TẠO & NGÀY TẠO -->
                       <div class="flex flex-col gap-0.5 mt-1 text-[11.5px]">
                         <div class="flex items-center gap-1 text-[#817663] truncate">
                           <span>Tạo bởi:</span>
@@ -370,7 +346,6 @@ export class WorkspaceView {
                         ${statusMeta.label}
                       </span>
                     </td>
-                    <!-- CỘT RIÊNG CHO VIỆC CON -->
                     <td class="py-3.5 px-4 text-center">
                       ${hasSubtasks ? `
                         <button type="button" class="btn-open-subtasks-modal px-2.5 py-1.5 rounded-xl font-bold text-[12px] bg-[#fffbeb] text-[#795900] border border-[#fef3c7] hover:bg-[#fde68a] hover:border-[#d6a52a] transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs min-h-[36px]" data-task-id="${t.id}" title="Xem danh sách ${subtasks.length} việc con">
@@ -394,7 +369,6 @@ export class WorkspaceView {
     `;
   }
 
-  // DẠNG THẺ KANBAN (KANBAN BOARD RESPONSIVE)
   renderKanbanView(tasks) {
     const columns = [
       { id: 'todo', title: 'Chưa Bắt Đầu', color: '#475569', bg: '#f1f5f9', text: '#475569' },
@@ -546,7 +520,6 @@ export class WorkspaceView {
       });
     });
 
-    // MỞ MODAL XEM DANH SÁCH VIỆC CON RIÊNG BIỆT
     this.container.querySelectorAll('.btn-open-subtasks-modal').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -558,7 +531,6 @@ export class WorkspaceView {
       });
     });
 
-    // NÚT CHỈNH SỬA CÔNG VIỆC CHA
     this.container.querySelectorAll('.btn-edit-task').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -570,10 +542,8 @@ export class WorkspaceView {
       });
     });
 
-    // BẤM VÀO THẺ HOẶC DÒNG ĐỂ XEM CHI TIẾT
     this.container.querySelectorAll('.row-task-item, .kanban-card').forEach(item => {
       item.addEventListener('click', (e) => {
-        // Nếu click vào nút con hoặc link, không xử lý
         if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
         rung(10);
         const taskId = item.dataset.taskId;
@@ -584,4 +554,3 @@ export class WorkspaceView {
     });
   }
 }
-

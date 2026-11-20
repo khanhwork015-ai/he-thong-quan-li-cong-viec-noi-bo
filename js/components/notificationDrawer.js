@@ -1,9 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - NOTIFICATION CENTER SLIDE-OVER DRAWER (SHIN AIOS v2.7)
- * Trung tâm thông báo chuyên nghiệp, hỗ trợ lọc Chưa đọc/Tất cả,
- * Đánh dấu đã đọc và Deep-linking mở thẳng Task Detail Drawer
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, timeAgo, rung, toast, xacNhanXoa } from '../helpers.js?v=8.7';
@@ -14,7 +8,7 @@ export class NotificationDrawer {
     this.onSelectTask = onSelectTask;
     this.onNotifChanged = onNotifChanged;
     this.isOpen = false;
-    this.currentFilter = 'all'; // 'all' | 'unread'
+    this.currentFilter = 'all';
   }
 
   open() {
@@ -38,23 +32,21 @@ export class NotificationDrawer {
 
     const allNotifs = store.getUserNotifications(currentUser.id);
     const unreadCount = store.getUnreadNotificationCount(currentUser.id);
-    
-    const displayNotifs = this.currentFilter === 'unread' 
+
+    const displayNotifs = this.currentFilter === 'unread'
       ? allNotifs.filter(n => !n.isRead)
       : allNotifs;
 
-    // Loại bỏ overlay cũ nếu có
     const oldOverlay = document.getElementById('notifDrawerOverlay');
     if (oldOverlay) oldOverlay.remove();
 
     const overlay = document.createElement('div');
     overlay.id = 'notifDrawerOverlay';
     overlay.className = 'fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex justify-end active animate-fade-in';
-    
+
     overlay.innerHTML = `
       <div class="w-full max-w-md h-full bg-white shadow-2xl flex flex-col justify-between overflow-hidden border-l border-[#e2e8f0]" style="background-color: var(--card); border-color: var(--border);">
-        
-        <!-- HEADER -->
+
         <div class="p-4 sm:px-5 border-b border-[#e2e8f0] flex items-center justify-between shrink-0 bg-[#f8f9ff]" style="background-color: var(--primary-soft); border-color: var(--border);">
           <div class="flex items-center gap-2.5 min-w-0">
             <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-container); color: var(--on-primary-container);">
@@ -78,7 +70,6 @@ export class NotificationDrawer {
           </button>
         </div>
 
-        <!-- FILTER TABS & BULK ACTIONS -->
         <div class="px-4 py-2.5 border-b border-[#f1f5f9] flex items-center justify-between bg-white shrink-0" style="background-color: var(--card); border-color: var(--border);">
           <div class="flex items-center gap-1.5 p-1 rounded-xl bg-[#f1f5f9]">
             <button type="button" class="px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all min-h-[36px] cursor-pointer ${this.currentFilter === 'all' ? 'bg-white shadow-xs text-[#0d1c2f]' : 'text-[#64748b] hover:text-[#0d1c2f]'}" id="btnFilterAll">
@@ -97,7 +88,6 @@ export class NotificationDrawer {
           ` : ''}
         </div>
 
-        <!-- NOTIFICATION LIST -->
         <div class="p-3 sm:p-4 flex-1 overflow-y-auto flex flex-col gap-2.5">
           ${displayNotifs.length === 0 ? `
             <div class="py-16 text-center flex flex-col items-center justify-center gap-2.5 text-gray-400">
@@ -167,7 +157,6 @@ export class NotificationDrawer {
           }).join('')}
         </div>
 
-        <!-- FOOTER -->
         <div class="p-3 px-5 border-t border-[#e2e8f0] flex items-center justify-between bg-white shrink-0 text-[11.5px]" style="background-color: var(--card); border-color: var(--border);">
           <span class="text-[#64748b]">Tối đa 100 thông báo gần nhất</span>
           ${allNotifs.length > 0 ? `
@@ -245,7 +234,6 @@ export class NotificationDrawer {
       });
     }
 
-    // CLICK VÀO ITEM THÔNG BÁO -> ĐÁNH DẤU ĐÃ ĐỌC & MỞ THẲNG TASK DRAWER
     overlay.querySelectorAll('.notif-drawer-item').forEach(item => {
       item.addEventListener('click', () => {
         rung(15);
@@ -265,5 +253,3 @@ export class NotificationDrawer {
     });
   }
 }
-
-

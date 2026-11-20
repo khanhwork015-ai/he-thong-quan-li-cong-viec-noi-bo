@@ -1,14 +1,3 @@
-/**
- * SHIN TASK MANAGEMENT - MEMBER MANAGEMENT MODAL COMPONENT (SHIN AIOS v2.6.4)
- * Cấp tài khoản nhân viên mới & phân bổ vào đúng Phòng Ban & Bộ Phận Con
- * 
- * PHÂN QUYỀN BẢO MẬT:
- * - Admin: Toàn quyền cấp mọi role (Admin, Lãnh đạo, Trưởng phòng, Nhân viên), mọi phòng ban & bộ phận.
- * - Trưởng/Phó phòng: CHỈ cấp được tài khoản cho Nhân viên thuộc phòng ban mình đang quản lý.
- *   Không thể cấp tài khoản cho Ban Lãnh Đạo hoặc Admin!
- * - Nhân viên: Không được phép cấp tài khoản.
- */
-
 import { auth } from '../auth.js?v=8.7';
 import { store } from '../store.js?v=8.7';
 import { esc, toast, rung } from '../helpers.js?v=8.7';
@@ -49,17 +38,15 @@ export class MemberModal {
     const isUserAdmin = Boolean(this.editingUser?.isAdmin || this.editingUser?.role === 'ADMIN');
     const currentRole = (this.editingUser?.role && this.editingUser.role !== 'ADMIN') ? this.editingUser.role : (this.editingUser?.role === 'ADMIN' ? 'MANAGER' : 'MEMBER');
 
-    // Xác định phòng ban ban đầu (ưu tiên defaultDeptId nếu đang xem phòng ban cụ thể)
-    const initialDeptId = this.editingUser 
-      ? this.editingUser.departmentId 
+    const initialDeptId = this.editingUser
+      ? this.editingUser.departmentId
       : (defaultDeptId || (isAdmin ? allDepts[0]?.id : currentDept.id));
     const initialDept = allDepts.find(d => d.id === initialDeptId) || allDepts[0];
 
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 active" id="memberOverlay">
         <div class="modal-card bg-white rounded-t-2xl sm:rounded-2xl rounded-b-none sm:rounded-b-2xl p-4 sm:p-6 max-w-xl w-full shadow-2xl border border-[#e2e8f0] max-h-[90vh] sm:max-h-[88vh] overflow-y-auto flex flex-col gap-4" style="background-color: var(--card); border-color: var(--border);">
-          
-          <!-- HEADER -->
+
           <div class="flex items-center justify-between pb-3.5 border-b border-[#f1f5f9]" style="border-color: var(--border);">
             <div class="flex items-center gap-2.5">
               <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs" style="background-color: var(--primary-soft); color: var(--primary);">
@@ -77,10 +64,8 @@ export class MemberModal {
             <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors" id="btnCloseMemberModal" aria-label="Đóng">&times;</button>
           </div>
 
-          <!-- FORM -->
           <form id="formMember" class="flex flex-col gap-3.5">
-            
-            <!-- AVATAR PICKER -->
+
             <div class="flex items-center gap-3 p-3 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff]" style="background-color: var(--background); border-color: var(--border);">
               <div class="relative group cursor-pointer shrink-0">
                 <img id="memberAvatarPreview" src="${this.editingUser ? this.editingUser.avatar : PRESET_AVATARS[0]}" class="w-14 h-14 rounded-full object-cover ring-2 ring-white shadow-xs" />
@@ -89,7 +74,6 @@ export class MemberModal {
                 </button>
               </div>
 
-              <!-- INPUT FILE ẨN CHỌN ẢNH TỪ THIẾT BỊ -->
               <input type="file" id="memberFileInput" accept="image/*" class="hidden" />
 
               <div class="flex-1 min-w-0 flex flex-col gap-1.5">
@@ -109,7 +93,6 @@ export class MemberModal {
               </div>
             </div>
 
-            <!-- TÀI KHOẢN ĐĂNG NHẬP (USERNAME & PASSWORD) -->
             <div class="p-3.5 rounded-2xl border border-[#e2e8f0] bg-[#f8f9ff]/70 flex flex-col gap-2.5" style="background-color: var(--primary-soft); border-color: var(--border);">
               <div class="flex items-center justify-between">
                 <span class="text-[12px] font-bold text-[#0d1c2f] flex items-center gap-1.5" style="color: var(--text);">
@@ -130,7 +113,6 @@ export class MemberModal {
               </div>
             </div>
 
-            <!-- HỌ TÊN & CHỨC DANH -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Họ và tên *</label>
@@ -143,7 +125,6 @@ export class MemberModal {
               </div>
             </div>
 
-            <!-- VAI TRÒ CHUYÊN MÔN & PHÒNG BAN -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
@@ -174,7 +155,6 @@ export class MemberModal {
               </div>
             </div>
 
-            <!-- TÁCH BIỆT ĐẶC QUYỀN QUẢN TRỊ VIÊN (ADMIN HỆ THỐNG) -->
             <div class="p-3 sm:p-3.5 rounded-2xl border border-amber-300 bg-[#fffbeb] flex items-center justify-between gap-3 shadow-2xs">
               <div class="flex items-center gap-2.5 min-w-0">
                 <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-[#795900] flex items-center justify-center shrink-0">
@@ -197,7 +177,6 @@ export class MemberModal {
               </label>
             </div>
 
-            <!-- BỘ PHẬN CON (TEAMS) BÊN TRONG PHÒNG BAN (CHỈ DÀNH CHO NHÂN VIÊN) -->
             <div id="boxMemberTeam" class="${(currentRole === 'MANAGER' || currentRole === 'DEPUTY_MANAGER' || currentRole === 'LEADERSHIP') ? 'hidden' : ''}">
               <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
                 Bộ phận con trực thuộc (Team) *
@@ -215,7 +194,6 @@ export class MemberModal {
               </span>
             </div>
 
-            <!-- THÔNG BÁO CHO TRƯỞNG PHÒNG / PHÓ PHÒNG / BAN LÃNH ĐẠO -->
             <div id="boxMemberTeamNotice" class="${(currentRole === 'MANAGER' || currentRole === 'DEPUTY_MANAGER' || currentRole === 'LEADERSHIP') ? '' : 'hidden'} p-3 rounded-2xl bg-[#fffbeb] border border-[#fef3c7] text-[#795900] text-[12px] flex items-center gap-2.5 shadow-2xs">
               <span class="material-symbols-outlined text-[20px] text-[#d6a52a] shrink-0">domain_verification</span>
               <div class="leading-snug">
@@ -224,7 +202,6 @@ export class MemberModal {
               </div>
             </div>
 
-            <!-- EMAIL & SĐT -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Email liên hệ</label>
@@ -237,7 +214,6 @@ export class MemberModal {
               </div>
             </div>
 
-            <!-- BUTTONS -->
             <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-[#f1f5f9] mt-1" style="border-color: var(--border);">
               <button type="button" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#e2e8f0] text-[#64748b] text-[13px] font-semibold hover:bg-gray-50 min-h-[44px]" id="btnCancelMember">
                 Hủy bỏ
@@ -310,7 +286,6 @@ export class MemberModal {
       });
     }
 
-    // Khi chọn phòng ban khác -> cập nhật danh sách Teams
     if (selectDept && selectTeam) {
       selectDept.addEventListener('change', () => {
         const dId = selectDept.value;
@@ -324,7 +299,6 @@ export class MemberModal {
       });
     }
 
-    // Kích hoạt input file ẩn khi bấm nút tải ảnh hoặc overlay trên preview
     if (btnUpload && fileInput) {
       btnUpload.addEventListener('click', () => fileInput.click());
     }
@@ -332,7 +306,6 @@ export class MemberModal {
       btnOverlay.addEventListener('click', () => fileInput.click());
     }
 
-    // Tự động resize và nén ảnh bằng HTML5 Canvas khi chọn file từ máy
     if (fileInput && avatarPreview) {
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files && e.target.files[0];
@@ -433,8 +406,8 @@ export class MemberModal {
         const password = this.container.querySelector('#memberPassword').value.trim();
         const email = this.container.querySelector('#memberEmail').value.trim();
         const phone = this.container.querySelector('#memberPhone').value.trim();
-        const avatar = (inputAvatar && inputAvatar.value.trim()) 
-          ? inputAvatar.value.trim() 
+        const avatar = (inputAvatar && inputAvatar.value.trim())
+          ? inputAvatar.value.trim()
           : ((avatarPreview && avatarPreview.src) ? avatarPreview.src : PRESET_AVATARS[0]);
 
         if (!name || !username || !password) {
@@ -442,7 +415,6 @@ export class MemberModal {
           return;
         }
 
-        // Kiểm tra thẩm quyền cấp tài khoản (Zero-Bug Security)
         if (!auth.canProvisionAccount(role, departmentId)) {
           toast('Bạn không có quyền cấp tài khoản với vai trò hoặc phòng ban này!', 'warning');
           return;
@@ -508,5 +480,3 @@ export class MemberModal {
     }
   }
 }
-
-
