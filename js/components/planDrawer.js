@@ -127,7 +127,7 @@ export class PlanDrawer {
               <div>
                 <span class="text-[10.5px] font-bold text-[#64748b] uppercase block">Phòng ban</span>
                 <span class="text-[12.5px] font-bold text-[#0d1c2f] truncate block mt-0.5" style="color: var(--text);">
-                  ${dept ? esc(dept.name) : 'Toàn phòng khám'}
+                  ${dept ? esc(dept.name) : 'Tất cả'}
                 </span>
               </div>
 

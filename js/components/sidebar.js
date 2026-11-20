@@ -298,7 +298,7 @@ export class Sidebar {
               <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] shrink-0"></span>
               <div class="min-w-0">
                 <div class="text-[13.5px] font-bold text-[#0d1c2f]">
-                  ${isGlobal ? '🏥 Toàn Phòng Khám CS3 (Tất Cả)' : '🏥 Tất Cả Phòng Của Tôi (Xem gộp)'} ${activeDept.id === 'all' ? '✓' : ''}
+                  Tất cả ${activeDept.id === 'all' ? '✓' : ''}
                 </div>
                 <div class="text-[11.5px] text-[#64748b]">
                   ${isGlobal

@@ -88,7 +88,7 @@ export class DashboardView {
           <div class="flex items-center gap-2.5 min-w-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[#16a34a] shrink-0 animate-pulse"></span>
             <span class="font-bold text-[13px] sm:text-[13.5px] text-[#0d1c2f] truncate" style="color: var(--text);">
-              ${isLeadershipOrAdmin ? '🏛️ Executive Dashboard • Điều Hành Toàn Phòng Khám' : '👔 Bảng Điều Hành Phòng Ban'}
+              ${isLeadershipOrAdmin ? '🏛️ Executive Dashboard • Điều Hành Tổng Thể' : '👔 Bảng Điều Hành Phòng Ban'}
             </span>
             <span class="text-[11px] text-[#64748b] hidden md:inline truncate">• Cập nhật trực tiếp ${ngayVN(new Date())}</span>
           </div>
@@ -97,7 +97,7 @@ export class DashboardView {
             <div class="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2 min-w-0">
               <label for="selectDashboardScope" class="text-[12px] font-bold text-[#64748b] shrink-0">Phạm vi:</label>
               <select id="selectDashboardScope" class="flex-1 sm:flex-initial max-w-[210px] sm:max-w-xs h-9 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] sm:text-[12.5px] font-bold text-[#0d1c2f] bg-[#f8f9ff] focus:bg-white focus:border-[#d6a52a] outline-none cursor-pointer shadow-2xs truncate">
-                <option value="all" ${activeDeptId === 'all' ? 'selected' : ''}>${isLeadershipOrAdmin ? '🏥 Tất Cả Phòng Ban' : `🏥 Tất Cả Phòng Của Tôi (${scopeDepts.length})`}</option>
+                <option value="all" ${activeDeptId === 'all' ? 'selected' : ''}>Tất cả</option>
                 ${scopeDepts.map(d => `
                   <option value="${d.id}" ${activeDeptId === d.id ? 'selected' : ''}>${esc(d.name)} (${esc(d.code)})</option>
                 `).join('')}
@@ -115,7 +115,7 @@ export class DashboardView {
             <div>
               <div class="hn-chao" id="lblLoiChao">${loiChao(currentUser.name)}</div>
               <div class="hn-ngay" id="lblNgayThang">
-                ${ngayVN(new Date())} • ${activeDeptId === 'all' ? (isLeadershipOrAdmin ? 'Toàn Phòng Khám CS3' : 'Tất Cả Phòng Của Tôi') : (activeDeptObj?.name || 'Phòng ban')}
+                ${ngayVN(new Date())} • ${activeDeptId === 'all' ? 'Tất cả' : (activeDeptObj?.name || 'Phòng ban')}
               </div>
             </div>
             <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold" style="background-color: var(--primary-soft); color: var(--primary);">

@@ -384,10 +384,9 @@ export class AuthManager {
 
   getActiveDepartment() {
     if (this.activeDepartmentId === 'all') {
-      const isGlobal = this.isAdmin() || this.isLeadership();
       return {
         id: 'all',
-        name: isGlobal ? 'Toàn Hệ Thống (Tất Cả)' : 'Tất Cả Phòng Của Tôi',
+        name: 'Tất cả',
         code: 'TẤT CẢ',
         badge: 'TẤT CẢ',
         unit: 'Shin Task Management',

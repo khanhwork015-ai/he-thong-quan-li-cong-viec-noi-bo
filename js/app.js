@@ -1,9 +1,9 @@
 import { auth } from './auth.js?v=8.7';
 import { store } from './store.js?v=8.7';
-import { Sidebar } from './components/sidebar.js?v=8.9';
+import { Sidebar } from './components/sidebar.js?v=9.2';
 import { TopHeader } from './components/topHeader.js?v=9.1';
 import { BottomNav } from './components/bottomNav.js?v=8.7';
-import { DashboardView } from './components/dashboardView.js?v=8.8';
+import { DashboardView } from './components/dashboardView.js?v=9.2';
 import { WorkspaceView } from './components/workspaceView.js?v=9.1';
 import { TaskDrawer } from './components/taskDrawer.js?v=9.1';
 import { NotificationDrawer } from './components/notificationDrawer.js?v=8.7';
@@ -17,7 +17,7 @@ import { LoginView } from './components/loginView.js?v=8.7';
 import { DepartmentModal } from './components/departmentModal.js?v=8.8';
 import { DepartmentView } from './components/departmentView.js?v=8.9';
 import { PlansView } from './components/plansView.js?v=8.7';
-import { PlanDrawer } from './components/planDrawer.js?v=8.7';
+import { PlanDrawer } from './components/planDrawer.js?v=9.2';
 import { PlanModal } from './components/planModal.js?v=8.8';
 import { ApprovalView } from './components/approvalView.js?v=8.7';
 import { appScriptBridge } from './services/appScriptBridge.js?v=8.7';
@@ -467,7 +467,7 @@ class App {
     }
 
     const currentFilterDept = allDepts.find(d => d.id === this.employeeDeptFilter);
-    const filterTitle = (this.employeeDeptFilter === 'all') ? 'Toàn Phòng Khám CS3 (Tất Cả)' : (currentFilterDept?.name || 'Phòng ban');
+    const filterTitle = (this.employeeDeptFilter === 'all') ? 'Tất cả' : (currentFilterDept?.name || 'Phòng ban');
 
     canvas.innerHTML = `
       <div class="flex flex-col gap-5 animate-fade-in w-full max-w-7xl mx-auto pb-12 overflow-x-hidden">
@@ -478,7 +478,7 @@ class App {
               <span class="font-mono-data text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--border);">
                 ${this.employeeDeptFilter === 'all' ? 'TẤT CẢ' : (currentFilterDept?.code || 'PB')}
               </span>
-              <span class="text-[12px] text-[#64748b]" style="color: var(--text-muted);">Danh bạ &amp; Nhân sự viện</span>
+              <span class="text-[12px] text-[#64748b]" style="color: var(--text-muted);">Danh bạ &amp; Nhân sự</span>
             </div>
             <h1 class="font-extrabold text-[20px] sm:text-[22px] text-[#0d1c2f] tracking-tight" style="color: var(--text);">
               Quản Lý Nhân Sự • ${esc(filterTitle)}
@@ -506,7 +506,7 @@ class App {
           <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 flex-1 min-w-0" id="employeeDeptTabs">
             ${canSwitchMyDepts ? `
               <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${this.employeeDeptFilter === 'all' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.employeeDeptFilter === 'all' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="all">
-                <span>🏥 Tất cả</span>
+                <span>Tất cả</span>
                 <span class="px-1.5 py-0.2 rounded-md text-[10.5px] font-mono-data font-bold bg-white/40">${visiblePoolUsers.length}</span>
               </button>
             ` : ''}
