@@ -121,7 +121,11 @@ export class Store {
       if (Array.isArray(cloudData.users) && cloudData.users.length > 0) {
         const userMap = new Map();
         cloudData.users.forEach(su => {
-          if (!su || !su.id || deletedIds.has(String(su.id))) return;
+          if (!su || !su.id) return;
+          if (deletedIds.has(String(su.id))) {
+            appScriptBridge.deleteUser(su.id);
+            return;
+          }
           if (String(su.name).includes('BÃ¡c') || String(su.id).includes('test') || String(su.username).includes('testuser')) return;
 
           userMap.set(su.id, normalizeUserRecord({
@@ -165,7 +169,7 @@ export class Store {
       if (Array.isArray(cloudData.depts) && cloudData.depts.length > 0) {
         const deptMap = new Map();
         cloudData.depts.forEach(cd => {
-          if (!cd || !cd.id) return;
+          if (!cd || !cd.id || deletedIds.has(String(cd.id))) return;
           if (String(cd.id).includes('test') || String(cd.name).includes('Khá»­') || String(cd.id).includes('391328')) return;
 
           let teams = cd.teams;
@@ -259,11 +263,13 @@ export class Store {
   }
 
   getAllUsers() {
+    const deletedIds = this.getDeletedIds();
     try {
       const list = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY)) || USERS;
-      return Array.isArray(list) ? list.map(u => normalizeUserRecord(u)) : USERS.map(u => normalizeUserRecord(u));
+      const valid = Array.isArray(list) ? list : USERS;
+      return valid.filter(u => u && u.id && !deletedIds.has(String(u.id))).map(u => normalizeUserRecord(u));
     } catch (_) {
-      return USERS.map(u => normalizeUserRecord(u));
+      return USERS.filter(u => u && u.id && !deletedIds.has(String(u.id))).map(u => normalizeUserRecord(u));
     }
   }
 
@@ -355,14 +361,17 @@ export class Store {
   }
 
   getAllDepartments() {
+    const deletedIds = this.getDeletedIds();
     try {
       const saved = localStorage.getItem(DEPTS_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.filter(d => d && d.id && !deletedIds.has(String(d.id)));
+        }
       }
     } catch (_) {}
-    return DEPARTMENTS;
+    return DEPARTMENTS.filter(d => d && d.id && !deletedIds.has(String(d.id)));
   }
 
   saveAllDepartments(depts) {
@@ -427,6 +436,7 @@ export class Store {
     if (!auth.canCRUDDepartments()) {
       return { success: false, message: 'Chỉ Quản Trị Viên (Admin) mới có quyền xóa phòng ban!' };
     }
+    this.markDeletedIds([deptId]);
     const depts = this.getAllDepartments();
     const filtered = depts.filter(d => d.id !== deptId);
     this.saveAllDepartments(filtered);
@@ -597,6 +607,9 @@ export class Store {
         return false;
       }
     }
+
+    this.markDeletedIds([userId]);
+    try { localStorage.removeItem('tvm_user_profile_' + userId); } catch (_) {}
 
     const filtered = users.filter(u => u.id !== userId);
     this.saveAllUsers(filtered);

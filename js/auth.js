@@ -102,7 +102,18 @@ export class AuthManager {
     this.activeDepartmentId = this.loadActiveDepartment();
   }
 
+  getDeletedUserIds() {
+    try {
+      const raw = localStorage.getItem('tvm_deleted_ids_v1');
+      const parsed = raw ? JSON.parse(raw) : [];
+      return new Set(Array.isArray(parsed) ? parsed.map(String) : []);
+    } catch (_) {
+      return new Set();
+    }
+  }
+
   getStoredUsers() {
+    const deletedIds = this.getDeletedUserIds();
     let users = [];
     try {
       const saved = localStorage.getItem('tvm_users_v4');
@@ -142,7 +153,9 @@ export class AuthManager {
       } catch (_) {}
     }
 
-    return users.map(u => normalizeUserRecord(u));
+    return users
+      .filter(u => u && u.id && !deletedIds.has(String(u.id)))
+      .map(u => normalizeUserRecord(u));
   }
 
   getStoredDepartments() {
@@ -245,10 +258,11 @@ export class AuthManager {
         if (appScriptBridge && appScriptBridge.isConnected()) {
           const cloudData = await appScriptBridge.fetchCloudData();
           if (cloudData && cloudData.success && Array.isArray(cloudData.users) && cloudData.users.length > 0) {
+            const deletedIds = this.getDeletedUserIds();
             const userMap = new Map();
             users.forEach(u => userMap.set(u.id, u));
             cloudData.users.forEach(su => {
-              if (su && su.id) {
+              if (su && su.id && !deletedIds.has(String(su.id))) {
                 userMap.set(su.id, normalizeUserRecord({
                   ...userMap.get(su.id),
                   ...su

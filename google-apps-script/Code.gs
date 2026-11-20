@@ -417,12 +417,12 @@ function saveOrUpdateRow(sheet, item, keyField) {
 function deleteRow(sheet, idVal, keyField) {
   if (!sheet) return;
   const rows = sheet.getDataRange().getValues();
-  const headers = rows[0];
+  const headers = rows[0] || [];
   const keyIdx = headers.indexOf(keyField);
-  for (let i = 1; i < rows.length; i++) {
+  if (keyIdx < 0) return;
+  for (let i = rows.length - 1; i >= 1; i--) {
     if (String(rows[i][keyIdx]) === String(idVal)) {
       sheet.deleteRow(i + 1);
-      break;
     }
   }
 }
