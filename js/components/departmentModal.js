@@ -197,7 +197,7 @@ export class DepartmentModal {
                       </div>
                     ` : selectedDept.teams.map(t => {
                       const isEditingThisTeam = this.editingTeamId === t.id;
-                      const membersInTeam = store.getDepartmentUsers(selectedDept.id).filter(u => u.teamId === t.id);
+                      const membersInTeam = store.getDepartmentUsers(selectedDept.id).filter(u => store.getUserTeamInDepartment(u, selectedDept.id) === t.id);
 
                       if (isEditingThisTeam) {
                         return `

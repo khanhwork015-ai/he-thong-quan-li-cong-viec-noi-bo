@@ -90,9 +90,9 @@ export class Sidebar {
           </div>
 
           <div class="px-3 sm:px-4 py-3">
-            <div class="px-3 py-2 bg-[#f8f9ff] hover:bg-[#fffbeb] border border-[#e2e8f0] hover:border-[#d6a52a] rounded-xl flex items-center justify-between cursor-pointer transition-all" id="btnSelectDepartment" title="${canSwitchDept ? 'Bấm để đổi phòng ban (Quyền Admin)' : currentDept.name}">
+            <div class="px-3 py-2 bg-[#f8f9ff] hover:bg-[#fffbeb] border border-[#e2e8f0] hover:border-[#d6a52a] rounded-xl flex items-center justify-between cursor-pointer transition-all" id="btnSelectDepartment" title="${canSwitchDept ? 'Bấm để đổi phòng ban' : currentDept.name}">
               <div class="flex items-center gap-2 min-w-0">
-                <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-[#d6a52a]"></span>
+                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${currentDept.color || '#d6a52a'};"></span>
                 <span class="text-[12px] text-[#4f4635] font-semibold truncate">${currentDept.name}</span>
               </div>
               <div class="flex items-center gap-1 shrink-0">
@@ -257,6 +257,18 @@ export class Sidebar {
     if (modal) modal.remove();
 
     const activeDept = auth.getActiveDepartment();
+    const isGlobal = auth.isAdmin() || auth.isLeadership();
+    const currentUser = auth.getCurrentUser();
+    const userDeptIds = auth.getUserDepartmentIds(currentUser);
+    const allDepts = store.getAllDepartments();
+    const visibleDepts = isGlobal ? allDepts : allDepts.filter(d => userDeptIds.includes(d.id));
+
+    const getRoleLabel = (r) => {
+      if (r === 'MANAGER') return 'Trưởng Phòng';
+      if (r === 'DEPUTY_MANAGER') return 'Phó Phòng';
+      if (r === 'LEADERSHIP') return 'Ban Lãnh Đạo';
+      return 'Chuyên Viên';
+    };
 
     modal = document.createElement('div');
     modal.id = 'deptPickerModal';
@@ -268,13 +280,15 @@ export class Sidebar {
             <div class="w-8 h-8 rounded-lg bg-[#fffbeb] text-[#795900] flex items-center justify-center border border-[#fef3c7]">
               <span class="material-symbols-outlined text-[20px]">domain</span>
             </div>
-            <h3 class="font-bold text-[16px] text-[#0d1c2f]">Chuyển Đổi Phòng Ban (Admin)</h3>
+            <h3 class="font-bold text-[16px] text-[#0d1c2f]">${isGlobal ? 'Chuyển Đổi Phòng Ban (Admin)' : 'Chuyển Đổi Phòng Ban Làm Việc'}</h3>
           </div>
           <button type="button" class="text-gray-400 hover:text-gray-600 text-xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center" id="btnCloseDeptPicker" aria-label="Đóng">&times;</button>
         </div>
 
         <p class="text-[12.5px] text-[#64748b] mb-4">
-          Dữ liệu mỗi phòng ban được cô lập độc lập. Chọn phòng ban để chuyển không gian làm việc:
+          ${isGlobal
+            ? 'Dữ liệu mỗi phòng ban được cô lập độc lập. Chọn phòng ban để chuyển không gian làm việc:'
+            : 'Bạn đang tham gia nhiều phòng ban. Chọn xem gộp tất cả hoặc lọc riêng từng phòng:'}
         </p>
 
         <div class="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-1">
@@ -282,25 +296,40 @@ export class Sidebar {
             <div class="flex items-center gap-3 min-w-0">
               <span class="w-3.5 h-3.5 rounded-full bg-[#d6a52a] shrink-0"></span>
               <div class="min-w-0">
-                <div class="text-[13.5px] font-bold text-[#0d1c2f]">🏥 Toàn Phòng Khám CS3 (Tất Cả) ${activeDept.id === 'all' ? '✓' : ''}</div>
-                <div class="text-[11.5px] text-[#64748b]">Bao quát toàn bộ nhân sự và luồng công việc tất cả phòng ban</div>
+                <div class="text-[13.5px] font-bold text-[#0d1c2f]">
+                  ${isGlobal ? '🏥 Toàn Phòng Khám CS3 (Tất Cả)' : '🏥 Tất Cả Phòng Của Tôi (Xem gộp)'} ${activeDept.id === 'all' ? '✓' : ''}
+                </div>
+                <div class="text-[11.5px] text-[#64748b]">
+                  ${isGlobal
+                    ? 'Bao quát toàn bộ nhân sự và luồng công việc tất cả phòng ban'
+                    : `Xem gộp công việc và kế hoạch của ${visibleDepts.length} phòng ban bạn tham gia`}
+                </div>
               </div>
             </div>
             <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">TẤT CẢ</span>
           </div>
 
-          ${store.getAllDepartments().map(d => `
-            <div class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${d.id === activeDept.id ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="${d.id}">
-              <div class="flex items-center gap-3 min-w-0">
-                <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background-color: ${d.color || '#D6A52A'};"></span>
-                <div class="min-w-0">
-                  <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate">${d.name} ${d.id === activeDept.id ? '✓' : ''}</div>
-                  <div class="text-[11.5px] text-[#64748b] truncate">${d.unit || 'Shin Task Management'} • ${store.getDepartmentUsers(d.id).length} nhân sự</div>
+          ${visibleDepts.map(d => {
+            const roleInDept = store.getUserRoleInDepartment(currentUser, d.id);
+            const teamIdInDept = store.getUserTeamInDepartment(currentUser, d.id);
+            const teamObj = (d.teams || []).find(t => t.id === teamIdInDept);
+            return `
+              <div class="p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between min-h-[50px] ${d.id === activeDept.id ? 'bg-[#fffbeb] border-[#d6a52a] shadow-xs' : 'bg-white border-[#e2e8f0] hover:bg-[#f8f9ff]'}" data-dept-id="${d.id}">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background-color: ${d.color || '#D6A52A'};"></span>
+                  <div class="min-w-0">
+                    <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate">${d.name} ${d.id === activeDept.id ? '✓' : ''}</div>
+                    <div class="text-[11.5px] text-[#64748b] truncate">
+                      ${isGlobal
+                        ? `${d.unit || 'Shin Task Management'} • ${store.getDepartmentUsers(d.id).length} nhân sự`
+                        : `${getRoleLabel(roleInDept)}${teamObj ? ` • ${teamObj.name}` : ' • Toàn phòng'}`}
+                    </div>
+                  </div>
                 </div>
+                <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">${d.code}</span>
               </div>
-              <span class="font-mono-data text-[11px] font-bold px-2 py-0.5 rounded bg-[#f1f5f9] text-[#795900] shrink-0">${d.code}</span>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       </div>
     `;

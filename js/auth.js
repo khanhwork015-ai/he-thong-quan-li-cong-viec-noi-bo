@@ -18,6 +18,83 @@ export async function hashPassword(plainText) {
 const AUTH_KEY = 'tvm_auth_user_v3';
 const ACTIVE_DEPT_KEY = 'tvm_active_dept_v3';
 const SESSION_KEY = 'tvm_auth_session_v4';
+const ROLE_RANK = { MEMBER: 1, DEPUTY_MANAGER: 2, MANAGER: 3, LEADERSHIP: 4, ADMIN: 5 };
+
+export function normalizeUserMemberships(u) {
+  if (!u || typeof u !== 'object') return [];
+  let raw = u.memberships;
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith('[')) {
+      try { raw = JSON.parse(trimmed); } catch (_) { raw = []; }
+    } else {
+      raw = [];
+    }
+  }
+
+  const map = new Map();
+  if (Array.isArray(raw)) {
+    raw.forEach(m => {
+      if (!m || !m.departmentId || m.departmentId === 'all') return;
+      const dId = String(m.departmentId).trim();
+      if (!dId) return;
+      let role = String(m.role || u.role || 'MEMBER').trim().toUpperCase();
+      if (role === 'ADMIN') role = 'MANAGER';
+      const isLeaderOrMgr = (role === 'MANAGER' || role === 'DEPUTY_MANAGER' || role === 'LEADERSHIP');
+      const teamId = isLeaderOrMgr ? '' : String(m.teamId || '').trim();
+      if (!map.has(dId)) {
+        map.set(dId, { departmentId: dId, role, teamId });
+      }
+    });
+  }
+
+  if (map.size === 0 && u.departmentId && u.departmentId !== 'all') {
+    const deptParts = String(u.departmentId).split(',').map(s => s.trim()).filter(Boolean);
+    let fallbackRole = String(u.role || 'MEMBER').trim().toUpperCase();
+    if (fallbackRole === 'ADMIN') fallbackRole = 'MANAGER';
+    const isLeaderOrMgr = (fallbackRole === 'MANAGER' || fallbackRole === 'DEPUTY_MANAGER' || fallbackRole === 'LEADERSHIP');
+    const fallbackTeam = isLeaderOrMgr ? '' : String(u.teamId || '').trim();
+    deptParts.forEach((dId, idx) => {
+      if (dId !== 'all' && !map.has(dId)) {
+        map.set(dId, { departmentId: dId, role: fallbackRole, teamId: idx === 0 ? fallbackTeam : '' });
+      }
+    });
+  }
+
+  return Array.from(map.values());
+}
+
+export function normalizeUserRecord(u) {
+  if (!u || typeof u !== 'object') return u;
+  const memberships = normalizeUserMemberships(u);
+  const isAdminFlag = Boolean(u.isAdmin === true || u.isAdmin === 'true' || u.isAdmin === 1 || u.role === 'ADMIN');
+  let primaryDeptId = u.departmentId || 'dept_ptkh';
+  let primaryTeamId = u.teamId || '';
+  let primaryRole = String(u.role || 'MEMBER').trim().toUpperCase();
+
+  if (memberships.length > 0) {
+    const primary = memberships[0];
+    primaryDeptId = primary.departmentId;
+    primaryTeamId = primary.teamId || '';
+    const bestRole = memberships.reduce((best, m) => (
+      (ROLE_RANK[m.role] || 1) > (ROLE_RANK[best] || 1) ? m.role : best
+    ), memberships[0].role);
+    if (primaryRole !== 'ADMIN' && primaryRole !== 'LEADERSHIP') {
+      primaryRole = bestRole;
+    }
+  }
+
+  return {
+    ...u,
+    isAdmin: isAdminFlag,
+    role: primaryRole,
+    departmentId: primaryDeptId,
+    teamId: primaryTeamId,
+    memberships,
+    username: String(u.username || (u.id ? u.id.replace('user_', '') : '')).trim().toLowerCase(),
+    password: String(u.password !== undefined && u.password !== null && String(u.password).trim() !== '' ? u.password : '123').trim()
+  };
+}
 
 export class AuthManager {
   constructor() {
@@ -66,12 +143,7 @@ export class AuthManager {
       } catch (_) {}
     }
 
-    return users.map(u => ({
-      ...u,
-      isAdmin: Boolean(u.isAdmin === true || u.isAdmin === 'true' || u.role === 'ADMIN'),
-      username: String(u.username || (u.id ? u.id.replace('user_', '') : '')).trim().toLowerCase(),
-      password: String(u.password !== undefined && u.password !== null && String(u.password).trim() !== '' ? u.password : '123').trim()
-    }));
+    return users.map(u => normalizeUserRecord(u));
   }
 
   getStoredDepartments() {
@@ -99,7 +171,7 @@ export class AuthManager {
             latestUser = { ...latestUser, ...JSON.parse(custom) };
           } catch (_) {}
         }
-        sess.user = latestUser;
+        sess.user = normalizeUserRecord(latestUser);
         return sess;
       }
     } catch (e) {
@@ -113,8 +185,18 @@ export class AuthManager {
     const depts = this.getStoredDepartments();
     if (!this.currentUser) return depts[0]?.id || 'dept_ptkh';
 
-    if ((this.isAdmin() || this.isLeadership()) && savedDept) {
-      return savedDept;
+    if (this.isAdmin() || this.isLeadership()) {
+      return savedDept || 'all';
+    }
+    const userDeptIds = this.getUserDepartmentIds(this.currentUser);
+    if (userDeptIds.length > 1) {
+      if (savedDept && (savedDept === 'all' || userDeptIds.includes(savedDept))) {
+        return savedDept;
+      }
+      return 'all';
+    }
+    if (userDeptIds.length === 1) {
+      return userDeptIds[0];
     }
     if (this.currentUser.departmentId && this.currentUser.departmentId !== 'all') {
       return this.currentUser.departmentId;
@@ -168,12 +250,10 @@ export class AuthManager {
             users.forEach(u => userMap.set(u.id, u));
             cloudData.users.forEach(su => {
               if (su && su.id) {
-                userMap.set(su.id, {
+                userMap.set(su.id, normalizeUserRecord({
                   ...userMap.get(su.id),
-                  ...su,
-                  username: String(su.username || su.id.replace('user_', '')).trim().toLowerCase(),
-                  password: String(su.password !== undefined && su.password !== null && String(su.password).trim() !== '' ? su.password : '123').trim()
-                });
+                  ...su
+                }));
               }
             });
             const mergedList = Array.from(userMap.values());
@@ -212,10 +292,10 @@ export class AuthManager {
       };
     }
 
-    let fullUser = { ...matched };
+    let fullUser = normalizeUserRecord({ ...matched });
     try {
       const custom = localStorage.getItem('tvm_user_profile_' + matched.id);
-      if (custom) fullUser = { ...fullUser, ...JSON.parse(custom) };
+      if (custom) fullUser = normalizeUserRecord({ ...fullUser, ...JSON.parse(custom) });
     } catch (_) {}
 
     const session = {
@@ -232,7 +312,18 @@ export class AuthManager {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     localStorage.setItem(AUTH_KEY, fullUser.id);
 
-    if (fullUser.departmentId && fullUser.departmentId !== 'all') {
+    const userDeptIds = this.getUserDepartmentIds(fullUser);
+    if (this.isAdmin() || this.isLeadership()) {
+      const savedDept = localStorage.getItem(ACTIVE_DEPT_KEY);
+      this.activeDepartmentId = savedDept || 'all';
+      localStorage.setItem(ACTIVE_DEPT_KEY, this.activeDepartmentId);
+    } else if (userDeptIds.length > 1) {
+      this.activeDepartmentId = 'all';
+      localStorage.setItem(ACTIVE_DEPT_KEY, 'all');
+    } else if (userDeptIds.length === 1) {
+      this.activeDepartmentId = userDeptIds[0];
+      localStorage.setItem(ACTIVE_DEPT_KEY, this.activeDepartmentId);
+    } else if (fullUser.departmentId && fullUser.departmentId !== 'all') {
       this.activeDepartmentId = fullUser.departmentId;
       localStorage.setItem(ACTIVE_DEPT_KEY, this.activeDepartmentId);
     }
@@ -256,11 +347,34 @@ export class AuthManager {
     return this.currentUser;
   }
 
+  getUserMemberships(user = this.currentUser) {
+    return normalizeUserMemberships(user);
+  }
+
+  getUserDepartmentIds(user = this.currentUser) {
+    return this.getUserMemberships(user).map(m => m.departmentId);
+  }
+
+  getUserRoleInDepartment(deptId = null, user = this.currentUser) {
+    if (!user) return 'MEMBER';
+    if (user.role === 'LEADERSHIP') return 'LEADERSHIP';
+    const memberships = this.getUserMemberships(user);
+    const targetDeptId = deptId || this.activeDepartmentId;
+    if (!targetDeptId || targetDeptId === 'all') {
+      if (memberships.length === 0) return user.role || 'MEMBER';
+      return memberships.reduce((best, m) => (ROLE_RANK[m.role] || 1) > (ROLE_RANK[best] || 1) ? m.role : best, memberships[0].role);
+    }
+    const found = memberships.find(m => m.departmentId === targetDeptId);
+    if (found) return found.role;
+    return memberships.length === 0 ? (user.role || 'MEMBER') : 'MEMBER';
+  }
+
   getActiveDepartment() {
     if (this.activeDepartmentId === 'all') {
+      const isGlobal = this.isAdmin() || this.isLeadership();
       return {
         id: 'all',
-        name: 'Toàn Hệ Thống (Tất Cả)',
+        name: isGlobal ? 'Toàn Hệ Thống (Tất Cả)' : 'Tất Cả Phòng Của Tôi',
         code: 'TẤT CẢ',
         badge: 'TẤT CẢ',
         unit: 'Shin Task Management',
@@ -280,17 +394,21 @@ export class AuthManager {
     return this.currentUser?.role === 'LEADERSHIP';
   }
 
-  isManager() {
-    const r = this.currentUser?.role;
+  isManager(deptId = null) {
+    if (!this.currentUser) return false;
+    const r = this.getUserRoleInDepartment(deptId, this.currentUser);
     return r === 'MANAGER' || r === 'DEPUTY_MANAGER';
   }
 
-  isMember() {
-    return this.currentUser?.role === 'MEMBER';
+  isMember(deptId = null) {
+    if (!this.currentUser) return false;
+    if (this.isAdmin() || this.isLeadership()) return false;
+    const r = this.getUserRoleInDepartment(deptId, this.currentUser);
+    return r === 'MEMBER';
   }
 
   canSwitchDepartment() {
-    return this.isAdmin() || this.isLeadership();
+    return this.isAdmin() || this.isLeadership() || this.getUserDepartmentIds().length > 1;
   }
 
   canCRUDDepartments() {
@@ -316,7 +434,7 @@ export class AuthManager {
 
   updateProfile(data) {
     if (!this.currentUser) return null;
-    this.currentUser = { ...this.currentUser, ...data };
+    this.currentUser = normalizeUserRecord({ ...this.currentUser, ...data });
 
     if (this.session) {
       this.session.user = this.currentUser;
@@ -338,7 +456,7 @@ export class AuthManager {
         if (Array.isArray(users)) {
           const idx = users.findIndex(u => u.id === this.currentUser.id);
           if (idx >= 0) {
-            users[idx] = { ...users[idx], ...this.currentUser, updatedAt: new Date().toISOString() };
+            users[idx] = normalizeUserRecord({ ...users[idx], ...this.currentUser, updatedAt: new Date().toISOString() });
             localStorage.setItem('tvm_users_v4', JSON.stringify(users));
           }
         }
@@ -358,7 +476,13 @@ export class AuthManager {
 
   switchDepartment(deptId) {
     if (!this.canSwitchDepartment()) {
-      toast('Chỉ Ban Lãnh Đạo & Quản Trị Viên mới có quyền chuyển phòng ban!', 'warning');
+      toast('Chỉ nhân sự thuộc nhiều phòng ban, Ban Lãnh Đạo hoặc Admin mới có thể đổi phòng ban!', 'warning');
+      return false;
+    }
+    const isGlobal = this.isAdmin() || this.isLeadership();
+    const allowedDeptIds = this.getUserDepartmentIds();
+    if (!isGlobal && deptId !== 'all' && !allowedDeptIds.includes(deptId)) {
+      toast('Bạn không thuộc phòng ban này!', 'warning');
       return false;
     }
     if (deptId === 'all') {

@@ -1,24 +1,24 @@
 import { auth } from './auth.js?v=8.7';
 import { store } from './store.js?v=8.7';
-import { Sidebar } from './components/sidebar.js?v=8.7';
+import { Sidebar } from './components/sidebar.js?v=8.8';
 import { TopHeader } from './components/topHeader.js?v=8.7';
 import { BottomNav } from './components/bottomNav.js?v=8.7';
-import { DashboardView } from './components/dashboardView.js?v=8.7';
+import { DashboardView } from './components/dashboardView.js?v=8.8';
 import { WorkspaceView } from './components/workspaceView.js?v=8.7';
-import { TaskDrawer } from './components/taskDrawer.js?v=8.7';
+import { TaskDrawer } from './components/taskDrawer.js?v=8.8';
 import { NotificationDrawer } from './components/notificationDrawer.js?v=8.7';
-import { CreateTaskModal } from './components/createTaskModal.js?v=8.7'
+import { CreateTaskModal } from './components/createTaskModal.js?v=8.8';
 import { SubtasksModal } from './components/subtasksModal.js?v=8.7';
-import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.7';;
+import { SubtaskDetailModal } from './components/subtaskDetailModal.js?v=8.7';
 import { ProfileModal } from './components/profileModal.js?v=8.7';
-import { MemberModal } from './components/memberModal.js?v=8.7';
+import { MemberModal } from './components/memberModal.js?v=8.8';
 import { SettingsModal } from './components/settingsModal.js?v=8.7';
 import { LoginView } from './components/loginView.js?v=8.7';
-import { DepartmentModal } from './components/departmentModal.js?v=8.7';
-import { DepartmentView } from './components/departmentView.js?v=8.7';
+import { DepartmentModal } from './components/departmentModal.js?v=8.8';
+import { DepartmentView } from './components/departmentView.js?v=8.8';
 import { PlansView } from './components/plansView.js?v=8.7';
 import { PlanDrawer } from './components/planDrawer.js?v=8.7';
-import { PlanModal } from './components/planModal.js?v=8.7';
+import { PlanModal } from './components/planModal.js?v=8.8';
 import { ApprovalView } from './components/approvalView.js?v=8.7';
 import { appScriptBridge } from './services/appScriptBridge.js?v=8.7';
 import { toast, rung, esc, soVN, ngayVN, xacNhan2Lan, xacNhanXoa } from './helpers.js?v=8.7';
@@ -432,19 +432,27 @@ class App {
     const canvas = document.getElementById('main-content-canvas');
     const isAdmin = auth.isAdmin();
     const isLeadership = auth.isLeadership();
-    const canSwitch = isAdmin || isLeadership;
+    const canSwitchAll = isAdmin || isLeadership;
+    const userDeptIds = auth.getUserDepartmentIds();
+    const canSwitchMyDepts = canSwitchAll || userDeptIds.length > 1;
     const canManage = auth.canManageMembers();
     const allDepts = store.getAllDepartments();
     const allUsers = store.getAllUsers();
+    const visibleTabDepts = canSwitchAll ? allDepts : allDepts.filter(d => userDeptIds.includes(d.id));
+    const visiblePoolUsers = canSwitchAll
+      ? allUsers
+      : allUsers.filter(u => userDeptIds.some(did => store.isUserInDepartment(u, did)));
 
-    if (!canSwitch) {
+    if (!canSwitchMyDepts) {
       this.employeeDeptFilter = auth.getActiveDepartment().id;
     } else if (!this.employeeDeptFilter) {
+      this.employeeDeptFilter = canSwitchAll ? 'all' : (auth.getActiveDepartment().id || 'all');
+    } else if (!canSwitchAll && this.employeeDeptFilter !== 'all' && !userDeptIds.includes(this.employeeDeptFilter)) {
       this.employeeDeptFilter = 'all';
     }
 
     let filteredMembers = (this.employeeDeptFilter === 'all')
-      ? allUsers
+      ? visiblePoolUsers
       : store.getDepartmentUsers(this.employeeDeptFilter);
 
     if (this.employeeSearchQuery) {
@@ -496,15 +504,15 @@ class App {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-[#e2e8f0] shadow-sm" style="background-color: var(--card); border-color: var(--border);">
 
           <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 flex-1 min-w-0" id="employeeDeptTabs">
-            ${canSwitch ? `
+            ${canSwitchMyDepts ? `
               <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${this.employeeDeptFilter === 'all' ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${this.employeeDeptFilter === 'all' ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="all">
                 <span>🏥 Tất cả</span>
-                <span class="px-1.5 py-0.2 rounded-md text-[10.5px] font-mono-data font-bold bg-white/40">${allUsers.length}</span>
+                <span class="px-1.5 py-0.2 rounded-md text-[10.5px] font-mono-data font-bold bg-white/40">${visiblePoolUsers.length}</span>
               </button>
             ` : ''}
 
-            ${allDepts.map(d => {
-              const dCount = allUsers.filter(u => u.departmentId === d.id).length;
+            ${visibleTabDepts.map(d => {
+              const dCount = store.getDepartmentUsers(d.id).length;
               const isActive = this.employeeDeptFilter === d.id;
               return `
                 <button type="button" class="btn-emp-dept-filter px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shrink-0 flex items-center gap-1.5 min-h-[38px] cursor-pointer ${isActive ? 'shadow-xs' : 'text-gray-600 hover:bg-gray-100'}" style="${isActive ? 'background-color: var(--primary-container); color: var(--on-primary-container);' : ''}" data-dept-filter="${d.id}">
@@ -543,6 +551,7 @@ class App {
               ` : ''}
             </div>
           ` : filteredMembers.map(u => {
+            const userMemberships = store.getUserMemberships(u);
             const userDept = allDepts.find(d => d.id === u.departmentId);
             const userTeam = userDept?.teams?.find(t => t.id === u.teamId);
             const userTasks = store.getAllTasksRaw().filter(t => t.assigneeId === u.id);
@@ -551,10 +560,13 @@ class App {
             const isSelf = auth.getCurrentUser().id === u.id;
             const isUserAdmin = Boolean(u.isAdmin || u.role === 'ADMIN');
 
-            let roleBadge = { text: 'Chuyên Viên', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: 'person' };
-            if (u.role === 'LEADERSHIP') roleBadge = { text: 'Ban Lãnh Đạo', color: 'bg-purple-100 text-purple-900 border-purple-300', icon: 'account_balance' };
-            else if (u.role === 'MANAGER') roleBadge = { text: 'Trưởng Phòng', color: 'bg-[#fef3c7] text-[#92400e] border-amber-300 font-extrabold', icon: 'verified' };
-            else if (u.role === 'DEPUTY_MANAGER') roleBadge = { text: 'Phó Phòng', color: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-extrabold', icon: 'stars' };
+            const getRoleBadgeMeta = (roleCode) => {
+              if (roleCode === 'LEADERSHIP') return { text: 'Ban Lãnh Đạo', color: 'bg-purple-100 text-purple-900 border-purple-300' };
+              if (roleCode === 'MANAGER') return { text: 'Trưởng Phòng', color: 'bg-[#fef3c7] text-[#92400e] border-amber-300 font-extrabold' };
+              if (roleCode === 'DEPUTY_MANAGER') return { text: 'Phó Phòng', color: 'bg-indigo-100 text-indigo-900 border-indigo-300 font-extrabold' };
+              return { text: 'Chuyên Viên', color: 'bg-gray-100 text-gray-700 border-gray-200' };
+            };
+            const roleBadge = getRoleBadgeMeta(u.role);
 
             return `
               <div class="bg-white p-4 sm:p-5 rounded-3xl border border-[#e2e8f0] shadow-sm flex flex-col justify-between hover:border-[#d6a52a] hover:shadow-md transition-all relative group" style="background-color: var(--card); border-color: var(--border);">
@@ -594,23 +606,48 @@ class App {
                     </div>
                   </div>
 
-                  <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
-                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono-data uppercase text-white shadow-2xs" style="background-color: ${userDept?.color || '#D6A52A'};">
-                      ${esc(userDept?.code || 'TẤT CẢ')}
-                    </span>
-                    <span class="px-2 py-0.5 rounded-lg text-[10.5px] font-bold border flex items-center gap-1 ${roleBadge.color}">
-                      <span>${roleBadge.text}</span>
-                    </span>
+                  <div class="flex flex-col gap-1.5 pt-0.5">
+                    ${userMemberships.length > 0 ? userMemberships.map(m => {
+                      const mDept = allDepts.find(d => d.id === m.departmentId);
+                      const mTeam = mDept?.teams?.find(t => t.id === m.teamId);
+                      const mRoleBadge = getRoleBadgeMeta(m.role);
+                      return `
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono-data uppercase text-white shadow-2xs" style="background-color: ${mDept?.color || '#D6A52A'};">
+                            ${esc(mDept?.code || m.departmentId)}
+                          </span>
+                          <span class="px-2 py-0.5 rounded-lg text-[10.5px] font-bold border flex items-center gap-1 ${mRoleBadge.color}">
+                            <span>${mRoleBadge.text}</span>
+                          </span>
+                          ${mTeam ? `
+                            <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#f1f5f9] text-[#475569] border border-gray-200">
+                              ${esc(mTeam.name)}
+                            </span>
+                          ` : ''}
+                        </div>
+                      `;
+                    }).join('') : `
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold font-mono-data uppercase text-white shadow-2xs" style="background-color: ${userDept?.color || '#D6A52A'};">
+                          ${esc(userDept?.code || 'TẤT CẢ')}
+                        </span>
+                        <span class="px-2 py-0.5 rounded-lg text-[10.5px] font-bold border flex items-center gap-1 ${roleBadge.color}">
+                          <span>${roleBadge.text}</span>
+                        </span>
+                        ${userTeam ? `
+                          <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#f1f5f9] text-[#475569] border border-gray-200">
+                            ${esc(userTeam.name)}
+                          </span>
+                        ` : ''}
+                      </div>
+                    `}
                     ${isUserAdmin ? `
-                      <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#fffbeb] text-[#795900] border border-[#fef3c7] flex items-center gap-1 shadow-2xs">
-                        <span class="material-symbols-outlined text-[13px] text-[#d6a52a]">admin_panel_settings</span>
-                        <span>Admin Hệ Thống</span>
-                      </span>
-                    ` : ''}
-                    ${userTeam ? `
-                      <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-[#f1f5f9] text-[#475569] border border-gray-200">
-                        ${esc(userTeam.name)}
-                      </span>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#fffbeb] text-[#795900] border border-[#fef3c7] flex items-center gap-1 shadow-2xs">
+                          <span class="material-symbols-outlined text-[13px] text-[#d6a52a]">admin_panel_settings</span>
+                          <span>Admin Hệ Thống</span>
+                        </span>
+                      </div>
                     ` : ''}
                   </div>
 

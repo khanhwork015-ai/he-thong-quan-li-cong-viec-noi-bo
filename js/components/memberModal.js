@@ -33,15 +33,30 @@ export class MemberModal {
     const allDepts = store.getAllDepartments();
     const currentDept = auth.getActiveDepartment();
     const isAdmin = auth.isAdmin();
-    const isLeadership = auth.isLeadership();
     const isManager = auth.isManager();
     const isUserAdmin = Boolean(this.editingUser?.isAdmin || this.editingUser?.role === 'ADMIN');
-    const currentRole = (this.editingUser?.role && this.editingUser.role !== 'ADMIN') ? this.editingUser.role : (this.editingUser?.role === 'ADMIN' ? 'MANAGER' : 'MEMBER');
 
-    const initialDeptId = this.editingUser
-      ? this.editingUser.departmentId
-      : (defaultDeptId || (isAdmin ? allDepts[0]?.id : currentDept.id));
-    const initialDept = allDepts.find(d => d.id === initialDeptId) || allDepts[0];
+    const existingMemberships = this.editingUser ? store.getUserMemberships(this.editingUser) : [];
+    const membershipMap = new Map(existingMemberships.map(m => [m.departmentId, m]));
+
+    if (!this.editingUser) {
+      const initialDeptId = (defaultDeptId && defaultDeptId !== 'all')
+        ? defaultDeptId
+        : ((currentDept && currentDept.id !== 'all') ? currentDept.id : allDepts[0]?.id);
+      if (initialDeptId) {
+        membershipMap.set(initialDeptId, { departmentId: initialDeptId, role: 'MEMBER', teamId: '' });
+      }
+    } else if (membershipMap.size === 0 && this.editingUser.departmentId && this.editingUser.departmentId !== 'all') {
+      const fallbackRole = this.editingUser.role === 'ADMIN' ? 'MANAGER' : (this.editingUser.role || 'MEMBER');
+      membershipMap.set(this.editingUser.departmentId, {
+        departmentId: this.editingUser.departmentId,
+        role: fallbackRole,
+        teamId: this.editingUser.teamId || ''
+      });
+    }
+
+    const primaryDeptId = existingMemberships[0]?.departmentId || Array.from(membershipMap.keys())[0] || '';
+    const isGlobalOnlyAccount = Boolean(this.editingUser && this.editingUser.departmentId === 'all' && membershipMap.size === 0);
 
     this.container.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 active" id="memberOverlay">
@@ -125,34 +140,80 @@ export class MemberModal {
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
-                  Chức vụ / Vị trí công tác (Role) *
+            <div class="flex flex-col gap-2.5">
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <label class="block text-[12.5px] font-bold text-[#0d1c2f]" style="color: var(--text);">
+                  Phân Bổ Phòng Ban, Chức Vụ &amp; Bộ Phận (Hỗ trợ Đa Phòng Ban) *
                 </label>
-                <select id="memberRole" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
-                  <option value="MEMBER" ${currentRole === 'MEMBER' ? 'selected' : ''}>👤 Nhân viên / Chuyên viên (MEMBER)</option>
-                  <option value="DEPUTY_MANAGER" ${currentRole === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Phòng (DEPUTY_MANAGER)</option>
-                  <option value="MANAGER" ${currentRole === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng (MANAGER)</option>
-                  <option value="LEADERSHIP" ${currentRole === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo (LEADERSHIP)</option>
-                </select>
-                ${isManager ? `
-                  <span class="text-[10px] text-amber-600 block mt-1">
-                    * Bạn là Trưởng phòng: Chỉ có thẩm quyền cấp tài khoản cho Nhân viên.
-                  </span>
-                ` : ''}
+                <span class="text-[11px] text-[#64748b] font-medium">Tích chọn nhiều phòng ban để kiêm nhiệm</span>
               </div>
 
-              <div>
-                <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Phòng ban trực thuộc *</label>
-                <select id="memberDept" ${!isAdmin ? 'disabled' : ''} class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] disabled:bg-gray-100">
-                  ${allDepts.map(d => `
-                    <option value="${d.id}" ${(initialDeptId === d.id) ? 'selected' : ''}>
-                      ${d.name} (${d.code})
-                    </option>
-                  `).join('')}
-                </select>
+              ${isGlobalOnlyAccount ? `
+                <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[12px] text-amber-900">
+                  Tài khoản này đang ở chế độ <strong>Toàn Hệ Thống (Tất Cả)</strong>. Bạn có thể giữ nguyên hoặc tích chọn các phòng ban cụ thể bên dưới.
+                </div>
+              ` : ''}
+
+              <div class="flex flex-col gap-2.5" id="memberMembershipsList">
+                ${allDepts.map(d => {
+                  const m = membershipMap.get(d.id);
+                  const isChecked = Boolean(m);
+                  const mRole = m?.role || 'MEMBER';
+                  const mTeamId = m?.teamId || '';
+                  const isLeaderOrMgr = (mRole === 'MANAGER' || mRole === 'DEPUTY_MANAGER' || mRole === 'LEADERSHIP');
+                  const isPrimary = d.id === primaryDeptId;
+
+                  return `
+                    <div class="member-dept-card p-3 sm:p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${isChecked ? 'border-[#d6a52a] bg-[#fffbeb]/50 shadow-2xs' : 'border-[#e2e8f0] bg-[#f8f9ff]/60'}" data-dept-id="${d.id}" style="${isChecked ? 'background-color: var(--primary-soft); border-color: var(--accent);' : 'border-color: var(--border);'}">
+                      <div class="flex items-center justify-between gap-2 min-h-[36px]">
+                        <label class="flex items-center gap-2.5 cursor-pointer flex-1 min-w-0 py-1">
+                          <input type="checkbox" class="chk-member-dept w-5 h-5 rounded text-[#d6a52a] focus:ring-[#d6a52a] cursor-pointer shrink-0" value="${d.id}" ${isChecked ? 'checked' : ''} ${!isAdmin ? 'disabled' : ''} />
+                          <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${d.color || '#D6A52A'};"></span>
+                          <span class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(d.name)}</span>
+                          <span class="font-mono-data text-[10.5px] font-bold px-1.5 py-0.5 rounded bg-white/80 border border-gray-200 text-gray-600 shrink-0">${esc(d.code)}</span>
+                        </label>
+
+                        <label class="dept-primary-wrap ${isChecked ? 'flex' : 'hidden'} items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg bg-white border border-amber-200 text-[#795900] cursor-pointer shrink-0" title="Chọn làm phòng ban chính hiển thị mặc định">
+                          <input type="radio" name="memberPrimaryDept" class="radio-primary-dept accent-[#d6a52a] cursor-pointer" value="${d.id}" ${isPrimary ? 'checked' : ''} />
+                          <span>Chính</span>
+                        </label>
+                      </div>
+
+                      <div class="dept-membership-config ${isChecked ? 'grid' : 'hidden'} grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-amber-200/50">
+                        <div>
+                          <label class="block text-[11.5px] font-bold text-[#4f4635] mb-1">Chức vụ tại phòng này</label>
+                          <select class="select-dept-role w-full h-10 px-3 rounded-xl border border-[#cbd5e1] text-[12.5px] font-semibold outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
+                            <option value="MEMBER" ${mRole === 'MEMBER' ? 'selected' : ''}>👤 Nhân viên / Chuyên viên</option>
+                            <option value="DEPUTY_MANAGER" ${mRole === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Phòng</option>
+                            <option value="MANAGER" ${mRole === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng</option>
+                            <option value="LEADERSHIP" ${mRole === 'LEADERSHIP' ? 'selected' : ''}>🏛️ Ban Lãnh Đạo</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label class="block text-[11.5px] font-bold text-[#4f4635] mb-1">Bộ phận con tại phòng này</label>
+                          <select class="select-dept-team ${isLeaderOrMgr ? 'hidden' : ''} w-full h-10 px-3 rounded-xl border border-[#cbd5e1] text-[12.5px] font-medium outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer">
+                            <option value="">-- Toàn phòng ban / Chưa phân tổ --</option>
+                            ${(d.teams || []).map(t => `
+                              <option value="${t.id}" ${mTeamId === t.id ? 'selected' : ''}>${esc(t.name)} (${esc(t.code)})</option>
+                            `).join('')}
+                          </select>
+                          <div class="dept-team-whole-badge ${isLeaderOrMgr ? 'flex' : 'hidden'} h-10 px-3 rounded-xl bg-white/90 border border-amber-200 text-[#795900] text-[12px] font-bold items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-[#d6a52a]">domain_verification</span>
+                            <span class="truncate">Quản trị Toàn phòng</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
               </div>
+
+              ${isManager && !isAdmin ? `
+                <span class="text-[10.5px] text-amber-600 block">
+                  * Chỉ Quản Trị Viên (Admin) mới có thẩm quyền phân bổ đa phòng ban.
+                </span>
+              ` : ''}
             </div>
 
             <div class="p-3 sm:p-3.5 rounded-2xl border border-amber-300 bg-[#fffbeb] flex items-center justify-between gap-3 shadow-2xs">
@@ -175,31 +236,6 @@ export class MemberModal {
                 <input type="checkbox" id="memberIsAdmin" class="sr-only peer" ${isUserAdmin ? 'checked' : ''} ${!isAdmin ? 'disabled' : ''}>
                 <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[12px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d6a52a] ${!isAdmin ? 'opacity-50 cursor-not-allowed' : ''}"></div>
               </label>
-            </div>
-
-            <div id="boxMemberTeam" class="${(currentRole === 'MANAGER' || currentRole === 'DEPUTY_MANAGER' || currentRole === 'LEADERSHIP') ? 'hidden' : ''}">
-              <label class="block text-[12px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">
-                Bộ phận con trực thuộc (Team) *
-              </label>
-              <select id="memberTeam" class="w-full h-10 px-3 rounded-xl border border-[#e2e8f0] text-[13px] outline-none bg-white text-[#0d1c2f] focus:border-[#d6a52a]">
-                <option value="">-- Toàn phòng ban / Chưa phân tổ --</option>
-                ${(initialDept?.teams || []).map(t => `
-                  <option value="${t.id}" ${this.editingUser && this.editingUser.teamId === t.id ? 'selected' : ''}>
-                    ${t.name} (${t.code})
-                  </option>
-                `).join('')}
-              </select>
-              <span class="text-[10.5px] text-[#64748b] block mt-1">
-                Phân bổ nhân viên vào các bộ phận chuyên trách (VD: Marketing, CSKH, Hỗ trợ...).
-              </span>
-            </div>
-
-            <div id="boxMemberTeamNotice" class="${(currentRole === 'MANAGER' || currentRole === 'DEPUTY_MANAGER' || currentRole === 'LEADERSHIP') ? '' : 'hidden'} p-3 rounded-2xl bg-[#fffbeb] border border-[#fef3c7] text-[#795900] text-[12px] flex items-center gap-2.5 shadow-2xs">
-              <span class="material-symbols-outlined text-[20px] text-[#d6a52a] shrink-0">domain_verification</span>
-              <div class="leading-snug">
-                <span class="font-bold">Bao quát toàn bộ khoa phòng:</span>
-                <span class="text-[#817663] block text-[11.5px] mt-0.5">Trưởng phòng và Phó phòng phụ trách tất cả các bộ phận con, không cần chọn bộ phận riêng.</span>
-              </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -243,35 +279,62 @@ export class MemberModal {
     const fileInput = this.container.querySelector('#memberFileInput');
     const btnUpload = this.container.querySelector('#btnMemberUploadAvatar');
     const btnOverlay = this.container.querySelector('#btnMemberAvatarOverlay');
-    const selectDept = this.container.querySelector('#memberDept');
-    const selectTeam = this.container.querySelector('#memberTeam');
-    const selectRole = this.container.querySelector('#memberRole');
-    const boxMemberTeam = this.container.querySelector('#boxMemberTeam');
-    const boxMemberTeamNotice = this.container.querySelector('#boxMemberTeamNotice');
+    const deptCards = Array.from(this.container.querySelectorAll('.member-dept-card'));
 
-    const updateTeamVisibility = () => {
-      const r = selectRole ? selectRole.value : 'MEMBER';
-      const isLeaderOrManager = (r === 'MANAGER' || r === 'DEPUTY_MANAGER' || r === 'LEADERSHIP');
-      if (boxMemberTeam) {
-        if (isLeaderOrManager) {
-          boxMemberTeam.classList.add('hidden');
-          if (selectTeam) selectTeam.value = '';
-        } else {
-          boxMemberTeam.classList.remove('hidden');
-        }
-      }
-      if (boxMemberTeamNotice) {
-        if (isLeaderOrManager) {
-          boxMemberTeamNotice.classList.remove('hidden');
-        } else {
-          boxMemberTeamNotice.classList.add('hidden');
-        }
+    const ensurePrimarySelected = () => {
+      const checkedRadios = deptCards
+        .filter(c => c.querySelector('.chk-member-dept')?.checked)
+        .map(c => c.querySelector('.radio-primary-dept'))
+        .filter(Boolean);
+      if (checkedRadios.length > 0 && !checkedRadios.some(r => r.checked)) {
+        checkedRadios[0].checked = true;
       }
     };
 
-    if (selectRole) {
-      selectRole.addEventListener('change', updateTeamVisibility);
-    }
+    deptCards.forEach(card => {
+      const chk = card.querySelector('.chk-member-dept');
+      const configBox = card.querySelector('.dept-membership-config');
+      const primaryWrap = card.querySelector('.dept-primary-wrap');
+      const primaryRadio = card.querySelector('.radio-primary-dept');
+      const roleSelect = card.querySelector('.select-dept-role');
+      const teamSelect = card.querySelector('.select-dept-team');
+      const wholeBadge = card.querySelector('.dept-team-whole-badge');
+
+      const syncCardState = () => {
+        const checked = Boolean(chk?.checked);
+        if (configBox) {
+          configBox.classList.toggle('hidden', !checked);
+          configBox.classList.toggle('grid', checked);
+        }
+        if (primaryWrap) {
+          primaryWrap.classList.toggle('hidden', !checked);
+          primaryWrap.classList.toggle('flex', checked);
+        }
+        if (!checked && primaryRadio) primaryRadio.checked = false;
+        card.classList.toggle('border-[#d6a52a]', checked);
+        card.classList.toggle('bg-[#fffbeb]/50', checked);
+        card.classList.toggle('shadow-2xs', checked);
+        card.classList.toggle('border-[#e2e8f0]', !checked);
+        card.classList.toggle('bg-[#f8f9ff]/60', !checked);
+        card.style.backgroundColor = checked ? 'var(--primary-soft)' : '';
+        card.style.borderColor = checked ? 'var(--accent)' : 'var(--border)';
+
+        const r = roleSelect ? roleSelect.value : 'MEMBER';
+        const isLeaderOrMgr = (r === 'MANAGER' || r === 'DEPUTY_MANAGER' || r === 'LEADERSHIP');
+        if (teamSelect) {
+          teamSelect.classList.toggle('hidden', isLeaderOrMgr);
+          if (isLeaderOrMgr) teamSelect.value = '';
+        }
+        if (wholeBadge) {
+          wholeBadge.classList.toggle('hidden', !isLeaderOrMgr);
+          wholeBadge.classList.toggle('flex', isLeaderOrMgr);
+        }
+        ensurePrimarySelected();
+      };
+
+      if (chk) chk.addEventListener('change', syncCardState);
+      if (roleSelect) roleSelect.addEventListener('change', syncCardState);
+    });
 
     const closeModal = () => {
       rung(10);
@@ -283,19 +346,6 @@ export class MemberModal {
     if (overlay) {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeModal();
-      });
-    }
-
-    if (selectDept && selectTeam) {
-      selectDept.addEventListener('change', () => {
-        const dId = selectDept.value;
-        const d = allDepts.find(item => item.id === dId);
-        selectTeam.innerHTML = '<option value="">-- Toàn phòng ban / Chưa phân tổ --</option>';
-        if (d && d.teams) {
-          d.teams.forEach(t => {
-            selectTeam.innerHTML += `<option value="${t.id}">${t.name} (${t.code})</option>`;
-          });
-        }
       });
     }
 
@@ -397,11 +447,7 @@ export class MemberModal {
 
         const name = this.container.querySelector('#memberName').value.trim();
         const title = this.container.querySelector('#memberTitle').value.trim();
-        const role = this.container.querySelector('#memberRole').value;
         const isAdminFlag = Boolean(this.container.querySelector('#memberIsAdmin')?.checked);
-        const departmentId = selectDept.value;
-        const isLeaderOrManager = (role === 'MANAGER' || role === 'DEPUTY_MANAGER' || role === 'LEADERSHIP');
-        const teamId = isLeaderOrManager ? '' : (selectTeam ? selectTeam.value : '');
         const username = this.container.querySelector('#memberUsername').value.trim();
         const password = this.container.querySelector('#memberPassword').value.trim();
         const email = this.container.querySelector('#memberEmail').value.trim();
@@ -415,63 +461,95 @@ export class MemberModal {
           return;
         }
 
+        const collected = [];
+        let selectedPrimaryId = '';
+        deptCards.forEach(card => {
+          const chk = card.querySelector('.chk-member-dept');
+          if (!chk || !chk.checked) return;
+          const deptId = card.dataset.deptId;
+          const isPrimary = Boolean(card.querySelector('.radio-primary-dept')?.checked);
+          const mRole = card.querySelector('.select-dept-role')?.value || 'MEMBER';
+          const isLeaderOrMgr = (mRole === 'MANAGER' || mRole === 'DEPUTY_MANAGER' || mRole === 'LEADERSHIP');
+          const mTeamId = isLeaderOrMgr ? '' : (card.querySelector('.select-dept-team')?.value || '');
+          const entry = { departmentId: deptId, role: mRole, teamId: mTeamId };
+          if (isPrimary) {
+            selectedPrimaryId = deptId;
+            collected.unshift(entry);
+          } else {
+            collected.push(entry);
+          }
+        });
+
+        const allowGlobalKeep = Boolean(this.editingUser && this.editingUser.departmentId === 'all' && (isAdminFlag || this.editingUser.role === 'LEADERSHIP'));
+        if (collected.length === 0 && !allowGlobalKeep) {
+          toast('Vui lòng tích chọn ít nhất 1 phòng ban cho nhân sự!', 'warning');
+          return;
+        }
+
+        const primaryEntry = collected[0] || null;
+        const departmentId = primaryEntry ? primaryEntry.departmentId : 'all';
+        const role = primaryEntry ? primaryEntry.role : (this.editingUser?.role || 'ADMIN');
+        const teamId = primaryEntry ? primaryEntry.teamId : '';
+
         if (!auth.canProvisionAccount(role, departmentId)) {
           toast('Bạn không có quyền cấp tài khoản với vai trò hoặc phòng ban này!', 'warning');
           return;
         }
 
         const dept = allDepts.find(d => d.id === departmentId);
-        const deptName = dept ? dept.name : 'Shin Task Management';
+        const deptName = collected.length > 1
+          ? collected.map(c => allDepts.find(d => d.id === c.departmentId)?.code || c.departmentId).join(' • ')
+          : (dept ? dept.name : 'Shin Task Management');
         let badge = 'Chuyên viên';
         if (role === 'LEADERSHIP') badge = 'Ban Lãnh Đạo';
         else if (role === 'MANAGER') badge = 'Trưởng phòng';
         else if (role === 'DEPUTY_MANAGER') badge = 'Phó phòng';
 
+        const payload = {
+          name,
+          title,
+          role,
+          isAdmin: isAdminFlag,
+          departmentId,
+          teamId,
+          memberships: collected,
+          username,
+          password,
+          email,
+          phone,
+          avatar,
+          badge,
+          unit: deptName
+        };
+
+        let savedUser = null;
         if (this.editingUser) {
-          store.updateUser(this.editingUser.id, {
-            name,
-            title,
-            role,
-            isAdmin: isAdminFlag,
-            departmentId,
-            teamId,
-            username,
-            password,
-            email,
-            phone,
-            avatar,
-            badge,
-            unit: deptName
-          });
-          if (role === 'MANAGER' && dept && (!dept.managerId || dept.managerId === this.editingUser.id)) {
-            store.updateDepartment(departmentId, { managerId: this.editingUser.id });
-          }
+          savedUser = store.updateUser(this.editingUser.id, payload);
           toast(`Đã cập nhật thông tin nhân viên: ${name}`, 'success');
         } else {
-          const newUser = store.createUser({
-            name,
-            title,
-            role,
-            isAdmin: isAdminFlag,
-            departmentId,
-            teamId,
-            username,
-            password,
-            email,
-            phone,
-            avatar,
-            badge,
-            unit: deptName
-          });
-
-          if (!newUser) {
+          savedUser = store.createUser(payload);
+          if (!savedUser) {
             toast('Lỗi khi cấp tài khoản. Vui lòng thử lại!', 'warning');
             return;
           }
-          if (role === 'MANAGER' && dept && !dept.managerId) {
-            store.updateDepartment(departmentId, { managerId: newUser.id });
-          }
-          toast(`Đã cấp tài khoản thành công cho: ${newUser.name} (${newUser.username})`, 'success');
+          toast(`Đã cấp tài khoản thành công cho: ${savedUser.name} (${savedUser.username})`, 'success');
+        }
+
+        if (savedUser) {
+          collected.forEach(m => {
+            const targetDept = store.getDepartmentById(m.departmentId);
+            if (!targetDept) return;
+            if (m.role === 'MANAGER' && (!targetDept.managerId || targetDept.managerId === savedUser.id)) {
+              store.updateDepartment(m.departmentId, { managerId: savedUser.id });
+            } else if (m.role !== 'MANAGER' && targetDept.managerId === savedUser.id) {
+              store.updateDepartment(m.departmentId, { managerId: '' });
+            }
+          });
+          allDepts.forEach(d => {
+            if (d.managerId === savedUser.id && !collected.some(m => m.departmentId === d.id)) {
+              store.updateDepartment(d.id, { managerId: '' });
+            }
+          });
         }
 
         closeModal();

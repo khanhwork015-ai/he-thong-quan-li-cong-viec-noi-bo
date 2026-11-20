@@ -20,9 +20,14 @@ export class PlanModal {
     const currentUser = auth.getCurrentUser() || {};
     const activeDept = auth.getActiveDepartment() || { id: 'dept_ptkh', name: 'Phòng ban' };
     const allDepts = store.getAllDepartments();
-    const canSelectDept = auth.isAdmin() || auth.isLeadership();
+    const isGlobalRole = auth.isAdmin() || auth.isLeadership();
+    const userDeptIds = auth.getUserDepartmentIds();
+    const selectableDepts = isGlobalRole
+      ? allDepts
+      : (userDeptIds.length > 0 ? allDepts.filter(d => userDeptIds.includes(d.id)) : allDepts);
+    const canSelectDept = isGlobalRole || userDeptIds.length > 1;
 
-    const planDeptId = isEdit ? planToEdit.departmentId : (activeDept.id === 'all' ? 'dept_ptkh' : activeDept.id);
+    const planDeptId = isEdit ? planToEdit.departmentId : (activeDept.id === 'all' ? (selectableDepts[0]?.id || 'dept_ptkh') : activeDept.id);
     const deptMembers = (planDeptId && planDeptId !== 'all')
       ? store.getDepartmentUsers(planDeptId)
       : store.getAllUsers();
@@ -81,7 +86,7 @@ export class PlanModal {
                     class="w-full h-11 px-3.5 rounded-lg border border-[#cbd5e1] text-[13px] font-medium outline-none focus:border-[#d6a52a] bg-white text-[#0d1c2f]"
                     ${!canSelectDept && !isEdit ? 'disabled' : ''}
                   >
-                    ${allDepts.map(d => `
+                    ${selectableDepts.map(d => `
                       <option value="${d.id}" ${d.id === planDeptId ? 'selected' : ''}>${esc(d.name)}</option>
                     `).join('')}
                   </select>

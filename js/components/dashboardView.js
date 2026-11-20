@@ -18,17 +18,31 @@ export class DashboardView {
     if (!currentUser) return;
 
     const isLeadershipOrAdmin = auth.isAdmin() || auth.isLeadership();
+    const userDeptIds = auth.getUserDepartmentIds();
+    const isMultiDept = !isLeadershipOrAdmin && userDeptIds.length > 1;
+    const canSelectScope = isLeadershipOrAdmin || isMultiDept;
     const allDepartments = store.getAllDepartments();
+    const scopeDepts = isLeadershipOrAdmin
+      ? allDepartments
+      : allDepartments.filter(d => userDeptIds.includes(d.id));
     const allTasksRaw = store.getAllTasksRaw();
     const todayStr = new Date().toISOString().split('T')[0];
 
     let activeDeptId = this.selectedDeptScope;
     if (!isLeadershipOrAdmin) {
-      activeDeptId = currentUser.departmentId || allDepartments[0]?.id || 'dept_ptkh';
+      if (isMultiDept) {
+        if (activeDeptId !== 'all' && !userDeptIds.includes(activeDeptId)) {
+          activeDeptId = auth.getActiveDepartment().id;
+        }
+      } else {
+        activeDeptId = userDeptIds[0] || currentUser.departmentId || allDepartments[0]?.id || 'dept_ptkh';
+      }
     }
 
     const scopedTasks = activeDeptId === 'all'
-      ? allTasksRaw
+      ? (isLeadershipOrAdmin
+          ? allTasksRaw
+          : allTasksRaw.filter(t => userDeptIds.includes(t.departmentId) || t.assigneeId === currentUser.id || t.creatorId === currentUser.id))
       : allTasksRaw.filter(t => t.departmentId === activeDeptId);
 
     const totalCount = scopedTasks.length;
@@ -43,10 +57,14 @@ export class DashboardView {
     const overdueCount = overdueTasks.length;
 
     const approvalQueue = scopedTasks
-      .filter(t => t.status === 'pending_approval' || t.status === 'review')
+      .filter(t =>
+        (t.status === 'pending_approval' || t.status === 'review') &&
+        (isLeadershipOrAdmin || auth.isManager(t.departmentId) || t.approverId === currentUser.id || t.creatorId === currentUser.id || t.assigneeId === currentUser.id)
+      )
       .sort((a, b) => (a.priority === 'P1' ? -1 : 1));
 
-    const deptStats = allDepartments.map(dept => {
+    const chartDepts = scopeDepts.length > 0 ? scopeDepts : allDepartments;
+    const deptStats = chartDepts.map(dept => {
       const dTasks = allTasksRaw.filter(t => t.departmentId === dept.id);
       const dDone = dTasks.filter(t => t.status === 'done').length;
       const dTotal = dTasks.length;
@@ -75,13 +93,13 @@ export class DashboardView {
             <span class="text-[11px] text-[#64748b] hidden md:inline truncate">• Cập nhật trực tiếp ${ngayVN(new Date())}</span>
           </div>
 
-          ${isLeadershipOrAdmin ? `
+          ${canSelectScope ? `
             <div class="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2 min-w-0">
               <label for="selectDashboardScope" class="text-[12px] font-bold text-[#64748b] shrink-0">Phạm vi:</label>
               <select id="selectDashboardScope" class="flex-1 sm:flex-initial max-w-[210px] sm:max-w-xs h-9 px-2.5 rounded-xl border border-[#e2e8f0] text-[12px] sm:text-[12.5px] font-bold text-[#0d1c2f] bg-[#f8f9ff] focus:bg-white focus:border-[#d6a52a] outline-none cursor-pointer shadow-2xs truncate">
-                <option value="all" ${this.selectedDeptScope === 'all' ? 'selected' : ''}>🏥 Tất Cả Phòng Ban</option>
-                ${allDepartments.map(d => `
-                  <option value="${d.id}" ${this.selectedDeptScope === d.id ? 'selected' : ''}>${esc(d.name)} (${esc(d.code)})</option>
+                <option value="all" ${activeDeptId === 'all' ? 'selected' : ''}>${isLeadershipOrAdmin ? '🏥 Tất Cả Phòng Ban' : `🏥 Tất Cả Phòng Của Tôi (${scopeDepts.length})`}</option>
+                ${scopeDepts.map(d => `
+                  <option value="${d.id}" ${activeDeptId === d.id ? 'selected' : ''}>${esc(d.name)} (${esc(d.code)})</option>
                 `).join('')}
               </select>
             </div>
@@ -97,12 +115,12 @@ export class DashboardView {
             <div>
               <div class="hn-chao" id="lblLoiChao">${loiChao(currentUser.name)}</div>
               <div class="hn-ngay" id="lblNgayThang">
-                ${ngayVN(new Date())} • ${activeDeptId === 'all' ? 'Toàn Phòng Khám CS3' : (activeDeptObj?.name || 'Phòng ban')}
+                ${ngayVN(new Date())} • ${activeDeptId === 'all' ? (isLeadershipOrAdmin ? 'Toàn Phòng Khám CS3' : 'Tất Cả Phòng Của Tôi') : (activeDeptObj?.name || 'Phòng ban')}
               </div>
             </div>
             <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold" style="background-color: var(--primary-soft); color: var(--primary);">
               <span class="material-symbols-outlined text-[15px]">verified_user</span>
-              <span>${auth.isAdmin() ? 'Quản Trị Viên' : (auth.isLeadership() ? 'Ban Lãnh Đạo' : 'Trưởng Phòng')}</span>
+              <span>${auth.isAdmin() ? 'Quản Trị Viên' : (auth.isLeadership() ? 'Ban Lãnh Đạo' : (auth.isManager(activeDeptId) ? 'Trưởng Phòng' : 'Chuyên Viên'))}</span>
             </div>
           </div>
 
@@ -180,7 +198,7 @@ export class DashboardView {
               <p class="text-[12px] text-[#64748b] mt-0.5">Tỷ lệ hoàn thành nhiệm vụ và công việc đang xử lý tại mỗi đơn vị</p>
             </div>
             <span class="text-[11.5px] font-semibold text-[#795900] bg-[#fffbeb] px-3 py-1 rounded-full border border-[#fef3c7] self-start sm:self-auto font-mono-data">
-              ${allDepartments.length} Phòng Ban Trọng Điểm
+              ${chartDepts.length} Phòng Ban Trọng Điểm
             </span>
           </div>
 
@@ -296,10 +314,12 @@ export class DashboardView {
                       <span>Xem</span>
                     </button>
 
-                    <button type="button" class="px-5 py-2.5 rounded-xl font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer btn-quick-approve-task" data-task-id="${task.id}" style="background-color: var(--primary-container); color: var(--on-primary-container);">
-                      <span class="material-symbols-outlined text-[18px]">verified</span>
-                      <span>Duyệt 1-Chạm</span>
-                    </button>
+                    ${(isLeadershipOrAdmin || auth.isManager(task.departmentId) || task.approverId === currentUser.id) ? `
+                      <button type="button" class="px-5 py-2.5 rounded-xl font-bold text-[13px] min-h-[44px] flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer btn-quick-approve-task" data-task-id="${task.id}" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                        <span class="material-symbols-outlined text-[18px]">verified</span>
+                        <span>Duyệt 1-Chạm</span>
+                      </button>
+                    ` : ''}
                   </div>
                 </div>
               `;

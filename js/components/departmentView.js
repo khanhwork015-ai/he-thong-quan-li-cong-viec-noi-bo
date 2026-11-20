@@ -62,13 +62,12 @@ export class DepartmentView {
     selectedDeptUsers.forEach(u => candidateMap.set(u.id, u));
     const assignableManagers = Array.from(candidateMap.values());
 
-    const deptManager = selectedDept ? selectedDeptUsers.find(u => u.id === selectedDept.managerId || u.role === 'MANAGER') : null;
-    const deptDeputies = selectedDept ? selectedDeptUsers.filter(u => u.role === 'DEPUTY_MANAGER' && u.id !== deptManager?.id) : [];
+    const deptManager = selectedDept ? selectedDeptUsers.find(u => u.id === selectedDept.managerId || store.getUserRoleInDepartment(u, selectedDept.id) === 'MANAGER') : null;
+    const deptDeputies = selectedDept ? selectedDeptUsers.filter(u => store.getUserRoleInDepartment(u, selectedDept.id) === 'DEPUTY_MANAGER' && u.id !== deptManager?.id) : [];
     const regularStaff = selectedDeptUsers.filter(u => u.id !== deptManager?.id && !deptDeputies.some(d => d.id === u.id));
 
-    if (deptManager && deptManager.teamId) {
-      deptManager.teamId = '';
-      store.updateUser(deptManager.id, { teamId: '' });
+    if (deptManager && selectedDept && store.getUserTeamInDepartment(deptManager, selectedDept.id)) {
+      store.setUserDepartmentMembership(deptManager.id, selectedDept.id, { role: 'MANAGER', teamId: '' });
     }
 
     this.container.innerHTML = `
@@ -313,7 +312,11 @@ export class DepartmentView {
                       </div>
                     ` : selectedDept.teams.map(t => {
                       const isEditingThisTeam = this.editingTeamId === t.id;
-                      const membersInTeam = selectedDeptUsers.filter(u => u.teamId === t.id && u.id !== deptManager?.id);
+                      const membersInTeam = selectedDeptUsers.filter(u =>
+                        store.getUserTeamInDepartment(u, selectedDept.id) === t.id &&
+                        u.id !== deptManager?.id &&
+                        store.getUserRoleInDepartment(u, selectedDept.id) !== 'DEPUTY_MANAGER'
+                      );
 
                       if (isEditingThisTeam) {
                         return `
@@ -394,10 +397,16 @@ export class DepartmentView {
                       </span>
                     </div>
 
-                    <button type="button" id="btnAddMemberToDept" class="px-3.5 py-1.5 rounded-xl border border-[#e2e8f0] text-[12px] font-bold text-[#0d1c2f] hover:bg-gray-50 flex items-center gap-1.5 min-h-[38px] transition-colors shadow-2xs cursor-pointer" style="color: var(--text); border-color: var(--border);">
-                      <span class="material-symbols-outlined text-[18px]">person_add</span>
-                      <span>Cấp tài khoản mới</span>
-                    </button>
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <button type="button" id="btnAssignExistingToDept" class="px-3.5 py-2 rounded-xl border border-[#d6a52a] bg-[#fffbeb] text-[12px] font-bold text-[#795900] hover:bg-[#fde68a]/60 flex items-center gap-1.5 min-h-[40px] transition-colors shadow-2xs cursor-pointer">
+                        <span class="material-symbols-outlined text-[18px]">group_add</span>
+                        <span>Gán nhân sự kiêm nhiệm</span>
+                      </button>
+                      <button type="button" id="btnAddMemberToDept" class="px-3.5 py-2 rounded-xl border border-[#e2e8f0] text-[12px] font-bold text-[#0d1c2f] hover:bg-gray-50 flex items-center gap-1.5 min-h-[40px] transition-colors shadow-2xs cursor-pointer" style="color: var(--text); border-color: var(--border);">
+                        <span class="material-symbols-outlined text-[18px]">person_add</span>
+                        <span>Cấp tài khoản mới</span>
+                      </button>
+                    </div>
                   </div>
 
                   ${deptManager ? `
@@ -507,7 +516,10 @@ export class DepartmentView {
                         Chưa có chuyên viên nào ngoài lãnh đạo phòng.
                       </div>
                     ` : regularStaff.map(u => {
-                      const team = (selectedDept.teams || []).find(t => t.id === u.teamId);
+                      const userTeamId = store.getUserTeamInDepartment(u, selectedDept.id);
+                      const team = (selectedDept.teams || []).find(t => t.id === userTeamId);
+                      const userMemberships = store.getUserMemberships(u);
+                      const isMultiDept = userMemberships.length > 1;
                       return `
                         <div class="member-drag-card p-3.5 rounded-2xl border border-[#e2e8f0] bg-white flex flex-col gap-2.5 shadow-2xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing hover:border-[#d6a52a]" draggable="true" data-user-id="${u.id}" style="background-color: var(--card); border-color: var(--border);">
 
@@ -519,24 +531,34 @@ export class DepartmentView {
                               </div>
 
                               <div class="min-w-0 flex-1">
-                                <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</div>
+                                <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate flex items-center gap-1.5" style="color: var(--text);">
+                                  <span class="truncate">${esc(u.name)}</span>
+                                  ${isMultiDept ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-100 text-[#795900] shrink-0">Kiêm nhiệm ${userMemberships.length} PB</span>` : ''}
+                                </div>
                                 <div class="text-[11.5px] text-[#64748b] truncate mt-0.5" style="color: var(--text-muted);">
                                   ${esc(u.title || 'Chuyên viên')} • <span class="font-mono-data">${esc(u.email || u.username || '')}</span>
                                 </div>
                               </div>
                             </div>
 
-                            <button type="button" class="btn-edit-dept-member p-1.5 rounded-xl text-gray-400 hover:text-amber-800 hover:bg-amber-50 transition-colors cursor-pointer shrink-0" data-user-id="${u.id}" title="Chỉnh sửa thông tin / phân quyền">
-                              <span class="material-symbols-outlined text-[18px]">edit</span>
-                            </button>
+                            <div class="flex items-center gap-1 shrink-0">
+                              <button type="button" class="btn-edit-dept-member p-1.5 rounded-xl text-gray-400 hover:text-amber-800 hover:bg-amber-50 transition-colors cursor-pointer shrink-0" data-user-id="${u.id}" title="Chỉnh sửa thông tin / phân quyền">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                              </button>
+                              ${isMultiDept ? `
+                                <button type="button" class="btn-remove-user-from-dept p-1.5 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0" data-user-id="${u.id}" title="Gỡ khỏi phòng ban này">
+                                  <span class="material-symbols-outlined text-[18px]">person_remove</span>
+                                </button>
+                              ` : ''}
+                            </div>
                           </div>
 
                           <div class="pt-2 border-t border-[#f1f5f9] flex items-center justify-between gap-2" style="border-color: var(--border);">
                             <span class="text-[11px] font-bold text-[#64748b] shrink-0" style="color: var(--text-muted);">Bộ phận:</span>
                             <select class="select-user-team-direct h-8 px-2.5 rounded-xl border border-[#e2e8f0] text-[11.5px] font-bold outline-none bg-[#f8f9ff] text-[#0d1c2f] focus:border-[#d6a52a] cursor-pointer max-w-[190px] truncate" data-user-id="${u.id}">
-                              <option value="" ${!u.teamId ? 'selected' : ''}>-- Toàn phòng (Chưa phân tổ) --</option>
+                              <option value="" ${!userTeamId ? 'selected' : ''}>-- Toàn phòng (Chưa phân tổ) --</option>
                               ${(selectedDept.teams || []).map(tm => `
-                                <option value="${tm.id}" ${u.teamId === tm.id ? 'selected' : ''}>[${esc(tm.code || 'TEAM')}] ${esc(tm.name)}</option>
+                                <option value="${tm.id}" ${userTeamId === tm.id ? 'selected' : ''}>[${esc(tm.code || 'TEAM')}] ${esc(tm.name)}</option>
                               `).join('')}
                             </select>
                           </div>
@@ -581,7 +603,10 @@ export class DepartmentView {
     if (!targetTeam) return;
 
     const deptUsers = store.getDepartmentUsers(dept.id);
-    const assignableUsers = deptUsers.filter(u => u.id !== dept.managerId && u.role !== 'MANAGER' && u.role !== 'DEPUTY_MANAGER');
+    const assignableUsers = deptUsers.filter(u => {
+      const rInDept = store.getUserRoleInDepartment(u, dept.id);
+      return u.id !== dept.managerId && rInDept !== 'MANAGER' && rInDept !== 'DEPUTY_MANAGER';
+    });
 
     modalBox.innerHTML = `
       <div class="modal-overlay fixed inset-0 z-[110] bg-black/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 active" id="quickAssignOverlay">
@@ -601,15 +626,16 @@ export class DepartmentView {
           </div>
 
           <p class="text-[12px] text-[#64748b] mb-3" style="color: var(--text-muted);">
-            Bấm nút <strong>"+ Gán vào bộ phận"</strong> để đưa nhân viên vào <strong>${esc(targetTeam.name)}</strong>:
+            Bấm nút <strong>"+ Gán vào"</strong> để đưa nhân viên vào <strong>${esc(targetTeam.name)}</strong>:
           </p>
 
           <div class="flex flex-col gap-2.5 max-h-[400px] overflow-y-auto pr-1">
             ${assignableUsers.length === 0 ? `
               <div class="p-6 text-center text-[12px] text-gray-500 bg-gray-50 rounded-xl">Không có chuyên viên nào khả dụng để gán vào bộ phận.</div>
             ` : assignableUsers.map(u => {
-              const isAlreadyInTeam = u.teamId === targetTeam.id;
-              const currentTeam = (dept.teams || []).find(t => t.id === u.teamId);
+              const uTeamId = store.getUserTeamInDepartment(u, dept.id);
+              const isAlreadyInTeam = uTeamId === targetTeam.id;
+              const currentTeam = (dept.teams || []).find(t => t.id === uTeamId);
 
               return `
                 <div class="p-3 rounded-2xl border ${isAlreadyInTeam ? 'border-amber-300 bg-amber-50/70' : 'border-[#e2e8f0] bg-white'} flex items-center justify-between gap-3 shadow-2xs">
@@ -673,7 +699,7 @@ export class DepartmentView {
       btn.addEventListener('click', () => {
         rung(15);
         const uId = btn.dataset.userId;
-        store.updateUser(uId, { teamId: targetTeam.id });
+        store.setUserDepartmentMembership(uId, dept.id, { teamId: targetTeam.id });
         toast(`Đã thêm nhân viên vào ${targetTeam.name}!`, 'success');
         this.openQuickAssignModal(teamId, dept);
       });
@@ -683,9 +709,204 @@ export class DepartmentView {
       btn.addEventListener('click', () => {
         rung(10);
         const uId = btn.dataset.userId;
-        store.updateUser(uId, { teamId: '' });
+        store.setUserDepartmentMembership(uId, dept.id, { teamId: '' });
         toast(`Đã chuyển nhân viên về Toàn phòng!`, 'info');
         this.openQuickAssignModal(teamId, dept);
+      });
+    });
+  }
+
+  openAssignExistingModal(dept, searchQuery = '') {
+    const modalBox = this.container.querySelector('#quickAssignModalContainer');
+    if (!modalBox || !dept) return;
+
+    rung(10);
+    const allUsers = store.getAllUsers();
+    const allDepts = store.getAllDepartments();
+    const deptTeams = dept.teams || [];
+
+    const q = searchQuery.trim().toLowerCase();
+    const filteredUsers = allUsers.filter(u => {
+      if (!q) return true;
+      return (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.username && u.username.toLowerCase().includes(q)) ||
+        (u.title && u.title.toLowerCase().includes(q));
+    });
+
+    modalBox.innerHTML = `
+      <div class="modal-overlay fixed inset-0 z-[110] bg-black/40 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 active" id="assignExistingOverlay">
+        <div class="modal-card bg-white rounded-t-2xl sm:rounded-3xl p-5 sm:p-6 max-w-xl w-full shadow-2xl border border-[#e2e8f0] max-h-[88vh] flex flex-col gap-3.5" style="background-color: var(--card); border-color: var(--border);">
+
+          <div class="flex items-center justify-between pb-3 border-b border-[#f1f5f9] shrink-0" style="border-color: var(--border);">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-xs shrink-0" style="background-color: var(--primary-soft); color: var(--primary);">
+                <span class="material-symbols-outlined text-[22px]">group_add</span>
+              </div>
+              <div class="min-w-0">
+                <h3 class="font-bold text-[16px] text-[#0d1c2f] truncate" style="color: var(--text);">Gán Nhân Sự Kiêm Nhiệm</h3>
+                <span class="text-[12px] font-semibold truncate block" style="color: var(--primary);">${esc(dept.name)} (${esc(dept.code)})</span>
+              </div>
+            </div>
+            <button type="button" class="text-gray-400 hover:text-gray-700 text-2xl font-bold min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 cursor-pointer shrink-0" id="btnCloseAssignExistingModal">&times;</button>
+          </div>
+
+          <div class="relative shrink-0">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">search</span>
+            <input type="text" id="inputSearchExistingMember" value="${esc(searchQuery)}" placeholder="Tìm nhân sự theo tên, chức danh, username..." class="w-full h-11 pl-10 pr-3.5 rounded-xl border border-[#cbd5e1] text-[13px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] text-[#0d1c2f]" />
+          </div>
+
+          <div class="flex flex-col gap-2.5 flex-1 overflow-y-auto pr-1">
+            ${filteredUsers.length === 0 ? `
+              <div class="p-6 text-center text-[12.5px] text-gray-500 bg-gray-50 rounded-xl">Không tìm thấy nhân sự phù hợp.</div>
+            ` : filteredUsers.map(u => {
+              const memberships = store.getUserMemberships(u);
+              const inDept = store.isUserInDepartment(u, dept.id);
+              const roleInDept = inDept ? store.getUserRoleInDepartment(u, dept.id) : 'MEMBER';
+              const teamInDept = inDept ? store.getUserTeamInDepartment(u, dept.id) : '';
+              const otherDeptCodes = memberships
+                .filter(m => m.departmentId !== dept.id)
+                .map(m => allDepts.find(d => d.id === m.departmentId)?.code || m.departmentId);
+
+              return `
+                <div class="p-3.5 rounded-2xl border ${inDept ? 'border-[#d6a52a] bg-[#fffbeb]/50' : 'border-[#e2e8f0] bg-white'} flex flex-col gap-2.5 shadow-2xs" data-existing-row="${u.id}">
+                  <div class="flex items-center justify-between gap-2.5">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <img src="${u.avatar}" class="w-10 h-10 rounded-full object-cover shrink-0 ring-1 ring-gray-200" />
+                      <div class="min-w-0">
+                        <div class="text-[13.5px] font-bold text-[#0d1c2f] truncate flex items-center gap-1.5">
+                          <span class="truncate">${esc(u.name)}</span>
+                          ${inDept ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 shrink-0">Đang ở phòng này</span>' : ''}
+                        </div>
+                        <div class="text-[11px] text-[#64748b] truncate mt-0.5">
+                          ${esc(u.title || 'Chuyên viên')}${otherDeptCodes.length > 0 ? ` • Kiêm: ${otherDeptCodes.join(', ')}` : (u.departmentId === 'all' ? ' • Toàn hệ thống' : '')}
+                        </div>
+                      </div>
+                    </div>
+
+                    ${inDept && memberships.length > 1 ? `
+                      <button type="button" class="btn-remove-existing-from-dept px-3 py-1.5 rounded-xl text-[11.5px] font-bold border border-rose-200 text-rose-600 hover:bg-rose-50 cursor-pointer shrink-0 min-h-[36px]" data-user-id="${u.id}">
+                        Gỡ khỏi phòng
+                      </button>
+                    ` : ''}
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center pt-2 border-t border-gray-100">
+                    <select class="select-existing-role sm:col-span-5 h-10 px-2.5 rounded-xl border border-[#cbd5e1] text-[12px] font-semibold bg-white outline-none focus:border-[#d6a52a]" data-user-id="${u.id}">
+                      <option value="MEMBER" ${roleInDept === 'MEMBER' ? 'selected' : ''}>👤 Chuyên viên</option>
+                      <option value="DEPUTY_MANAGER" ${roleInDept === 'DEPUTY_MANAGER' ? 'selected' : ''}>⭐ Phó Phòng</option>
+                      <option value="MANAGER" ${roleInDept === 'MANAGER' ? 'selected' : ''}>👔 Trưởng Phòng</option>
+                    </select>
+
+                    <select class="select-existing-team sm:col-span-4 h-10 px-2.5 rounded-xl border border-[#cbd5e1] text-[12px] font-medium bg-white outline-none focus:border-[#d6a52a] ${roleInDept !== 'MEMBER' ? 'hidden' : ''}" data-user-id="${u.id}">
+                      <option value="">-- Toàn phòng --</option>
+                      ${deptTeams.map(t => `
+                        <option value="${t.id}" ${teamInDept === t.id ? 'selected' : ''}>${esc(t.name)}</option>
+                      `).join('')}
+                    </select>
+
+                    <div class="existing-whole-label sm:col-span-4 h-10 px-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[#795900] text-[11.5px] font-bold items-center justify-center ${roleInDept === 'MEMBER' ? 'hidden' : 'flex'}">
+                      Toàn phòng
+                    </div>
+
+                    <button type="button" class="btn-save-existing-to-dept sm:col-span-3 h-10 px-3 rounded-xl text-[12px] font-bold shadow-2xs cursor-pointer flex items-center justify-center gap-1" data-user-id="${u.id}" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+                      <span class="material-symbols-outlined text-[16px]">${inDept ? 'save' : 'add'}</span>
+                      <span>${inDept ? 'Cập nhật' : 'Thêm vào'}</span>
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="pt-3 border-t border-[#f1f5f9] flex justify-end shrink-0">
+            <button type="button" id="btnDoneAssignExisting" class="min-h-[42px] px-5 py-2 rounded-xl text-[13px] font-bold shadow-xs cursor-pointer" style="background-color: var(--primary-container); color: var(--on-primary-container);">
+              Xong
+            </button>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    const overlay = modalBox.querySelector('#assignExistingOverlay');
+    const btnClose = modalBox.querySelector('#btnCloseAssignExistingModal');
+    const btnDone = modalBox.querySelector('#btnDoneAssignExisting');
+    const inputSearch = modalBox.querySelector('#inputSearchExistingMember');
+
+    const closeModal = () => {
+      rung(10);
+      modalBox.innerHTML = '';
+      this.render(dept.id);
+      if (this.onUpdated) this.onUpdated();
+    };
+
+    if (btnClose) btnClose.addEventListener('click', closeModal);
+    if (btnDone) btnDone.addEventListener('click', closeModal);
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModal();
+      });
+    }
+    if (inputSearch) {
+      inputSearch.addEventListener('input', (e) => {
+        const val = e.target.value;
+        this.openAssignExistingModal(dept, val);
+        const reInput = modalBox.querySelector('#inputSearchExistingMember');
+        if (reInput) {
+          reInput.focus();
+          reInput.setSelectionRange(val.length, val.length);
+        }
+      });
+    }
+
+    modalBox.querySelectorAll('.select-existing-role').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const row = sel.closest('[data-existing-row]');
+        const teamSel = row?.querySelector('.select-existing-team');
+        const wholeLbl = row?.querySelector('.existing-whole-label');
+        const isMgr = sel.value !== 'MEMBER';
+        if (teamSel) teamSel.classList.toggle('hidden', isMgr);
+        if (wholeLbl) {
+          wholeLbl.classList.toggle('hidden', !isMgr);
+          wholeLbl.classList.toggle('flex', isMgr);
+        }
+      });
+    });
+
+    modalBox.querySelectorAll('.btn-save-existing-to-dept').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(15);
+        const uId = btn.dataset.userId;
+        const row = btn.closest('[data-existing-row]');
+        const role = row?.querySelector('.select-existing-role')?.value || 'MEMBER';
+        const teamId = role === 'MEMBER' ? (row?.querySelector('.select-existing-team')?.value || '') : '';
+        const updated = store.setUserDepartmentMembership(uId, dept.id, { role, teamId });
+        if (updated) {
+          if (role === 'MANAGER' && (!dept.managerId || dept.managerId === uId)) {
+            store.updateDepartment(dept.id, { managerId: uId });
+          } else if (role !== 'MANAGER' && dept.managerId === uId) {
+            store.updateDepartment(dept.id, { managerId: '' });
+          }
+          toast(`Đã cập nhật ${updated.name} vào ${dept.name}!`, 'success');
+          this.openAssignExistingModal(store.getDepartmentById(dept.id) || dept, inputSearch?.value || '');
+        }
+      });
+    });
+
+    modalBox.querySelectorAll('.btn-remove-existing-from-dept').forEach(btn => {
+      btn.addEventListener('click', () => {
+        rung(10);
+        const uId = btn.dataset.userId;
+        const res = store.removeUserDepartmentMembership(uId, dept.id);
+        if (res.success) {
+          if (dept.managerId === uId) {
+            store.updateDepartment(dept.id, { managerId: '' });
+          }
+          toast(`Đã gỡ nhân sự khỏi ${dept.name}!`, 'info');
+          this.openAssignExistingModal(store.getDepartmentById(dept.id) || dept, inputSearch?.value || '');
+        } else {
+          toast(res.message || 'Không thể gỡ khỏi phòng ban duy nhất!', 'warning');
+        }
       });
     });
   }
@@ -830,10 +1051,7 @@ export class DepartmentView {
         });
 
         if (managerId) {
-          const selectedManagerUser = store.getUserById(managerId);
-          if (selectedManagerUser && selectedManagerUser.role !== 'MANAGER') {
-            store.updateUser(managerId, { role: 'MANAGER', badge: 'Trưởng phòng', teamId: '' });
-          }
+          store.setUserDepartmentMembership(managerId, currentDept.id, { role: 'MANAGER', teamId: '' });
         }
 
         if (res.success) {
@@ -1015,6 +1233,31 @@ export class DepartmentView {
       });
     }
 
+    const btnAssignExisting = this.container.querySelector('#btnAssignExistingToDept');
+    if (btnAssignExisting && currentDept) {
+      btnAssignExisting.addEventListener('click', () => {
+        rung(10);
+        this.openAssignExistingModal(currentDept);
+      });
+    }
+
+    this.container.querySelectorAll('.btn-remove-user-from-dept').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        rung(10);
+        const uId = btn.dataset.userId;
+        const u = store.getUserById(uId);
+        const res = store.removeUserDepartmentMembership(uId, currentDept.id);
+        if (res.success) {
+          toast(`Đã gỡ ${u?.name || 'nhân sự'} khỏi ${currentDept.name}!`, 'info');
+          this.render(currentDept.id);
+          if (this.onUpdated) this.onUpdated();
+        } else {
+          toast(res.message || 'Không thể gỡ khỏi phòng ban duy nhất!', 'warning');
+        }
+      });
+    });
+
     this.container.querySelectorAll('.btn-empty-add-member').forEach(btn => {
       btn.addEventListener('click', () => {
         rung(10);
@@ -1050,7 +1293,7 @@ export class DepartmentView {
         const userId = btn.dataset.userId;
         const u = store.getUserById(userId);
         if (u) {
-          store.updateUser(userId, { teamId: '' });
+          store.setUserDepartmentMembership(userId, currentDept.id, { teamId: '' });
           toast(`Đã đưa ${u.name} về lại Toàn phòng!`, 'info');
           this.render(currentDept.id);
           if (this.onUpdated) this.onUpdated();
@@ -1066,7 +1309,7 @@ export class DepartmentView {
         const newTeamId = sel.value;
         const u = store.getUserById(userId);
         if (u) {
-          store.updateUser(userId, { teamId: newTeamId });
+          store.setUserDepartmentMembership(userId, currentDept.id, { teamId: newTeamId });
           const team = (currentDept.teams || []).find(t => t.id === newTeamId);
           toast(`Đã gán ${u.name} vào ${team ? team.name : 'Toàn phòng'}!`, 'success');
           this.render(currentDept.id);
@@ -1115,11 +1358,12 @@ export class DepartmentView {
           const user = store.getUserById(userId);
           const team = (currentDept.teams || []).find(t => t.id === targetTeamId);
           if (user && team) {
-            if (user.id === currentDept.managerId || user.role === 'MANAGER' || user.role === 'DEPUTY_MANAGER') {
+            const roleInDept = store.getUserRoleInDepartment(user, currentDept.id);
+            if (user.id === currentDept.managerId || roleInDept === 'MANAGER' || roleInDept === 'DEPUTY_MANAGER') {
               toast('👑 Trưởng phòng phụ trách quản trị Toàn phòng, không phân bổ vào bộ phận con!', 'warning');
               return;
             }
-            store.updateUser(userId, { teamId: targetTeamId });
+            store.setUserDepartmentMembership(userId, currentDept.id, { teamId: targetTeamId });
             toast(`🎉 Đã kéo thả thành công: ${user.name} ➔ ${team.name}!`, 'success');
             this.render(currentDept.id);
             if (this.onUpdated) this.onUpdated();

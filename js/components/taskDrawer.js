@@ -79,12 +79,12 @@ export class TaskDrawer {
     const team = deptTeams.find(t => t.id === task.teamId);
 
     const isPendingApproval = task.status === 'pending_approval' || task.status === 'review';
-    const canManageTask = auth.isAdmin() || auth.isLeadership() || (auth.isManager() && currentUser.departmentId === task.departmentId) || (currentUser.id === task.creatorId);
+    const canManageTask = auth.isAdmin() || auth.isLeadership() || (auth.isManager(task.departmentId) && store.isUserInDepartment(currentUser, task.departmentId)) || (currentUser.id === task.creatorId);
 
     const canUserApproveThisTask = auth.isAdmin() ||
       auth.isLeadership() ||
       (task.approverId && task.approverId === currentUser.id) ||
-      (auth.isManager() && currentUser.departmentId === task.departmentId);
+      (auth.isManager(task.departmentId) && store.isUserInDepartment(currentUser, task.departmentId));
 
     const { isOverdue, daysLate } = kiemTraTreHan(task.dueDate, task.status);
 
@@ -617,7 +617,7 @@ export class TaskDrawer {
     const renderDrawerMemberList = (searchQuery = '') => {
       if (!memberListContainer) return;
       const dept = store.getDepartmentById(task.departmentId);
-      const members = store.getAllUsers().filter(u => u.departmentId === task.departmentId || u.departmentId === 'all');
+      const members = store.getDepartmentUsers(task.departmentId, true);
 
       let filtered = members;
       if (searchQuery.trim()) {
@@ -642,7 +642,10 @@ export class TaskDrawer {
 
       memberListContainer.innerHTML = filtered.map(u => {
         const isSelected = u.id === task.assigneeId;
-        const team = currentDeptTeams.find(t => t.id === u.teamId);
+        const uTeamId = store.getUserTeamInDepartment(u, task.departmentId);
+        const team = currentDeptTeams.find(t => t.id === uTeamId);
+        const roleInDept = store.getUserRoleInDepartment(u, task.departmentId);
+        const roleTag = roleInDept === 'MANAGER' ? 'Trưởng phòng' : (roleInDept === 'DEPUTY_MANAGER' ? 'Phó phòng' : (u.badge || roleInDept));
         return `
           <div
             class="item-select-drawer-member flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer min-h-[48px] ${isSelected ? 'bg-amber-50/80 border-[#d6a52a] shadow-xs' : 'bg-white hover:bg-gray-50 border-[#e2e8f0]'}"
@@ -657,7 +660,7 @@ export class TaskDrawer {
               <div class="min-w-0 flex flex-col text-left">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-[13px] text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</span>
-                  <span class="text-[10px] font-mono-data font-bold px-1.5 py-0.2 rounded bg-gray-100 text-gray-700">${esc(u.badge || u.role)}</span>
+                  <span class="text-[10px] font-mono-data font-bold px-1.5 py-0.2 rounded bg-gray-100 text-gray-700">${esc(roleTag)}</span>
                 </div>
                 <div class="flex items-center gap-1.5 text-[11px] text-[#64748b] mt-0.5">
                   ${team ? `<span class="font-semibold text-amber-800">[${esc(team.code)}]</span>` : ''}

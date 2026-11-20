@@ -21,14 +21,19 @@ export class CreateTaskModal {
     const currentUser = auth.getCurrentUser() || { id: 'usr_admin', name: 'Quản Trị Viên' };
     const depts = store.getAllDepartments();
     const validDepts = depts.filter(d => d.id !== 'all');
+    const isGlobalRole = auth.isAdmin() || auth.isLeadership();
+    const userDeptIds = auth.getUserDepartmentIds();
+    const selectableDepts = isGlobalRole
+      ? validDepts
+      : (userDeptIds.length > 0 ? validDepts.filter(d => userDeptIds.includes(d.id)) : validDepts);
 
     const initialDeptId = (isEdit && taskToEdit.departmentId && taskToEdit.departmentId !== 'all')
       ? taskToEdit.departmentId
-      : (currentDept.id === 'all' ? (validDepts[0]?.id || 'dept_ptkh') : currentDept.id);
-    const taskDept = store.getDepartmentById(initialDeptId) || validDepts[0] || currentDept;
+      : (currentDept.id === 'all' ? (selectableDepts[0]?.id || validDepts[0]?.id || 'dept_ptkh') : currentDept.id);
+    const taskDept = store.getDepartmentById(initialDeptId) || selectableDepts[0] || validDepts[0] || currentDept;
     const currentTeams = taskDept.teams || [];
 
-    const deptUsers = store.getAllUsers().filter(u => u.departmentId === taskDept.id || u.departmentId === 'all');
+    const deptUsers = store.getDepartmentUsers(taskDept.id, true);
 
     const approvers = allUsers.filter(u => u.isAdmin || u.role === 'ADMIN' || u.role === 'LEADERSHIP' || u.role === 'MANAGER' || u.role === 'DEPUTY_MANAGER');
     const defaultApproverId = isEdit && taskToEdit.approverId
@@ -81,8 +86,8 @@ export class CreateTaskModal {
               <div>
                 <label class="block text-[12.5px] font-bold text-[#0d1c2f] mb-1" style="color: var(--text);">Phòng ban tiếp nhận *</label>
                 <select id="newTaskDept" class="w-full h-11 px-3 rounded-xl border border-[#e2e8f0] text-[13.5px] outline-none focus:border-[#d6a52a] bg-[#f8f9ff] focus:bg-white text-[#0d1c2f] cursor-pointer">
-                  ${depts.map(d => `
-                    <option value="${d.id}" ${d.id === (taskDept.id === 'all' ? 'dept_ptkh' : taskDept.id) ? 'selected' : ''}>${esc(d.name)} (${esc(d.code)})</option>
+                  ${selectableDepts.map(d => `
+                    <option value="${d.id}" ${d.id === taskDept.id ? 'selected' : ''}>${esc(d.name)} (${esc(d.code)})</option>
                   `).join('')}
                 </select>
               </div>
@@ -288,7 +293,7 @@ export class CreateTaskModal {
     const renderMemberList = (searchQuery = '') => {
       if (!memberListContainer) return;
       const dept = store.getDepartmentById(currentDeptId);
-      const members = store.getAllUsers().filter(u => u.departmentId === currentDeptId || u.departmentId === 'all');
+      const members = store.getDepartmentUsers(currentDeptId, true);
 
       let filtered = members;
       if (searchQuery.trim()) {
@@ -314,7 +319,10 @@ export class CreateTaskModal {
 
       memberListContainer.innerHTML = filtered.map(u => {
         const isSelected = u.id === selectedId;
-        const team = currentDeptTeams.find(t => t.id === u.teamId);
+        const uTeamId = store.getUserTeamInDepartment(u, currentDeptId);
+        const team = currentDeptTeams.find(t => t.id === uTeamId);
+        const roleInDept = store.getUserRoleInDepartment(u, currentDeptId);
+        const roleTag = roleInDept === 'MANAGER' ? 'Trưởng phòng' : (roleInDept === 'DEPUTY_MANAGER' ? 'Phó phòng' : (u.badge || roleInDept));
         return `
           <div
             class="item-select-member flex items-center justify-between p-2.5 sm:p-3 rounded-xl border transition-all cursor-pointer min-h-[48px] ${isSelected ? 'bg-amber-50/80 border-[#d6a52a] shadow-xs' : 'bg-white hover:bg-gray-50 border-[#e2e8f0]'}"
@@ -329,7 +337,7 @@ export class CreateTaskModal {
               <div class="min-w-0 flex flex-col text-left">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-[13px] text-[#0d1c2f] truncate" style="color: var(--text);">${esc(u.name)}</span>
-                  <span class="text-[10px] font-mono-data font-bold px-1.5 py-0.2 rounded bg-gray-100 text-gray-700">${esc(u.badge || u.role)}</span>
+                  <span class="text-[10px] font-mono-data font-bold px-1.5 py-0.2 rounded bg-gray-100 text-gray-700">${esc(roleTag)}</span>
                 </div>
                 <div class="flex items-center gap-1.5 text-[11px] text-[#64748b] mt-0.5">
                   ${team ? `<span class="font-semibold text-amber-800">[${esc(team.code)}]</span>` : ''}
@@ -412,7 +420,7 @@ export class CreateTaskModal {
             `;
           }
 
-          const newDeptUsers = store.getAllUsers().filter(u => u.departmentId === currentDeptId || u.departmentId === 'all');
+          const newDeptUsers = store.getDepartmentUsers(currentDeptId, true);
           const isStillValid = newDeptUsers.some(u => u.id === (hiddenAssignee ? hiddenAssignee.value : ''));
           if (!isStillValid && newDeptUsers.length > 0) {
             const defaultUser = newDeptUsers[0];

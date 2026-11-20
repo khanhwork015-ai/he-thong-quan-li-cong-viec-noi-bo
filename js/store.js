@@ -1,5 +1,5 @@
 import { INITIAL_TASKS, DEPARTMENTS, USERS, INITIAL_PLANS, INITIAL_NOTIFICATIONS } from './models.js?v=8.7';
-import { auth } from './auth.js?v=8.7';
+import { auth, normalizeUserMemberships, normalizeUserRecord } from './auth.js?v=8.7';
 import { appScriptBridge } from './services/appScriptBridge.js?v=8.7';
 import { toast } from './helpers.js?v=8.7';
 
@@ -124,7 +124,7 @@ export class Store {
           if (!su || !su.id || deletedIds.has(String(su.id))) return;
           if (String(su.name).includes('BÃ¡c') || String(su.id).includes('test') || String(su.username).includes('testuser')) return;
 
-          userMap.set(su.id, {
+          userMap.set(su.id, normalizeUserRecord({
             id: su.id,
             username: String(su.username || su.id.replace('user_', '')).trim().toLowerCase(),
             password: String(su.password !== undefined && su.password !== null && String(su.password).trim() !== '' ? su.password : '123').trim(),
@@ -133,6 +133,7 @@ export class Store {
             isAdmin: Boolean(su.isAdmin === true || su.isAdmin === 'true' || su.isAdmin === 1 || su.role === 'ADMIN'),
             departmentId: su.departmentId || 'dept_ptkh',
             teamId: su.teamId || '',
+            memberships: su.memberships,
             title: su.title || '',
             unit: su.unit || '',
             avatar: su.avatar || '',
@@ -143,11 +144,21 @@ export class Store {
             hometown: su.hometown || '',
             createdAt: su.createdAt || '',
             updatedAt: su.updatedAt || ''
-          });
+          }));
         });
 
         const cleanUsers = Array.from(userMap.values());
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(cleanUsers));
+        if (auth.currentUser) {
+          const syncedSelf = cleanUsers.find(u => u.id === auth.currentUser.id);
+          if (syncedSelf) {
+            auth.currentUser = normalizeUserRecord({ ...auth.currentUser, ...syncedSelf });
+            if (auth.session) {
+              auth.session.user = auth.currentUser;
+              try { localStorage.setItem('tvm_auth_session_v4', JSON.stringify(auth.session)); } catch (_) {}
+            }
+          }
+        }
         userCount = cleanUsers.length;
       }
 
@@ -249,14 +260,16 @@ export class Store {
 
   getAllUsers() {
     try {
-      return JSON.parse(localStorage.getItem(USERS_STORAGE_KEY)) || USERS;
+      const list = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY)) || USERS;
+      return Array.isArray(list) ? list.map(u => normalizeUserRecord(u)) : USERS.map(u => normalizeUserRecord(u));
     } catch (_) {
-      return USERS;
+      return USERS.map(u => normalizeUserRecord(u));
     }
   }
 
   saveAllUsers(users) {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    const normalized = Array.isArray(users) ? users.map(u => normalizeUserRecord(u)) : [];
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(normalized));
     window.dispatchEvent(new CustomEvent('tvm:users_changed'));
   }
 
@@ -264,11 +277,82 @@ export class Store {
     return this.getAllUsers().find(u => u.id === userId) || null;
   }
 
+  getUserMemberships(user) {
+    return normalizeUserMemberships(user);
+  }
+
+  isUserInDepartment(user, deptId) {
+    if (!user) return false;
+    if (!deptId || deptId === 'all') return true;
+    const memberships = normalizeUserMemberships(user);
+    if (memberships.length > 0) {
+      return memberships.some(m => m.departmentId === deptId);
+    }
+    return user.departmentId === deptId;
+  }
+
+  getUserRoleInDepartment(user, deptId) {
+    if (!user) return 'MEMBER';
+    if (user.role === 'LEADERSHIP') return 'LEADERSHIP';
+    const memberships = normalizeUserMemberships(user);
+    const found = memberships.find(m => m.departmentId === deptId);
+    if (found) return found.role;
+    return user.departmentId === deptId ? (user.role === 'ADMIN' ? 'MANAGER' : (user.role || 'MEMBER')) : 'MEMBER';
+  }
+
+  getUserTeamInDepartment(user, deptId) {
+    if (!user) return '';
+    const memberships = normalizeUserMemberships(user);
+    const found = memberships.find(m => m.departmentId === deptId);
+    if (found) {
+      const isLeaderOrMgr = found.role === 'MANAGER' || found.role === 'DEPUTY_MANAGER' || found.role === 'LEADERSHIP';
+      return isLeaderOrMgr ? '' : (found.teamId || '');
+    }
+    return user.departmentId === deptId ? (user.teamId || '') : '';
+  }
+
+  setUserDepartmentMembership(userId, deptId, { role, teamId } = {}) {
+    const user = this.getUserById(userId);
+    if (!user || !deptId || deptId === 'all') return null;
+    const memberships = [...normalizeUserMemberships(user)];
+    const idx = memberships.findIndex(m => m.departmentId === deptId);
+    let nextRole = role !== undefined
+      ? String(role || 'MEMBER').trim().toUpperCase()
+      : (idx >= 0 ? memberships[idx].role : (user.role === 'ADMIN' ? 'MANAGER' : (user.role || 'MEMBER')));
+    if (nextRole === 'ADMIN') nextRole = 'MANAGER';
+    const isLeaderOrMgr = (nextRole === 'MANAGER' || nextRole === 'DEPUTY_MANAGER' || nextRole === 'LEADERSHIP');
+    const nextTeamId = isLeaderOrMgr
+      ? ''
+      : (teamId !== undefined ? String(teamId || '').trim() : (idx >= 0 ? (memberships[idx].teamId || '') : ''));
+
+    if (idx >= 0) {
+      memberships[idx] = { departmentId: deptId, role: nextRole, teamId: nextTeamId };
+    } else {
+      memberships.push({ departmentId: deptId, role: nextRole, teamId: nextTeamId });
+    }
+    return this.updateUser(userId, { memberships });
+  }
+
+  removeUserDepartmentMembership(userId, deptId) {
+    const user = this.getUserById(userId);
+    if (!user || !deptId || deptId === 'all') return { success: false, message: 'Thông tin không hợp lệ!' };
+    const memberships = normalizeUserMemberships(user);
+    const remaining = memberships.filter(m => m.departmentId !== deptId);
+    if (remaining.length === 0 && !user.isAdmin && user.role !== 'LEADERSHIP') {
+      return { success: false, message: 'Mỗi nhân sự phải thuộc ít nhất 1 phòng ban!' };
+    }
+    const updated = this.updateUser(userId, { memberships: remaining });
+    return { success: true, user: updated };
+  }
+
   getDepartmentUsers(deptId, includeGlobal = false) {
     if (!deptId || deptId === 'all') {
       return this.getAllUsers();
     }
-    return this.getAllUsers().filter(u => u.departmentId === deptId || (includeGlobal && u.departmentId === 'all'));
+    return this.getAllUsers().filter(u =>
+      this.isUserInDepartment(u, deptId) ||
+      (includeGlobal && u.departmentId === 'all')
+    );
   }
 
   getAllDepartments() {
@@ -412,15 +496,20 @@ export class Store {
   }
 
   createUser(userData) {
-    const targetRole = userData.role || 'MEMBER';
-    const targetDeptId = userData.departmentId || auth.getActiveDepartment().id;
+    const inputMemberships = Array.isArray(userData.memberships) && userData.memberships.length > 0
+      ? userData.memberships
+      : null;
+    const targetRole = inputMemberships ? inputMemberships[0].role : (userData.role || 'MEMBER');
+    const targetDeptId = inputMemberships
+      ? inputMemberships[0].departmentId
+      : (userData.departmentId || auth.getActiveDepartment().id);
 
     if (!auth.canProvisionAccount(targetRole, targetDeptId)) {
       return null;
     }
 
     const users = this.getAllUsers();
-    const newUser = {
+    const newUser = normalizeUserRecord({
       id: `user_${Date.now().toString().slice(-6)}`,
       username: (userData.username || `user_${Date.now().toString().slice(-4)}`).trim().toLowerCase(),
       password: (userData.password || '123').trim(),
@@ -428,7 +517,8 @@ export class Store {
       role: targetRole,
       isAdmin: Boolean(userData.isAdmin || targetRole === 'ADMIN'),
       departmentId: targetDeptId,
-      teamId: userData.teamId || '',
+      teamId: inputMemberships ? (inputMemberships[0].teamId || '') : (userData.teamId || ''),
+      memberships: inputMemberships || [{ departmentId: targetDeptId, role: targetRole, teamId: userData.teamId || '' }],
       title: userData.title.trim() || 'Chuyên viên',
       unit: userData.unit || (this.getDepartmentById(targetDeptId)?.name || 'Shin Task Management'),
       avatar: userData.avatar?.trim() || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=160&q=80',
@@ -438,7 +528,7 @@ export class Store {
       dob: userData.dob || '',
       hometown: userData.hometown || '',
       createdAt: new Date().toISOString()
-    };
+    });
 
     users.push(newUser);
     this.saveAllUsers(users);
@@ -454,11 +544,30 @@ export class Store {
     const idx = users.findIndex(u => u.id === userData.id);
     if (idx < 0) return null;
 
-    users[idx] = {
-      ...users[idx],
+    const existing = users[idx];
+    let nextMemberships = userData.memberships;
+    if (!Array.isArray(nextMemberships)) {
+      const existingMemberships = normalizeUserMemberships(existing);
+      if (existingMemberships.length <= 1 && (userData.departmentId !== undefined || userData.role !== undefined || userData.teamId !== undefined)) {
+        const dId = userData.departmentId !== undefined ? userData.departmentId : (existingMemberships[0]?.departmentId || existing.departmentId);
+        if (dId && dId !== 'all') {
+          const r = userData.role !== undefined ? userData.role : (existingMemberships[0]?.role || existing.role);
+          const t = userData.teamId !== undefined ? userData.teamId : (existingMemberships[0]?.teamId || existing.teamId || '');
+          nextMemberships = [{ departmentId: dId, role: r, teamId: t }];
+        } else {
+          nextMemberships = existingMemberships;
+        }
+      } else {
+        nextMemberships = existingMemberships;
+      }
+    }
+
+    users[idx] = normalizeUserRecord({
+      ...existing,
       ...userData,
+      memberships: nextMemberships,
       updatedAt: new Date().toISOString()
-    };
+    });
 
     this.saveAllUsers(users);
     appScriptBridge.pushUser(users[idx]);
@@ -566,11 +675,18 @@ export class Store {
     const currentUser = auth.getCurrentUser() || { id: '' };
 
     let filtered = allTasks;
-    if (!auth.isAdmin() || currentDept.id !== 'all') {
+    if (currentDept.id === 'all') {
+      if (!auth.isAdmin() && !auth.isLeadership()) {
+        const myDeptIds = auth.getUserDepartmentIds();
+        if (myDeptIds.length > 0) {
+          filtered = filtered.filter(t => myDeptIds.includes(t.departmentId) || t.assigneeId === currentUser.id || t.creatorId === currentUser.id);
+        }
+      }
+    } else {
       filtered = filtered.filter(t => t.departmentId === currentDept.id);
     }
 
-    if (auth.isMember() && options.personalOnly) {
+    if (auth.isMember(currentDept.id) && options.personalOnly) {
       filtered = filtered.filter(t => t.assigneeId === currentUser.id);
     }
 
@@ -1338,9 +1454,14 @@ export class Store {
     const activeDept = auth.getActiveDepartment() || { id: 'all' };
     const deptId = departmentId || activeDept.id;
 
-    if (deptId === 'all' || auth.isAdmin() || auth.isLeadership()) {
-      if (deptId === 'all') return all;
-      return all.filter(p => p.departmentId === deptId);
+    if (deptId === 'all') {
+      if (auth.isAdmin() || auth.isLeadership()) return all;
+      const myDeptIds = auth.getUserDepartmentIds();
+      const currentUser = auth.getCurrentUser() || { id: '' };
+      if (myDeptIds.length > 0) {
+        return all.filter(p => myDeptIds.includes(p.departmentId) || p.creatorId === currentUser.id || p.leadId === currentUser.id);
+      }
+      return all;
     }
     return all.filter(p => p.departmentId === deptId);
   }
@@ -1662,7 +1783,12 @@ export class Store {
 
     const isAdmin = auth.isAdmin();
     const isLeadership = auth.isLeadership();
-    const isManager = auth.isManager();
+    const memberships = normalizeUserMemberships(currentUser);
+    const managerDeptIds = memberships
+      .filter(m => m.role === 'MANAGER' || m.role === 'DEPUTY_MANAGER')
+      .map(m => m.departmentId);
+    const allowedManagerDepts = managerDeptIds.length > 0 ? managerDeptIds : [currentUser.departmentId].filter(Boolean);
+    const isManager = managerDeptIds.length > 0 || auth.isManager();
     const isApprover = isAdmin || isLeadership || isManager;
 
     const allTasks = this.getAllTasksRaw();
@@ -1677,11 +1803,11 @@ export class Store {
     } else if (isManager) {
       pendingTasks = allTasks.filter(t =>
         (t.status === 'pending_approval' || t.status === 'review') &&
-        (t.departmentId === currentUser.departmentId || t.approverId === currentUser.id)
+        (allowedManagerDepts.includes(t.departmentId) || t.approverId === currentUser.id)
       );
       pendingPlans = allPlans.filter(p =>
         p.status === 'pending_approval' &&
-        (p.departmentId === currentUser.departmentId || p.departmentId === 'all')
+        (allowedManagerDepts.includes(p.departmentId) || p.departmentId === 'all')
       );
     } else {
       pendingTasks = allTasks.filter(t =>
@@ -1708,7 +1834,12 @@ export class Store {
 
     const isAdmin = auth.isAdmin();
     const isLeadership = auth.isLeadership();
-    const isManager = auth.isManager();
+    const memberships = normalizeUserMemberships(currentUser);
+    const managerDeptIds = memberships
+      .filter(m => m.role === 'MANAGER' || m.role === 'DEPUTY_MANAGER')
+      .map(m => m.departmentId);
+    const allowedManagerDepts = managerDeptIds.length > 0 ? managerDeptIds : [currentUser.departmentId].filter(Boolean);
+    const isManager = managerDeptIds.length > 0 || auth.isManager();
 
     const allTasks = this.getAllTasksRaw();
     const allPlans = this.getAllPlansRaw();
@@ -1717,8 +1848,8 @@ export class Store {
     let approvedPlans = allPlans.filter(p => p.approvalStatus === 'APPROVED' || p.approvedBy || p.approvalStatus === 'REJECTED');
 
     if (!isAdmin && !isLeadership && isManager) {
-      approvedTasks = approvedTasks.filter(t => t.departmentId === currentUser.departmentId || t.approverId === currentUser.id);
-      approvedPlans = approvedPlans.filter(p => p.departmentId === currentUser.departmentId);
+      approvedTasks = approvedTasks.filter(t => allowedManagerDepts.includes(t.departmentId) || t.approverId === currentUser.id);
+      approvedPlans = approvedPlans.filter(p => allowedManagerDepts.includes(p.departmentId));
     } else if (!isAdmin && !isLeadership && !isManager) {
       approvedTasks = approvedTasks.filter(t => t.creatorId === currentUser.id || t.assigneeId === currentUser.id);
       approvedPlans = approvedPlans.filter(p => p.creatorId === currentUser.id || p.leadId === currentUser.id);

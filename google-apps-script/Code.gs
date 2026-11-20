@@ -45,7 +45,13 @@ function doGet(e) {
 
         return t;
       });
-      const users = getSheetData(ss.getSheetByName(SHEET_USERS));
+      const rawUsers = getSheetData(ss.getSheetByName(SHEET_USERS));
+      const users = rawUsers.map(u => {
+        if (typeof u.memberships === 'string' && u.memberships.trim().startsWith('[')) {
+          try { u.memberships = JSON.parse(u.memberships); } catch (_) { u.memberships = []; }
+        }
+        return u;
+      });
       const rawDepts = getSheetData(ss.getSheetByName(SHEET_DEPTS));
       const depts = rawDepts.map(d => {
         if (typeof d.teams === 'string' && d.teams.trim().startsWith('[')) {
@@ -233,7 +239,7 @@ function ensureSheets(ss) {
     },
     {
       name: SHEET_USERS,
-      headers: ['id', 'username', 'password', 'name', 'role', 'departmentId', 'teamId', 'title', 'unit', 'avatar', 'badge', 'phone', 'email', 'dob', 'hometown', 'createdAt', 'updatedAt']
+      headers: ['id', 'username', 'password', 'name', 'role', 'departmentId', 'teamId', 'memberships', 'title', 'unit', 'avatar', 'badge', 'phone', 'email', 'dob', 'hometown', 'createdAt', 'updatedAt']
     },
     {
       name: SHEET_DEPTS,
